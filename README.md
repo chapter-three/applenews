@@ -13,7 +13,7 @@ drush en composer_manager
 drush en apple_news
 ```
 
-# Run Tests
+## Run Tests
 
 ```shell
 drush -y en simpletest
