@@ -1,0 +1,4 @@
+name = Apple News
+description = Push content to Apple News.
+core = 7.x
+files[] = tests/apple_news.test

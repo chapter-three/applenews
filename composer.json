@@ -1,0 +1,13 @@
+{
+    "minimum-stability": "dev",
+    "repositories": [
+        {
+            "type" : "vcs",
+            "no-api": "true",
+            "url": "git@github.com:chapter-three/AppleNews.git"
+        }
+    ],
+    "require": {
+        "chapter-three/AppleNews": "master"
+    }
+}

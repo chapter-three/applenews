@@ -1,0 +1,42 @@
+<?php
+
+/**
+ * @file
+ * Contains tests for the Apple News module.
+ */
+
+/**
+ * Test case.
+ */
+class AppleNewsTestCase extends DrupalWebTestCase {
+
+  /**
+   * Implements getInfo().
+   */
+  public static function getInfo() {
+    return array(
+      'name' => t('Apple News tests'),
+      'description' => t('TODO: write me.'),
+      'group' => t('Apple News'),
+    );
+  }
+
+  /**
+   * Implements setUp().
+   */
+  public function setUp() {
+    // Call the parent with an array of modules to enable for the test.
+    parent::setUp(array('apple_news'));
+  }
+
+  /**
+   * A dummy test.
+   */
+  public function testDummy() {
+    // Pass.
+    $this->assertNotNull(variable_get('apple_news_variable_foo', 42));
+    // Fail.
+    $this->assertNotNULL(NULL);
+  }
+
+}

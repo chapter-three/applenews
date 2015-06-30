@@ -1,0 +1,36 @@
+<?php
+
+/**
+ * @file
+ * Main module file.
+ */
+
+/**
+ * Implements hook_help().
+ */
+function apple_news_help($path, $arg) {
+  switch ($path) {
+
+    case 'admin/help#apple_news':
+      return '<p>' . t('Push content to <a href="https://www.apple.com/news/">Apple News</a>.') . '</p>';
+
+  }
+}
+
+/**
+ * Implements hook_menu().
+ */
+function apple_news_menu() {
+  $items = array();
+
+  $items['admin/config/content/apple_news'] = array(
+    'title' => 'Apple News',
+    'description' => t('Configure content export to Apple News.'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('apple_news_settings_form'),
+    'access arguments' => array('administer apple_news'),
+    'file' => 'apple_news.admin.inc',
+  );
+
+  return $items;
+}
