@@ -59,3 +59,38 @@ function apple_news_language_code($language_code) {
   return $language_code;
 }
 
+/**
+ * Gets channel data.
+ */
+function apple_news_get_channel() {
+  $api_channel = variable_get('apple_news_variable_api_channel', FALSE);
+  $get = _apple_news_get_api_get();
+  $response = $get->Get('/channels/{channel_id}',
+    ['channel_id' => $api_channel]);
+  if (!$response) {
+    watchdog('apple_news', $get->curl->curl_error_message, array(),
+      WATCHDOG_ERROR);
+    return FALSE;
+  }
+  return $response;
+}
+
+/**
+ * Gets a news api object.
+ */
+function _apple_news_get_api_get() {
+  $api_key = variable_get('apple_news_variable_api_key', FALSE);
+  $api_secret = variable_get('apple_news_variable_api_secret', FALSE);
+  $api_endpoint = variable_get('apple_news_variable_api_endpoint', FALSE);
+  $get = new ChapterThree\AppleNews\PushAPI_Get($api_key, $api_secret,
+    $api_endpoint);
+
+  // Allow configuring curl for debugging.
+  $curlopts = variable_get('apple_news_variable_api_curlopt', array());
+  foreach ($curlopts as $key => $val) {
+    $get->curl->setOpt($key, $val);
+  }
+
+  return $get;
+}
+
