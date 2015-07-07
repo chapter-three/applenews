@@ -6,37 +6,62 @@
  */
 
 /**
- * Test case.
+ * Base class for test cases that create an article.
  */
-class AppleNewsTestCase extends DrupalWebTestCase {
+abstract class AppleNewsArticleTestCase extends DrupalWebTestCase {
+
+  protected $privilegedUser;
+
+  /**
+   * Implements setUp().
+   */
+  public function setUp() {
+    parent::setUp(array('apple_news'));
+    $this->privilegedUser = $this->drupalCreateUser(array(
+      'push content to apple news',
+    ));
+    $this->drupalLogin($this->privilegedUser);
+  }
+
+}
+
+/**
+ * Test export to Apple News Format.
+ */
+class AppleNewsArticleExportTestCase extends AppleNewsArticleTestCase {
 
   /**
    * Implements getInfo().
    */
   public static function getInfo() {
     return array(
-      'name' => t('Apple News tests'),
-      'description' => t('TODO: write me.'),
+      'name' => t('Export article to Apple News Format'),
+      'description' => t(''),
       'group' => t('Apple News'),
     );
   }
 
   /**
-   * Implements setUp().
+   * Test default article export.
    */
-  public function setUp() {
-    // Call the parent with an array of modules to enable for the test.
-    parent::setUp(array('apple_news'));
-  }
+  public function testExport() {
+    $title = $this->randomName(32);
+    $body = $this->randomName(64);
+    $settings = array(
+      'type' => 'article',
+      'title' => $title,
+      'body' => array(LANGUAGE_NONE => array(array($body))),
+    );
+    $article = $this->drupalCreateNode($settings);
+    $this->assert(@$article->nid > 0, 'Article created.');
 
-  /**
-   * A dummy test.
-   */
-  public function testDummy() {
-    // Pass.
-    $this->assertNotNull(variable_get('apple_news_variable_foo', 42));
-    // Fail.
-    $this->assertNotNULL(NULL);
+    $export = new AppleNewsExportArticle('node', $article->nid,
+      array());
+    $data = json_decode($export->export()->json());
+    $this->assertEqual($article->nid, $data->identifier,
+      'Export article nid -> identifier.');
+    $this->assertEqual($article->title, $data->title,
+      'Export article title -> title.');
   }
 
 }

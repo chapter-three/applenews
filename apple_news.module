@@ -34,3 +34,28 @@ function apple_news_menu() {
 
   return $items;
 }
+
+/**
+ * Implements hook_permission().
+ */
+function apple_news_permission() {
+  return array(
+    'administer apple_news' => array(
+      'title' => t('Administer Apple News'),
+      'description' => t('Perform administration tasks for Apple News.'),
+    ),
+    'push content to apple news' => array(
+      'title' => t('Push content to Apple News'),
+      'description' => '',
+    ),
+  );
+}
+
+/**
+ * Converts drupal language code to appropriate Apples News value.
+ */
+function apple_news_language_code($language_code) {
+  // @todo
+  return $language_code;
+}
+

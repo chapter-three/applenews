@@ -5,9 +5,15 @@
             "type" : "vcs",
             "no-api": "true",
             "url": "git@github.com:chapter-three/AppleNews.git"
+        },
+        {
+            "type" : "vcs",
+            "no-api": "true",
+            "url": "git@github.com:chapter-three/AppleNewsDoc.git"
         }
     ],
     "require": {
-        "chapter-three/AppleNews": "master"
+        "chapter-three/AppleNews": "master",
+        "chapter-three/AppleNewsDoc": "master"
     }
 }
