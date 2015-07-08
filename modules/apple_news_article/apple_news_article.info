@@ -1,0 +1,8 @@
+name = Apple News
+description = Push content to Apple News.
+core = 7.x
+
+files[] = include/AppleNewsExportArticle.inc
+files[] = tests/apple_news_article.test
+
+dependencies[] = apple_news

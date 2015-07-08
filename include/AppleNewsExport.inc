@@ -31,7 +31,7 @@ class AppleNewsExport {
    * @param array $config
    *   Configuration @todo.
    */
-  public function __construct($entity_type, $entity_id, array $config) {
+  public function __construct($entity_type, $entity_id, array $config = array()) {
     $this->entityType = $entity_type;
     $this->entityId = $entity_id;
 
@@ -39,6 +39,13 @@ class AppleNewsExport {
       'document_columns' => 7,
       'document_width' => 1024,
     ) + $config;
+  }
+
+  /**
+   * Provides a configuration form for this export.
+   */
+  public function getConfigForm($form, &$form_state) {
+    return $form;
   }
 
   /**
@@ -63,34 +70,6 @@ class AppleNewsExport {
       $this->config['document_width']);
     $document = new AppleNewsDoc\Document($wrapper->getIdentifier(),
       $wrapper->label(), apple_news_language_code($lang), $layout);
-
-    return $document;
-  }
-
-}
-
-/**
- * Exports a Drupal article as defined by the default install profile.
- */
-class AppleNewsExportArticle extends AppleNewsExport {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function export() {
-    $document = parent::export();
-
-    $entity = entity_load($this->entityType, array($this->entityId));
-    $entity = reset($entity);
-    /** @var EntityDrupalWrapper $wrapper */
-    $wrapper = entity_metadata_wrapper($this->entityType, $entity);
-
-    // Body.
-    $body = $wrapper->body->value->value();
-    $component = new AppleNewsDoc\Components\Body(
-      AppleNewsMarkdown::convert($body));
-    $component->setFormat('markdown');
-    $document->addComponent($component);
 
     return $document;
   }

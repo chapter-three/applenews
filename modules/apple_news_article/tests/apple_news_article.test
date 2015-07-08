@@ -10,14 +10,14 @@ use ChapterThree\AppleNewsDoc;
 /**
  * Test export to Apple News Format.
  */
-class AppleNewsNodeExportTestCase extends DrupalWebTestCase {
+class AppleNewsArticleExportTestCase extends DrupalWebTestCase {
 
   /**
    * Implements getInfo().
    */
   public static function getInfo() {
     return array(
-      'name' => t('Export node to Apple News Format'),
+      'name' => t('Export article as defined by default profile to Apple News Format'),
       'description' => '',
       'group' => t('Apple News'),
     );
@@ -27,29 +27,27 @@ class AppleNewsNodeExportTestCase extends DrupalWebTestCase {
    * Implements setUp().
    */
   public function setUp() {
-    parent::setUp(array('apple_news'));
+    parent::setUp(array('apple_news_article'));
   }
 
   /**
-   * Test node export.
+   * Test default article export.
    */
   public function testExport() {
     $title = $this->randomName(32);
     $body = $this->randomName(64);
     $settings = array(
-      'type' => 'page',
+      'type' => 'article',
       'title' => $title,
       'body' => array(LANGUAGE_NONE => array(array('value' => $body))),
     );
     $node = $this->drupalCreateNode($settings);
     $this->assert($node->nid > 0, 'Node created.');
 
-    $export = new AppleNewsExport('node', $node->nid);
+    $export = new AppleNewsExportArticle('node', $node->nid);
 
     /** @var ChapterThree\AppleNewsDoc\Document $document */
     $document = $export->export();
-    // Documents require a component.
-    $document->addComponent(new AppleNewsDoc\Components\Body(''));
     $data = json_decode($document->json());
     // $this->pass(var_export($data, TRUE));
 
@@ -57,6 +55,13 @@ class AppleNewsNodeExportTestCase extends DrupalWebTestCase {
       'Export node nid -> identifier.');
     $this->assertEqual($node->title, $data->title,
       'Export node title -> title.');
+
+    $item = $data->components[0];
+    $this->assertEqual('body', $item->role, 'Export node role.');
+    $this->assertEqual('markdown', $item->format, 'Export node format.');
+    $mdown = AppleNewsDoc\Markdown::convert($body);
+    $this->assertEqual($mdown, $item->text,
+      'Export node body -> component 1 text.');
   }
 
 }

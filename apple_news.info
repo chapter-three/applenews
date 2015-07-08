@@ -2,10 +2,7 @@ name = Apple News
 description = Push content to Apple News.
 core = 7.x
 
-files[] = include/export.inc
+files[] = include/AppleNewsExport.inc
 files[] = tests/apple_news.test
-
-files[] = include/markdown.inc
-files[] = tests/markdown.test
 
 dependencies[] = entity

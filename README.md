@@ -10,7 +10,7 @@ The recommended way to install is using [Composer Manager](https://www.drupal.or
 
 ```shell
 drush en composer_manager
-drush en apple_news
+drush en apple_news_article
 ```
 
 ## Run Tests

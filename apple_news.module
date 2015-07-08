@@ -42,7 +42,7 @@ function apple_news_permission() {
   return array(
     'administer apple_news' => array(
       'title' => t('Administer Apple News'),
-      'description' => t('Perform administration tasks for Apple News.'),
+      'description' => t('Perform administration tasks for Apple News'),
     ),
     'push content to apple news' => array(
       'title' => t('Push content to Apple News'),

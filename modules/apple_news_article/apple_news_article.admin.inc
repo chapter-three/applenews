@@ -6,7 +6,7 @@
  */
 
 /**
- * Form builder for API config.
+ * Form builder.
  */
 function apple_news_settings_form($form, &$form_state) {
 
