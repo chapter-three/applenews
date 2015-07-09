@@ -82,7 +82,7 @@ function _apple_news_get_api_get() {
   $api_key = variable_get('apple_news_variable_api_key', FALSE);
   $api_secret = variable_get('apple_news_variable_api_secret', FALSE);
   $api_endpoint = variable_get('apple_news_variable_api_endpoint', FALSE);
-  $get = new ChapterThree\AppleNews\PushAPI_Get($api_key, $api_secret,
+  $get = new ChapterThree\AppleNews\PushAPI\Get($api_key, $api_secret,
     $api_endpoint);
 
   // Allow configuring curl for debugging.
@@ -92,5 +92,24 @@ function _apple_news_get_api_get() {
   }
 
   return $get;
+}
+
+/**
+ * Gets a news api object.
+ */
+function _apple_news_get_api_post() {
+  $api_key = variable_get('apple_news_variable_api_key', FALSE);
+  $api_secret = variable_get('apple_news_variable_api_secret', FALSE);
+  $api_endpoint = variable_get('apple_news_variable_api_endpoint', FALSE);
+  $post = new ChapterThree\AppleNews\PushAPI\Post($api_key, $api_secret,
+    $api_endpoint);
+
+  // Allow configuring curl for debugging.
+  $curlopts = variable_get('apple_news_variable_api_curlopt', array());
+  foreach ($curlopts as $key => $val) {
+    $post->curl->setOpt($key, $val);
+  }
+
+  return $post;
 }
 
