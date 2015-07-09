@@ -16,3 +16,17 @@ function apple_news_article_help($path, $arg) {
 
   }
 }
+
+/**
+ * Implements hook_apple_news_api().
+ */
+function apple_news_article_apple_news_api() {
+  return array(
+    'api' => 1,
+    'exports' => array(
+      'apple_news_article' => array(
+        'class' => 'AppleNewsExportArticle',
+      ),
+    ),
+  );
+}

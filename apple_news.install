@@ -6,6 +6,122 @@
  */
 
 /**
+ * Implements hook_schema().
+ */
+function apple_news_schema() {
+  $schema = array();
+  $schema['apple_news_status'] = apple_news_schema_status();
+  $schema['apple_news_log'] = apple_news_schema_log();
+  return $schema;
+}
+
+/**
+ * Defines apple_news_status.
+ *
+ * @see apple_news_schema()
+ */
+function apple_news_schema_status() {
+  return array(
+    'description' => 'Status information for Apple News exports',
+    'fields' => array(
+      'module' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'description' => 'Module that defines the export',
+      ),
+      'machine_name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'description' => 'Unique (per module) machine name for an export',
+      ),
+      'class_name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'description' => 'Name of class to instantiate for this export',
+      ),
+      'enabled' => array(
+        'type' => 'int',
+        'size' => 'tiny',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Flag export as enabled.',
+      ),
+      'highwater' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'Highwater mark for detecting updated content',
+      ),
+      'arguments' => array(
+        'type' => 'blob',
+        'not null' => FALSE,
+        'size' => 'big',
+        'serialize' => TRUE,
+        'description' => 'A serialized array of arguments to the export constructor',
+      ),
+    ),
+    'primary key' => array('machine_name'),
+  );
+}
+
+/**
+ * Defines apple_news_log.
+ *
+ * @see apple_news_schema()
+ */
+function apple_news_schema_log() {
+  return array(
+    'description' => 'History of export processes',
+    'fields' => array(
+      'elid' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Primary key for apple_news_log table',
+      ),
+      'starttime' => array(
+        'type' => 'int',
+        'size' => 'big',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Begin time of a export process, times 1000',
+      ),
+      'endtime' => array(
+        'type' => 'int',
+        'size' => 'big',
+        'unsigned' => TRUE,
+        'not null' => FALSE,
+        'description' => 'End time of a export process, times 1000',
+      ),
+      'initialhighwater' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'description' => 'Initial highwater mark',
+      ),
+      'finalhighwater' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+        'description' => 'Final highwater mark',
+      ),
+      'numprocessed' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => FALSE,
+        'description' => 'Number of items processed',
+      ),
+    ),
+    'primary key' => array('mlid'),
+  );
+}
+
+/**
  * Implements hook_uninstall().
  */
 function apple_news_uninstall() {

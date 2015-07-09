@@ -54,3 +54,19 @@ function apple_news_settings_form_submit($form, &$form_state) {
     drupal_set_message($msg, 'error');
   }
 }
+
+/**
+ * Form builder for node export config.
+ */
+function apple_news_settings_node_form($form, &$form_state) {
+
+  $form['apple_news_variable_node'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable'),
+    '#description' => t('Enable node export. Export configuration can be found on the !link.', array('!link' => l(t('content type configuration page'), 'admin/structure/types'))),
+    '#default_value' => variable_get('apple_news_variable_node', FALSE),
+  );
+
+  $form = system_settings_form($form);
+  return $form;
+}

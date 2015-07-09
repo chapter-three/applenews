@@ -5,6 +5,8 @@
  * Main module file.
  */
 
+define('APPLE_NEWS_API_VERSION', 1);
+
 /**
  * Implements hook_help().
  */
@@ -32,6 +34,20 @@ function apple_news_menu() {
     'file' => 'apple_news.admin.inc',
   );
 
+  $items['admin/config/content/apple_news/api'] = array(
+    'title' => 'API',
+    'description' => t('Apple News Push API configuration.'),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+  );
+
+  $items['admin/config/content/apple_news/node'] = array(
+    'title' => 'Node Export',
+    'description' => t('Apple News node export configuration.'),
+    'type' => MENU_LOCAL_TASK,
+    'access arguments' => array('administer apple_news'),
+    'page arguments' => array('apple_news_settings_node_form'),
+  );
+
   return $items;
 }
 
@@ -50,6 +66,189 @@ function apple_news_permission() {
     ),
   );
 }
+
+/**
+ * Gets registered exports.
+ */
+function apple_news_exports($reset = NULL) {
+  static $exports = array();
+  if (!empty($exports) && empty($reset)) {
+    return $exports;
+  }
+
+  $exports = apple_news_get_module_apis();
+  $status = db_select('apple_news_status', 's')
+    ->fields('s')
+    ->execute();
+  foreach ($status as $row) {
+    // Module still enabled and export still defined.
+    if (!isset($exports[$row->module]['exports']['machine_name'])) {
+      continue;
+    }
+    // Validate class.
+    if (!class_exists($row->class_name)) {
+      $msg = 'Class !class does not exist.';
+      $args = array('!class' => $row->class_name);
+      watchdog('apple_news', $msg, $args, WATCHDOG_WARNING);
+      continue;
+    }
+    $reflect = new ReflectionClass($row->class_name);
+    if ($reflect->isAbstract() || !$reflect->isSubclassOf('AppleNewsExport')) {
+      $msg = 'Class !class is not a valid concrete export class';
+      $args = array('!class' => $row->class_name);
+      watchdog('apple_news', $msg, $args, WATCHDOG_WARNING);
+      continue;
+    }
+    // Good to go.
+    $exports[$status->]
+  }
+
+
+  foreach ( as $row) {
+    if (class_exists($row->class_name)) {
+
+    }
+  }
+
+  // Get list of modules implementing Migrate API - mainly, we're looking to
+  // make sure any dynamic migrations defined in hook_migrate_api() get registered.
+  migrate_get_module_apis(TRUE);
+
+  $dependencies_list = array();
+  $dependent_migrations = array();
+  $required_migrations = array();
+
+  $result = db_select('migrate_status', 'ms')
+            ->fields('ms', array('machine_name', 'class_name'))
+            ->execute();
+  foreach ($result as $row) {
+    if (class_exists($row->class_name)) {
+      $reflect = new ReflectionClass($row->class_name);
+      if (!$reflect->isAbstract() && $reflect->isSubclassOf('MigrationBase')) {
+        $migration = MigrationBase::getInstance($row->machine_name);
+        if ($migration) {
+          $dependencies = $migration->getDependencies();
+          $dependencies_list[$row->machine_name] = $dependencies;
+          if (count($dependencies) > 0) {
+            // Set classes with dependencies aside for reordering
+            $dependent_migrations[$row->machine_name] = $migration;
+            $required_migrations += $dependencies;
+          }
+          else {
+            // No dependencies, just add
+            $migrations[$row->machine_name] = $migration;
+          }
+        }
+      }
+      else {
+        MigrationBase::displayMessage(t('Class !class is no longer a valid concrete migration class',
+                                      array('!class' => $row->class_name)));
+      }
+    }
+    else {
+      MigrationBase::displayMessage(t('Class !class no longer exists',
+                                    array('!class' => $row->class_name)));
+    }
+  }
+
+  $ordered_migrations = migrate_order_dependencies($dependencies_list);
+  foreach ($ordered_migrations as $name) {
+    if (!isset($migrations[$name])) {
+      $migrations[$name] = $dependent_migrations[$name];
+    }
+  }
+
+  // The migrations are now ordered according to their own dependencies - now order
+  // them by group
+  $groups = MigrateGroup::groups();
+  // Seed the final list by properly-ordered groups.
+  $final_migrations = array();
+  foreach ($groups as $name => $group) {
+    $final_migrations[$name] = array();
+  }
+
+  // Fill in the grouped list.
+  foreach ($migrations as $machine_name => $migration) {
+    if (!method_exists($migration, 'getGroup')) {
+      MigrationBase::displayMessage(t('Migration !machine_name is not a valid Migration dependency.', array(
+        '!machine_name' => $machine_name,
+      )));
+    }
+    else {
+      $final_migrations[$migration->getGroup()->getName()][$machine_name] = $migration;
+    }
+  }
+  // Flatten the grouped list.
+  $migrations = array();
+  foreach ($final_migrations as $group_name => $group_migrations) {
+    foreach ($group_migrations as $machine_name => $migration) {
+      $migrations[$machine_name] = $migration;
+    }
+  }
+
+  return $migrations;
+}
+
+/**
+ * Get a list of modules that support the current export API.
+ */
+function apple_news_get_module_apis($reset = FALSE) {
+  static $cache = NULL;
+  if ($reset) {
+    $cache = NULL;
+  }
+  if (!isset($cache)) {
+    $cache = array();
+    foreach (module_implements('apple_news_api') as $module) {
+      $function = $module . '_apple_news_api';
+      $info = $function();
+      if (isset($info['api']) && $info['api'] == APPLE_NEWS_API_VERSION) {
+        $cache[$module] = $info;
+      }
+      else {
+        $msg = '%function supports Apple News API version %modversion, Apple News module API version is %version - migration support not loaded.'
+        $args = array(
+          '%function' => $function,
+          '%modversion' => $info['api'],
+          '%version' => APPLE_NEWS_API_VERSION,
+        );
+        drupal_set_message($msg, $args);
+      }
+    }
+
+    // Allow modules to alter the migration information.
+    drupal_alter('apple_news_api', $cache);
+  }
+
+  return $cache;
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter() for node_type_form().
+ *
+ * Adds export options to the node type form.
+ */
+function apple_news_form_node_type_form_alter(&$form, &$form_state, $form_id) {
+  if (!variable_get('apple_news_variable_node', FALSE)) {
+    return;
+  }
+
+  $type = $form['#node_type'];
+  $form['menu'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Apple News export settings'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#attached' => array(
+      // 'js' => array(drupal_get_path('module', 'menu') . '/menu.admin.js'),
+    ),
+    '#group' => 'additional_settings',
+  );
+}
+
+/**
+ * Gets
+ */
 
 /**
  * Converts drupal language code to appropriate Apples News value.
@@ -94,3 +293,15 @@ function _apple_news_get_api_get() {
   return $get;
 }
 
+/**
+ * Debugging code, do not commit.
+ */
+function _debug() {
+
+  $export = new AppleNewsExportArticle('node', 1);
+  $data = json_decode($export->export()->json());
+
+  $export1 = new AppleNewsExport('node', 1);
+  $data1 = json_decode($export1->export()->json());
+
+}

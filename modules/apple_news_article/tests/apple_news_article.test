@@ -10,10 +10,10 @@ use ChapterThree\AppleNewsDoc;
 /**
  * Test export to Apple News Format.
  */
-class AppleNewsArticleExportTestCase extends DrupalWebTestCase {
+class AppleNewsArticleExportTestCase extends AppleNewsWebTestCase {
 
   /**
-   * Implements getInfo().
+   * {@inheritdoc}
    */
   public static function getInfo() {
     return array(
@@ -24,10 +24,10 @@ class AppleNewsArticleExportTestCase extends DrupalWebTestCase {
   }
 
   /**
-   * Implements setUp().
+   * {@inheritdoc}
    */
-  public function setUp() {
-    parent::setUp(array('apple_news_article'));
+  public function setUp(array $modules = array()) {
+    parent::setUp(array_merge(array('apple_news_article'), $modules));
   }
 
   /**
@@ -46,7 +46,6 @@ class AppleNewsArticleExportTestCase extends DrupalWebTestCase {
 
     $export = new AppleNewsExportArticle('node', $node->nid);
 
-    /** @var ChapterThree\AppleNewsDoc\Document $document */
     $document = $export->export();
     $data = json_decode($document->json());
 
