@@ -51,8 +51,8 @@ class AppleNewsNodeExportTestCase extends DrupalWebTestCase {
     // Documents require a component.
     $document->addComponent(new AppleNewsDoc\Components\Body(''));
     $data = json_decode($document->json());
-    // $this->pass(var_export($data, TRUE));
 
+    // $this->pass(var_export($data, TRUE));
     $this->assertEqual($node->nid, $data->identifier,
       'Export node nid -> identifier.');
     $this->assertEqual($node->title, $data->title,
