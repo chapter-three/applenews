@@ -8,70 +8,55 @@
 use ChapterThree\AppleNewsDoc;
 
 /**
- * Base class for exporting a Drupal entity.
- *
- * @property string $entityType
- * @property int $entityId
- * @property array $config
+ * Base class for exporting Drupal entities.
  */
-class AppleNewsExport {
+abstract class AppleNewsExport {
 
-  protected $entityType;
-  protected $entityId;
-
-  protected $config;
+  protected $conf;
 
   /**
    * Implement __construct().
    *
-   * @param string $entity_type
-   *   Entity Type.
-   * @param int $entity_id
-   *   Entity ID.
-   * @param array $config
+   * @param array $conf
    *   Configuration @todo.
    */
-  public function __construct($entity_type, $entity_id, array $config = array()) {
-    $this->entityType = $entity_type;
-    $this->entityId = $entity_id;
+  public function __construct(array $conf = array()) {
+    $this->conf = $conf;
+  }
 
-    $this->config = array(
-      'document_columns' => 7,
-      'document_width' => 1024,
-    ) + $config;
+  /**
+   * Define exportable entities.
+   *
+   * @return EntityFieldQuery
+   *   Object that will return exportable entities.
+   */
+  public function query() {
+    $query = new EntityFieldQuery();
+    $query->addMetaData('account', user_load(1));
+    return $query;
   }
 
   /**
    * Provides a configuration form for this export.
    */
   public function getConfigForm($form, &$form_state) {
+    $form = array();
+
+    // @todo submit, etc.
     return $form;
   }
 
   /**
    * Exports the entity to an Apple Native Document.
    *
-   * @return \ChapterThree\AppleNewsDoc\Document
-   *   The document object.
+   * @param object $entity
+   *   An entity to export.
+   *
+   * @return NULL|\ChapterThree\AppleNewsDoc\Document
+   *   A document object, or NULL to skip the export.
    */
-  public function export() {
-    $entity = entity_load($this->entityType, array($this->entityId));
-    $entity = reset($entity);
-    /** @var EntityDrupalWrapper $wrapper */
-    $wrapper = entity_metadata_wrapper($this->entityType, $entity);
-
-    $lang = $wrapper->language->value();
-    if ($lang == LANGUAGE_NONE) {
-      $language = language_default();
-      $lang = $language->language;
-    }
-
-    $layout = new AppleNewsDoc\Layouts\Layout($this->config['document_columns'],
-      $this->config['document_width']);
-    $document = new AppleNewsDoc\Document($wrapper->getIdentifier(),
-      $wrapper->label(), apple_news_language_code($lang), $layout);
-
-    return $document;
+  public function export($entity) {
+    return NULL;
   }
 
 }

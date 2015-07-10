@@ -8,55 +8,32 @@
 use ChapterThree\AppleNewsDoc;
 
 /**
- * Test export to Apple News Format.
+ * Base class for Apple News web tests.
  */
-class AppleNewsNodeExportTestCase extends DrupalWebTestCase {
+abstract class AppleNewsWebTestCase extends DrupalWebTestCase {
+
+  protected $watchdogSeverityLevel = WATCHDOG_WARNING;
 
   /**
-   * Implements getInfo().
+   * {@inheritdoc}
    */
-  public static function getInfo() {
-    return array(
-      'name' => t('Export node to Apple News Format'),
-      'description' => '',
-      'group' => t('Apple News'),
-    );
+  public function setUp(array $modules = array()) {
+    parent::setUp(array_merge(array('apple_news', 'dblog'), $modules));
   }
 
   /**
-   * Implements setUp().
+   * {@inheritdoc}
+   *
+   * @see http://dcycleproject.org/blog/96/catching-watchdog-errors-your-simpletests
    */
-  public function setUp() {
-    parent::setUp(array('apple_news'));
-  }
-
-  /**
-   * Test node export.
-   */
-  public function testExport() {
-    $title = $this->randomName(32);
-    $body = $this->randomName(64);
-    $settings = array(
-      'type' => 'page',
-      'title' => $title,
-      'body' => array(LANGUAGE_NONE => array(array('value' => $body))),
-    );
-    $node = $this->drupalCreateNode($settings);
-    $this->assert($node->nid > 0, 'Node created.');
-
-    $export = new AppleNewsExport('node', $node->nid);
-
-    /** @var ChapterThree\AppleNewsDoc\Document $document */
-    $document = $export->export();
-    // Documents require a component.
-    $document->addComponent(new AppleNewsDoc\Components\Body(''));
-    $data = json_decode($document->json());
-
-    // $this->pass(var_export($data, TRUE));
-    $this->assertEqual($node->nid, $data->identifier,
-      'Export node nid -> identifier.');
-    $this->assertEqual($node->title, $data->title,
-      'Export node title -> title.');
+  public function tearDown() {
+    $query = db_select('watchdog')
+      ->fields(NULL, array('wid'))
+      ->condition('severity', $this->watchdogSeverityLevel, '<=')
+      ->countQuery();
+    $count = $query->execute()->fetchField();
+    $this->assertTrue($count == 0, 'Found ' . $count . ' watchdog entries.');
+    parent::tearDown();
   }
 
 }

@@ -10,10 +10,10 @@ use ChapterThree\AppleNewsDoc;
 /**
  * Test export to Apple News Format.
  */
-class AppleNewsArticleExportTestCase extends DrupalWebTestCase {
+class AppleNewsArticleExportTestCase extends AppleNewsWebTestCase {
 
   /**
-   * Implements getInfo().
+   * {@inheritdoc}
    */
   public static function getInfo() {
     return array(
@@ -24,10 +24,10 @@ class AppleNewsArticleExportTestCase extends DrupalWebTestCase {
   }
 
   /**
-   * Implements setUp().
+   * {@inheritdoc}
    */
-  public function setUp() {
-    parent::setUp(array('apple_news_article'));
+  public function setUp(array $modules = array()) {
+    parent::setUp(array_merge(array('apple_news_article'), $modules));
   }
 
   /**
@@ -44,24 +44,41 @@ class AppleNewsArticleExportTestCase extends DrupalWebTestCase {
     $node = $this->drupalCreateNode($settings);
     $this->assert($node->nid > 0, 'Node created.');
 
-    $export = new AppleNewsExportArticle('node', $node->nid);
+    // Load export object.
+    $enabled = apple_news_export_enable('apple_news_article', 'article');
+    $this->assert($enabled, 'Export enabled.');
+    /** @var AppleNewsExportArticle $export */
+    $export = apple_news_get_export('apple_news_article', 'article');
+    $this->assert(is_a($export, 'AppleNewsExportArticle'),
+      'Export object loaded.');
 
-    /** @var ChapterThree\AppleNewsDoc\Document $document */
-    $document = $export->export();
-    $data = json_decode($document->json());
+    // Run query to get source ids.
+    /** @var EntityFieldQuery $query */
+    $query = $export->query();
+    $this->assert(is_a($query, 'EntityFieldQuery'), 'Query object loaded.');
+    $result = $query->execute();
+    $this->assert(isset($result['node'][$node->nid]), 'Query successful.');
 
-    // $this->pass(var_export($data, TRUE));
-    $this->assertEqual($node->nid, $data->identifier,
-      'Export node nid -> identifier.');
-    $this->assertEqual($node->title, $data->title,
-      'Export node title -> title.');
+    // Export each.
+    foreach (array_keys($result['node']) as $nid) {
 
-    $item = $data->components[0];
-    $this->assertEqual('body', $item->role, 'Export node role.');
-    $this->assertEqual('markdown', $item->format, 'Export node format.');
-    $mdown = AppleNewsDoc\Markdown::convert($body);
-    $this->assertEqual($mdown, $item->text,
-      'Export node body -> component 1 text.');
+      $document = $export->export(node_load($nid));
+      $data = json_decode($document->json());
+
+      // $this->pass(var_export($data, TRUE));
+      $this->assertEqual($node->nid, $data->identifier,
+        'Export node nid -> identifier.');
+      $this->assertEqual($node->title, $data->title,
+        'Export node title -> title.');
+
+      $item = $data->components[0];
+      $this->assertEqual('body', $item->role, 'Export node role.');
+      $this->assertEqual('markdown', $item->format, 'Export node format.');
+      $mdown = AppleNewsDoc\Markdown::convert($body);
+      $this->assertEqual($mdown, $item->text,
+        'Export node body -> component 1 text.');
+
+    }
   }
 
 }
