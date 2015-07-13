@@ -34,23 +34,50 @@ class AppleNewsArticleExportTestCase extends AppleNewsWebTestCase {
    * Test default article export.
    */
   public function testExport() {
-    $title = $this->randomName(32);
-    $body = $this->randomName(64);
-    $settings = array(
-      'type' => 'article',
-      'title' => $title,
-      'body' => array(LANGUAGE_NONE => array(array('value' => $body))),
-    );
-    $node = $this->drupalCreateNode($settings);
-    $this->assert($node->nid > 0, 'Node created.');
 
-    // Load export object.
+    // @see ImageFieldDefaultImagesTestCase::ImageFieldDefaultImagesTestCase()
+    $file = current($this->drupalGetTestFiles('image'));
+    $file = file_save($file);
+
+    // Some node content.
+    $contents = array(
+      array(
+        '_desc' => 'no image',
+        'title' => $this->randomName(32),
+        'body' => $this->randomName(64),
+        'file' => NULL,
+      ),
+      array(
+        '_desc' => 'image',
+        'title' => $this->randomName(32),
+        'body' => $this->randomName(64),
+        'image' => $file,
+      ),
+    );
+
+    // Create nodes.
+    $map = array();
+    foreach ($contents as $i => $content) {
+      $settings = array(
+        'type' => 'article',
+        'title' => $content['title'],
+        'body' => array(LANGUAGE_NONE => array(array('value' => $content['body']))),
+        'field_image' => array(LANGUAGE_NONE => array(array('fid' => $file->fid))),
+      );
+      $node = $this->drupalCreateNode($settings);
+      $this->assert($node->nid > 0, "Node \"${content['_desc']}\" created.");
+      $map[$node->nid] = $i;
+    }
+
+    // Enable export.
     $enabled = apple_news_export_enable('apple_news_article', 'article');
     $this->assert($enabled, 'Export enabled.');
+
+    // Load export object.
     /** @var AppleNewsExportArticle $export */
     $export = apple_news_get_export('apple_news_article', 'article');
     $this->assert(is_a($export, 'AppleNewsExportArticle'),
-      'Export object loaded.');
+      "Export object loaded.");
 
     // Run query to get source ids.
     /** @var EntityFieldQuery $query */
@@ -61,23 +88,32 @@ class AppleNewsArticleExportTestCase extends AppleNewsWebTestCase {
 
     // Export each.
     foreach (array_keys($result['node']) as $nid) {
+      $content = $contents[$map[$nid]];
 
       $document = $export->export(node_load($nid));
+      $this->assert(is_a($document, '\ChapterThree\AppleNewsDoc\Document'),
+        "Export document for node \"${content['_desc']}\" loaded.");
       $data = json_decode($document->json());
+      $this->assert(is_object($data) && !empty($data), "Document exported.");
 
       // $this->pass(var_export($data, TRUE));
-      $this->assertEqual($node->nid, $data->identifier,
+      $this->assertEqual($nid, $data->identifier,
         'Export node nid -> identifier.');
-      $this->assertEqual($node->title, $data->title,
+      $this->assertEqual($content['title'], $data->title,
         'Export node title -> title.');
 
       $item = $data->components[0];
       $this->assertEqual('body', $item->role, 'Export node role.');
       $this->assertEqual('markdown', $item->format, 'Export node format.');
-      $mdown = AppleNewsDoc\Markdown::convert($body);
-      $this->assertEqual($mdown, $item->text,
-        'Export node body -> component 1 text.');
+      $this->assertEqual(AppleNewsDoc\Markdown::convert($content['body']),
+        $item->text, 'Export node body -> component 1 text.');
 
+      if (!empty($content['image'])) {
+        $item = $data->components[1];
+        $this->assertEqual('image', $item->role, 'Export node role.');
+        $this->assertEqual($content['image']->uri, $item->url,
+          'Export node image url -> component 2 url.');
+      }
     }
   }
 

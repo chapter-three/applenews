@@ -77,11 +77,18 @@ class AppleNewsExportArticle extends AppleNewsExport {
       $wrapper->label(), apple_news_language_code($lang), $layout);
 
     // Body.
-    $body = $wrapper->body->raw()['value'];
+    $value = $wrapper->body->raw()['value'];
     $component = new AppleNewsDoc\Components\Body(
-      AppleNewsDoc\Markdown::convert($body));
+      AppleNewsDoc\Markdown::convert($value));
     $component->setFormat('markdown');
     $document->addComponent($component);
+
+    // Image field.
+    $value = $wrapper->field_image->value();
+    if ($value) {
+      $component = new AppleNewsDoc\Components\Image($value['uri']);
+      $document->addComponent($component);
+    }
 
     return $document;
   }
