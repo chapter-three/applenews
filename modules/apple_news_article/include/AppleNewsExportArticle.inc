@@ -77,7 +77,8 @@ class AppleNewsExportArticle extends AppleNewsExport {
       $wrapper->label(), apple_news_language_code($lang), $layout);
 
     // Body.
-    $value = $wrapper->body->raw()['value'];
+    $value = $wrapper->body->raw();
+    $value = $value['value'];
     $component = new AppleNewsDoc\Components\Body(
       AppleNewsDoc\Markdown::convert($value));
     $component->setFormat('markdown');

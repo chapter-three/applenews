@@ -153,7 +153,8 @@ function apple_news_settings_exports_form($form, &$form_state) {
     $log = $query->range(0, 1)->execute()->fetchAssoc();
 
     $name = empty($info['name']) ? $info['machine_name'] : $info['name'];
-    $module = system_get_info('module', $info['module'])['name'];
+    $module = system_get_info('module', $info['module']);
+    $module = $module['name'];
     $enabled = empty($info['#status']['enabled']) ? t('no') : t('yes');
     $status = empty($log['endtime']) ? (empty($log['starttime']) ? '' : t('incomplete')) : t('complete');
     $lastrun = empty($log['starttime']) ? t('never') : (int) $log['starttime'];
