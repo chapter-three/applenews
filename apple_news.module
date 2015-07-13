@@ -294,8 +294,8 @@ function apple_news_language_code($language_code) {
  */
 function apple_news_get_channel($channel) {
   $api = _apple_news_get_api();
-  $response = $api->Get('/channels/{channel_id}', ['channel_id' => $channel],
-    []);
+  $response = $api->Get('/channels/{channel_id}', array('channel_id' => $channel),
+    array());
   if (!$response) {
     watchdog('apple_news', $api->curl->curl_error_message, array(),
       WATCHDOG_ERROR);
