@@ -63,7 +63,8 @@ function apple_news_settings_api_form_validate($form, &$form_state) {
                  'apple_news_variable_api_channels',
                ) as $key
       ) {
-        if (empty(trim($form_state['values'][$key]))) {
+        $value = trim($form_state['values'][$key]);
+        if ($value === '') {
           form_set_error($key, t('Missing required value "@title".', array('@title' => $form[$key]['#title'])));
         }
       }
