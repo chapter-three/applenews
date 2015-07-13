@@ -1,5 +1,5 @@
-name = Apple News
-description = Push content to Apple News.
+name = Apple News Article
+description = Push articles to Apple News.
 core = 7.x
 
 files[] = include/AppleNewsExportArticle.inc
