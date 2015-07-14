@@ -93,7 +93,9 @@ class AppleNewsArticleExportTestCase extends AppleNewsWebTestCase {
       $document = $export->export(node_load($nid));
       $this->assert(is_a($document, '\ChapterThree\AppleNewsDoc\Document'),
         "Export document for node \"${content['_desc']}\" loaded.");
-      $data = json_decode($document->json());
+      $json = $document->json();
+      $this->pass(var_export($json, TRUE));
+      $data = json_decode($json);
       $this->assert(is_object($data) && !empty($data), "Document exported.");
 
       // $this->pass(var_export($data, TRUE));
