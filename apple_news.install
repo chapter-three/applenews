@@ -51,6 +51,13 @@ function apple_news_schema_status() {
         'default' => '',
         'description' => 'Highwater mark for detecting updated content',
       ),
+      'settings' => array(
+        'type' => 'blob',
+        'not null' => FALSE,
+        'size' => 'big',
+        'serialize' => TRUE,
+        'description' => 'A serialized array of settings',
+      ),
     ),
     'primary key' => array('module', 'machine_name'),
     'indexes' => array(),

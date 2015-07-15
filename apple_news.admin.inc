@@ -39,7 +39,7 @@ function apple_news_settings_api_form($form, &$form_state) {
   $form = system_settings_form($form);
   $form['actions']['delete'] = array(
     '#type' => 'submit',
-    '#value' => t('Delete configuration')
+    '#value' => t('Delete configuration'),
   );
   $form['#validate'] = array('apple_news_settings_api_form_validate');
   $form['#submit'] = array('apple_news_settings_api_form_submit');
@@ -141,6 +141,7 @@ function apple_news_settings_exports_form($form, &$form_state) {
     'enabled' => array('data' => t('Enabled')),
     'status' => array('data' => t('Status')),
     'lastrun' => array('data' => t('Last Run')),
+    'edit' => array('data' => ''),
   );
 
   $rows = array();
@@ -158,6 +159,13 @@ function apple_news_settings_exports_form($form, &$form_state) {
     $enabled = empty($info['#status']['enabled']) ? t('no') : t('yes');
     $status = empty($log['endtime']) ? (empty($log['starttime']) ? '' : t('incomplete')) : t('complete');
     $lastrun = empty($log['starttime']) ? t('never') : (int) $log['starttime'];
+    $edit = l(t('edit'),
+      'admin/config/content/apple_news/exports/' . $key . '/edit',
+      array(
+        'query' => array(
+          'destination' => 'admin/config/content/apple_news/exports',
+        ),
+      ));
     $rows[$key] = array(
       'name' => $name,
       'description' => $info['description'],
@@ -165,6 +173,7 @@ function apple_news_settings_exports_form($form, &$form_state) {
       'enabled' => $enabled,
       'status' => $status,
       'lastrun' => $lastrun,
+      'edit' => $edit,
     );
   }
 
@@ -200,7 +209,7 @@ function apple_news_settings_exports_form($form, &$form_state) {
 }
 
 /**
- * Form submit validator.
+ * Form validatation handler.
  */
 function apple_news_settings_exports_form_validate($form, &$form_state) {
 
@@ -225,13 +234,17 @@ function apple_news_settings_exports_form_submit($form, &$form_state) {
 
     case 'enable':
       foreach ($selected as $info) {
-        apple_news_export_enable($info['module'], $info['machine_name'], TRUE);
+        $export = apple_news_get_export($info['module'], $info['machine_name']);
+        $export->enabled = TRUE;
+        apple_news_export_save($export);
       }
       break;
 
     case 'disable':
       foreach ($selected as $info) {
-        apple_news_export_enable($info['module'], $info['machine_name'], FALSE);
+        $export = apple_news_get_export($info['module'], $info['machine_name']);
+        $export->enabled = FALSE;
+        apple_news_export_save($export);
       }
       break;
 
@@ -240,4 +253,48 @@ function apple_news_settings_exports_form_submit($form, &$form_state) {
       break;
 
   }
+}
+
+/**
+ * Form builder for an export config.
+ *
+ * @param AppleNewsExport $export
+ *   Export object.
+ */
+function apple_news_export_edit_form($form, &$form_state, AppleNewsExport $export) {
+  $form = $export->getConfigForm($form, $form_state);
+
+  $form['#apple_news_export'] = $export;
+
+  $form['actions'] = array(
+    '#type' => 'actions',
+    'submit' => array(
+      '#type' => 'submit',
+      '#value' => t('Submit'),
+    ),
+  );
+
+  $form['#submit'][] = 'apple_news_export_edit_form_submit';
+  $form['#theme'] = 'system_settings_form';
+
+  return $form;
+}
+
+/**
+ * Form validatation handler.
+ */
+function apple_news_export_edit_form_validate($form, &$form_state) {
+  /** @var AppleNewsExport $export */
+  $export = $form['#apple_news_export'];
+  $export->validateConfigForm($form, $form_state);
+}
+
+/**
+ * Form submit handler.
+ */
+function apple_news_export_edit_form_submit($form, &$form_state) {
+  /** @var AppleNewsExport $export */
+  $export = $form['#apple_news_export'];
+  $export->submitConfigForm($form, $form_state);
+  apple_news_export_save($export);
 }

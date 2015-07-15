@@ -5,23 +5,59 @@
  * Class for exporting Drupal content to Apple News.
  */
 
-use ChapterThree\AppleNewsDoc;
+use ChapterThree\AppleNews\Document;
 
 /**
  * Base class for exporting Drupal entities.
  */
 abstract class AppleNewsExport {
 
-  protected $conf;
+  protected $module;
+  protected $machineName;
+  protected $arguments;
+  public $enabled;
+  public $highwater;
+  public $settings;
 
   /**
    * Implement __construct().
    *
-   * @param array $conf
-   *   Configuration @todo.
+   * @param string $module
+   *   The defining module.
+   * @param string $machine_name
+   *   The machine name of this object.
+   * @param array $arguments
+   *   Defined in hook_apple_news_api(), altered by hook_apple_news_api_alter().
+   * @param bool $enabled
+   *   Export is enabled.
+   * @param string $highwater
+   *   Highwater value for detecting updated content.
+   * @param array $settings
+   *   User-configurable settings, defined in $this->getConfigForm().
+   *
+   * @todo implement $highwater.
    */
-  public function __construct(array $conf = array()) {
-    $this->conf = $conf;
+  public function __construct($module, $machine_name, array $arguments, $enabled = FALSE, $highwater = NULL, array $settings = array()) {
+    $this->module = $module;
+    $this->machineName = $machine_name;
+    $this->arguments = $arguments;
+    $this->enabled = $enabled;
+    $this->highwater = $highwater;
+    $this->settings = $settings;
+  }
+
+  /**
+   * Getter for module.
+   */
+  public function getModule() {
+    return $this->module;
+  }
+
+  /**
+   * Getter for machineName.
+   */
+  public function getMachineName() {
+    return $this->machineName;
   }
 
   /**
@@ -40,10 +76,26 @@ abstract class AppleNewsExport {
    * Provides a configuration form for this export.
    */
   public function getConfigForm($form, &$form_state) {
-    $form = array();
+    $form['enabled'] = array(
+      '#title' => t('Enabled'),
+      '#type' => 'checkbox',
+      '#default_value' => $this->enabled,
+    );
 
-    // @todo submit, etc.
     return $form;
+  }
+
+  /**
+   * Validation handler for the configuration form for this export.
+   */
+  public function validateConfigForm($form, &$form_state) {
+  }
+
+  /**
+   * Submit handler for the configuration form for this export.
+   */
+  public function submitConfigForm($form, &$form_state) {
+    $this->enabled = $form_state['values']['enabled'];
   }
 
   /**
@@ -52,7 +104,7 @@ abstract class AppleNewsExport {
    * @param object $entity
    *   An entity to export.
    *
-   * @return NULL|\ChapterThree\AppleNewsDoc\Document
+   * @return NULL|\ChapterThree\AppleNews\Document
    *   A document object, or NULL to skip the export.
    */
   public function export($entity) {

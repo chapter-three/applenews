@@ -69,29 +69,32 @@ class AppleNewsArticleExportTestCase extends AppleNewsWebTestCase {
       $map[$node->nid] = $i;
     }
 
-    // Enable export.
-    $enabled = apple_news_export_enable('apple_news_article', 'article');
-    $this->assert($enabled, 'Export enabled.');
-
     // Load export object.
     /** @var AppleNewsExportArticle $export */
     $export = apple_news_get_export('apple_news_article', 'article');
     $this->assert(is_a($export, 'AppleNewsExportArticle'),
       "Export object loaded.");
 
+    // Enable export.
+    $export->enabled = TRUE;
+    $result = apple_news_export_save($export);
+    $this->assert($result, 'Export enabled.');
+
     // Run query to get source ids.
     /** @var EntityFieldQuery $query */
     $query = $export->query();
     $this->assert(is_a($query, 'EntityFieldQuery'), 'Query object loaded.');
     $result = $query->execute();
-    $this->assert(isset($result['node'][$node->nid]), 'Query successful.');
+    $a = array_keys($map);
+    $b = array_keys($result['node']);
+    $this->assert(!array_diff($a, $b) && !array_diff($b, $a), 'Query result.');
 
     // Export each.
     foreach (array_keys($result['node']) as $nid) {
       $content = $contents[$map[$nid]];
 
       $document = $export->export(node_load($nid));
-      $this->assert(is_a($document, '\ChapterThree\AppleNewsDoc\Document'),
+      $this->assert(is_a($document, '\ChapterThree\AppleNews\Document'),
         "Export document for node \"${content['_desc']}\" loaded.");
       $json = $document->json();
       $this->pass(var_export($json, TRUE));
@@ -107,7 +110,7 @@ class AppleNewsArticleExportTestCase extends AppleNewsWebTestCase {
       $item = $data->components[0];
       $this->assertEqual('body', $item->role, 'Export node role.');
       $this->assertEqual('markdown', $item->format, 'Export node format.');
-      $this->assertEqual(AppleNewsDoc\Markdown::convert($content['body']),
+      $this->assertEqual(\ChapterThree\AppleNews\Document\Markdown::convert($content['body']),
         $item->text, 'Export node body -> component 1 text.');
 
       if (!empty($content['image'])) {

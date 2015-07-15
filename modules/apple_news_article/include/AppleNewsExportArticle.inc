@@ -5,7 +5,11 @@
  * Class for exporting Drupal article content to Apple News.
  */
 
-use ChapterThree\AppleNewsDoc;
+use ChapterThree\AppleNews\Document;
+use ChapterThree\AppleNews\Document\Layouts\Layout;
+use ChapterThree\AppleNews\Document\Components\Body;
+use ChapterThree\AppleNews\Document\Components\Image;
+use ChapterThree\AppleNews\Document\Markdown;
 
 /**
  * Exports a Drupal article as defined by the default install profile.
@@ -15,10 +19,12 @@ class AppleNewsExportArticle extends AppleNewsExport {
   /**
    * {@inheritdoc}
    */
-  public function __construct(array $conf = array()) {
-    $this->conf = array(
+  public function __construct($module, $machine_name, array $arguments, $enabled = FALSE, $highwater = NULL, array $settings = array()) {
+    $settings = array(
       'layout' => 'simple',
-    ) + $conf;
+    ) + $settings;
+    parent::__construct($module, $machine_name, $arguments, $enabled,
+      $highwater, $settings);
   }
 
   /**
@@ -46,10 +52,25 @@ class AppleNewsExportArticle extends AppleNewsExport {
       '#options' => array(
         'simple' => t('Simple'),
       ),
-      '#default_value' => $this->conf['layout'],
+      '#default_value' => $this->settings['layout'],
     );
 
     return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function validateConfigForm($form, &$form_state) {
+    parent::validateConfigForm($form, $form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function submitConfigForm($form, &$form_state) {
+    parent::submitConfigForm($form, $form_state);
+    $this->settings['layout'] = $form_state['values']['layout'];
   }
 
   /**
@@ -65,29 +86,28 @@ class AppleNewsExportArticle extends AppleNewsExport {
       $lang = $language->language;
     }
 
-    switch ($this->conf['layout']) {
+    switch ($this->settings['layout']) {
 
       case 'simple':
       default:
-        $layout = new AppleNewsDoc\Layouts\Layout(7, 1024);
+        $layout = new Layout(7, 1024);
         break;
 
     }
-    $document = new AppleNewsDoc\Document($wrapper->getIdentifier(),
+    $document = new Document($wrapper->getIdentifier(),
       $wrapper->label(), apple_news_language_code($lang), $layout);
 
     // Body.
     $value = $wrapper->body->raw();
     $value = $value['value'];
-    $component = new AppleNewsDoc\Components\Body(
-      AppleNewsDoc\Markdown::convert($value));
+    $component = new Body(Markdown::convert($value));
     $component->setFormat('markdown');
     $document->addComponent($component);
 
     // Image field.
     $value = $wrapper->field_image->value();
     if ($value) {
-      $component = new AppleNewsDoc\Components\Image($value['uri']);
+      $component = new Image($value['uri']);
       $document->addComponent($component);
     }
 
