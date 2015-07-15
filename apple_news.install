@@ -47,8 +47,7 @@ function apple_news_schema_status() {
       'highwater' => array(
         'type' => 'varchar',
         'length' => 255,
-        'not null' => TRUE,
-        'default' => '',
+        'not null' => FALSE,
         'description' => 'Highwater mark for detecting updated content',
       ),
       'settings' => array(

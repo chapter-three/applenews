@@ -34,7 +34,7 @@ abstract class AppleNewsWebTestCase extends DrupalWebTestCase {
     $count = $query->execute()->fetchField();
     $this->assertTrue($count == 0, 'Found ' . $count . ' watchdog entries.');
     // Uncomment to debug watchdog table.
-    // if (!count)
+    // if (!$count)
     parent::tearDown();
   }
 
