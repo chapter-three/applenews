@@ -2,10 +2,6 @@
 
 ## Installation
 
-Requirements:
-
--   [Guzzle](https://github.com/guzzle/guzzle) PHP HTTP client
-
 The recommended way to install is using [Composer Manager](https://www.drupal.org/project/composer_manager)
 
 ```shell
