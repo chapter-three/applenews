@@ -31,7 +31,7 @@ class AppleNewsArticleExportTestCase extends AppleNewsWebTestCase {
   }
 
   /**
-   * Test default article export.
+   * Test default article export using simple layout.
    */
   public function testExport() {
 
@@ -101,26 +101,150 @@ class AppleNewsArticleExportTestCase extends AppleNewsWebTestCase {
       $json = $document->json();
       $this->pass(var_export($json, TRUE));
       $data = json_decode($json);
-      $this->assert(is_object($data) && !empty($data), "Document exported.");
+      $this->assert(is_object($data) && !empty($data),
+        "Document exported.");
 
-      // $this->pass(var_export($data, TRUE));
       $this->assertEqual($nid, $data->identifier,
         'Export node nid -> identifier.');
       $this->assertEqual($content['title'], $data->title,
         'Export node title -> title.');
 
       $item = $data->components[0];
-      $this->assertEqual('body', $item->role, 'Export node role.');
-      $this->assertEqual('markdown', $item->format, 'Export node format.');
-      $this->assertEqual(\ChapterThree\AppleNews\Document\Markdown::convert($content['body']),
-        $item->text, 'Export node body -> component 1 text.');
+      $this->assertEqual('body', $item->role,
+        'Export body component role.');
+      $this->assertEqual('markdown', $item->format,
+        'Export body component format.');
+      $this->assertEqual(
+        \ChapterThree\AppleNews\Document\Markdown::convert($content['body']),
+        $item->text,
+        'Export body component text -> component 1 text.');
 
       if (!empty($content['image'])) {
         $item = $data->components[1];
-        $this->assertEqual('image', $item->role, 'Export node role.');
+        $this->assertEqual('image', $item->role,
+          'Export image component role.');
         $this->assertEqual($content['image']->uri, $item->url,
-          'Export node image url -> component 2 url.');
+          'Export image component uri -> component 2 url.');
       }
+    }
+  }
+
+  /**
+   * Test default article export using header_image layout.
+   */
+  public function testExportLayout2() {
+
+    // @see ImageFieldDefaultImagesTestCase::ImageFieldDefaultImagesTestCase()
+    $file = current($this->drupalGetTestFiles('image'));
+    $file = file_save($file);
+
+    // Some node content.
+    $contents = array(
+      array(
+        '_desc' => 'default',
+        'title' => $this->randomName(32),
+        'body' => $this->randomName(64),
+        'image' => $file,
+      ),
+    );
+
+    // Create nodes.
+    $map = array();
+    foreach ($contents as $i => $content) {
+      $settings = array(
+        'type' => 'article',
+        'title' => $content['title'],
+        'body' => array(LANGUAGE_NONE => array(array('value' => $content['body']))),
+      );
+      if (isset($content['image'])) {
+        $settings['field_image'] = array(LANGUAGE_NONE => array(array('fid' => $content['image']->fid)));
+      }
+      $node = $this->drupalCreateNode($settings);
+      $this->assert($node->nid > 0, "Node \"${content['_desc']}\" created.");
+      $map[$node->nid] = $i;
+    }
+
+    // Load export object.
+    /** @var AppleNewsExportArticle $export */
+    $export = apple_news_get_export('apple_news_article', 'article');
+    $this->assert(is_a($export, 'AppleNewsExportArticle'),
+      "Export object loaded.");
+
+    // Enable export.
+    $export->enabled = TRUE;
+    $export->settings = array('layout' => 'header_image');
+    $result = apple_news_export_save($export);
+    $this->assert($result, 'Export enabled.');
+
+    // Run query to get source ids.
+    /** @var EntityFieldQuery $query */
+    $query = $export->query();
+    $this->assert(is_a($query, 'EntityFieldQuery'), 'Query object loaded.');
+    $result = $query->execute();
+    $a = array_keys($map);
+    $b = array_keys($result['node']);
+    $this->assert(!array_diff($a, $b) && !array_diff($b, $a), 'Query result.');
+
+    // Export each.
+    foreach (array_keys($result['node']) as $nid) {
+      $content = $contents[$map[$nid]];
+
+      $document = $export->export(node_load($nid));
+      $this->assert(is_a($document, '\ChapterThree\AppleNews\Document'),
+        "Export document for node \"${content['_desc']}\" loaded.");
+      $json = $document->json();
+      $this->pass(var_export($json, TRUE));
+      $data = json_decode($json);
+      $this->assert(is_object($data) && !empty($data), "Document exported.");
+
+      $this->assertEqual($nid, $data->identifier,
+        'Export node nid -> identifier.');
+      $this->assertEqual($content['title'], $data->title,
+        'Export node title -> title.');
+
+      $i = 0;
+
+      $item = $data->components[$i++];
+      $this->assertEqual('title', $item->role,
+        'Export title component role.');
+      $this->assertEqual('titleLayout', $item->layout,
+        'Export title component layout.');
+      $this->assertEqual('titleStyle', $item->textStyle,
+        'Export title component textStyle.');
+      $this->assertEqual($content['title'], $item->text,
+        'Export title component body -> component 1 text.');
+
+      $item = $data->components[$i++];
+      $this->assertEqual('header', $item->role,
+        'Export header component role.');
+      $this->assertEqual('headerImageLayout', $item->layout,
+        'Export header component layout.');
+      $this->assertEqual('image', $item->style->fill->type,
+        'Export header fill type.');
+      $this->assertEqual('cover', $item->style->fill->fillMode,
+        'Export header fill fillMode.');
+      $this->assertEqual('center', $item->style->fill->verticalAlignment,
+        'Export header fill verticalAlignment.');
+      $this->assertEqual($content['image']->uri, $item->style->fill->url,
+        'Export image uri -> header fill url.');
+
+      $item = $data->components[$i++];
+      $this->assertEqual('author', $item->role,
+        'Export author component role.');
+      $this->assertEqual('authorLayout', $item->layout,
+        'Export header component layout.');
+      $this->assertEqual('authorStyle', $item->textStyle,
+        'Export header component textStyle.');
+
+      $item = $data->components[$i++];
+      $this->assertEqual('body', $item->role,
+        'Export body component role.');
+      $this->assertEqual('markdown', $item->format,
+        'Export body component format.');
+      $this->assertEqual(
+        \ChapterThree\AppleNews\Document\Markdown::convert($content['body']),
+        $item->text, "Export body component text -> component ${i} text.");
+
     }
   }
 
