@@ -62,8 +62,10 @@ class AppleNewsArticleExportTestCase extends AppleNewsWebTestCase {
         'type' => 'article',
         'title' => $content['title'],
         'body' => array(LANGUAGE_NONE => array(array('value' => $content['body']))),
-        'field_image' => array(LANGUAGE_NONE => array(array('fid' => $file->fid))),
       );
+      if (isset($content['image'])) {
+        $settings['field_image'] = array(LANGUAGE_NONE => array(array('fid' => $content['image']->fid)));
+      }
       $node = $this->drupalCreateNode($settings);
       $this->assert($node->nid > 0, "Node \"${content['_desc']}\" created.");
       $map[$node->nid] = $i;
