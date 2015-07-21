@@ -1,6 +1,7 @@
 name = Apple News
 description = Push content to Apple News.
 core = 7.x
+php = 5.4
 
 files[] = include/AppleNewsExport.inc
 files[] = tests/apple_news.test
