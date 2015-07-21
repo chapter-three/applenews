@@ -152,10 +152,10 @@ function apple_news_settings_exports_form($form, &$form_state) {
     $status = empty($log['endtime']) ? (empty($log['starttime']) ? '' : t('incomplete')) : t('complete');
     $lastrun = empty($log['starttime']) ? t('never') : (int) $log['starttime'];
     $edit = l(t('edit'),
-      'admin/config/content/apple_news/exports/' . $key . '/edit',
+      'admin/config/content/apple-news/exports/' . $key . '/edit',
       array(
         'query' => array(
-          'destination' => 'admin/config/content/apple_news/exports',
+          'destination' => 'admin/config/content/apple-news/exports',
         ),
       )
     );
@@ -217,8 +217,10 @@ function apple_news_settings_exports_form_validate($form, &$form_state) {
  * Form submit handler.
  */
 function apple_news_settings_exports_form_submit($form, &$form_state) {
+
   module_load_include('inc', 'apple_news', 'push_api');
   module_load_include('inc', 'apple_news');
+  module_load_include('inc', 'apple_news', 'apple_news.batch');
 
   $exports = apple_news_exports();
   $selected = array_map(function($key) use(&$exports) {
@@ -247,30 +249,9 @@ function apple_news_settings_exports_form_submit($form, &$form_state) {
 
     case 'run':
       foreach ($selected as $info) {
-        $export = apple_news_get_export($info['module'], $info['machine_name']);
-        $result = $export->query()->execute();
-        foreach ($result as $row) {
-          $ids = array();
-          foreach ($row as $entity) {
-            $ids[] = $entity->nid;
-          }
-          $entity = entity_load($export->entity_type(), $ids);
-          $entity_array = array_values($entity);
-          $document = $export->export($entity_array[0]);
-          // Contents of the article.json file.
-          $json = $document->__toString();
-
-          $channels = apple_news_channels();
-          foreach ($channels as $channel_id) {
-            apple_news_post_article($channel_id, array(
-                'json' => $json,
-                'files' => array(),
-                'metadata' => array(),
-              )
-            );
-          }
-
-        }
+        // Batch entity export to Apple News.
+        $batch = apple_news_bactch_run_export($info);
+        batch_set($batch);
       }
       break;
 

@@ -47,13 +47,6 @@ abstract class AppleNewsExport {
   }
 
   /**
-   * Entity type of the export.
-   */
-  public function entity_type() {
-    return 'node';
-  }
-
-  /**
    * Getter for module.
    */
   public function getModule() {

@@ -8,6 +8,21 @@
 define('APPLE_NEWS_API_VERSION', 1);
 
 /**
+ * Implements hook_hook_info().
+ */
+function apple_news_hook_info() {
+
+  $cron = array(
+    'group' => 'cron'
+  );
+
+  $hooks['cron'] = $cron;
+
+  return $hooks;
+
+}
+
+/**
  * Implements hook_help().
  */
 function apple_news_help($path, $arg) {
@@ -38,7 +53,7 @@ function apple_news_permission() {
  */
 function apple_news_menu() {
 
-  $items['admin/config/content/apple_news'] = array(
+  $items['admin/config/content/apple-news'] = array(
     'title' => 'Apple News',
     'description' => t('Configure content export to Apple News.'),
     'page callback' => 'drupal_get_form',
@@ -47,14 +62,14 @@ function apple_news_menu() {
     'file' => 'apple_news.admin.inc',
   );
 
-  $items['admin/config/content/apple_news/exports'] = array(
+  $items['admin/config/content/apple-news/exports'] = array(
     'title' => 'Exports',
     'description' => t('List and edit Apple News export configurations.'),
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 0,
   );
 
-  $items['admin/config/content/apple_news/exports/%apple_news_export/edit'] = array(
+  $items['admin/config/content/apple-news/exports/%apple_news_export/edit'] = array(
     'title' => 'Edit Export',
     'description' => t('Apple News Export configuration.'),
     'page callback' => 'drupal_get_form',
@@ -63,8 +78,8 @@ function apple_news_menu() {
     'file' => 'apple_news.admin.inc',
   );
 
-  $items['admin/config/content/apple_news/api'] = array(
-    'title' => 'API',
+  $items['admin/config/content/apple-news/settings'] = array(
+    'title' => 'Settings',
     'description' => t('Apple News Push API configuration.'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('apple_news_settings_api_form'),

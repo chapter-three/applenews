@@ -76,7 +76,7 @@ class AppleNewsExportArticle extends AppleNewsExport {
    */
   public function export($entity) {
     /** @var EntityDrupalWrapper $wrapper */
-    $wrapper = entity_metadata_wrapper($this->entity_type(), $entity);
+    $wrapper = entity_metadata_wrapper('node', $entity);
 
     // Identifier;
     $id = $wrapper->getIdentifier();
