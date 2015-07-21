@@ -115,7 +115,7 @@ function apple_news_settings_channels_form() {
   }
 
   $form['channels'] = array(
-    '#markup' => theme('table',
+    '#markup' => '<br/>' . theme('table',
       array(
         'header' => array(
           t('Feed Name'), // Channel Name
@@ -154,14 +154,20 @@ function apple_news_settings_channels_form_submit($form, &$form_state) {
 
   if ($response = apple_news_get_channel($channel_id)) {
     // Save settings.
-    $new_channel = [
-      $channel_id => (array) $response->data,
-    ];
-    variable_set('apple_news_variable_api_channels', array_merge($channels, $new_channel));
-    $msg = t('Successfully connected to the feed "@channel".', array(
-      '@channel' => $response->data->name,
-    ));
-    drupal_set_message($msg, 'status');
+    if (!isset($response->errors)) {
+      $new_channel = [
+        $channel_id => (array) $response->data,
+      ];
+      variable_set('apple_news_variable_api_channels', array_merge($channels, $new_channel));
+      $msg = t('Successfully connected to the feed "@channel".', array(
+        '@channel' => $response->data->name,
+      ));
+      drupal_set_message($msg, 'status');
+    }
+    else {
+      $msg = t('There was an error communicating with the server. Please make sure you entered correct Feed ID.');
+      drupal_set_message($msg, 'error');
+    }
   }
   else {
     $msg = t('There was an error communicating with the server.');
