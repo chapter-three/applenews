@@ -5,6 +5,10 @@
  * Contains tests for the Apple News module.
  */
 
+module_load_include('inc', 'apple_news', 'push_api');
+module_load_include('inc', 'apple_news');
+module_load_include('inc', 'apple_news', 'apple_news.batch');
+
 /**
  * Base class for Apple News web tests.
  */

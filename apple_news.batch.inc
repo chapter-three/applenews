@@ -22,18 +22,18 @@ function apple_news_bactch_run_export($info) {
       $entity = entity_load_single($type, $entity_id);
       $operations[] = array(
         'apple_news_bactch_post',
-        array(
+        [
           $entity,
           '',
-        ),
+        ],
       );
     }
   }
 
-  return array(
+  return [
     'operations' => $operations,
     'finished' => 'apple_news_bactch_run_export_finished',
-  );
+  ];
 }
 
 /**
@@ -52,8 +52,12 @@ function apple_news_bactch_post($entity, $operation_details, &$context) {
   // Get channel IDs.
   $channels = apple_news_channels();
   foreach ($channels as $channel_id) {
-    $context['results'][] = $entity_id . ' : ' . check_plain($node->title);
-    $context['message'] = t('Posting "@title" to Apple News.', array('@title' => $node->title));
+    $context['results'][] = $entity_id . ' : ' . check_plain($entity->label());
+    $context['message'] = t('Posting "@title" to Apple News\'s channel @channel.', [
+        '@title' => $entity->label(),
+        '@channel' => $channel_id
+      ]
+    );
     apple_news_post_article($channel_id, [
         'json' => $json,
         'files' => [],

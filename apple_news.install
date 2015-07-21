@@ -9,19 +9,8 @@
  * Implements hook_schema().
  */
 function apple_news_schema() {
-  $schema = array();
-  $schema['apple_news_status'] = apple_news_schema_status();
-  $schema['apple_news_log'] = apple_news_schema_log();
-  return $schema;
-}
 
-/**
- * Defines apple_news_status.
- *
- * @see apple_news_schema()
- */
-function apple_news_schema_status() {
-  return array(
+  $schema['apple_news_status'] = array(
     'description' => 'Status information for Apple News exports',
     'fields' => array(
       'module' => array(
@@ -61,15 +50,8 @@ function apple_news_schema_status() {
     'primary key' => array('module', 'machine_name'),
     'indexes' => array(),
   );
-}
 
-/**
- * Defines apple_news_log.
- *
- * @see apple_news_schema()
- */
-function apple_news_schema_log() {
-  return array(
+  $schema['apple_news_log'] = array(
     'description' => 'History of export processes',
     'fields' => array(
       'exlid' => array(
@@ -139,6 +121,48 @@ function apple_news_schema_log() {
       ),
     ),
   );
+
+  $schema['apple_news_published_entities'] = array(
+    'description' => 'Information about entities published to Apple News',
+    'fields' => array(
+      'entity_type' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'description' => 'Entity type',
+      ),
+      'entity_id' => array(
+        'type' => 'int',
+        'size' => 'big',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Entity ID',
+      ),
+      'article_id' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'description' => 'Apple News article ID',
+      ),
+      'channel_id' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'description' => 'Apple News channel ID',
+      ),
+      'postdate' => array(
+        'type' => 'int',
+        'size' => 'big',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Post date timestamp',
+      ),
+    ),
+    'primary key' => array('entity_id', 'article_id', 'channel_id'),
+    'indexes' => array(),
+  );
+
+  return $schema;
 }
 
 /**
@@ -149,6 +173,6 @@ function apple_news_uninstall() {
   variable_del('apple_news_variable_api_endpoint');
   variable_del('apple_news_variable_api_key');
   variable_del('apple_news_variable_api_secret');
-  variable_del('apple_news_variable_api_channel');
+  variable_del('apple_news_variable_api_channels');
   variable_del('apple_news_variable_node');
 }

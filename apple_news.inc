@@ -249,10 +249,3 @@ function apple_news_settings_fields() {
   return $config_fields;
 
 }
-
-/**
- * Channels.
- */
-function apple_news_channels() {
-  return variable_get('apple_news_variable_api_channels', array());
-}

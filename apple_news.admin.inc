@@ -8,7 +8,7 @@
 /**
  * Form builder for API config.
  */
-function apple_news_settings_api_form($form, &$form_state) {
+function apple_news_settings_api_credentials_form($form, &$form_state) {
   module_load_include('inc', 'apple_news');
 
   $form['apple_news_variable_api_endpoint'] = array(
@@ -29,13 +29,6 @@ function apple_news_settings_api_form($form, &$form_state) {
     '#default_value' => variable_get('apple_news_variable_api_secret', ''),
   );
 
-  $form['apple_news_variable_api_channels'] = array(
-    '#type' => 'textarea',
-    '#title' => t('Channels'),
-    '#description' => t("Separate channel id's with whitespace"),
-    '#default_value' => implode("\n", apple_news_channels()),
-  );
-
   $form = system_settings_form($form);
 
   $form['actions']['delete'] = array(
@@ -52,7 +45,7 @@ function apple_news_settings_api_form($form, &$form_state) {
 /**
  * Form validation handler.
  */
-function apple_news_settings_api_form_validate($form, &$form_state) {
+function apple_news_settings_api_credentials_form_validate($form, &$form_state) {
   module_load_include('inc', 'apple_news');
 
   switch ($form_state['triggering_element']['#parents'][0]) {
@@ -75,7 +68,7 @@ function apple_news_settings_api_form_validate($form, &$form_state) {
 /**
  * Form submit handler.
  */
-function apple_news_settings_api_form_submit($form, &$form_state) {
+function apple_news_settings_api_credentials_form_submit($form, &$form_state) {
   module_load_include('inc', 'apple_news', 'push_api');
   module_load_include('inc', 'apple_news');
   switch ($form_state['triggering_element']['#parents'][0]) {
@@ -97,25 +90,119 @@ function apple_news_settings_api_form_submit($form, &$form_state) {
         }
         variable_set($key, $value);
       }
-      $key = 'apple_news_variable_api_channels';
-      $value = array_filter(preg_split('/\s+/', $form_state['values'][$key]));
-      variable_set($key, $value);
-      drupal_set_message(t('The configuration options have been saved.'));
-      foreach ($value as $channel) {
-        if ($response = apple_news_get_channel($channel)) {
-          $msg = t('Successfully connected to the channel "@channel".', array(
-            '@channel' => $response->data->name,
-          ));
-          drupal_set_message($msg, 'status');
-        }
-        else {
-          $msg = t('There was an error communicating with the server.');
-          drupal_set_message($msg, 'error');
-        }
-      }
       break;
 
   }
+}
+
+/**
+ * Form builder for API config.
+ */
+function apple_news_settings_channels_form() {
+  module_load_include('inc', 'apple_news');
+
+  $channels = [];
+  $api_channels = variable_get('apple_news_variable_api_channels', array());
+  foreach ($api_channels as $channel_id => $info) {
+    $channels[] = array(
+      'name' => $info['name'],
+      'id' => $channel_id,
+      'operations' => l('Delete', 'admin/config/content/apple-news/settings/channels/' . $channel_id . '/delete')
+    );
+  }
+
+  $form['channels'] = array(
+    '#markup' => theme('table',
+      array(
+        'header' => array(
+          t('Feed Name'), // Channel Name
+          t('Feed ID'), // Channel ID
+          t('Operations'),
+        ),
+        'rows' => $channels,
+        'empty' => t('Please add at least one feed in order to be able to publish content to Apple News.'),
+      )
+    )
+  );
+
+  $form['apple_news_channel_id'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Feed ID'), // Channel ID
+    '#description' => t("Provide a Feed ID"),
+    '#required' => TRUE,
+  );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Add new feed'),
+  );
+
+  return $form;
+}
+
+/**
+ * Form submit handler.
+ */
+function apple_news_settings_channels_form_submit($form, &$form_state) {
+  module_load_include('inc', 'apple_news', 'push_api');
+
+  $channel_id = $form_state['values']['apple_news_channel_id'];
+  $channels = variable_get('apple_news_variable_api_channels', array());
+
+  if ($response = apple_news_get_channel($channel_id)) {
+    // Save settings.
+    $new_channel = [
+      $channel_id => (array) $response->data,
+    ];
+    variable_set('apple_news_variable_api_channels', array_merge($channels, $new_channel));
+    $msg = t('Successfully connected to the channel "@channel".', array(
+      '@channel' => $response->data->name,
+    ));
+    drupal_set_message($msg, 'status');
+  }
+  else {
+    $msg = t('There was an error communicating with the server.');
+    drupal_set_message($msg, 'error');
+  }
+
+  drupal_set_message(t('The configuration options have been saved.'));
+
+}
+
+/**
+ * Delete channel ID with confirmation.
+ */
+function apple_news_settings_delete_channel_form($form, &$form_state, $channel_id) {
+  $channels = variable_get('apple_news_variable_api_channels', array());
+  $form['channel_id'] = array(
+    '#type' => 'hidden',
+    '#value' => $channel_id,
+  );
+  return confirm_form(
+    $form,
+    "Do you really want to delete this feed?",
+    'admin/config/content/apple-news/settings/channels',
+    t("You will no long be able to publish content to <em>@name</em> feed. This operation cannot be undone.", array('@name' => $channels[$channel_id]['name'])),
+    "Yes, delete"
+  );
+}
+
+/**
+ * Form submit handler.
+ */
+function apple_news_settings_delete_channel_form_submit($form, &$form_state) {
+  $channels = variable_get('apple_news_variable_api_channels', array());
+  $channel_id = $form_state['values']['channel_id'];
+  if (!isset($channels[$channel_id])) {
+    drupal_set_message(t('You are trying to remove non-existing feed.'), 'warning');
+  }
+  else {
+    drupal_set_message(t('<em>@name</em> feed successfully removed.', array('@name' => $channels[$channel_id]['name'])));
+    unset($channels[$channel_id]);
+    variable_set('apple_news_variable_api_channels', $channels);
+    drupal_goto('admin/config/content/apple-news/settings/channels');
+  }
+
 }
 
 /**
