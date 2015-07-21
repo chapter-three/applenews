@@ -132,7 +132,7 @@ function apple_news_settings_exports_form($form, &$form_state) {
     'module' => array('data' => t('Module')),
     'enabled' => array('data' => t('Enabled')),
     'status' => array('data' => t('Status')),
-    'lastrun' => array('data' => t('Last Run')),
+    'lastexport' => array('data' => t('Last Export')),
     'edit' => array('data' => ''),
   );
 
@@ -150,7 +150,7 @@ function apple_news_settings_exports_form($form, &$form_state) {
     $module = $module['name'];
     $enabled = empty($info['#status']['enabled']) ? t('no') : t('yes');
     $status = empty($log['endtime']) ? (empty($log['starttime']) ? '' : t('incomplete')) : t('complete');
-    $lastrun = empty($log['starttime']) ? t('never') : (int) $log['starttime'];
+    $lastexport = empty($log['starttime']) ? t('never') : (int) $log['starttime'];
     $edit = l(t('edit'),
       'admin/config/content/apple-news/exports/' . $key . '/edit',
       array(
@@ -165,7 +165,7 @@ function apple_news_settings_exports_form($form, &$form_state) {
       'module' => $module,
       'enabled' => $enabled,
       'status' => $status,
-      'lastrun' => $lastrun,
+      'lastexport' => $lastexport,
       'edit' => $edit,
     );
   }
@@ -186,7 +186,7 @@ function apple_news_settings_exports_form($form, &$form_state) {
       '#options' => array(
         'enable' => t('Enable'),
         'disable' => t('Disable'),
-        'run' => t('Run'),
+        'export' => t('Export'),
       ),
     ),
     'submit' => array(
@@ -247,7 +247,7 @@ function apple_news_settings_exports_form_submit($form, &$form_state) {
       }
       break;
 
-    case 'run':
+    case 'export':
       foreach ($selected as $info) {
         // Batch entity export to Apple News.
         $batch = apple_news_bactch_run_export($info);
