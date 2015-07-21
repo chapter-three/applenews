@@ -15,18 +15,21 @@ function apple_news_settings_api_credentials_form($form, &$form_state) {
     '#type' => 'textfield',
     '#title' => t('Endpoint'),
     '#default_value' => variable_get('apple_news_variable_api_endpoint', ''),
+    '#description' => t('Push API endpoint URL'),
   );
 
   $form['apple_news_variable_api_key'] = array(
     '#type' => 'textfield',
     '#title' => t('Key'),
     '#default_value' => variable_get('apple_news_variable_api_key', ''),
+    '#description' => t('Push API Key ID'),
   );
 
   $form['apple_news_variable_api_secret'] = array(
     '#type' => 'password',
     '#title' => t('Secret'),
     '#default_value' => variable_get('apple_news_variable_api_secret', ''),
+    '#description' => t('Push API Secret Key'),
   );
 
   $form = system_settings_form($form);
@@ -155,7 +158,7 @@ function apple_news_settings_channels_form_submit($form, &$form_state) {
       $channel_id => (array) $response->data,
     ];
     variable_set('apple_news_variable_api_channels', array_merge($channels, $new_channel));
-    $msg = t('Successfully connected to the channel "@channel".', array(
+    $msg = t('Successfully connected to the feed "@channel".', array(
       '@channel' => $response->data->name,
     ));
     drupal_set_message($msg, 'status');
@@ -239,10 +242,10 @@ function apple_news_settings_exports_form($form, &$form_state) {
     $status = empty($log['endtime']) ? (empty($log['starttime']) ? '' : t('incomplete')) : t('complete');
     $lastexport = empty($log['starttime']) ? t('never') : (int) $log['starttime'];
     $edit = l(t('edit'),
-      'admin/config/content/apple-news/exports/' . $key . '/edit',
+      'admin/config/content/apple-news/bulk-export/' . $key . '/edit',
       array(
         'query' => array(
-          'destination' => 'admin/config/content/apple-news/exports',
+          'destination' => 'admin/config/content/apple-news/bulk-export',
         ),
       )
     );
@@ -307,7 +310,6 @@ function apple_news_settings_exports_form_submit($form, &$form_state) {
 
   module_load_include('inc', 'apple_news', 'push_api');
   module_load_include('inc', 'apple_news');
-  module_load_include('inc', 'apple_news', 'apple_news.batch');
 
   $exports = apple_news_exports();
   $selected = array_map(function($key) use(&$exports) {
@@ -360,7 +362,7 @@ function apple_news_export_edit_form($form, &$form_state, AppleNewsExport $expor
     '#type' => 'actions',
     'submit' => array(
       '#type' => 'submit',
-      '#value' => t('Submit'),
+      '#value' => t('Save changes'),
     ),
   );
 
@@ -388,4 +390,5 @@ function apple_news_export_edit_form_submit($form, &$form_state) {
   $export = $form['#apple_news_export'];
   $export->submitConfigForm($form, $form_state);
   apple_news_export_save($export);
+  drupal_set_message(t('Changes have been successfully saved.'));
 }

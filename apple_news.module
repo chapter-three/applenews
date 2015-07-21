@@ -7,6 +7,9 @@
 
 define('APPLE_NEWS_API_VERSION', 1);
 
+// Load batch helper functions.
+module_load_include('inc', 'apple_news', 'apple_news.batch');
+
 /**
  * Implements hook_hook_info().
  */
@@ -62,14 +65,14 @@ function apple_news_menu() {
     'file' => 'apple_news.admin.inc',
   );
 
-  $items['admin/config/content/apple-news/exports'] = array(
-    'title' => 'Exports',
+  $items['admin/config/content/apple-news/bulk-export'] = array(
+    'title' => 'Bulk Export',
     'description' => t('List and edit Apple News export configurations.'),
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 0,
   );
 
-  $items['admin/config/content/apple-news/exports/%apple_news_export/edit'] = array(
+  $items['admin/config/content/apple-news/bulk-export/%apple_news_export/edit'] = array(
     'title' => 'Edit Export',
     'description' => t('Apple News Export configuration.'),
     'page callback' => 'drupal_get_form',

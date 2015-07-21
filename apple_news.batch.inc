@@ -16,15 +16,23 @@ function apple_news_bactch_run_export($info) {
 
   $entity_types = array_keys($result);
 
-  foreach ($entity_types as $type) {
-    foreach ($result[$type] as $entity_id => $object) {
+  foreach ($entity_types as $entity_type) {
+    foreach ($result[$entity_type] as $entity_id => $object) {
       // Load entity object and pass it to the document generator.
-      $entity = entity_load_single($type, $entity_id);
+      $entity = entity_load_single($entity_type, $entity_id);
+
+      // Generate AppleNews Document formatted JSON.
+      $document = $export->export($entity);
       $operations[] = array(
         'apple_news_bactch_post',
         [
+          $entity_type,
           $entity,
-          '',
+          [
+            'json' => $document->__toString(),
+            'files' => [],
+            'metadata' => '',
+          ],
         ],
       );
     }
@@ -41,29 +49,33 @@ function apple_news_bactch_run_export($info) {
  *
  * This is the function that is called on each operation in batch 1.
  */
-function apple_news_bactch_post($entity, $operation_details, &$context) {
+function apple_news_bactch_post($entity_type, $entity, $document, &$context) {
+  module_load_include('inc', 'apple_news', 'push_api');
 
-  // Generate AppleNews Document formatted JSON.
-  $document = $export->export($entity);
+  $wrapper = entity_metadata_wrapper($entity_type, $entity);
 
-  // Contents of the article.json file.
-  $json = $document->__toString();
-
-  // Get channel IDs.
-  $channels = apple_news_channels();
-  foreach ($channels as $channel_id) {
-    $context['results'][] = $entity_id . ' : ' . check_plain($entity->label());
+  // Get channels.
+  $channels = variable_get('apple_news_variable_api_channels', array());
+  foreach ($channels as $channel_id => $channel_info) {
+    $context['results'][] = $wrapper->getIdentifier() . ' : ' . check_plain($wrapper->label());
     $context['message'] = t('Posting "@title" to Apple News\'s channel @channel.', [
-        '@title' => $entity->label(),
+        '@title' => $wrapper->label(),
         '@channel' => $channel_id
       ]
     );
-    apple_news_post_article($channel_id, [
-        'json' => $json,
-        'files' => [],
-        'metadata' => '',
-      ]
-    );
+    // Make POST request to PushAPI.
+    $response = apple_news_post_article($channel_id, $document);
+    // If sucessfull request.
+    if (!isset($response->errors)) {
+      $record = [
+        'entity_type' => $entity_type,
+        'entity_id' => $wrapper->getIdentifier(),
+        'article_id' => $response->data->id,
+        'channel_id' => $channel_id,
+        'postdate' => REQUEST_TIME,
+      ];
+      drupal_write_record('apple_news_published_entities', $record);
+    }
   }
 
 }
