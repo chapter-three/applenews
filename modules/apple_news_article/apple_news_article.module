@@ -10,10 +10,8 @@
  */
 function apple_news_article_help($path, $arg) {
   switch ($path) {
-
     case 'admin/help#apple_news':
       return '<p>' . t('Push articles to <a href="https://www.apple.com/news/">Apple News</a>.') . '</p>';
-
   }
 }
 

@@ -30,6 +30,7 @@ class AppleNewsExportArticle extends AppleNewsExport {
     $query = parent::query();
 
     $query->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', array('article'))
       ->propertyCondition('status', NODE_PUBLISHED)
       ->entityOrderBy('entity_id');
 
@@ -75,7 +76,7 @@ class AppleNewsExportArticle extends AppleNewsExport {
    */
   public function export($entity) {
     /** @var EntityDrupalWrapper $wrapper */
-    $wrapper = entity_metadata_wrapper('node', $entity);
+    $wrapper = entity_metadata_wrapper($this->entity_type(), $entity);
 
     // Identifier;
     $id = $wrapper->getIdentifier();

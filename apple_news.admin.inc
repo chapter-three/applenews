@@ -9,6 +9,7 @@
  * Form builder for API config.
  */
 function apple_news_settings_api_form($form, &$form_state) {
+  module_load_include('inc', 'apple_news');
 
   $form['apple_news_variable_api_endpoint'] = array(
     '#type' => 'textfield',
@@ -32,17 +33,19 @@ function apple_news_settings_api_form($form, &$form_state) {
     '#type' => 'textarea',
     '#title' => t('Channels'),
     '#description' => t("Separate channel id's with whitespace"),
-    '#default_value' => implode("\n",
-      variable_get('apple_news_variable_api_channels', array())),
+    '#default_value' => implode("\n", apple_news_channels()),
   );
 
   $form = system_settings_form($form);
+
   $form['actions']['delete'] = array(
     '#type' => 'submit',
     '#value' => t('Delete configuration'),
   );
+
   $form['#validate'] = array('apple_news_settings_api_form_validate');
   $form['#submit'] = array('apple_news_settings_api_form_submit');
+
   return $form;
 }
 
@@ -50,19 +53,15 @@ function apple_news_settings_api_form($form, &$form_state) {
  * Form validation handler.
  */
 function apple_news_settings_api_form_validate($form, &$form_state) {
+  module_load_include('inc', 'apple_news');
+
   switch ($form_state['triggering_element']['#parents'][0]) {
 
     case 'delete':
       break;
 
     default:
-      foreach (array(
-                 'apple_news_variable_api_endpoint',
-                 'apple_news_variable_api_key',
-                 'apple_news_variable_api_secret',
-                 'apple_news_variable_api_channels',
-               ) as $key
-      ) {
+      foreach (apple_news_settings_fields() as $key) {
         $value = trim($form_state['values'][$key]);
         if ($value === '') {
           form_set_error($key, t('Missing required value "@title".', array('@title' => $form[$key]['#title'])));
@@ -77,15 +76,12 @@ function apple_news_settings_api_form_validate($form, &$form_state) {
  * Form submit handler.
  */
 function apple_news_settings_api_form_submit($form, &$form_state) {
+  module_load_include('inc', 'apple_news', 'push_api');
+  module_load_include('inc', 'apple_news');
   switch ($form_state['triggering_element']['#parents'][0]) {
 
     case 'delete':
-      foreach (array(
-                 'apple_news_variable_api_endpoint',
-                 'apple_news_variable_api_key',
-                 'apple_news_variable_api_secret',
-               ) as $key
-      ) {
+      foreach (apple_news_settings_fields() as $key) {
         variable_set($key, '');
       }
       $key = 'apple_news_variable_api_channels';
@@ -94,12 +90,7 @@ function apple_news_settings_api_form_submit($form, &$form_state) {
       break;
 
     default:
-      foreach (array(
-                 'apple_news_variable_api_endpoint',
-                 'apple_news_variable_api_key',
-                 'apple_news_variable_api_secret',
-               ) as $key
-      ) {
+      foreach (apple_news_settings_fields() as $key) {
         $value = $form_state['values'][$key];
         if (is_array($value) && isset($form_state['values']['array_filter'])) {
           $value = array_keys(array_filter($value));
@@ -131,6 +122,7 @@ function apple_news_settings_api_form_submit($form, &$form_state) {
  * Form builder for node export config.
  */
 function apple_news_settings_exports_form($form, &$form_state) {
+  module_load_include('inc', 'apple_news');
 
   $exports = apple_news_exports();
 
@@ -165,7 +157,8 @@ function apple_news_settings_exports_form($form, &$form_state) {
         'query' => array(
           'destination' => 'admin/config/content/apple_news/exports',
         ),
-      ));
+      )
+    );
     $rows[$key] = array(
       'name' => $name,
       'description' => $info['description'],
@@ -224,11 +217,15 @@ function apple_news_settings_exports_form_validate($form, &$form_state) {
  * Form submit handler.
  */
 function apple_news_settings_exports_form_submit($form, &$form_state) {
+  module_load_include('inc', 'apple_news', 'push_api');
+  module_load_include('inc', 'apple_news');
 
   $exports = apple_news_exports();
   $selected = array_map(function($key) use(&$exports) {
-    return $exports[$key];
-  }, array_filter($form_state['values']['exports']));
+      return $exports[$key];
+    },
+    array_filter($form_state['values']['exports'])
+  );
 
   switch ($form_state['values']['action']) {
 
@@ -249,7 +246,32 @@ function apple_news_settings_exports_form_submit($form, &$form_state) {
       break;
 
     case 'run':
-      drupal_set_message('Run not yet implemented');
+      foreach ($selected as $info) {
+        $export = apple_news_get_export($info['module'], $info['machine_name']);
+        $result = $export->query()->execute();
+        foreach ($result as $row) {
+          $ids = array();
+          foreach ($row as $entity) {
+            $ids[] = $entity->nid;
+          }
+          $entity = entity_load($export->entity_type(), $ids);
+          $entity_array = array_values($entity);
+          $document = $export->export($entity_array[0]);
+          // Contents of the article.json file.
+          $json = $document->__toString();
+
+          $channels = apple_news_channels();
+          foreach ($channels as $channel_id) {
+            apple_news_post_article($channel_id, array(
+                'json' => $json,
+                'files' => array(),
+                'metadata' => array(),
+              )
+            );
+          }
+
+        }
+      }
       break;
 
   }
@@ -293,6 +315,7 @@ function apple_news_export_edit_form_validate($form, &$form_state) {
  * Form submit handler.
  */
 function apple_news_export_edit_form_submit($form, &$form_state) {
+  module_load_include('inc', 'apple_news');
   /** @var AppleNewsExport $export */
   $export = $form['#apple_news_export'];
   $export->submitConfigForm($form, $form_state);
