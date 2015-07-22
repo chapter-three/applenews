@@ -227,7 +227,6 @@ function apple_news_settings_delete_channel_form_submit($form, &$form_state) {
     variable_set('apple_news_variable_api_channels', $channels);
     drupal_goto('admin/config/content/apple-news/settings/channels');
   }
-
 }
 
 /**

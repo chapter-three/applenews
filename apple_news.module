@@ -15,11 +15,11 @@ module_load_include('inc', 'apple_news', 'apple_news.batch');
  */
 function apple_news_hook_info() {
 
-  $cron = array(
-    'group' => 'cron'
+  $form = array(
+    'group' => 'form'
   );
 
-  $hooks['cron'] = $cron;
+  $hooks['form_alter'] = $form;
 
   return $hooks;
 
@@ -142,4 +142,11 @@ function apple_news_export_load($id) {
   module_load_include('inc', 'apple_news');
   list($module, $machine_name) = explode('::', $id);
   return apple_news_get_export($module, $machine_name);
+}
+
+/**
+ * Implements hook_cron().
+ */
+function apple_news_cron() {
+  module_load_include('inc', 'apple_news');
 }
