@@ -252,7 +252,7 @@ function apple_news_settings_exports_form($form, &$form_state) {
     $module = $module['name'];
     $enabled = empty($info['#status']['enabled']) ? t('no') : t('yes');
     $status = empty($log['endtime']) ? (empty($log['starttime']) ? '' : t('incomplete')) : t('complete');
-    $lastexport = empty($log['starttime']) ? t('never') : (int) $log['starttime'];
+    $lastexport = empty($log['starttime']) ? t('never') : format_date($log['starttime'], 'short');
     $edit = l(t('edit'),
       'admin/config/content/apple-news/bulk-export/' . $key . '/edit',
       array(
