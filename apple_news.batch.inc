@@ -7,13 +7,11 @@
 /**
  * Batch Apple News export.
  */
-function apple_news_bactch_run_export($info) {
+function apple_news_bactch_run_export($info, $export) {
 
   $operations = array();
 
-  $export = apple_news_get_export($info['module'], $info['machine_name']);
   $result = $export->query()->execute();
-
   $entity_types = array_keys($result);
 
   foreach ($entity_types as $entity_type) {

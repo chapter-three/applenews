@@ -225,6 +225,40 @@ function apple_news_get_module_apis() {
 }
 
 /**
+ * Get an array of entity types and bundle names
+ * that are available for Apple News export.
+ *
+ * @return array
+ */
+function apple_news_get_entity_types() {
+  $entity_types = [];
+
+  // Loop through all exports and build an array so we can alter entity forms
+  // and add vertical tabs for individual Apple News publishing options.
+  foreach (apple_news_exports() as $info) {
+    // Load export object.
+    $export = apple_news_get_export($info['module'], $info['machine_name']);
+    $result = $export->query()->execute();
+    foreach (array_keys($result) as $entity_type) {
+      foreach ($result[$entity_type] as $entity_id => $object) {
+        // Load entity and pass it to entity wrapper.
+        $entity = entity_load_single($entity_type, $entity_id);
+        $wrapper = entity_metadata_wrapper($entity_type, $entity);
+        // Initialize array for entity type.
+        if (!isset($entity_types[$entity_type])) {
+          $entity_types[$entity_type] = [];
+        }
+        // Build an array of entity types and bundle names.
+        if (!in_array($wrapper->getBundle(), $entity_types[$entity_type]) || !isset($entity_types[$entity_type])) {
+          $entity_types[$entity_type][] = $wrapper->getBundle();
+        }
+      }
+    }
+  }
+  return $entity_types;
+}
+
+/**
  * Converts drupal language code to appropriate Apples News value.
  */
 function apple_news_language_code($language_code) {

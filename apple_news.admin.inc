@@ -220,7 +220,9 @@ function apple_news_settings_delete_channel_form_submit($form, &$form_state) {
     drupal_set_message(t('You are trying to remove non-existing feed.'), 'warning');
   }
   else {
-    drupal_set_message(t('<em>@name</em> feed successfully removed.', array('@name' => $channels[$channel_id]['name'])));
+    drupal_set_message(t('<em>@name</em> feed successfully removed.',
+      array('@name' => $channels[$channel_id]['name']))
+    );
     unset($channels[$channel_id]);
     // Remove channel ID from everywhere.
     apple_news_cleanup($channel_id);
@@ -344,6 +346,9 @@ function apple_news_settings_exports_form_submit($form, &$form_state) {
         $export = apple_news_get_export($info['module'], $info['machine_name']);
         $export->enabled = TRUE;
         apple_news_export_save($export);
+        drupal_set_message(t('<em>@name</em> export sucessfully <strong>enabled</strong>.',
+          array('@name' => $info['name']))
+        );
       }
       break;
 
@@ -352,14 +357,26 @@ function apple_news_settings_exports_form_submit($form, &$form_state) {
         $export = apple_news_get_export($info['module'], $info['machine_name']);
         $export->enabled = FALSE;
         apple_news_export_save($export);
+        drupal_set_message(t('<em>@name</em> export sucessfully <strong>disabled</strong>.',
+          array('@name' => $info['name']))
+        );
       }
       break;
 
     case 'export':
       foreach ($selected as $info) {
         // Batch entity export to Apple News.
-        $batch = apple_news_bactch_run_export($info);
-        batch_set($batch);
+        $export = apple_news_get_export($info['module'], $info['machine_name']);
+        if ($export->enabled) {
+          $batch = apple_news_bactch_run_export($info, $export);
+          batch_set($batch);
+        }
+        else {
+          drupal_set_message(t('<em>@name</em> export is disabled.',
+            array('@name' => $info['name'])),
+            'warning'
+          );
+        }
       }
       break;
 
