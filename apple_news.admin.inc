@@ -37,15 +37,16 @@ function apple_news_settings_api_credentials_form($form, &$form_state) {
     '#description' => t('Push API Secret Key'),
   );
 
-  $form = system_settings_form($form);
-
-  $form['actions']['delete'] = array(
+  $form['save_config'] = array(
     '#type' => 'submit',
-    '#value' => t('Delete configuration'),
+    '#value' => t('Save configuration'),
+    '#submit' => array('apple_news_settings_api_credentials_form_submit'),
+    '#validate' => array('apple_news_settings_api_credentials_form_validate'),
   );
 
-  $form['#validate'] = array('apple_news_settings_api_form_validate');
-  $form['#submit'] = array('apple_news_settings_api_form_submit');
+  $form['delete_config'] = array(
+    '#markup' => l(t('Delete configuration'), 'admin/config/content/apple-news/settings/delete'),
+  );
 
   return $form;
 }
@@ -55,21 +56,13 @@ function apple_news_settings_api_credentials_form($form, &$form_state) {
  */
 function apple_news_settings_api_credentials_form_validate($form, &$form_state) {
   module_load_include('inc', 'apple_news');
-
-  switch ($form_state['triggering_element']['#parents'][0]) {
-
-    case 'delete':
-      break;
-
-    default:
-      foreach (apple_news_settings_fields() as $key) {
-        $value = trim($form_state['values'][$key]);
-        if ($value === '') {
-          form_set_error($key, t('Missing required value "@title".', array('@title' => $form[$key]['#title'])));
-        }
+  foreach (apple_news_settings_fields() as $key) {
+    if (isset($form['credentials'][$key]['#title'])) {
+      $value = trim($form_state['values'][$key]);
+      if ($value === '') {
+        form_set_error($key, t('Missing required value "@title".', array('@title' => $form['credentials'][$key]['#title'])));
       }
-      break;
-
+    }
   }
 }
 
@@ -77,30 +70,43 @@ function apple_news_settings_api_credentials_form_validate($form, &$form_state) 
  * Form submit handler.
  */
 function apple_news_settings_api_credentials_form_submit($form, &$form_state) {
-  module_load_include('inc', 'apple_news', 'push_api');
   module_load_include('inc', 'apple_news');
-  switch ($form_state['triggering_element']['#parents'][0]) {
-
-    case 'delete':
-      foreach (apple_news_settings_fields() as $key) {
-        variable_set($key, '');
+  foreach (apple_news_settings_fields() as $key) {
+    if (isset($form['credentials'][$key]['#title'])) {
+      $value = $form_state['values'][$key];
+      if (is_array($value) && isset($form_state['values']['array_filter'])) {
+        $value = array_keys(array_filter($value));
       }
-      $key = 'apple_news_variable_api_channels';
-      variable_set($key, array());
-      drupal_set_message(t('The configuration options have been deleted.'));
-      break;
-
-    default:
-      foreach (apple_news_settings_fields() as $key) {
-        $value = $form_state['values'][$key];
-        if (is_array($value) && isset($form_state['values']['array_filter'])) {
-          $value = array_keys(array_filter($value));
-        }
-        variable_set($key, $value);
-      }
-      break;
-
+      variable_set($key, $value);
+    }
   }
+  drupal_set_message(t('The configuration options have been saved. Please <a href="!link">add Feed ID</a> to verify connection and start posting content to Apple News.', array('!link' => url('admin/config/content/apple-news/settings/channels'))));
+}
+
+/**
+ * Delete Apple News configuration w/ confirmation.
+ */
+function apple_news_settings_delete_configuration_form($form, &$form_state) {
+  return confirm_form(
+    $form,
+    t("Do you really want to delete current Apple News configuration settings?"),
+    'admin/config/content/apple-news/settings',
+    t("You will no long be able to publish content to Apple News. This action cannot be undone."),
+    t("Yes, delete configuration")
+  );
+}
+
+/**
+ * Form submit handler.
+ */
+function apple_news_settings_delete_configuration_form_submit($form, &$form_state) {
+  module_load_include('inc', 'apple_news');
+  foreach (apple_news_settings_fields() as $key) {
+    variable_set($key, '');
+  }
+  variable_set('apple_news_variable_api_channels', array());
+  drupal_set_message(t('The configuration options have been deleted.'));
+  drupal_goto('admin/config/content/apple-news/settings');
 }
 
 /**
@@ -194,10 +200,12 @@ function apple_news_settings_delete_channel_form($form, &$form_state, $channel_i
   );
   return confirm_form(
     $form,
-    "Do you really want to delete this feed?",
+    t("Do you really want to delete this feed?"),
     'admin/config/content/apple-news/settings/channels',
-    t("You will no long be able to publish content to <em>@name</em> feed. This operation cannot be undone.", array('@name' => $channels[$channel_id]['name'])),
-    "Yes, delete"
+    t("You will no long be able to publish content to <em>@name</em> feed. This action cannot be undone.",
+      array('@name' => $channels[$channel_id]['name'])
+    ),
+    t("Yes, delete")
   );
 }
 

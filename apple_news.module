@@ -99,6 +99,16 @@ function apple_news_menu() {
     'weight' => 1,
   );
 
+  $items['admin/config/content/apple-news/settings/delete'] = array(
+    'title' => 'Delete configuration',
+    'description' => t('Delete Apple News configuration.'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('apple_news_settings_delete_configuration_form'),
+    'access arguments' => array('administer apple news'),
+    'file' => 'apple_news.admin.inc',
+    'weight' => 1,
+  );
+
   $items['admin/config/content/apple-news/settings/channels'] = array(
     'title' => 'Feeds',
     'description' => t('Apple News Push API channels.'),
