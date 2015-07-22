@@ -16,11 +16,13 @@ class AppleNewsExportArticle extends AppleNewsExport {
    * {@inheritdoc}
    */
   public function __construct($module, $machine_name, array $arguments, $enabled = FALSE, $highwater = NULL, array $settings = array()) {
-    $settings = array(
-      'layout' => 'simple',
-    ) + $settings;
-    parent::__construct($module, $machine_name, $arguments, $enabled,
-      $highwater, $settings);
+    $settings = array_merge([
+        'layout' => 'simple',
+        'channels' => []
+      ],
+      $settings
+    );
+    parent::__construct($module, $machine_name, $arguments, $enabled, $highwater, $settings);
   }
 
   /**

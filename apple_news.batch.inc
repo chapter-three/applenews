@@ -86,7 +86,6 @@ function apple_news_bactch_post($entity_type, $entity, $document, &$context) {
 function apple_news_bactch_run_export_finished($success, $results, $operations) {
   if ($success) {
     drupal_set_message(t('@count entities were posted to Apple News.', array('@count' => count($results))));
-    drupal_set_message(t('The final result was "%final"', array('%final' => end($results))));
   }
   else {
     // An error occurred.

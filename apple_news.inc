@@ -162,9 +162,7 @@ function apple_news_exports($reset = NULL) {
       continue;
     }
     // Good to go.
-    if (!is_array($row['settings'])) {
-      $row['settings'] = array();
-    }
+    $row['settings'] = unserialize($row['settings']);
     $exports[$key]['#status'] = $row;
   }
 

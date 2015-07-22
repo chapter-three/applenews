@@ -76,10 +76,25 @@ abstract class AppleNewsExport {
    * Provides a configuration form for this export.
    */
   public function getConfigForm($form, &$form_state) {
+
     $form['enabled'] = array(
       '#title' => t('Enabled'),
       '#type' => 'checkbox',
       '#default_value' => $this->enabled,
+    );
+
+    $channels = [];
+    $api_channels = variable_get('apple_news_variable_api_channels', array());
+    foreach ($api_channels as $channel_id => $info) {
+      $channels[$channel_id] = $info['name'];
+    }
+    $form['channels'] = array(
+      '#title' => t('Feeds'),
+      '#type' => 'select',
+      '#default_value' => $this->settings['channels'],
+      '#multiple' => TRUE,
+      '#options' => $channels,
+      '#required' => TRUE,
     );
 
     return $form;
@@ -96,6 +111,7 @@ abstract class AppleNewsExport {
    */
   public function submitConfigForm($form, &$form_state) {
     $this->enabled = $form_state['values']['enabled'];
+    $this->settings['channels'] = $form_state['values']['channels'];
   }
 
   /**
