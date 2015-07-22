@@ -89,9 +89,9 @@ function apple_news_settings_api_credentials_form_submit($form, &$form_state) {
 function apple_news_settings_delete_configuration_form($form, &$form_state) {
   return confirm_form(
     $form,
-    t("Do you really want to delete current Apple News configuration settings?"),
+    t("Do you really want to delete current Apple News configuration?"),
     'admin/config/content/apple-news/settings',
-    t("You will no long be able to publish content to Apple News. This action cannot be undone."),
+    t("You will no longer be able to publish content to Apple News. This action cannot be undone."),
     t("Yes, delete configuration")
   );
 }
