@@ -93,7 +93,7 @@ function apple_news_menu() {
   );
 
   $items['admin/config/content/apple-news/settings/default'] = array(
-    'title' => 'API Credentials',
+    'title' => 'Credentials',
     'description' => t('Apple News Push API credentials.'),
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 1,

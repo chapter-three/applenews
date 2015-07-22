@@ -113,6 +113,8 @@ class AppleNewsExportArticle extends AppleNewsExport {
         'langcode' => $language,
       ));
 
+    $document = NULL;
+
     switch ($this->settings['layout']) {
 
       case 'simple':

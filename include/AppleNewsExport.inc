@@ -90,11 +90,12 @@ abstract class AppleNewsExport {
     }
     $form['channels'] = array(
       '#title' => t('Feeds'),
-      '#type' => 'select',
+      '#type' => 'checkboxes',
       '#default_value' => $this->settings['channels'],
       '#multiple' => TRUE,
       '#options' => $channels,
       '#required' => TRUE,
+      '#description' => t('Please select feeds.'),
     );
 
     return $form;

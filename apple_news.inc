@@ -247,3 +247,29 @@ function apple_news_settings_fields() {
   return $config_fields;
 
 }
+
+/**
+ * Cleanup database tables.
+ * @param (string) $channel_id
+ *    Apple News channel ID.
+ */
+function apple_news_cleanup($channel_id) {
+
+  // Delete settings when channel ID removed.
+  $result = db_select('apple_news_status', 's')
+    ->fields('s')
+    ->execute();
+  foreach ($result as $row) {
+    $settings = unserialize($row->settings);
+    unset($settings['channels'][$channel_id]);
+    db_update('apple_news_status')
+      ->fields(array(
+        'settings' => serialize($settings),
+      ))
+      ->condition('module', $row->module)
+      ->condition('machine_name', $row->machine_name)
+      ->execute();
+
+  }
+
+}

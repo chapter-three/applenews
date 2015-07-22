@@ -20,21 +20,22 @@ function apple_news_bactch_run_export($info) {
     foreach ($result[$entity_type] as $entity_id => $object) {
       // Load entity object and pass it to the document generator.
       $entity = entity_load_single($entity_type, $entity_id);
-
       // Generate AppleNews Document formatted JSON.
       $document = $export->export($entity);
-      $operations[] = array(
-        'apple_news_bactch_post',
-        [
-          $entity_type,
-          $entity,
+      if (!is_null($document)) {
+        $operations[] = array(
+          'apple_news_bactch_post',
           [
-            'json' => $document->__toString(),
-            'files' => [],
-            'metadata' => '',
+            $entity_type,
+            $entity,
+            [
+              'json' => $document->__toString(),
+              'files' => [],
+              'metadata' => '',
+            ],
           ],
-        ],
-      );
+        );
+      }
     }
   }
 
@@ -51,6 +52,7 @@ function apple_news_bactch_run_export($info) {
  */
 function apple_news_bactch_post($entity_type, $entity, $document, &$context) {
   module_load_include('inc', 'apple_news', 'push_api');
+  $channels = variable_get('apple_news_variable_api_channels', array());
 
   $wrapper = entity_metadata_wrapper($entity_type, $entity);
 
@@ -58,9 +60,9 @@ function apple_news_bactch_post($entity_type, $entity, $document, &$context) {
   $channels = variable_get('apple_news_variable_api_channels', array());
   foreach ($channels as $channel_id => $channel_info) {
     $context['results'][] = $wrapper->getIdentifier() . ' : ' . check_plain($wrapper->label());
-    $context['message'] = t('Posting "@title" to Apple News\'s channel @channel.', [
+    $context['message'] = t('Posting "@title" entity to <em>@channel</em> feed.', [
         '@title' => $wrapper->label(),
-        '@channel' => $channel_id
+        '@channel' => $channels[$channel_id]['name']
       ]
     );
     // Make POST request to PushAPI.
