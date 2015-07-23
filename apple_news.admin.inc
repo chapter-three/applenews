@@ -431,3 +431,53 @@ function apple_news_export_edit_form_submit($form, &$form_state) {
   apple_news_export_save($export);
   drupal_set_message(t('Changes have been successfully saved.'));
 }
+
+/**
+ * Delete Apple News article w/ confirmation.
+ */
+function apple_news_settings_delete_article_form($form, &$form_state, $entity_type, $entity_id, $article_id) {
+
+  // Load entity
+  $entity = entity_load_single($entity_type, $entity_id);
+  $wrapper = entity_metadata_wrapper($entity_type, $entity);
+  $entity_uri = entity_uri($entity_type, $entity);
+  $path = $entity_uri['path'] . '/edit';
+  $title = $wrapper->label();
+
+  $form['entity_type'] = array(
+    '#type' => 'hidden',
+    '#value' => $entity_type,
+  );
+  $form['entity_id'] = array(
+    '#type' => 'hidden',
+    '#value' => $entity_id,
+  );
+  $form['article_id'] = array(
+    '#type' => 'hidden',
+    '#value' => $article_id,
+  );
+  $form['return_path'] = array(
+    '#type' => 'hidden',
+    '#value' => $path,
+  );
+  $form['title'] = array(
+    '#type' => 'hidden',
+    '#value' => $title,
+  );
+
+  return confirm_form(
+    $form,
+    t("Do you really want to delete <em>@title</em> article from Apple News?", array('@title' => $title)),
+    $path,
+    t("This action cannot be undone."),
+    t("Yes, delete")
+  );
+}
+
+/**
+ * Form submit handler.
+ */
+function apple_news_settings_delete_article_form_submit($form, &$form_state) {
+  drupal_set_message(t('<em>@title</em> successfully removed from Apple News', array('@title' => $form_state['values']['title'])));
+  drupal_goto($form_state['values']['return_path']);
+}

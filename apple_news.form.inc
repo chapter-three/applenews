@@ -19,8 +19,7 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
 
         // Connected Apple News channels.
         $channels = apple_news_channels();
-        $default_channels = [];
-        $article_ids = [];
+        $entity_channels = [];
 
         // Entity object.
         $entity_id = isset($form['nid']['#value']) ? (int) $form['nid']['#value'] : NULL;
@@ -28,9 +27,9 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
         if (!empty($entity_id)) {
           $entity = entity_load_single($type, $entity_id);
           $results = apple_news_load_posted_entity($entity, $type);
+          // Collect article id, channel name and postdate for the table below.
           foreach ($results as $row) {
-            $default_channels[] = $row->channel_id;
-            $article_ids[$row->article_id] = [
+            $entity_channels[$row->article_id] = [
               'name' => $channels[$row->channel_id],
               'postdate' => format_date($row->postdate, 'short'),
             ];
@@ -57,19 +56,17 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
           '#type' => 'checkboxes',
           '#title' => t('Feeds'),
           '#options' => $channels,
-          '#description' => t('Select one or more feeds to post.'),
-          '#default_values' => $default_channels,
         );
 
-        if (!empty($article_ids)) {
+        if (!empty($entity_channels)) {
           // If this article was already published we should give an
           // option to removed it from Apple News.
           $rows = [];
-          foreach ($article_ids as $article_id => $info) {
+          foreach ($entity_channels as $article_id => $info) {
             $rows[] = [
               ['data' => $info['name']],
               ['data' => $info['postdate']],
-              ['data' => l(t('Delete'), 'admin/config/content/apple-news/' . $article_id . '/delete')]
+              ['data' => l(t('Delete'), 'admin/config/content/apple-news/' . $type . '/' . $entity_id . '/' . $article_id . '/delete')]
             ];
           }
           $form['apple_news']['info'] = array(
