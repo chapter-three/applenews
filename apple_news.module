@@ -33,6 +33,13 @@ function apple_news_hook_info() {
   $hooks['entity_delete'] = $entity;
   $hooks['entity_presave'] = $entity;
 
+  $views = array(
+    'group' => 'views'
+  );
+
+  // Views hooks see {module_name}.views.inc
+  $hooks['views_data'] = $views;
+
   return $hooks;
 
 }
