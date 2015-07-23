@@ -14,9 +14,7 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
   $entity_types = apple_news_get_entity_types();
   foreach ($entity_types as $type => $export) {
     foreach ($export as $bundle => $info) {
-
       if ($form_id == $bundle . '_' . $type . '_form') {
-
         // Connected Apple News channels.
         $channels = apple_news_channels();
         $entity_channels = [];
@@ -85,11 +83,7 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
             )),
           );
         }
-
       }
-
     }
-
   }
-
 }
