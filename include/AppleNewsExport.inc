@@ -123,4 +123,17 @@ abstract class AppleNewsExport {
     return NULL;
   }
 
+  /**
+   * Exports entity assets.
+   *
+   * @param object $entity
+   *   An entity to export.
+   *
+   * @return array
+   *   Array of assets (images)
+   */
+  public function assets($entity) {
+    return array();
+  }
+
 }

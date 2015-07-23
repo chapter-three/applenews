@@ -227,9 +227,10 @@ function apple_news_get_module_apis() {
 /**
  * Post Article to Apple News.
  */
-function apple_news_post($channel_id, $entity_type, $entity_wrapper, $document) {
+function apple_news_post($channel_id, $entity_type, $entity_wrapper, $data) {
+  module_load_include('inc', 'apple_news', 'push_api');
   // Make POST request to Apple News via PushAPI.
-  $response = apple_news_post_article($channel_id, $document);
+  $response = apple_news_post_article($channel_id, $data);
   // If successful request.
   if (!isset($response->errors)) {
     $record = [
@@ -240,6 +241,30 @@ function apple_news_post($channel_id, $entity_type, $entity_wrapper, $document) 
       'postdate' => REQUEST_TIME,
     ];
     drupal_write_record('apple_news_published_entities', $record);
+    return TRUE;
+  }
+  return FALSE;
+}
+
+/**
+ * Delete Article from Apple News.
+ */
+function apple_news_delete($channel_id, $entity_type, $entity_wrapper) {
+  module_load_include('inc', 'apple_news', 'push_api');
+  $article_id = db_select('apple_news_published_entities', 'e')
+    ->fields('e', array('article_id'))
+    ->condition('entity_type', $entity_type)
+    ->condition('channel_id', $channel_id)
+    ->condition('entity_id', $entity_wrapper->getIdentifier())
+    ->execute()
+    ->fetchField();
+  // Make DELETE request to Apple News via PushAPI.
+  $response = apple_news_delete_article($article_id);
+  // If successful request.
+  if (empty($response)) {
+    db_delete('apple_news_published_entities')
+      ->condition('article_id', $article_id)
+      ->execute();
     return TRUE;
   }
   return FALSE;
@@ -264,18 +289,63 @@ function apple_news_get_entity_types() {
         // Load entity and pass it to entity wrapper.
         $entity = entity_load_single($entity_type, $entity_id);
         $wrapper = entity_metadata_wrapper($entity_type, $entity);
-        // Initialize array for entity type.
-        if (!isset($entity_types[$entity_type])) {
-          $entity_types[$entity_type] = [];
-        }
         // Build an array of entity types and bundle names.
-        if (!in_array($wrapper->getBundle(), $entity_types[$entity_type]) || !isset($entity_types[$entity_type])) {
-          $entity_types[$entity_type][] = $wrapper->getBundle();
-        }
+        $entity_types[$entity_type][$wrapper->getBundle()] = $info;
       }
     }
   }
   return $entity_types;
+}
+
+/**
+ * Perform operations on an entity.
+ *
+ * @param $op string
+ *   Entity operation (insert/update/delete)
+ * @param $channel_id string
+ *   Apple News channel ID.
+ * @param $entity object
+ *   Entity object.
+ * @param $type string
+ *   Entity type.
+ */
+function apple_news_op($op, $channel_id, $entity, $type) {
+  // Get all possible entity types and bundles available for export.
+  $entity_types = apple_news_get_entity_types();
+  foreach ($entity_types as $entity_type => $export) {
+    foreach ($export as $bundle => $info) {
+      if ($entity_type == $type) {
+        $result = FALSE;
+        // Export object.
+        $export = apple_news_get_export($info['module'], $info['machine_name']);
+        // Entity object wrapper.
+        $wrapper = entity_metadata_wrapper($entity_type, $entity);
+        // Generate Apple News Document formatted JSON string.
+        $document = $export->export($entity);
+        $data = [
+          'json' => $document->__toString(),
+          'files' => $export->assets($entity), // Get entity assets.
+          'metadata' => '',
+        ];
+        if ($op == 'insert') {
+          $result = apple_news_post($channel_id, $entity_type, $wrapper, $data);
+        }
+        elseif ($op == 'update') {
+          // Delete an article from Apple News only if the article
+          // previously was published there.
+          $count = apple_news_get_channels_count($wrapper, $entity_type);
+          if ($count > 0) {
+            apple_news_delete($channel_id, $entity_type, $wrapper);
+          }
+          $result = apple_news_post($channel_id, $entity_type, $wrapper, $data);
+        }
+        elseif ($op == 'delete') {
+          $result = apple_news_delete($channel_id, $entity_type, $wrapper);
+        }
+        return $result;
+      }
+    }
+  }
 }
 
 /**
@@ -313,30 +383,7 @@ function apple_news_channels() {
 }
 
 /**
- * Cleanup database tables.
- * @param (string) $channel_id
- *    Apple News channel ID.
- */
-function apple_news_cleanup($channel_id) {
-  // Delete settings when channel ID removed.
-  $result = db_select('apple_news_status', 's')
-    ->fields('s')
-    ->execute();
-  foreach ($result as $row) {
-    $settings = unserialize($row->settings);
-    unset($settings['channels'][$channel_id]);
-    db_update('apple_news_status')
-      ->fields(array(
-        'settings' => serialize($settings),
-      ))
-      ->condition('module', $row->module)
-      ->condition('machine_name', $row->machine_name)
-      ->execute();
-  }
-}
-
-/**
- * Load posted entity from {apple_news_published_entities} table.
+ * Load posted entities from {apple_news_published_entities} table.
  *
  * @param $entity obejct
  *   Entity object.
@@ -345,7 +392,7 @@ function apple_news_cleanup($channel_id) {
  *
  * @return object
  */
-function apple_news_load_posted_entity($entity, $type) {
+function apple_news_load_articles($entity, $type) {
   $wrapper = entity_metadata_wrapper($type, $entity);
   $result = db_select('apple_news_published_entities', 'e')
     ->fields('e')
@@ -353,4 +400,50 @@ function apple_news_load_posted_entity($entity, $type) {
     ->condition('entity_id', $wrapper->getIdentifier())
     ->execute();
   return $result;
+}
+
+/**
+ * Check if the entity already published to Apple News
+ *
+ * @param $channel_id string
+ *   Apple News channel ID
+ * @param $entity_wrapper obejct
+ *   Entity wrapper object.
+ * @param $type string
+ *   Entity type.
+ *
+ * @return boolean
+ */
+function apple_news_is_exported($channel_id, $entity_wrapper, $type) {
+  $article_id = db_select('apple_news_published_entities', 'e')
+    ->fields('e', array('article_id'))
+    ->condition('channel_id', $channel_id)
+    ->condition('entity_type', $type)
+    ->condition('entity_id', $entity_wrapper->getIdentifier())
+    ->execute()
+    ->fetchField();
+  if (!empty($article_id)) {
+    return TRUE;
+  }
+  return FALSE;
+}
+
+/**
+ * Get total number of channels where the given article is published.
+ *
+ * @param $entity_wrapper obejct
+ *   Entity wrapper object.
+ * @param $type string
+ *   Entity type.
+ *
+ * @return int
+ *   Total number of channels where the given article is published.
+ */
+function apple_news_get_channels_count($entity_wrapper, $type) {
+  $result = db_select('apple_news_published_entities', 'e')
+    ->fields('e')
+    ->condition('entity_type', $type)
+    ->condition('entity_id', $entity_wrapper->getIdentifier())
+    ->execute();
+  return $result->rowCount();
 }

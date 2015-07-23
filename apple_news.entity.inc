@@ -8,11 +8,10 @@
  * Implements hook_entity_insert().
  */
 function apple_news_entity_insert($entity, $type) {
-  module_load_include('inc', 'apple_news');
   if (!empty($entity->post_to_apple_news_channels)) {
+  	module_load_include('inc', 'apple_news');
     foreach ($entity->post_to_apple_news_channels as $channel_id) {
-    	//$document = $export->export($entity);
-      //apple_news_post($channel_id, $type, $entity_wrapper, $document);
+      apple_news_op('insert', $channel_id, $entity, $type);
     }
   }
 }
@@ -21,10 +20,11 @@ function apple_news_entity_insert($entity, $type) {
  * Implements hook_entity_update().
  */
 function apple_news_entity_update($entity, $type) {
-  module_load_include('inc', 'apple_news');
   if (!empty($entity->post_to_apple_news_channels)) {
-    //$existing = apple_news_load_posted_entity($entity, $type);
-    //print_r($entity->post_to_apple_news_channels);exit;
+  	module_load_include('inc', 'apple_news');
+    foreach ($entity->post_to_apple_news_channels as $channel_id) {
+      apple_news_op('update', $channel_id, $entity, $type);
+    }
   }
 }
 
@@ -33,5 +33,8 @@ function apple_news_entity_update($entity, $type) {
  */
 function apple_news_entity_delete($entity, $type) {
   module_load_include('inc', 'apple_news');
-  //print_r($entity);exit;
+  $entities = apple_news_load_articles($entity, $type);
+  foreach ($entities as $info) {
+    apple_news_op('delete', $info->channel_id, $entity, $type);
+  }
 }

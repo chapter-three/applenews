@@ -12,8 +12,8 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
 
   // Get all possible entity types and bundles available for export.
   $entity_types = apple_news_get_entity_types();
-  foreach ($entity_types as $type => $bundles) {
-    foreach ($bundles as $bundle) {
+  foreach ($entity_types as $type => $export) {
+    foreach ($export as $bundle => $info) {
 
       if ($form_id == $bundle . '_' . $type . '_form') {
 
@@ -26,12 +26,14 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
 
         if (!empty($entity_id)) {
           $entity = entity_load_single($type, $entity_id);
-          $results = apple_news_load_posted_entity($entity, $type);
+          $results = apple_news_load_articles($entity, $type);
           // Collect article id, channel name and postdate for the table below.
           foreach ($results as $row) {
             $entity_channels[$row->article_id] = [
               'name' => $channels[$row->channel_id],
               'postdate' => format_date($row->postdate, 'short'),
+              'article_id' => $row->article_id,
+              'channel_id' => $row->channel_id,
             ];
           }
         }
@@ -66,7 +68,14 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
             $rows[] = [
               ['data' => $info['name']],
               ['data' => $info['postdate']],
-              ['data' => l(t('Delete'), 'admin/config/content/apple-news/' . $type . '/' . $entity_id . '/' . $article_id . '/delete')]
+              ['data' => l(t('Delete'),
+              	  'admin/config/content/apple-news/'
+              	    . $type . '/'
+              	    . $entity_id . '/'
+              	    . $info['article_id'] . '/'
+              	    . $info['channel_id'] . '/delete'
+              	)
+              ]
             ];
           }
           $form['apple_news']['info'] = array(
@@ -76,6 +85,7 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
             )),
           );
         }
+
       }
 
     }

@@ -142,11 +142,13 @@ function apple_news_menu() {
     'weight' => 1,
   );
 
-  $items['admin/config/content/apple-news/%/%/%/delete'] = array(
+  // Delete an article from Apple News channel
+  // [entity-type]/[entity-id]/[article-id]/[channel-id]
+  $items['admin/config/content/apple-news/%/%/%/%/delete'] = array(
     'title' => 'Delete Apple News article',
     'description' => t('Apple News Push API delete channel.'),
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('apple_news_settings_delete_article_form', 4, 5, 6),
+    'page arguments' => array('apple_news_settings_delete_article_form', 4, 5, 6, 7),
     'access arguments' => array('administer apple news'),
     'file' => 'apple_news.admin.inc',
     'weight' => 1,

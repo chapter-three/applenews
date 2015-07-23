@@ -221,8 +221,21 @@ function apple_news_settings_delete_channel_form_submit($form, &$form_state) {
       array('@name' => $channels[$channel_id]['name']))
     );
     unset($channels[$channel_id]);
-    // Remove channel ID from everywhere.
-    apple_news_cleanup($channel_id);
+    // Delete settings when channel ID removed.
+    $result = db_select('apple_news_status', 's')
+      ->fields('s')
+      ->execute();
+    foreach ($result as $row) {
+      $settings = unserialize($row->settings);
+      unset($settings['channels'][$channel_id]);
+      db_update('apple_news_status')
+        ->fields(array(
+          'settings' => serialize($settings),
+        ))
+        ->condition('module', $row->module)
+        ->condition('machine_name', $row->machine_name)
+        ->execute();
+    }
     variable_set('apple_news_variable_api_channels', $channels);
     drupal_goto('admin/config/content/apple-news/settings/channels');
   }
@@ -432,7 +445,8 @@ function apple_news_export_edit_form_submit($form, &$form_state) {
 /**
  * Delete Apple News article w/ confirmation.
  */
-function apple_news_settings_delete_article_form($form, &$form_state, $entity_type, $entity_id, $article_id) {
+function apple_news_settings_delete_article_form($form, &$form_state, $entity_type, $entity_id, $article_id, $channel_id) {
+  $channels = variable_get('apple_news_variable_api_channels', array());
 
   // Load entity
   $entity = entity_load_single($entity_type, $entity_id);
@@ -445,13 +459,19 @@ function apple_news_settings_delete_article_form($form, &$form_state, $entity_ty
     'entity_type' => $entity_type,
     'entity_id' => $entity_id,
     'article_id' => $article_id,
+    'channel_name' => $channels[$channel_id]['name'],
     'return_path' => $path,
     'title' => $title
   ];
 
   return confirm_form(
     $form,
-    t("Do you really want to delete <em>@title</em> article from Apple News?", array('@title' => $title)),
+    t("Do you really want to delete <em>@title</em> article from <em>@channel</em>?",
+      [
+        '@title' => $title,
+        '@channel' => $channels[$channel_id]['name']
+      ]
+    ),
     $path,
     t("This action cannot be undone."),
     t("Yes, delete")
@@ -462,6 +482,32 @@ function apple_news_settings_delete_article_form($form, &$form_state, $entity_ty
  * Form submit handler.
  */
 function apple_news_settings_delete_article_form_submit($form, &$form_state) {
-  drupal_set_message(t('<em>@title</em> successfully removed from Apple News', array('@title' => $form_state['storage']['title'])));
+  module_load_include('inc', 'apple_news', 'push_api');
+
+  // Make DELETE request to Apple News via PushAPI.
+  $response = apple_news_delete_article($form_state['storage']['article_id']);
+  // If successful request.
+  if (empty($response)) {
+    db_delete('apple_news_published_entities')
+      ->condition('article_id', $form_state['storage']['article_id'])
+      ->execute();
+    drupal_set_message(t('<em>@title</em> successfully removed from <em>@channel</em>',
+        array(
+          '@title' => $form_state['storage']['title'],
+          '@channel' => $form_state['storage']['channel_name'],
+        )
+      )
+    );
+  }
+  else {
+    drupal_set_message(t('Unable to delete <em>@title</em> from <em>@channel</em>',
+        array(
+          '@title' => $form_state['storage']['title'],
+          '@channel' => $form_state['storage']['channel_name'],
+        )
+      ),
+      'warning'
+    );
+  }
   drupal_goto($form_state['storage']['return_path']);
 }

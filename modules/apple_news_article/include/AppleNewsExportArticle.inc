@@ -207,4 +207,20 @@ class AppleNewsExportArticle extends AppleNewsExport {
     return $document;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function assets($entity) {
+    $assets = [];
+    /** @var EntityDrupalWrapper $wrapper */
+    $wrapper = entity_metadata_wrapper('node', $entity);
+    // Image field.
+    /** @var EntityDrupalWrapper $file */
+    $file = $wrapper->__isset('field_image') ? $wrapper->field_image->value() : FALSE;
+    if (count($file)) {
+      $assets[] = drupal_realpath($file['uri']);
+    }
+    return $assets;
+  }
+
 }
