@@ -38,7 +38,7 @@ function apple_news_views_data() {
         'base field' => $entity_info['entity keys']['id'],
         'label' => t('Apple News articles referencing Drupal entities'),
         'group' => t('Apple News Articles'),
-        'title' => t('Apple News Referencing entity'),
+        'title' => t('Apple News Referencing !field_name', array('!field_name' => $field_name)),
         'help' => t('A bridge to the @entity_type entity that is referencing Apple News article via !field_name',
           [
             '@entity_type' => $entity_type,
