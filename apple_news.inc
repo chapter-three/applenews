@@ -315,7 +315,7 @@ function apple_news_get_entity_types() {
  * @param $type string
  *   Entity type.
  */
-function apple_news_op($op, $channel_id, $entity, $type) {
+function apple_news_op($op, $channel_id, $entity, $type, array $settings = []) {
   // Get all possible entity types and bundles available for export.
   $entity_types = apple_news_get_entity_types();
   foreach ($entity_types as $entity_type => $export) {
@@ -328,6 +328,11 @@ function apple_news_op($op, $channel_id, $entity, $type) {
         $wrapper = entity_metadata_wrapper($entity_type, $entity);
         // Generate Apple News Document formatted JSON string.
         $document = $export->export($entity);
+        if (count($settings)) {
+          // Merge export settings with custom fields from the entity add/edit form.
+          // @see apple_news_form_alter().
+          $export->settings = array_merge($export->settings, $settings);
+        }
         $data = [
           'json' => $document->__toString(),
           'files' => $export->assets($entity), // Get entity assets.

@@ -10,8 +10,13 @@
 function apple_news_entity_insert($entity, $type) {
   if (!empty($entity->post_to_apple_news_channels)) {
   	module_load_include('inc', 'apple_news');
-    foreach ($entity->post_to_apple_news_channels as $channel_id) {
-      apple_news_op('insert', $channel_id, $entity, $type);
+    foreach ($entity->post_to_apple_news_channels as $channel_id => $selected) {
+    	if ($selected) {
+    	  $settings = [
+    	    'layout' => $entity->post_to_apple_news_layout,
+        ];
+        apple_news_op('insert', $channel_id, $entity, $type, $settings);
+      }
     }
   }
 }
@@ -22,8 +27,13 @@ function apple_news_entity_insert($entity, $type) {
 function apple_news_entity_update($entity, $type) {
   if (!empty($entity->post_to_apple_news_channels)) {
   	module_load_include('inc', 'apple_news');
-    foreach ($entity->post_to_apple_news_channels as $channel_id) {
-      apple_news_op('update', $channel_id, $entity, $type);
+    foreach ($entity->post_to_apple_news_channels as $channel_id => $selected) {
+    	if ($selected) {
+    	  $settings = [
+    	    'layout' => $entity->post_to_apple_news_layout,
+        ];
+        apple_news_op('update', $channel_id, $entity, $type, $settings);
+      }
     }
   }
 }
