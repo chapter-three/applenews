@@ -99,8 +99,8 @@ function apple_news_bactch_post($info, $entity_type, $entity, $document, &$conte
  */
 function apple_news_bactch_run_export_finished($success, $results, $operations) {
   if ($success) {
-  	$count = $results['info']['count'];
-  	// Save export information in logs.
+    $count = $results['info']['count'];
+    // Save export information in logs.
     $record = [
       'module' => $results['info']['module'],
       'machine_name' => $results['info']['machine_name'],

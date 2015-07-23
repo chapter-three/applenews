@@ -83,17 +83,12 @@ abstract class AppleNewsExport {
       '#default_value' => $this->enabled,
     );
 
-    $channels = [];
-    $api_channels = variable_get('apple_news_variable_api_channels', array());
-    foreach ($api_channels as $channel_id => $info) {
-      $channels[$channel_id] = $info['name'];
-    }
     $form['channels'] = array(
       '#title' => t('Feeds'),
       '#type' => 'checkboxes',
       '#default_value' => $this->settings['channels'],
       '#multiple' => TRUE,
-      '#options' => $channels,
+      '#options' => apple_news_channels(),
       '#required' => TRUE,
       '#description' => t('Please select feeds.'),
     );

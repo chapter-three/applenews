@@ -232,7 +232,6 @@ function apple_news_get_module_apis() {
  */
 function apple_news_get_entity_types() {
   $entity_types = [];
-
   // Loop through all exports and build an array so we can alter entity forms
   // and add vertical tabs for individual Apple News publishing options.
   foreach (apple_news_exports() as $info) {
@@ -270,16 +269,26 @@ function apple_news_language_code($language_code) {
  * Form configuration fields.
  */
 function apple_news_settings_fields() {
-
   $config_fields = array(
     'apple_news_variable_api_endpoint',
     'apple_news_variable_api_key',
     'apple_news_variable_api_secret',
     'apple_news_variable_api_channels',
   );
-
   return $config_fields;
+}
 
+/**
+ * Get Apple News channels.
+ */
+function apple_news_channels() {
+  // Add Post to Apple News checkbox.
+  $channels = [];
+  $api_channels = variable_get('apple_news_variable_api_channels', array());
+  foreach ($api_channels as $channel_id => $info) {
+    $channels[$channel_id] = $info['name'];
+  }
+  return $channels;
 }
 
 /**
@@ -288,7 +297,6 @@ function apple_news_settings_fields() {
  *    Apple News channel ID.
  */
 function apple_news_cleanup($channel_id) {
-
   // Delete settings when channel ID removed.
   $result = db_select('apple_news_status', 's')
     ->fields('s')
@@ -303,7 +311,25 @@ function apple_news_cleanup($channel_id) {
       ->condition('module', $row->module)
       ->condition('machine_name', $row->machine_name)
       ->execute();
-
   }
+}
 
+/**
+ * Load posted entity from {apple_news_published_entities} table.
+ *
+ * @param $entity obejct
+ *   Entity object.
+ * @param $type string
+ *   Entity type.
+ *
+ * @return object
+ */
+function apple_news_load_posted_entity($entity, $type) {
+  $wrapper = entity_metadata_wrapper($type, $entity);
+  $result = db_select('apple_news_published_entities', 'e')
+    ->fields('e')
+    ->condition('entity_type', $type)
+    ->condition('entity_id', $wrapper->getIdentifier())
+    ->execute();
+  return $result;
 }

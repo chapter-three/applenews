@@ -19,7 +19,19 @@ function apple_news_hook_info() {
     'group' => 'form'
   );
 
+  // Form hooks see {module_name}.form.inc
   $hooks['form_alter'] = $form;
+
+  $entity = array(
+    'group' => 'entity'
+  );
+
+  // Entity hooks see {module_name}.entity.inc
+  $hooks['entity_load'] = $entity;
+  $hooks['entity_insert'] = $entity;
+  $hooks['entity_update'] = $entity;
+  $hooks['entity_delete'] = $entity;
+  $hooks['entity_presave'] = $entity;
 
   return $hooks;
 
