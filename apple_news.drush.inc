@@ -28,5 +28,5 @@ function apple_news_drush_command() {
  */
 function drush_apple_news_apple_news_export($module, $machine_name) {
   module_load_include('inc', 'apple_news');
-  drush_log('Greenhouse jobs cache renewed', 'ok');
+  drush_log('Entities successfully exported to Apple News.', 'ok');
 }
