@@ -343,6 +343,7 @@ function apple_news_settings_exports_form_submit($form, &$form_state) {
   module_load_include('inc', 'apple_news');
 
   $exports = apple_news_exports();
+
   $selected = array_map(function($key) use(&$exports) {
       return $exports[$key];
     },
