@@ -138,6 +138,13 @@ function apple_news_schema() {
         'not null' => TRUE,
         'description' => 'Entity ID',
       ),
+      'revision_id' => array(
+        'type' => 'int',
+        'size' => 'big',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Revision ID',
+      ),
       'article_id' => array(
         'type' => 'varchar',
         'length' => 255,
@@ -158,7 +165,7 @@ function apple_news_schema() {
         'description' => 'Post date timestamp',
       ),
     ),
-    'primary key' => array('entity_id', 'article_id', 'channel_id'),
+    'primary key' => array('entity_id', 'revision_id', 'article_id', 'channel_id'),
     'indexes' => array(),
   );
 

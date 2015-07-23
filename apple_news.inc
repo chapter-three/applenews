@@ -226,6 +226,8 @@ function apple_news_get_module_apis() {
 
 /**
  * Post Article to Apple News.
+ *
+ * @todo Add Revision support.
  */
 function apple_news_post($channel_id, $entity_type, $entity_wrapper, $data) {
   module_load_include('inc', 'apple_news', 'push_api');
@@ -236,6 +238,8 @@ function apple_news_post($channel_id, $entity_type, $entity_wrapper, $data) {
     $record = [
       'entity_type' => $entity_type,
       'entity_id' => $entity_wrapper->getIdentifier(),
+      // Need to work on revision support.
+      'revision_id' => $entity_wrapper->getIdentifier(),
       'article_id' => $response->data->id,
       'channel_id' => $channel_id,
       'postdate' => REQUEST_TIME,
