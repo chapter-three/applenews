@@ -51,6 +51,7 @@ function apple_news_bactch_run_export($info, $export) {
  */
 function apple_news_bactch_post($info, $entity_type, $entity, $document, &$context) {
   module_load_include('inc', 'apple_news', 'push_api');
+  module_load_include('inc', 'apple_news');
   $channels = variable_get('apple_news_variable_api_channels', array());
 
   $wrapper = entity_metadata_wrapper($entity_type, $entity);
@@ -76,18 +77,9 @@ function apple_news_bactch_post($info, $entity_type, $entity, $document, &$conte
         '@channel' => $channels[$channel_id]['name']
       ]
     );
-    // Make POST request to PushAPI.
-    $response = apple_news_post_article($channel_id, $document);
-    // If sucessfull request.
-    if (!isset($response->errors)) {
-      $record = [
-        'entity_type' => $entity_type,
-        'entity_id' => $wrapper->getIdentifier(),
-        'article_id' => $response->data->id,
-        'channel_id' => $channel_id,
-        'postdate' => REQUEST_TIME,
-      ];
-      drupal_write_record('apple_news_published_entities', $record);
+    // Post an article to Apple News.
+    $success = apple_news_post($channel_id, $entity_type, $wrapper, $document);
+    if ($success) {
       $context['results']['info']['count']++;
     }
   }

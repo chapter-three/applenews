@@ -225,6 +225,27 @@ function apple_news_get_module_apis() {
 }
 
 /**
+ * Post Article to Apple News.
+ */
+function apple_news_post($channel_id, $entity_type, $entity_wrapper, $document) {
+  // Make POST request to Apple News via PushAPI.
+  $response = apple_news_post_article($channel_id, $document);
+  // If successful request.
+  if (!isset($response->errors)) {
+    $record = [
+      'entity_type' => $entity_type,
+      'entity_id' => $entity_wrapper->getIdentifier(),
+      'article_id' => $response->data->id,
+      'channel_id' => $channel_id,
+      'postdate' => REQUEST_TIME,
+    ];
+    drupal_write_record('apple_news_published_entities', $record);
+    return TRUE;
+  }
+  return FALSE;
+}
+
+/**
  * Get an array of entity types and bundle names
  * that are available for Apple News export.
  *

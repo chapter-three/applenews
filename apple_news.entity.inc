@@ -10,9 +10,9 @@
 function apple_news_entity_insert($entity, $type) {
   module_load_include('inc', 'apple_news');
   if (!empty($entity->post_to_apple_news_channels)) {
-    $existing = apple_news_load_posted_entity($entity, $type);
     foreach ($entity->post_to_apple_news_channels as $channel_id) {
-
+    	//$document = $export->export($entity);
+      //apple_news_post($channel_id, $type, $entity_wrapper, $document);
     }
   }
 }

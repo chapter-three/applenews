@@ -194,10 +194,7 @@ function apple_news_settings_channels_form_submit($form, &$form_state) {
  */
 function apple_news_settings_delete_channel_form($form, &$form_state, $channel_id) {
   $channels = variable_get('apple_news_variable_api_channels', array());
-  $form['channel_id'] = array(
-    '#type' => 'hidden',
-    '#value' => $channel_id,
-  );
+  $form_state['storage'] = ['channel_id' => $channel_id];
   return confirm_form(
     $form,
     t("Do you really want to delete this feed?"),
@@ -215,7 +212,7 @@ function apple_news_settings_delete_channel_form($form, &$form_state, $channel_i
 function apple_news_settings_delete_channel_form_submit($form, &$form_state) {
   module_load_include('inc', 'apple_news');
   $channels = variable_get('apple_news_variable_api_channels', array());
-  $channel_id = $form_state['values']['channel_id'];
+  $channel_id = $form_state['storage']['channel_id'];
   if (!isset($channels[$channel_id])) {
     drupal_set_message(t('You are trying to remove non-existing feed.'), 'warning');
   }
@@ -444,26 +441,13 @@ function apple_news_settings_delete_article_form($form, &$form_state, $entity_ty
   $path = $entity_uri['path'] . '/edit';
   $title = $wrapper->label();
 
-  $form['entity_type'] = array(
-    '#type' => 'hidden',
-    '#value' => $entity_type,
-  );
-  $form['entity_id'] = array(
-    '#type' => 'hidden',
-    '#value' => $entity_id,
-  );
-  $form['article_id'] = array(
-    '#type' => 'hidden',
-    '#value' => $article_id,
-  );
-  $form['return_path'] = array(
-    '#type' => 'hidden',
-    '#value' => $path,
-  );
-  $form['title'] = array(
-    '#type' => 'hidden',
-    '#value' => $title,
-  );
+  $form_state['storage'] = [
+    'entity_type' => $entity_type,
+    'entity_id' => $entity_id,
+    'article_id' => $article_id,
+    'return_path' => $path,
+    'title' => $title
+  ];
 
   return confirm_form(
     $form,
@@ -478,6 +462,6 @@ function apple_news_settings_delete_article_form($form, &$form_state, $entity_ty
  * Form submit handler.
  */
 function apple_news_settings_delete_article_form_submit($form, &$form_state) {
-  drupal_set_message(t('<em>@title</em> successfully removed from Apple News', array('@title' => $form_state['values']['title'])));
-  drupal_goto($form_state['values']['return_path']);
+  drupal_set_message(t('<em>@title</em> successfully removed from Apple News', array('@title' => $form_state['storage']['title'])));
+  drupal_goto($form_state['storage']['return_path']);
 }
