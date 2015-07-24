@@ -109,18 +109,23 @@ function apple_news_bactch_run_export_finished($success, $results, $operations) 
     }
     else {
       $count = $results['info']['count'];
-      // Save export information in logs.
-      $record = [
-        'module' => $results['info']['module'],
-        'machine_name' => $results['info']['machine_name'],
-        'starttime' => $results['info']['starttime'],
-        'endtime' => REQUEST_TIME,
-        'initialhighwater' => $results['info']['initialhighwater'],
-        'finalhighwater' => $results['info']['finalhighwater'],
-        'numprocessed' => $count,
-      ];
-      drupal_write_record('apple_news_log', $record);
-      drupal_set_message(t('@count entities were posted to Apple News.', array('@count' => $count)));
+      if ($count > 0) {
+        // Save export information in logs.
+        $record = [
+          'module' => $results['info']['module'],
+          'machine_name' => $results['info']['machine_name'],
+          'starttime' => $results['info']['starttime'],
+          'endtime' => REQUEST_TIME,
+          'initialhighwater' => $results['info']['initialhighwater'],
+          'finalhighwater' => $results['info']['finalhighwater'],
+          'numprocessed' => $count,
+        ];
+        drupal_write_record('apple_news_log', $record);
+        drupal_set_message(t('@count entities were posted to Apple News.', array('@count' => $count)));
+      }
+      else {
+        drupal_set_message(t('There is no content for export to Apple News.'));
+      }
     }
   }
   else {
