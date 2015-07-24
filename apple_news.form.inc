@@ -14,7 +14,10 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
   $entity_types = apple_news_get_entity_types();
   foreach ($entity_types as $type => $export_data) {
     foreach ($export_data as $bundle => $info) {
-      if ($form_id == $bundle . '_' . $type . '_form') {
+
+      // Load export object.
+      $export = apple_news_get_export($info['module'], $info['machine_name']);
+      if ($form_id == $bundle . '_' . $type . '_form' && $export->enabled) {
         // Connected Apple News channels.
         $channels = apple_news_channels();
         $entity_channels = [];
@@ -35,6 +38,9 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
             ];
           }
         }
+
+        // Export configuration form.
+        $export_config_form = $export->getConfigForm($form, $form_state);
 
         // Entity form JS helper (hide/show Apple News entity form options).
         $form['#attached']['js'][] = drupal_get_path('module', 'apple_news') . '/js/form.js';
@@ -58,9 +64,6 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
           '#options' => $channels,
           '#description' => t('Publish this content to selected Apple News Feed.'),
         );
-
-        $export = apple_news_get_export($info['module'], $info['machine_name']);
-        $export_config_form = $export->getConfigForm($form, $form_state);
 
         $form['apple_news']['post_to_apple_news_layout'] = $export_config_form['layout'];
         $form['apple_news']['post_to_apple_news_layout']['#description'] = t('Choose an Apple News layout for this content');
