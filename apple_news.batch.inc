@@ -11,7 +11,7 @@
  */
 function apple_news_bactch_run_export($info, $export) {
 
-  $operations = array();
+  $operations = [];
 
   $result = $export->query()->execute();
   $entity_types = array_keys($result);
@@ -23,7 +23,7 @@ function apple_news_bactch_run_export($info, $export) {
       // Generate AppleNews Document formatted JSON.
       $document = $export->export($entity);
       if (!is_null($document)) {
-        $operations[] = array(
+        $operations[] = [
           'apple_news_bactch_post',
           [
             $info,
@@ -31,7 +31,7 @@ function apple_news_bactch_run_export($info, $export) {
             $entity_type,
             $entity
           ],
-        );
+        ];
       }
     }
   }
@@ -49,6 +49,7 @@ function apple_news_bactch_run_export($info, $export) {
  */
 function apple_news_bactch_post($info, $export_settings, $entity_type, $entity, &$context) {
   module_load_include('inc', 'apple_news');
+  // Get Apple News channels.
   $channels = variable_get('apple_news_variable_api_channels', array());
 
   $wrapper = entity_metadata_wrapper($entity_type, $entity);
@@ -66,9 +67,6 @@ function apple_news_bactch_post($info, $export_settings, $entity_type, $entity, 
     $context['results']['info']['initialhighwater'] = $wrapper->getIdentifier();
   }
   $context['results']['info']['finalhighwater'] = $wrapper->getIdentifier();
-
-  // Get channels.
-  $channels = variable_get('apple_news_variable_api_channels', array());
 
   // Check default channel settings for each export.
   // This is a requried field, make sure to enable at least one channel.
@@ -121,7 +119,7 @@ function apple_news_bactch_run_export_finished($success, $results, $operations) 
           'numprocessed' => $count,
         ];
         drupal_write_record('apple_news_log', $record);
-        drupal_set_message(t('@count entities were posted to Apple News.', array('@count' => $count)));
+        drupal_set_message(t('@count entities were posted to Apple News.', ['@count' => $count]));
       }
       else {
         drupal_set_message(t('There is no content for export to Apple News.'));
@@ -134,10 +132,10 @@ function apple_news_bactch_run_export_finished($success, $results, $operations) 
     $error_operation = reset($operations);
     drupal_set_message(
       t('An error occurred while processing @operation with arguments : @args',
-        array(
+        [
           '@operation' => $error_operation[0],
           '@args' => print_r($error_operation[0], TRUE),
-        )
+        ]
       )
     );
   }
