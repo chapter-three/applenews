@@ -74,6 +74,25 @@ function apple_news_views_data() {
     ),
   );
 
+  $data['apple_news_published_entities']['article_revision_id'] = array(
+    'title' => t('Revision ID'),
+    'help' => t('Apple News Article Revision ID'),
+    'group' => t('Apple News Articles'),
+    'field' => array(
+      'handler' => 'views_handler_field',
+      'click sortable' => TRUE,
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_string',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument_string',
+    ),
+  );
+
   $data['apple_news_published_entities']['channel_id'] = array(
     'title' => t('Channel ID'),
     'help' => t('Apple News Channel ID'),

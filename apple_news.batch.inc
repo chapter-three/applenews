@@ -119,7 +119,7 @@ function apple_news_bactch_run_export_finished($success, $results, $operations) 
           'numprocessed' => $count,
         ];
         drupal_write_record('apple_news_log', $record);
-        drupal_set_message(t('@count entities were posted to Apple News.', ['@count' => $count]));
+        drupal_set_message(t('@count entities were successfully posted to Apple News.', ['@count' => $count]));
       }
       else {
         drupal_set_message(t('There is no content for export to Apple News.'));

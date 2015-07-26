@@ -88,6 +88,25 @@ function apple_news_get_article($article_id) {
 }
 
 /**
+ * Update existing article.
+ */
+function apple_news_update_article($article_id, $data = array()) {
+  $PushAPI = apple_news_push_api();
+  $response = $PushAPI->post('/articles/{article_id}',
+      array(
+        'article_id' => $article_id
+      ),
+    $data
+  );
+  if (!$response) {
+    /** @var \Curl\Curl $client */
+    watchdog('apple_news', $PushAPI->client->curl_error_message, array(), WATCHDOG_ERROR);
+    return FALSE;
+  }
+  return $response;
+}
+
+/**
  * Publishes a new article to a channel.
  */
 function apple_news_post_article($channel_id, $data = array()) {

@@ -151,6 +151,12 @@ function apple_news_schema() {
         'not null' => TRUE,
         'description' => 'Apple News article ID',
       ),
+      'article_revision_id' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'description' => 'Apple News article revision ID',
+      ),
       'channel_id' => array(
         'type' => 'varchar',
         'length' => 255,

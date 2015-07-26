@@ -50,3 +50,54 @@ function hook_apple_news_api_alter(array &$info) {
     $info['MODULE_NAME']['key'] = 'new value';
   }
 }
+
+/**
+ * Invoke Apple News insert operation hooks.
+ *
+ * @param string $id
+ *   Apple News channel ID.
+ * @param object $entity
+ *   Entity object.
+ * @param string $entity_type
+ *   Entity type.
+ * @param array $data
+ *   An array of article assets, used in insert and update operations.
+ *
+ * @see apple_news_op()
+ */
+function hook_apple_news_insert($channel_id, $entity, $entity_type, array $data) {
+}
+
+/**
+ * Invoke Apple News update operation hooks.
+ *
+ * @param string $id
+ *   Apple News channel ID.
+ * @param object $entity
+ *   Entity object.
+ * @param string $entity_type
+ *   Entity type.
+ * @param array $data
+ *   An array of article assets, used in insert and update operations.
+ *
+ * @see apple_news_op()
+ */
+function hook_apple_news_update($channel_id, $entity, $entity_type, array $data) {
+}
+
+/**
+ * Invoke Apple News delete operation hooks.
+ *
+ * @param string $id
+ *   Apple News channel ID.
+ * @param object $entity
+ *   Entity object.
+ * @param string $entity_type
+ *   Entity type.
+ * @param array $data
+ *   An array of article assets, used in insert and update operations.
+ *
+ * @see apple_news_op()
+ */
+function hook_apple_news_delete($channel_id, $entity, $entity_type, array $data) {
+}

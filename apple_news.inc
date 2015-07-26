@@ -241,11 +241,59 @@ function apple_news_post($channel_id, $entity_type, $entity_wrapper, $data) {
       // Need to work on revision support.
       'revision_id' => $entity_wrapper->getIdentifier(),
       'article_id' => $response->data->id,
+      'article_revision_id' => $response->data->revision,
       'channel_id' => $channel_id,
       'postdate' => REQUEST_TIME,
     ];
     drupal_write_record('apple_news_published_entities', $record);
     return TRUE;
+  }
+  return FALSE;
+}
+
+/**
+ * Post Article to Apple News.
+ *
+ * @todo Add Revision support.
+ */
+function apple_news_update($channel_id, $entity_type, $entity_wrapper, $data) {
+  module_load_include('inc', 'apple_news', 'push_api');
+  $article = db_select('apple_news_published_entities', 'e')
+    ->fields('e', array('article_id', 'article_revision_id'))
+    ->condition('entity_type', $entity_type)
+    ->condition('channel_id', $channel_id)
+    ->condition('entity_id', $entity_wrapper->getIdentifier())
+    ->execute()
+    ->fetchObject();
+  // Make sure article exists.
+  if (!empty($article->article_id)) {
+    // Add metadata.
+    $metadata = !empty($data['metadata']) ? json_decode($data['metadata']) : [];
+    $data['metadata']['data']['revision'] = $article->article_revision_id;
+    $data['metadata'] = json_encode($data['metadata']);
+    // Make POST request to Apple News via PushAPI.
+    $response = apple_news_update_article($article->article_id, $data);
+    // If successful request.
+    if (!isset($response->errors)) {
+      db_update('apple_news_published_entities')
+        ->fields(
+          [
+            'article_id' => $response->data->id,
+            'article_revision_id' => $response->data->revision,
+            'postdate' => REQUEST_TIME,
+          ]
+        )
+        ->condition('entity_id', $entity_wrapper->getIdentifier())
+        ->condition('article_id', $article->article_id)
+        ->condition('article_revision_id', $article->article_revision_id)
+        ->condition('channel_id', $channel_id)
+        ->execute();
+      return TRUE;
+    }
+  }
+  else {
+    // Create new Apple News article.
+    apple_news_post($channel_id, $entity_type, $entity_wrapper, $data);
   }
   return FALSE;
 }
@@ -342,17 +390,13 @@ function apple_news_op($op, $channel_id, $entity, $type, array $settings = []) {
           $result = apple_news_post($channel_id, $entity_type, $wrapper, $data);
         }
         elseif ($op == 'update') {
-          // Delete an article from Apple News only if the article
-          // previously was published there.
-          $count = apple_news_get_channels_count($wrapper, $entity_type);
-          if ($count > 0) {
-            apple_news_delete($channel_id, $entity_type, $wrapper);
-          }
-          $result = apple_news_post($channel_id, $entity_type, $wrapper, $data);
+          $result = apple_news_update($channel_id, $entity_type, $wrapper, $data);
         }
         elseif ($op == 'delete') {
           $result = apple_news_delete($channel_id, $entity_type, $wrapper);
         }
+        // Invoke Apple News insert/update/delete hooks.
+        module_invoke_all('apple_news_' . $op, $channel_id, $entity, $entity_type, $data);
         return $result;
       }
     }

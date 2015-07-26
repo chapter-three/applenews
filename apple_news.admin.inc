@@ -60,7 +60,12 @@ function apple_news_settings_api_credentials_form_validate($form, &$form_state) 
     if (isset($form['credentials'][$key]['#title'])) {
       $value = trim($form_state['values'][$key]);
       if ($value === '') {
-        form_set_error($key, t('Missing required value "@title".', array('@title' => $form['credentials'][$key]['#title'])));
+        form_set_error($key, t('Missing required value "@title".',
+            [
+              '@title' => $form['credentials'][$key]['#title']
+            ]
+          )
+        );
       }
     }
   }
@@ -200,7 +205,9 @@ function apple_news_settings_delete_channel_form($form, &$form_state, $channel_i
     t("Do you really want to delete this feed?"),
     'admin/config/content/apple-news/settings/channels',
     t("You will no long be able to publish content to <em>@name</em> feed. This action cannot be undone.",
-      array('@name' => $channels[$channel_id]['name'])
+      [
+        '@name' => $channels[$channel_id]['name']
+      ]
     ),
     t("Yes, delete")
   );
