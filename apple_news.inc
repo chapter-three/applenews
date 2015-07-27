@@ -466,7 +466,6 @@ function apple_news_sections() {
     else {
       module_load_include('inc', 'apple_news', 'push_api');
       // Get list of sections for each channel.
-      $sections = [];
       $api_channels = variable_get('apple_news_variable_api_channels', []);
       foreach ($api_channels as $channel_id => $info) {
         $results = apple_news_get_sections($channel_id);
