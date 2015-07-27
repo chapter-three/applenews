@@ -172,7 +172,15 @@ function apple_news_schema() {
       ],
     ],
     'primary key' => ['entity_id', 'revision_id', 'article_id', 'channel_id'],
-    'indexes' => [],
+    'indexes' => [
+      'entity_type' => ['entity_type'],
+      'entity_id' => ['entity_id'],
+      'revision_id' => ['revision_id'],
+      'article_id' => ['article_id'],
+      'article_revision_id' => ['article_revision_id'],
+      'channel_id' => ['channel_id'],
+      'postdate' => ['postdate']
+    ],
   ];
 
   return $schema;
