@@ -15,6 +15,10 @@ module_load_include('inc', 'apple_news', 'apple_news.batch');
  */
 function apple_news_hook_info() {
 
+  // Form hooks see {module_name}.libraries.inc
+  $libraries = ['group' => 'libraries'];
+  $hooks['libraries_info'] = $libraries;
+
   // Form hooks see {module_name}.form.inc
   $form = ['group' => 'form'];
   $hooks['form_alter'] = $form;
