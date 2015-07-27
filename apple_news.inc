@@ -454,6 +454,35 @@ function apple_news_channels() {
 }
 
 /**
+ * Get Apple News sections.
+ * @see apple_news_get_sections().
+ */
+function apple_news_sections() {
+  $sections = &drupal_static(__FUNCTION__);
+  if (!isset($sections)) {
+    if ($cache = cache_get('apple_news_sections')) {
+      $sections = $cache->data;
+    }
+    else {
+      module_load_include('inc', 'apple_news', 'push_api');
+      // Get list of sections for each channel.
+      $sections = [];
+      $api_channels = variable_get('apple_news_variable_api_channels', []);
+      foreach ($api_channels as $channel_id => $info) {
+        $results = apple_news_get_sections($channel_id);
+        if (!empty($results->data)) {
+          foreach ($results->data as $section) {
+            $sections[$channel_id][] = $section;
+          }
+        }
+      }
+      cache_set('apple_news_sections', $sections, 'cache');
+    }
+  }
+  return $sections;
+}
+
+/**
  * Load posted entities from {apple_news_published_entities} table.
  *
  * @param $entity obejct
