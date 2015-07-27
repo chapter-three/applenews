@@ -16,6 +16,10 @@ function apple_news_settings_api_credentials_form($form, &$form_state) {
     '#title' => t('Apple News Credentials')
   ];
 
+  $endpoint = variable_get('apple_news_variable_api_endpoint', '');
+  $api_key = variable_get('apple_news_variable_api_key', '');
+  $api_secret = variable_get('apple_news_variable_api_secret', '');
+
   $form['credentials']['apple_news_variable_api_endpoint'] = [
     '#type' => 'textfield',
     '#title' => t('API Endpoint URL'),
@@ -26,14 +30,14 @@ function apple_news_settings_api_credentials_form($form, &$form_state) {
   $form['credentials']['apple_news_variable_api_key'] = [
     '#type' => 'textfield',
     '#title' => t('API Key ID'),
-    '#default_value' => variable_get('apple_news_variable_api_key', ''),
+    '#default_value' => $api_key,
     '#description' => t('Push API Key ID'),
   ];
 
   $form['credentials']['apple_news_variable_api_secret'] = [
     '#type' => 'password',
     '#title' => t('API Secret Key'),
-    '#default_value' => variable_get('apple_news_variable_api_secret', ''),
+    '#default_value' => $api_secret,
     '#description' => t('Push API Secret Key'),
   ];
 
@@ -44,9 +48,12 @@ function apple_news_settings_api_credentials_form($form, &$form_state) {
     '#validate' => ['apple_news_settings_api_credentials_form_validate'],
   ];
 
-  $form['delete_config'] = [
-    '#markup' => l(t('Delete configuration'), 'admin/config/content/apple-news/settings/delete'),
-  ];
+  // Show delete button only when all the fields are prepopulated.
+  if (!empty($endpoint) && !empty($api_key) && !empty($api_secret)) {
+    $form['delete_config'] = [
+      '#markup' => l(t('Delete configuration'), 'admin/config/content/apple-news/settings/delete'),
+    ];
+  }
 
   return $form;
 }
@@ -126,6 +133,10 @@ function apple_news_settings_delete_configuration_form_submit($form, &$form_stat
 function apple_news_settings_channels_form() {
   module_load_include('inc', 'apple_news');
 
+  $endpoint = variable_get('apple_news_variable_api_endpoint', '');
+  $api_key = variable_get('apple_news_variable_api_key', '');
+  $api_secret = variable_get('apple_news_variable_api_secret', '');
+
   $channels = [];
   $api_channels = variable_get('apple_news_variable_api_channels', []);
   foreach ($api_channels as $channel_id => $info) {
@@ -136,31 +147,47 @@ function apple_news_settings_channels_form() {
     ];
   }
 
-  $form['channels'] = [
-    '#markup' => '<br/>' . theme('table',
-      [
-        'header' => [
-          t('Feed Name'), // Channel Name
-          t('Feed ID'), // Channel ID
-          t('Operations'),
-        ],
-        'rows' => $channels,
-        'empty' => t('Please add at least one feed in order to be able to publish content to Apple News.'),
-      ]
-    )
-  ];
+  // Show delete button only when all the fields are prepopulated.
+  if (!empty($endpoint) && !empty($api_key) && !empty($api_secret)) {
 
-  $form['apple_news_channel_id'] = [
-    '#type' => 'textfield',
-    '#title' => t('Feed ID'), // Channel ID
-    '#description' => t("Provide a Feed ID"),
-    '#required' => TRUE,
-  ];
+    $form['channels'] = [
+      '#markup' => '<br/>' . theme('table',
+        [
+          'header' => [
+            t('Feed Name'), // Channel Name
+            t('Feed ID'), // Channel ID
+            t('Operations'),
+          ],
+          'rows' => $channels,
+          'empty' => t('Please add at least one feed in order to be able to publish content to Apple News.'),
+        ]
+      )
+    ];
 
-  $form['submit'] = [
-    '#type' => 'submit',
-    '#value' => t('Add new feed'),
-  ];
+    $form['apple_news_channel_id'] = [
+      '#type' => 'textfield',
+      '#title' => t('Feed ID'), // Channel ID
+      '#description' => t("Provide a Feed ID"),
+      '#required' => TRUE,
+    ];
+
+    $form['submit'] = [
+      '#type' => 'submit',
+      '#value' => t('Add new feed'),
+    ];
+
+  }
+  else {
+
+    $form['requirements'] = [
+      '#markup' => t('Please provide Apple News <a href="!link">credentials</a> in order to be able to see and add Feeds.',
+        [
+          '!link' => url('admin/config/content/apple-news/settings'),
+        ]
+      ),
+    ];
+
+  }
 
   return $form;
 }
