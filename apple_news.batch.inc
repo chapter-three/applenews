@@ -79,6 +79,7 @@ function apple_news_bactch_post($info, $export_settings, $entity_type, $entity, 
           '@channel' => $channels[$channel_id]['name']
         ]
       );
+      // Check if the article had already been exported.
       $export_log = apple_news_is_exported($channel_id, $wrapper, $entity_type);
       // Process only non-published articles.
       if (!$export_log) {
