@@ -107,8 +107,6 @@ function hook_apple_news_update($article_id, $article_revision_id, $channel_id, 
  *   @see entity_metadata_wrapper()
  * @param string $entity_type
  *   Entity type.
- * @param array $data
- *   An array of article assets, used in insert and update operations.
  *
  * @see apple_news_op()
  */
