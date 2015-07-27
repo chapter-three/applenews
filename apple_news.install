@@ -163,6 +163,13 @@ function apple_news_schema() {
         'not null' => TRUE,
         'description' => 'Apple News channel ID',
       ],
+      'metadata' => [
+        'type' => 'blob',
+        'not null' => FALSE,
+        'size' => 'big',
+        'serialize' => TRUE,
+        'description' => 'A serialized array of article metadata',
+      ],
       'postdate' => [
         'type' => 'int',
         'size' => 'big',
