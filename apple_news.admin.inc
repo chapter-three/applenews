@@ -520,8 +520,7 @@ function apple_news_settings_delete_article_form_submit($form, &$form_state) {
 
   // Delete an Apple News article.
   $entity = entity_load_single($form_state['storage']['entity_type'], $form_state['storage']['entity_id']);
-  $entity_wrapper = entity_metadata_wrapper($form_state['storage']['entity_type'], $entity);
-  $success = apple_news_delete($form_state['storage']['channel_id'], $form_state['storage']['entity_type'], $entity_wrapper);
+  $success = apple_news_op('delete', $form_state['storage']['channel_id'], $entity, $form_state['storage']['entity_type']);
   // If successful request.
   if ($success) {
     drupal_set_message(
