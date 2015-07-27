@@ -249,6 +249,8 @@ function apple_news_post($channel_id, $entity_type, $entity_wrapper, $data) {
   $response = apple_news_post_article($channel_id, $data);
   // If successful request.
   if (!isset($response->errors)) {
+    // Invoke Apple News insert hooks.
+    module_invoke_all('apple_news_insert', $response->data->id, $response->data->revision, $channel_id, $entity_wrapper, $entity_type, $data);
     $record = [
       'entity_type' => $entity_type,
       'entity_id' => $entity_wrapper->getIdentifier(),
@@ -289,6 +291,8 @@ function apple_news_update($channel_id, $entity_type, $entity_wrapper, $data) {
     $response = apple_news_update_article($article->article_id, $data);
     // If successful request.
     if (!isset($response->errors)) {
+      // Invoke Apple News update hooks.
+      module_invoke_all('apple_news_update', $article->article_id, $article->article_revision_id, $channel_id, $entity_wrapper, $entity_type, $data);
       db_update('apple_news_published_entities')
         ->fields(
           [
@@ -328,6 +332,8 @@ function apple_news_delete($channel_id, $entity_type, $entity_wrapper) {
   $response = apple_news_delete_article($article_id);
   // If successful request.
   if (empty($response)) {
+    // Invoke Apple News delete hooks.
+    module_invoke_all('apple_news_delete', $article_id, $channel_id, $entity_wrapper, $entity_type);
     db_delete('apple_news_published_entities')
       ->condition('article_id', $article_id)
       ->execute();
@@ -409,8 +415,6 @@ function apple_news_op($op, $channel_id, $entity, $type, array $settings = []) {
         elseif ($op == 'delete') {
           $result = apple_news_delete($channel_id, $entity_type, $wrapper);
         }
-        // Invoke Apple News insert/update/delete hooks.
-        module_invoke_all('apple_news_' . $op, $channel_id, $entity, $entity_type, $data);
         return $result;
       }
     }

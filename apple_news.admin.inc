@@ -492,6 +492,7 @@ function apple_news_settings_delete_article_form($form, &$form_state, $entity_ty
     'entity_type' => $entity_type,
     'entity_id' => $entity_id,
     'article_id' => $article_id,
+    'channel_id' => $channel_id,
     'channel_name' => $channels[$channel_id]['name'],
     'return_path' => $path,
     'title' => $title
@@ -517,13 +518,12 @@ function apple_news_settings_delete_article_form($form, &$form_state, $entity_ty
 function apple_news_settings_delete_article_form_submit($form, &$form_state) {
   module_load_include('inc', 'apple_news', 'push_api');
 
-  // Make DELETE request to Apple News via PushAPI.
-  $response = apple_news_delete_article($form_state['storage']['article_id']);
+  // Delete an Apple News article.
+  $entity = entity_load_single($form_state['storage']['entity_type'], $form_state['storage']['entity_id']);
+  $entity_wrapper = entity_metadata_wrapper($form_state['storage']['entity_type'], $entity);
+  $success = apple_news_delete($form_state['storage']['channel_id'], $form_state['storage']['entity_type'], $entity_wrapper);
   // If successful request.
-  if (empty($response)) {
-    db_delete('apple_news_published_entities')
-      ->condition('article_id', $form_state['storage']['article_id'])
-      ->execute();
+  if ($success) {
     drupal_set_message(
       t('<em>@title</em> successfully removed from <em>@channel</em>',
         [

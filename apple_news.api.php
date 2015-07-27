@@ -54,10 +54,15 @@ function hook_apple_news_api_alter(array &$info) {
 /**
  * Invoke Apple News insert operation hooks.
  *
- * @param string $id
+ * @param string $article_id
+ *   Apple News article ID.
+ * @param string $article_revision_id
+ *   Apple News article revision ID.
+ * @param string $channel_id
  *   Apple News channel ID.
- * @param object $entity
- *   Entity object.
+ * @param object $entity_wrapper
+ *   Entity wrapper object.
+ *   @see entity_metadata_wrapper()
  * @param string $entity_type
  *   Entity type.
  * @param array $data
@@ -65,16 +70,21 @@ function hook_apple_news_api_alter(array &$info) {
  *
  * @see apple_news_op()
  */
-function hook_apple_news_insert($channel_id, $entity, $entity_type, array $data) {
+function hook_apple_news_insert($article_id, $article_revision_id, $channel_id, $entity_wrapper, $entity_type, array $data) {
 }
 
 /**
  * Invoke Apple News update operation hooks.
  *
- * @param string $id
+ * @param string $article_id
+ *   Apple News article ID.
+ * @param string $article_revision_id
+ *   Apple News article revision ID.
+ * @param string $channel_id
  *   Apple News channel ID.
- * @param object $entity
- *   Entity object.
+ * @param object $entity_wrapper
+ *   Entity wrapper object.
+ *   @see entity_metadata_wrapper()
  * @param string $entity_type
  *   Entity type.
  * @param array $data
@@ -82,16 +92,19 @@ function hook_apple_news_insert($channel_id, $entity, $entity_type, array $data)
  *
  * @see apple_news_op()
  */
-function hook_apple_news_update($channel_id, $entity, $entity_type, array $data) {
+function hook_apple_news_update($article_id, $article_revision_id, $channel_id, $entity_wrapper, $entity_type, array $data) {
 }
 
 /**
  * Invoke Apple News delete operation hooks.
  *
- * @param string $id
+ * @param string $article_id
+ *   Apple News article ID.
+ * @param string $channel_id
  *   Apple News channel ID.
- * @param object $entity
- *   Entity object.
+ * @param object $entity_wrapper
+ *   Entity wrapper object.
+ *   @see entity_metadata_wrapper()
  * @param string $entity_type
  *   Entity type.
  * @param array $data
@@ -99,5 +112,5 @@ function hook_apple_news_update($channel_id, $entity, $entity_type, array $data)
  *
  * @see apple_news_op()
  */
-function hook_apple_news_delete($channel_id, $entity, $entity_type, array $data) {
+function hook_apple_news_delete($article_id, $channel_id, $entity_wrapper, $entity_type) {
 }
