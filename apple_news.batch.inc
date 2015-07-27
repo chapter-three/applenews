@@ -51,6 +51,7 @@ function apple_news_bactch_post($info, $export_settings, $entity_type, $entity, 
   module_load_include('inc', 'apple_news');
   // Get Apple News channels.
   $channels = variable_get('apple_news_variable_api_channels', array());
+  $success = FALSE;
 
   $wrapper = entity_metadata_wrapper($entity_type, $entity);
 
@@ -78,13 +79,20 @@ function apple_news_bactch_post($info, $export_settings, $entity_type, $entity, 
           '@channel' => $channels[$channel_id]['name']
         ]
       );
+      $export_log = apple_news_is_exported($channel_id, $wrapper, $entity_type);
       // Process only non-published articles.
-      if (!apple_news_is_exported($channel_id, $wrapper, $entity_type)) {
+      if (!$export_log) {
         // Post an article to Apple News.
         $success = apple_news_op('insert', $channel_id, $entity, $entity_type);
-        if ($success) {
-          $context['results']['info']['count']++;
+      }
+      else {
+        // Update an article only if the entity was updated since the last export.
+        if ($export_log->postdate < $entity->changed) {
+          $success = apple_news_op('update', $channel_id, $entity, $entity_type);
         }
+      }
+      if ($success) {
+        $context['results']['info']['count']++;
       }
     }
   }

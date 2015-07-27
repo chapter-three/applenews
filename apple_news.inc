@@ -467,18 +467,18 @@ function apple_news_load_articles($entity, $type) {
  * @param $type string
  *   Entity type.
  *
- * @return boolean
+ * @return Export log record or FALSE if not results.
  */
 function apple_news_is_exported($channel_id, $entity_wrapper, $type) {
-  $article_id = db_select('apple_news_published_entities', 'e')
-    ->fields('e', array('article_id'))
+  $article = db_select('apple_news_published_entities', 'e')
+    ->fields('e')
     ->condition('channel_id', $channel_id)
     ->condition('entity_type', $type)
     ->condition('entity_id', $entity_wrapper->getIdentifier())
     ->execute()
-    ->fetchField();
-  if (!empty($article_id)) {
-    return TRUE;
+    ->fetchObject();
+  if (!empty($article->article_id)) {
+    return $article;
   }
   return FALSE;
 }
