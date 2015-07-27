@@ -10,170 +10,170 @@
  */
 function apple_news_schema() {
 
-  $schema['apple_news_status'] = array(
+  $schema['apple_news_status'] = [
     'description' => 'Status information for Apple News exports',
-    'fields' => array(
-      'module' => array(
+    'fields' => [
+      'module' => [
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
         'description' => 'Module that defines the export',
-      ),
-      'machine_name' => array(
+      ],
+      'machine_name' => [
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
         'description' => 'Unique (per module) machine name for an export',
-      ),
-      'enabled' => array(
+      ],
+      'enabled' => [
         'type' => 'int',
         'size' => 'tiny',
         'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
         'description' => 'Flag export as enabled.',
-      ),
-      'highwater' => array(
+      ],
+      'highwater' => [
         'type' => 'varchar',
         'length' => 255,
         'not null' => FALSE,
         'description' => 'Highwater mark for detecting updated content',
-      ),
-      'settings' => array(
+      ],
+      'settings' => [
         'type' => 'blob',
         'not null' => FALSE,
         'size' => 'big',
         'serialize' => TRUE,
         'description' => 'A serialized array of settings',
-      ),
-    ),
-    'primary key' => array('module', 'machine_name'),
-    'indexes' => array(),
-  );
+      ],
+    ],
+    'primary key' => ['module', 'machine_name'],
+    'indexes' => [],
+  ];
 
-  $schema['apple_news_log'] = array(
+  $schema['apple_news_log'] = [
     'description' => 'History of export processes',
-    'fields' => array(
-      'exlid' => array(
+    'fields' => [
+      'exlid' => [
         'type' => 'serial',
         'unsigned' => TRUE,
         'not null' => TRUE,
         'description' => 'Primary key for apple_news_log table',
-      ),
-      'module' => array(
+      ],
+      'module' => [
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
         'description' => '{apple_news_status}.module',
-      ),
-      'machine_name' => array(
+      ],
+      'machine_name' => [
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
         'description' => '{apple_news_status}.machine_name',
-      ),
-      'starttime' => array(
+      ],
+      'starttime' => [
         'type' => 'int',
         'size' => 'big',
         'unsigned' => TRUE,
         'not null' => TRUE,
         'description' => 'Begin time of a export process, times 1000',
-      ),
-      'endtime' => array(
+      ],
+      'endtime' => [
         'type' => 'int',
         'size' => 'big',
         'unsigned' => TRUE,
         'not null' => FALSE,
         'description' => 'End time of a export process, times 1000',
-      ),
-      'initialhighwater' => array(
+      ],
+      'initialhighwater' => [
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
         'description' => 'Initial highwater mark',
-      ),
-      'finalhighwater' => array(
+      ],
+      'finalhighwater' => [
         'type' => 'varchar',
         'length' => 255,
         'not null' => FALSE,
         'description' => 'Final highwater mark',
-      ),
-      'numprocessed' => array(
+      ],
+      'numprocessed' => [
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => FALSE,
         'description' => 'Number of items processed',
-      ),
-    ),
-    'primary key' => array('exlid'),
-    'indexes' => array(
-      'status' => array('module', 'machine_name'),
-      'starttime' => array('starttime'),
-      'endtime' => array('endtime'),
-    ),
-    'foreign keys' => array(
-      'apple_news_status' => array(
+      ],
+    ],
+    'primary key' => ['exlid'],
+    'indexes' => [
+      'status' => ['module', 'machine_name'],
+      'starttime' => ['starttime'],
+      'endtime' => ['endtime'],
+    ],
+    'foreign keys' => [
+      'apple_news_status' => [
         'table' => 'apple_news_status',
-        'columns' => array(
+        'columns' => [
           'module' => 'module',
           'machine_name' => 'machine_name',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
 
-  $schema['apple_news_published_entities'] = array(
+  $schema['apple_news_published_entities'] = [
     'description' => 'Information about entities published to Apple News',
-    'fields' => array(
-      'entity_type' => array(
+    'fields' => [
+      'entity_type' => [
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
         'description' => 'Entity type',
-      ),
-      'entity_id' => array(
+      ],
+      'entity_id' => [
         'type' => 'int',
         'size' => 'big',
         'unsigned' => TRUE,
         'not null' => TRUE,
         'description' => 'Entity ID',
-      ),
-      'revision_id' => array(
+      ],
+      'revision_id' => [
         'type' => 'int',
         'size' => 'big',
         'unsigned' => TRUE,
         'not null' => TRUE,
         'description' => 'Revision ID',
-      ),
-      'article_id' => array(
+      ],
+      'article_id' => [
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
         'description' => 'Apple News article ID',
-      ),
-      'article_revision_id' => array(
+      ],
+      'article_revision_id' => [
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
         'description' => 'Apple News article revision ID',
-      ),
-      'channel_id' => array(
+      ],
+      'channel_id' => [
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
         'description' => 'Apple News channel ID',
-      ),
-      'postdate' => array(
+      ],
+      'postdate' => [
         'type' => 'int',
         'size' => 'big',
         'unsigned' => TRUE,
         'not null' => TRUE,
         'description' => 'Post date timestamp',
-      ),
-    ),
-    'primary key' => array('entity_id', 'revision_id', 'article_id', 'channel_id'),
-    'indexes' => array(),
-  );
+      ],
+    ],
+    'primary key' => ['entity_id', 'revision_id', 'article_id', 'channel_id'],
+    'indexes' => [],
+  ];
 
   return $schema;
 }

@@ -28,6 +28,7 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
         if (!empty($entity_id)) {
           $entity = entity_load_single($type, $entity_id);
           $results = apple_news_load_articles($entity, $type);
+
           // Collect article id, channel name and postdate for the table below.
           foreach ($results as $row) {
             $entity_channels[$row->article_id] = [
@@ -46,24 +47,24 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
         $form['#attached']['js'][] = drupal_get_path('module', 'apple_news') . '/js/form.js';
 
         // Add Apple News vertical tab.
-        $form['apple_news'] = array(
+        $form['apple_news'] = [
           '#type' => 'fieldset',
           '#title' => t('Apple News'),
           '#collapsible' => TRUE,
           '#collapsed' => TRUE,
           '#group' => 'additional_settings',
           '#weight' => -10,
-          '#attributes' => array(
-            'class' => array('apple-news-options'),
-          ),
-        );
+          '#attributes' => [
+            'class' => ['apple-news-options'],
+          ],
+        ];
 
-        $form['apple_news']['post_to_apple_news_channels'] = array(
+        $form['apple_news']['post_to_apple_news_channels'] = [
           '#type' => 'checkboxes',
           '#title' => t('Feeds'),
           '#options' => $channels,
           '#description' => t('Publish this content to selected Apple News Feed.'),
-        );
+        ];
 
         $form['apple_news']['post_to_apple_news_layout'] = $export_config_form['layout'];
         $form['apple_news']['post_to_apple_news_layout']['#description'] = t('Choose an Apple News layout for this content');
@@ -86,12 +87,13 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
               ]
             ];
           }
-          $form['apple_news']['info'] = array(
-            '#markup' => theme('table', array(
+          $form['apple_news']['info'] = [
+            '#markup' => theme('table',
+            [
               'header' => [t('Feed'), t('Post date'), ''],
               'rows' => $rows
-            )),
-          );
+            ])
+          ];
         }
       }
     }

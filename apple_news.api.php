@@ -22,17 +22,17 @@
  * @see hook_apple_news_api_alter()
  */
 function hook_apple_news_api() {
-  return array(
+  return [
     'api' => 1,
-    'exports' => array(
-      'article' => array(
+    'exports' => [
+      'article' => [
         'class' => 'AppleNewsExportArticle',
-        'arguments' => array(),
+        'arguments' => [],
         'name' => t('Articles'),
         'description' => t('Export articles as defined by default install profile.'),
-      ),
-    ),
-  );
+      ],
+    ],
+  ];
 }
 
 /**

@@ -37,7 +37,7 @@ abstract class AppleNewsExport {
    *
    * @todo implement $highwater.
    */
-  public function __construct($module, $machine_name, array $arguments, $enabled = FALSE, $highwater = NULL, array $settings = array()) {
+  public function __construct($module, $machine_name, array $arguments, $enabled = FALSE, $highwater = NULL, array $settings = []) {
     $this->module = $module;
     $this->machineName = $machine_name;
     $this->arguments = $arguments;
@@ -77,13 +77,13 @@ abstract class AppleNewsExport {
    */
   public function getConfigForm($form, &$form_state) {
 
-    $form['enabled'] = array(
+    $form['enabled'] = [
       '#title' => t('Enabled'),
       '#type' => 'checkbox',
       '#default_value' => $this->enabled,
-    );
+    ];
 
-    $form['channels'] = array(
+    $form['channels'] = [
       '#title' => t('Feeds'),
       '#type' => 'checkboxes',
       '#default_value' => $this->settings['channels'],
@@ -91,7 +91,7 @@ abstract class AppleNewsExport {
       '#options' => apple_news_channels(),
       '#required' => TRUE,
       '#description' => t('Please select feeds.'),
-    );
+    ];
 
     return $form;
   }
@@ -133,7 +133,7 @@ abstract class AppleNewsExport {
    *   Array of assets (images)
    */
   public function assets($entity) {
-    return array();
+    return [];
   }
 
 }

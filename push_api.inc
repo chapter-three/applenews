@@ -20,7 +20,7 @@ function apple_news_push_api() {
   $PushAPI = new ChapterThree\AppleNews\PushAPI($key, $secret, $endpoint);
 
   // Allow configuring curl for debugging.
-  $opts = variable_get('apple_news_variable_api_curlopt', array());
+  $opts = variable_get('apple_news_variable_api_curlopt', []);
 
   /** @var \Curl\Curl $client */
   $client = $PushAPI->client;
@@ -36,10 +36,14 @@ function apple_news_push_api() {
  */
 function apple_news_get_channel($channel_id) {
   $PushAPI = apple_news_push_api();
-  $response = $PushAPI->get('/channels/{channel_id}', array('channel_id' => $channel_id));
+  $response = $PushAPI->get('/channels/{channel_id}',
+    [
+      'channel_id' => $channel_id
+    ]
+  );
   if (!$response) {
     /** @var \Curl\Curl $client */
-    watchdog('apple_news', $PushAPI->client->curl_error_message, array(), WATCHDOG_ERROR);
+    watchdog('apple_news', $PushAPI->client->curl_error_message, [], WATCHDOG_ERROR);
     return FALSE;
   }
   return $response;
@@ -50,10 +54,14 @@ function apple_news_get_channel($channel_id) {
  */
 function apple_news_get_sections($channel_id) {
   $PushAPI = apple_news_push_api();
-  $response = $PushAPI->get('/channels/{channel_id}/sections', array('channel_id' => $channel_id));
+  $response = $PushAPI->get('/channels/{channel_id}/sections',
+    [
+      'channel_id' => $channel_id
+    ]
+  );
   if (!$response) {
     /** @var \Curl\Curl $client */
-    watchdog('apple_news', $PushAPI->client->curl_error_message, array(), WATCHDOG_ERROR);
+    watchdog('apple_news', $PushAPI->client->curl_error_message, [], WATCHDOG_ERROR);
     return FALSE;
   }
   return $response;
@@ -64,10 +72,14 @@ function apple_news_get_sections($channel_id) {
  */
 function apple_news_get_section($section_id) {
   $PushAPI = apple_news_push_api();
-  $response = $PushAPI->get('/sections/{section_id}', array('section_id' => $section_id));
+  $response = $PushAPI->get('/sections/{section_id}',
+    [
+      'section_id' => $section_id
+    ]
+  );
   if (!$response) {
     /** @var \Curl\Curl $client */
-    watchdog('apple_news', $PushAPI->client->curl_error_message, array(), WATCHDOG_ERROR);
+    watchdog('apple_news', $PushAPI->client->curl_error_message, [], WATCHDOG_ERROR);
     return FALSE;
   }
   return $response;
@@ -78,10 +90,14 @@ function apple_news_get_section($section_id) {
  */
 function apple_news_get_article($article_id) {
   $PushAPI = apple_news_push_api();
-  $response = $PushAPI->get('/articles/{article_id}', array('article_id' => $article_id));
+  $response = $PushAPI->get('/articles/{article_id}',
+    [
+      'article_id' => $article_id
+    ]
+  );
   if (!$response) {
     /** @var \Curl\Curl $client */
-    watchdog('apple_news', $PushAPI->client->curl_error_message, array(), WATCHDOG_ERROR);
+    watchdog('apple_news', $PushAPI->client->curl_error_message, [], WATCHDOG_ERROR);
     return FALSE;
   }
   return $response;
@@ -90,17 +106,17 @@ function apple_news_get_article($article_id) {
 /**
  * Update existing article.
  */
-function apple_news_update_article($article_id, $data = array()) {
+function apple_news_update_article($article_id, $data = []) {
   $PushAPI = apple_news_push_api();
   $response = $PushAPI->post('/articles/{article_id}',
-      array(
-        'article_id' => $article_id
-      ),
+    [
+      'article_id' => $article_id
+    ],
     $data
   );
   if (!$response) {
     /** @var \Curl\Curl $client */
-    watchdog('apple_news', $PushAPI->client->curl_error_message, array(), WATCHDOG_ERROR);
+    watchdog('apple_news', $PushAPI->client->curl_error_message, [], WATCHDOG_ERROR);
     return FALSE;
   }
   return $response;
@@ -109,17 +125,17 @@ function apple_news_update_article($article_id, $data = array()) {
 /**
  * Publishes a new article to a channel.
  */
-function apple_news_post_article($channel_id, $data = array()) {
+function apple_news_post_article($channel_id, $data = []) {
   $PushAPI = apple_news_push_api();
   $response = $PushAPI->post('/channels/{channel_id}/articles',
-      array(
-        'channel_id' => $channel_id
-      ),
+    [
+      'channel_id' => $channel_id
+    ],
     $data
   );
   if (!$response) {
     /** @var \Curl\Curl $client */
-    watchdog('apple_news', $PushAPI->client->curl_error_message, array(), WATCHDOG_ERROR);
+    watchdog('apple_news', $PushAPI->client->curl_error_message, [], WATCHDOG_ERROR);
     return FALSE;
   }
   return $response;
@@ -130,10 +146,14 @@ function apple_news_post_article($channel_id, $data = array()) {
  */
 function apple_news_delete_article($article_id) {
   $PushAPI = apple_news_push_api();
-  $response = $PushAPI->delete('/articles/{article_id}', array('article_id' => $article_id));
+  $response = $PushAPI->delete('/articles/{article_id}',
+    [
+      'article_id' => $article_id
+    ]
+  );
   if (!empty($response)) {
     /** @var \Curl\Curl $client */
-    watchdog('apple_news', $PushAPI->client->curl_error_message, array(), WATCHDOG_ERROR);
+    watchdog('apple_news', $PushAPI->client->curl_error_message, [], WATCHDOG_ERROR);
     return FALSE;
   }
   return $response;

@@ -14,12 +14,12 @@ function apple_news_views_data() {
   $data['apple_news_published_entities']['table']['group'] = t('Apple News Articles');
 
   // Advertise this table as a possible base table
-  $data['apple_news_published_entities']['table']['base'] = array(
+  $data['apple_news_published_entities']['table']['base'] = [
     'field' => 'entity_id',
     'title' => t('Apple News Articles'),
     'help' => t('A list of Apple News published articles.'),
     'weight' => 10,
-  );
+  ];
 
   $types = apple_news_get_entity_types();
   $entity_types = array_keys($types);
@@ -29,7 +29,7 @@ function apple_news_views_data() {
   foreach ($entity_types as $entity_type) {
     $entity_info = entity_get_info('node');
     foreach ($fields as $field_name) {
-      $data['apple_news_published_entities']['reverse_entity_id_' . $entity_type]['relationship'] = array(
+      $data['apple_news_published_entities']['reverse_entity_id_' . $entity_type]['relationship'] = [
         'handler' => 'views_handler_relationship_entity_reverse',
         'field_name' => $field_name,
         'field table' => 'apple_news_published_entities',
@@ -38,95 +38,95 @@ function apple_news_views_data() {
         'base field' => $entity_info['entity keys']['id'],
         'label' => t('Apple News articles referencing Drupal entities'),
         'group' => t('Apple News Articles'),
-        'title' => t('Apple News Referencing !field_name', array('!field_name' => $field_name)),
+        'title' => t('Apple News Referencing !field_name', ['!field_name' => $field_name]),
         'help' => t('A bridge to the @entity_type entity that is referencing Apple News article via !field_name',
           [
             '@entity_type' => $entity_type,
             '!field_name' => $field_name,
           ]
         ),
-        'join_extra' => array(
-          0 => array(
+        'join_extra' => [
+          0 => [
             'field' => 'entity_type',
             'value' => $entity_type,
-          ),
-        ),
-      );
+          ],
+        ],
+      ];
     }
   }
 
-  $data['apple_news_published_entities']['article_id'] = array(
+  $data['apple_news_published_entities']['article_id'] = [
     'title' => t('Article ID'),
     'help' => t('Apple News Article ID'),
     'group' => t('Apple News Articles'),
-    'field' => array(
+    'field' => [
       'handler' => 'views_handler_field',
       'click sortable' => TRUE,
-    ),
-    'filter' => array(
+    ],
+    'filter' => [
       'handler' => 'views_handler_filter_string',
-    ),
-    'sort' => array(
+    ],
+    'sort' => [
       'handler' => 'views_handler_sort',
-    ),
-    'argument' => array(
+    ],
+    'argument' => [
       'handler' => 'views_handler_argument_string',
-    ),
-  );
+    ],
+  ];
 
-  $data['apple_news_published_entities']['article_revision_id'] = array(
+  $data['apple_news_published_entities']['article_revision_id'] = [
     'title' => t('Revision ID'),
     'help' => t('Apple News Article Revision ID'),
     'group' => t('Apple News Articles'),
-    'field' => array(
+    'field' => [
       'handler' => 'views_handler_field',
       'click sortable' => TRUE,
-    ),
-    'filter' => array(
+    ],
+    'filter' => [
       'handler' => 'views_handler_filter_string',
-    ),
-    'sort' => array(
+    ],
+    'sort' => [
       'handler' => 'views_handler_sort',
-    ),
-    'argument' => array(
+    ],
+    'argument' => [
       'handler' => 'views_handler_argument_string',
-    ),
-  );
+    ],
+  ];
 
-  $data['apple_news_published_entities']['channel_id'] = array(
+  $data['apple_news_published_entities']['channel_id'] = [
     'title' => t('Channel ID'),
     'help' => t('Apple News Channel ID'),
     'group' => t('Apple News Articles'),
-    'field' => array(
+    'field' => [
       'handler' => 'views_handler_field',
       'click sortable' => TRUE,
-    ),
-    'filter' => array(
+    ],
+    'filter' => [
       'handler' => 'views_handler_filter_string',
-    ),
-    'sort' => array(
+    ],
+    'sort' => [
       'handler' => 'views_handler_sort',
-    ),
-    'argument' => array(
+    ],
+    'argument' => [
       'handler' => 'views_handler_argument_string',
-    ),
-  );
+    ],
+  ];
 
-  $data['apple_news_published_entities']['postdate'] = array(
+  $data['apple_news_published_entities']['postdate'] = [
     'title' => t('Post date'),
     'help' => t('Apple News post timestamp'),
     'group' => t('Apple News Articles'),
-    'field' => array(
+    'field' =>[
       'handler' => 'views_handler_field_date',
       'click sortable' => TRUE,
-    ),
-    'sort' => array(
+    ],
+    'sort' => [
       'handler' => 'views_handler_sort_date',
-    ),
-    'filter' => array(
+    ],
+    'filter' => [
       'handler' => 'views_handler_filter_date',
-    ),
-  );
+    ],
+  ];
 
   return $data;
 

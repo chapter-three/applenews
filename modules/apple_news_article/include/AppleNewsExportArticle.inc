@@ -15,7 +15,7 @@ class AppleNewsExportArticle extends AppleNewsExport {
   /**
    * {@inheritdoc}
    */
-  public function __construct($module, $machine_name, array $arguments, $enabled = FALSE, $highwater = NULL, array $settings = array()) {
+  public function __construct($module, $machine_name, array $arguments, $enabled = FALSE, $highwater = NULL, array $settings = []) {
     $settings = array_merge([
         'layout' => 'simple',
         'channels' => []
@@ -32,7 +32,7 @@ class AppleNewsExportArticle extends AppleNewsExport {
     $query = parent::query();
 
     $query->entityCondition('entity_type', 'node')
-      ->entityCondition('bundle', array('article'))
+      ->entityCondition('bundle', ['article'])
       ->propertyCondition('status', NODE_PUBLISHED)
       ->entityOrderBy('entity_id');
 
@@ -45,15 +45,15 @@ class AppleNewsExportArticle extends AppleNewsExport {
   public function getConfigForm($form, &$form_state) {
     $form = parent::getConfigForm($form, $form_state);
 
-    $form['layout'] = array(
+    $form['layout'] = [
       '#type'          => 'select',
       '#title'         => t('Layout'),
       '#default_value' => $this->settings['layout'],
-      '#options'       => array(
+      '#options'       => [
         'simple'              => t('Simple'),
         'simple_header_image' => t('Simple with Headline above Header Image'),
-      ),
-    );
+      ],
+    ];
 
     return $form;
   }
@@ -105,13 +105,14 @@ class AppleNewsExportArticle extends AppleNewsExport {
 
     // Byline.
     $byline = t('By !author on !date',
-      array(
+      [
         '!author' => $wrapper->author->name->value(),
         '!date' => format_date($wrapper->created->value()),
-      ),
-      array(
+      ],
+      [
         'langcode' => $language,
-      ));
+      ]
+    );
 
     $document = NULL;
 

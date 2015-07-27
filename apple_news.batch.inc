@@ -50,7 +50,7 @@ function apple_news_bactch_run_export($info, $export) {
 function apple_news_bactch_post($info, $export_settings, $entity_type, $entity, &$context) {
   module_load_include('inc', 'apple_news');
   // Get Apple News channels.
-  $channels = variable_get('apple_news_variable_api_channels', array());
+  $channels = variable_get('apple_news_variable_api_channels', []);
   $success = FALSE;
 
   $wrapper = entity_metadata_wrapper($entity_type, $entity);
@@ -74,7 +74,8 @@ function apple_news_bactch_post($info, $export_settings, $entity_type, $entity, 
   if (!empty($export_settings['channels'])) {
     foreach ($export_settings['channels'] as $channel_id) {
       $context['results'][] = $wrapper->getIdentifier() . ' : ' . check_plain($wrapper->label());
-      $context['message'] = t('Posting "@title" entity to <em>@channel</em> feed.', [
+      $context['message'] = t('Posting "@title" entity to <em>@channel</em> feed.',
+        [
           '@title' => $wrapper->label(),
           '@channel' => $channels[$channel_id]['name']
         ]
@@ -106,7 +107,8 @@ function apple_news_bactch_post($info, $export_settings, $entity_type, $entity, 
 function apple_news_bactch_run_export_finished($success, $results, $operations) {
   if ($success) {
     if (empty($results['info']['default_channels'])) {
-      drupal_set_message(t('Please configure default Feed settings for <strong>@export_name</strong> export.',
+      drupal_set_message(
+        t('Please configure default Feed settings for <strong>@export_name</strong> export.',
           [
             '@export_name' => $results['info']['name'],
           ]
@@ -128,7 +130,13 @@ function apple_news_bactch_run_export_finished($success, $results, $operations) 
           'numprocessed' => $count,
         ];
         drupal_write_record('apple_news_log', $record);
-        drupal_set_message(t('@count entities were successfully posted to Apple News.', ['@count' => $count]));
+        drupal_set_message(
+          t('@count entities were successfully posted to Apple News.',
+            [
+              '@count' => $count
+            ]
+          )
+        );
       }
       else {
         drupal_set_message(t('There is no content for export to Apple News.'));
