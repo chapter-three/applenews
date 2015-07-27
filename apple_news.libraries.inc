@@ -6,6 +6,8 @@
 
 /**
  * Implements hook_libraries_info().
+ *
+ * @todo Test implementation.
  */
 function apple_news_libraries_info() {
 
