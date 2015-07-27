@@ -372,8 +372,6 @@ function apple_news_get_entity_types() {
 /**
  * Perform operations on an entity.
  *
- * @todo Convert this into a hook.
- *
  * @param $op string
  *   Entity operation (insert/update/delete)
  * @param $channel_id string
