@@ -13,7 +13,7 @@ function apple_news_views_data() {
   // Basic table information.
   $data['apple_news_published_entities']['table']['group'] = t('Apple News Articles');
 
-  // Advertise this table as a possible base table
+  // Advertise this table as a possible base table.
   $data['apple_news_published_entities']['table']['base'] = [
     'field' => 'entity_id',
     'title' => t('Apple News Articles'),
@@ -116,7 +116,7 @@ function apple_news_views_data() {
     'title' => t('Post date'),
     'help' => t('Apple News post timestamp'),
     'group' => t('Apple News Articles'),
-    'field' =>[
+    'field' => [
       'handler' => 'views_handler_field_date',
       'click sortable' => TRUE,
     ],

@@ -73,8 +73,7 @@ function apple_news_settings_api_credentials_form_validate($form, &$form_state) 
             [
               '@title' => $form['credentials'][$key]['#title']
             ]
-          )
-        );
+            ));
       }
     }
   }
@@ -99,8 +98,7 @@ function apple_news_settings_api_credentials_form_submit($form, &$form_state) {
       [
         '!link' => url('admin/config/content/apple-news/settings/channels')
       ]
-    )
-  );
+      ));
 }
 
 /**
@@ -149,7 +147,7 @@ function apple_news_settings_channels_form() {
     $channels[] = [
       'name' => l(filter_xss($channel->name), 'admin/config/content/apple-news/settings/channels/' . $channel->id . '/sections'),
       'id' => $channel->id,
-      'operations' => l('Delete', 'admin/config/content/apple-news/settings/channels/' . $channel->id . '/delete')
+      'operations' => l(t('Delete'), 'admin/config/content/apple-news/settings/channels/' . $channel->id . '/delete')
     ];
   }
 
@@ -160,8 +158,10 @@ function apple_news_settings_channels_form() {
       '#markup' => '<br/>' . theme('table',
         [
           'header' => [
-            t('Feed Name'), // Channel Name
-            t('Feed ID'), // Channel ID
+            // Channel Name.
+            t('Feed Name'),
+            // Channel ID.
+            t('Feed ID'),
             t('Operations'),
           ],
           'rows' => $channels,
@@ -172,7 +172,8 @@ function apple_news_settings_channels_form() {
 
     $form['apple_news_channel_id'] = [
       '#type' => 'textfield',
-      '#title' => t('Feed ID'), // Channel ID
+      // Channel ID.
+      '#title' => t('Feed ID'),
       '#description' => t("Provide a Feed ID"),
       '#required' => TRUE,
     ];
@@ -281,9 +282,8 @@ function apple_news_settings_delete_channel_form($form, &$form_state, $channel_i
     t("You will no long be able to publish content to <em>@name</em> feed. This action cannot be undone.",
       [
         '@name' => $channel->name
-      ]
-    ),
-    t("Yes, delete")
+      ]),
+      t('Yes, delete')
   );
 }
 
@@ -296,13 +296,7 @@ function apple_news_settings_delete_channel_form_submit($form, &$form_state) {
     drupal_set_message(t('You are trying to remove non-existing feed.'), 'warning');
   }
   else {
-    drupal_set_message(
-      t('<em>@name</em> feed successfully removed.',
-        [
-          '@name' => filter_xss($channel->name)
-        ]
-      )
-    );
+    drupal_set_message(t('<em>@name</em> feed successfully removed.', ['@name' => filter_xss($channel->name)]));
 
     $channels = variable_get('apple_news_variable_api_channels', []);
     foreach ($channels as $i => $channel_id) {
@@ -457,13 +451,7 @@ function apple_news_settings_exports_form_submit($form, &$form_state) {
         $export = apple_news_get_export($info['module'], $info['machine_name']);
         $export->enabled = TRUE;
         apple_news_export_save($export);
-        drupal_set_message(
-          t('<em>@name</em> export sucessfully <strong>enabled</strong>.',
-            [
-              '@name' => $info['name']
-            ]
-          )
-        );
+        drupal_set_message(t('<em>@name</em> export sucessfully <strong>enabled</strong>.', ['@name' => $info['name']]));
       }
       break;
 
@@ -476,9 +464,7 @@ function apple_news_settings_exports_form_submit($form, &$form_state) {
           t('<em>@name</em> export sucessfully <strong>disabled</strong>.',
             [
               '@name' => $info['name']
-            ]
-          )
-        );
+            ]));
       }
       break;
 
@@ -495,9 +481,8 @@ function apple_news_settings_exports_form_submit($form, &$form_state) {
             t('<em>@name</em> export is disabled.',
               [
                 '@name' => $info['name']
-              ]
-            ),
-            'warning'
+              ]),
+              'warning'
           );
         }
       }
@@ -715,7 +700,7 @@ function apple_news_export_destination_delete(ApplenewsExportConfigurable $expor
 function apple_news_settings_delete_article_form($form, &$form_state, $entity_type, $entity_id, $article_id, $channel_id) {
   $channels = variable_get('apple_news_variable_api_channels', []);
 
-  // Load entity
+  // Load entity.
   $entity = entity_load_single($entity_type, $entity_id);
   $wrapper = entity_metadata_wrapper($entity_type, $entity);
   $entity_uri = entity_uri($entity_type, $entity);
@@ -734,12 +719,7 @@ function apple_news_settings_delete_article_form($form, &$form_state, $entity_ty
 
   return confirm_form(
     $form,
-    t("Do you really want to delete <em>@title</em> article from <em>@channel</em>?",
-      [
-        '@title' => $title,
-        '@channel' => $channels[$channel_id]['name']
-      ]
-    ),
+    t("Do you really want to delete <em>@title</em> article from <em>@channel</em>?", ['@title' => $title, '@channel' => $channels[$channel_id]['name']]),
     $path,
     t("This action cannot be undone."),
     t("Yes, delete")
@@ -762,18 +742,11 @@ function apple_news_settings_delete_article_form_submit($form, &$form_state) {
         [
           '@title' => $form_state['storage']['title'],
           '@channel' => $form_state['storage']['channel_name'],
-        ]
-      )
-    );
+        ]));
   }
   else {
     drupal_set_message(
-      t('Unable to delete <em>@title</em> from <em>@channel</em>',
-        [
-          '@title' => $form_state['storage']['title'],
-          '@channel' => $form_state['storage']['channel_name'],
-        ]
-      ),
+      t('Unable to delete <em>@title</em> from <em>@channel</em>', ['@title' => $form_state['storage']['title'], '@channel' => $form_state['storage']['channel_name']]),
       'warning'
     );
   }

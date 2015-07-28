@@ -82,14 +82,7 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
             $rows[] = [
               ['data' => $info['name']],
               ['data' => $info['postdate']],
-              ['data' => l(t('Delete'),
-              	  'admin/config/content/apple-news/'
-              	    . $type . '/'
-              	    . $entity_id . '/'
-              	    . $info['article_id'] . '/'
-              	    . $info['channel_id'] . '/delete'
-              	)
-              ]
+              ['data' => l(t('Delete'), 'admin/config/content/apple-news/' . $type . '/' . $entity_id . '/' . $info['article_id'] . '/' . $info['channel_id'] . '/delete')],
             ];
           }
           $form['apple_news']['info'] = [

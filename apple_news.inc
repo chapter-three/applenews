@@ -462,10 +462,11 @@ function apple_news_delete($channel_id, $entity_type, $entity_wrapper) {
 }
 
 /**
- * Get an array of entity types and bundle names
- * that are available for Apple News export.
+ * Get entity types and bundle names that are available for Apple News export.
  *
- * @return array
+ * @deprecated
+ *
+ * @see apple_news_get_source_options()
  */
 function apple_news_get_entity_types() {
   $entity_types = [];
@@ -491,13 +492,13 @@ function apple_news_get_entity_types() {
 /**
  * Perform operations on an entity.
  *
- * @param $op string
- *   Entity operation (insert/update/delete)
- * @param $channel_id string
+ * @param string $op
+ *   Entity operation (insert/update/delete).
+ * @param string $channel_id
  *   Apple News channel ID.
- * @param $entity object
+ * @param object $entity
  *   Entity object.
- * @param $type string
+ * @param string $type
  *   Entity type.
  */
 function apple_news_op($op, $channel_id, $entity, $type, array $settings = []) {
@@ -514,13 +515,14 @@ function apple_news_op($op, $channel_id, $entity, $type, array $settings = []) {
         // Generate Apple News Document formatted JSON string.
         $document = $export->export($entity);
         if (count($settings)) {
-          // Merge export settings with custom fields from the entity add/edit form.
+          // Merge export settings with custom fields from the entity add/edit
+          // form.
           // @see apple_news_form_alter().
           $export->settings = array_merge($export->settings, $settings);
         }
         $data = [
           'json' => $document->__toString(),
-          'files' => $export->assets($entity), // Get entity assets.
+          'files' => $export->assets($entity),
           'metadata' => '',
         ];
         if ($op == 'insert') {
@@ -575,7 +577,8 @@ function apple_news_channels() {
 
 /**
  * Get Apple News sections.
- * @see apple_news_get_sections().
+ *
+ * @see apple_news_get_sections()
  */
 function apple_news_sections($channel_id) {
   $sections = &drupal_static(__FUNCTION__);
@@ -599,7 +602,8 @@ function apple_news_sections($channel_id) {
 
 /**
  * Get Apple News channels.
- * @see apple_news_get_sections().
+ *
+ * @see apple_news_get_sections()
  */
 function apple_news_channel($channel_id) {
   $channel = &drupal_static(__FUNCTION__);
@@ -627,12 +631,13 @@ function apple_news_channel($channel_id) {
 /**
  * Load posted entities from {apple_news_published_entities} table.
  *
- * @param $entity obejct
+ * @param object $entity
  *   Entity object.
- * @param $type string
+ * @param string $type
  *   Entity type.
  *
  * @return object
+ *   Entity objects.
  */
 function apple_news_load_articles($entity, $type) {
   $wrapper = entity_metadata_wrapper($type, $entity);
@@ -645,16 +650,17 @@ function apple_news_load_articles($entity, $type) {
 }
 
 /**
- * Check if the entity already published to Apple News
+ * Check if the entity already published to Apple News.
  *
- * @param $channel_id string
- *   Apple News channel ID
- * @param $entity_wrapper obejct
+ * @param string $channel_id
+ *   Apple News channel ID.
+ * @param object $entity_wrapper
  *   Entity wrapper object.
- * @param $type string
+ * @param string $type
  *   Entity type.
  *
- * @return Export log record or FALSE if not results.
+ * @return object|NULL
+ *   Export log record or FALSE if not results.
  */
 function apple_news_is_exported($channel_id, $entity_wrapper, $type) {
   $article = db_select('apple_news_published_entities', 'e')
@@ -673,9 +679,9 @@ function apple_news_is_exported($channel_id, $entity_wrapper, $type) {
 /**
  * Get total number of channels where the given article is published.
  *
- * @param $entity_wrapper obejct
+ * @param object $entity_wrapper
  *   Entity wrapper object.
- * @param $type string
+ * @param string $type
  *   Entity type.
  *
  * @return int
@@ -732,14 +738,14 @@ function apple_news_get_source_options(ApplenewsDestination $destination) {
  *
  * @param array $filter
  *   Optional associative array of allowable values, having one or more keys:
- *   - entity_types
- *   - bundles
- *   - field_types
+ *   - 'entity_types'.
+ *   - 'bundles'.
+ *   - 'field_types'.
  *
  * @return array
  *   As returned by field_info_field(), keyed on field name.
  */
-function apple_news_get_fields($filter) {
+function apple_news_get_fields(array $filter) {
   $return = [];
 
   foreach (field_info_instances() as $entity_type => $bundles) {

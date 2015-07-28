@@ -10,7 +10,7 @@
  */
 function apple_news_schema() {
 
-  // Custom cache table
+  // Custom cache table.
   $schema['cache_apple_news'] = drupal_get_schema_unprocessed('system', 'cache');
 
   $schema['apple_news_status'] = [

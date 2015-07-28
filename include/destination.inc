@@ -206,7 +206,7 @@ class ApplenewsDestinationBody extends ApplenewsDestination {
       '#type' => 'select',
       '#options' => apple_news_get_source_options($this),
       '#default_value' => $this->settings['text'],
-   ];
+    ];
 
     $form['format'] = [
       '#title' => t('Format'),

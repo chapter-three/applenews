@@ -7,7 +7,7 @@
 /**
  * Batch Apple News export.
  *
- * @see apple_news_settings_exports_form_submit().
+ * @see apple_news_settings_exports_form_submit()
  */
 function apple_news_bactch_run_export($info, $export) {
 
@@ -104,13 +104,7 @@ function apple_news_bactch_run_export_finished($success, $results, $operations) 
   if ($success) {
     if (empty($results['info']['default_channels'])) {
       drupal_set_message(
-        t('Please configure default Feed settings for <strong>@export_name</strong> export.',
-          [
-            '@export_name' => $results['info']['name'],
-          ]
-        ),
-        'warning'
-      );
+        t('Please configure default Feed settings for <strong>@export_name</strong> export.', ['@export_name' => $results['info']['name']]), 'warning');
     }
     else {
       $count = $results['info']['count'];
@@ -128,9 +122,7 @@ function apple_news_bactch_run_export_finished($success, $results, $operations) 
           t('@count entities were successfully posted to Apple News.',
             [
               '@count' => $count
-            ]
-          )
-        );
+            ]));
       }
       else {
         drupal_set_message(t('There is no content for export to Apple News.'));
@@ -146,8 +138,6 @@ function apple_news_bactch_run_export_finished($success, $results, $operations) 
         [
           '@operation' => $error_operation[0],
           '@args' => print_r($error_operation[0], TRUE),
-        ]
-      )
-    );
+        ]));
   }
 }

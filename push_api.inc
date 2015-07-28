@@ -17,33 +17,33 @@ function apple_news_push_api() {
   $secret = variable_get('apple_news_variable_api_secret', FALSE);
   $endpoint = variable_get('apple_news_variable_api_endpoint', FALSE);
 
-  $PushAPI = new ChapterThree\AppleNews\PushAPI($key, $secret, $endpoint);
+  $pushapi = new ChapterThree\AppleNews\PushAPI($key, $secret, $endpoint);
 
   // Allow configuring curl for debugging.
   $opts = variable_get('apple_news_variable_api_curlopt', []);
 
   /** @var \Curl\Curl $client */
-  $client = $PushAPI->client;
+  $client = $pushapi->client;
   foreach ($opts as $key => $val) {
     $client->setOpt($key, $val);
   }
 
-  return $PushAPI;
+  return $pushapi;
 }
 
 /**
  * Fetches information about a channel.
  */
 function apple_news_get_channel($channel_id) {
-  $PushAPI = apple_news_push_api();
-  $response = $PushAPI->get('/channels/{channel_id}',
+  $pushapi = apple_news_push_api();
+  $response = $pushapi->get('/channels/{channel_id}',
     [
       'channel_id' => $channel_id
     ]
   );
   if (!$response) {
     /** @var \Curl\Curl $client */
-    watchdog('apple_news', $PushAPI->client->curl_error_message, [], WATCHDOG_ERROR);
+    watchdog('apple_news', $pushapi->client->curl_error_message, [], WATCHDOG_ERROR);
     return FALSE;
   }
   return $response;
@@ -53,15 +53,15 @@ function apple_news_get_channel($channel_id) {
  * Fetches a list of all sections for a channel.
  */
 function apple_news_get_sections($channel_id) {
-  $PushAPI = apple_news_push_api();
-  $response = $PushAPI->get('/channels/{channel_id}/sections',
+  $pushapi = apple_news_push_api();
+  $response = $pushapi->get('/channels/{channel_id}/sections',
     [
       'channel_id' => $channel_id
     ]
   );
   if (!$response) {
     /** @var \Curl\Curl $client */
-    watchdog('apple_news', $PushAPI->client->curl_error_message, [], WATCHDOG_ERROR);
+    watchdog('apple_news', $pushapi->client->curl_error_message, [], WATCHDOG_ERROR);
     return FALSE;
   }
   return $response;
@@ -71,15 +71,15 @@ function apple_news_get_sections($channel_id) {
  * Fetches information about a single section.
  */
 function apple_news_get_section($section_id) {
-  $PushAPI = apple_news_push_api();
-  $response = $PushAPI->get('/sections/{section_id}',
+  $pushapi = apple_news_push_api();
+  $response = $pushapi->get('/sections/{section_id}',
     [
       'section_id' => $section_id
     ]
   );
   if (!$response) {
     /** @var \Curl\Curl $client */
-    watchdog('apple_news', $PushAPI->client->curl_error_message, [], WATCHDOG_ERROR);
+    watchdog('apple_news', $pushapi->client->curl_error_message, [], WATCHDOG_ERROR);
     return FALSE;
   }
   return $response;
@@ -89,15 +89,15 @@ function apple_news_get_section($section_id) {
  * Fetches an article.
  */
 function apple_news_get_article($article_id) {
-  $PushAPI = apple_news_push_api();
-  $response = $PushAPI->get('/articles/{article_id}',
+  $pushapi = apple_news_push_api();
+  $response = $pushapi->get('/articles/{article_id}',
     [
       'article_id' => $article_id
     ]
   );
   if (!$response) {
     /** @var \Curl\Curl $client */
-    watchdog('apple_news', $PushAPI->client->curl_error_message, [], WATCHDOG_ERROR);
+    watchdog('apple_news', $pushapi->client->curl_error_message, [], WATCHDOG_ERROR);
     return FALSE;
   }
   return $response;
@@ -107,8 +107,8 @@ function apple_news_get_article($article_id) {
  * Update existing article.
  */
 function apple_news_update_article($article_id, $data = []) {
-  $PushAPI = apple_news_push_api();
-  $response = $PushAPI->post('/articles/{article_id}',
+  $pushapi = apple_news_push_api();
+  $response = $pushapi->post('/articles/{article_id}',
     [
       'article_id' => $article_id
     ],
@@ -116,7 +116,7 @@ function apple_news_update_article($article_id, $data = []) {
   );
   if (!$response) {
     /** @var \Curl\Curl $client */
-    watchdog('apple_news', $PushAPI->client->curl_error_message, [], WATCHDOG_ERROR);
+    watchdog('apple_news', $pushapi->client->curl_error_message, [], WATCHDOG_ERROR);
     return FALSE;
   }
   return $response;
@@ -126,8 +126,8 @@ function apple_news_update_article($article_id, $data = []) {
  * Publishes a new article to a channel.
  */
 function apple_news_post_article($channel_id, $data = []) {
-  $PushAPI = apple_news_push_api();
-  $response = $PushAPI->post('/channels/{channel_id}/articles',
+  $pushapi = apple_news_push_api();
+  $response = $pushapi->post('/channels/{channel_id}/articles',
     [
       'channel_id' => $channel_id
     ],
@@ -135,7 +135,7 @@ function apple_news_post_article($channel_id, $data = []) {
   );
   if (!$response) {
     /** @var \Curl\Curl $client */
-    watchdog('apple_news', $PushAPI->client->curl_error_message, [], WATCHDOG_ERROR);
+    watchdog('apple_news', $pushapi->client->curl_error_message, [], WATCHDOG_ERROR);
     return FALSE;
   }
   return $response;
@@ -145,15 +145,15 @@ function apple_news_post_article($channel_id, $data = []) {
  * Deletes an article.
  */
 function apple_news_delete_article($article_id) {
-  $PushAPI = apple_news_push_api();
-  $response = $PushAPI->delete('/articles/{article_id}',
+  $pushapi = apple_news_push_api();
+  $response = $pushapi->delete('/articles/{article_id}',
     [
       'article_id' => $article_id
     ]
   );
   if (!empty($response)) {
     /** @var \Curl\Curl $client */
-    watchdog('apple_news', $PushAPI->client->curl_error_message, [], WATCHDOG_ERROR);
+    watchdog('apple_news', $pushapi->client->curl_error_message, [], WATCHDOG_ERROR);
     return FALSE;
   }
   return $response;
