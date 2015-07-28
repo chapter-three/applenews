@@ -67,7 +67,9 @@ function apple_news_settings_api_credentials_form_validate($form, &$form_state) 
     if (isset($form['credentials'][$key]['#title'])) {
       $value = trim($form_state['values'][$key]);
       if ($value === '') {
-        form_set_error($key, t('Missing required value "@title".',
+        form_set_error(
+          $key,
+          t('Missing required value "@title".',
             [
               '@title' => $form['credentials'][$key]['#title']
             ]
@@ -122,6 +124,9 @@ function apple_news_settings_delete_configuration_form_submit($form, &$form_stat
   foreach (apple_news_settings_fields() as $key) {
     variable_set($key, '');
   }
+  // Remove data from custom cache table.
+  db_truncate('cache_apple_news')->execute();
+  // Reset channels.
   variable_set('apple_news_variable_api_channels', []);
   drupal_set_message(t('The configuration options have been deleted.'));
   drupal_goto('admin/config/content/apple-news/settings');
@@ -139,11 +144,12 @@ function apple_news_settings_channels_form() {
 
   $channels = [];
   $api_channels = variable_get('apple_news_variable_api_channels', []);
-  foreach ($api_channels as $channel_id => $info) {
+  foreach ($api_channels as $channel_id) {
+    $channel = apple_news_channel($channel_id);
     $channels[] = [
-      'name' => $info['name'],
-      'id' => $channel_id,
-      'operations' => l('Delete', 'admin/config/content/apple-news/settings/channels/' . $channel_id . '/delete')
+      'name' => l(filter_xss($channel->name), 'admin/config/content/apple-news/settings/channels/' . $channel->id . '/sections'),
+      'id' => $channel->id,
+      'operations' => l('Delete', 'admin/config/content/apple-news/settings/channels/' . $channel->id . '/delete')
     ];
   }
 
@@ -196,20 +202,21 @@ function apple_news_settings_channels_form() {
  * Form submit handler.
  */
 function apple_news_settings_channels_form_submit($form, &$form_state) {
-  module_load_include('inc', 'apple_news', 'push_api');
+  module_load_include('inc', 'apple_news');
 
   $channel_id = $form_state['values']['apple_news_channel_id'];
   $channels = variable_get('apple_news_variable_api_channels', []);
 
-  if ($response = apple_news_get_channel($channel_id)) {
+  if ($channel = apple_news_channel($channel_id)) {
     // Save settings.
-    if (!isset($response->errors)) {
-      $new_channel = [
-        $channel_id => (array) $response->data,
-      ];
-      variable_set('apple_news_variable_api_channels', array_merge($channels, $new_channel));
+    if (!isset($channel->errors)) {
+      // Get sections.
+      apple_news_sections($channel->id);
+      // Save new channel ID.
+      $channels[] = $channel->id;
+      variable_set('apple_news_variable_api_channels', $channels);
       $msg = t('Successfully connected to the feed "@channel".', [
-        '@channel' => $response->data->name,
+        '@channel' => filter_xss($channel->name),
       ]);
       drupal_set_message($msg, 'status');
     }
@@ -228,18 +235,52 @@ function apple_news_settings_channels_form_submit($form, &$form_state) {
 }
 
 /**
+ * View Apple News channel sections.
+ */
+function apple_news_settings_channel_sections_form($form, &$form_state, $channel_id) {
+  module_load_include('inc', 'apple_news');
+
+  $sections = [];
+  $channel_sections = apple_news_sections($channel_id);
+  if (!empty($channel_sections)) {
+    foreach ($channel_sections as $section) {
+      $sections[] = [
+        'name' => filter_xss($section->name),
+        'id' => $section->id,
+        'default' => ($section->isDefault) ? t('Yes') : '',
+      ];
+    }
+  }
+
+  $form['sections'] = [
+    '#markup' => theme('table',
+      [
+        'header' => [
+          t('Section Name'),
+          t('Section ID'),
+          t('Default')
+        ],
+        'rows' => $sections
+      ]
+    ),
+  ];
+  return $form;
+}
+
+/**
  * Delete channel ID with confirmation.
  */
 function apple_news_settings_delete_channel_form($form, &$form_state, $channel_id) {
-  $channels = variable_get('apple_news_variable_api_channels', []);
-  $form_state['storage'] = ['channel_id' => $channel_id];
+  module_load_include('inc', 'apple_news');
+  $channel = apple_news_channel($channel_id);
+  $form_state['storage'] = ['channel' => $channel];
   return confirm_form(
     $form,
     t("Do you really want to delete this feed?"),
     'admin/config/content/apple-news/settings/channels',
     t("You will no long be able to publish content to <em>@name</em> feed. This action cannot be undone.",
       [
-        '@name' => $channels[$channel_id]['name']
+        '@name' => $channel->name
       ]
     ),
     t("Yes, delete")
@@ -250,28 +291,43 @@ function apple_news_settings_delete_channel_form($form, &$form_state, $channel_i
  * Form submit handler.
  */
 function apple_news_settings_delete_channel_form_submit($form, &$form_state) {
-  module_load_include('inc', 'apple_news');
-  $channels = variable_get('apple_news_variable_api_channels', []);
-  $channel_id = $form_state['storage']['channel_id'];
-  if (!isset($channels[$channel_id])) {
+  $channel = $form_state['storage']['channel'];
+  if (empty($channel->id)) {
     drupal_set_message(t('You are trying to remove non-existing feed.'), 'warning');
   }
   else {
     drupal_set_message(
       t('<em>@name</em> feed successfully removed.',
         [
-          '@name' => $channels[$channel_id]['name']
+          '@name' => filter_xss($channel->name)
         ]
       )
     );
-    unset($channels[$channel_id]);
+
+    $channels = variable_get('apple_news_variable_api_channels', []);
+    foreach ($channels as $i => $channel_id) {
+      if ($channel_id == $channel->id) {
+        unset($channels[$i]);
+      }
+    }
+    variable_set('apple_news_variable_api_channels', $channels);
+
+    // Delete from custom cache table.
+    db_delete('cache_apple_news')
+      ->condition('cid', 'channel_' . $channel->id)
+      ->execute();
+    db_delete('cache_apple_news')
+      ->condition('cid', 'sections_' . $channel->id)
+      ->execute();
+
     // Delete settings when channel ID removed.
     $result = db_select('apple_news_status', 's')
       ->fields('s')
       ->execute();
+
     foreach ($result as $row) {
       $settings = unserialize($row->settings);
-      unset($settings['channels'][$channel_id]);
+      unset($settings['channels'][$channel->id]);
       db_update('apple_news_status')
         ->fields(
           [
@@ -282,7 +338,6 @@ function apple_news_settings_delete_channel_form_submit($form, &$form_state) {
         ->condition('machine_name', $row->machine_name)
         ->execute();
     }
-    variable_set('apple_news_variable_api_channels', $channels);
     drupal_goto('admin/config/content/apple-news/settings/channels');
   }
 }

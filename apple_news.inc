@@ -447,8 +447,9 @@ function apple_news_channels() {
   // Add Post to Apple News checkbox.
   $channels = [];
   $api_channels = variable_get('apple_news_variable_api_channels', []);
-  foreach ($api_channels as $channel_id => $info) {
-    $channels[$channel_id] = $info['name'];
+  foreach ($api_channels as $channel_id) {
+    $channel = apple_news_channel($channel_id);
+    $channels[$channel->id] = filter_xss($channel->name);
   }
   return $channels;
 }
@@ -457,28 +458,51 @@ function apple_news_channels() {
  * Get Apple News sections.
  * @see apple_news_get_sections().
  */
-function apple_news_sections() {
+function apple_news_sections($channel_id) {
   $sections = &drupal_static(__FUNCTION__);
   if (!isset($sections)) {
-    if ($cache = cache_get('apple_news_sections')) {
+    if ($cache = cache_get('sections_' . $channel_id, 'cache_apple_news')) {
       $sections = $cache->data;
     }
     else {
       module_load_include('inc', 'apple_news', 'push_api');
-      // Get list of sections for each channel.
-      $api_channels = variable_get('apple_news_variable_api_channels', []);
-      foreach ($api_channels as $channel_id => $info) {
-        $results = apple_news_get_sections($channel_id);
-        if (!empty($results->data)) {
-          foreach ($results->data as $section) {
-            $sections[$channel_id][] = $section;
-          }
+      $response = apple_news_get_sections($channel_id);
+      if (!empty($response->data)) {
+        foreach ($response->data as $section) {
+          $sections[] = $section;
         }
       }
-      cache_set('apple_news_sections', $sections, 'cache');
+      cache_set('sections_' . $channel_id, $sections, 'cache_apple_news');
     }
   }
   return $sections;
+}
+
+/**
+ * Get Apple News channels.
+ * @see apple_news_get_sections().
+ */
+function apple_news_channel($channel_id) {
+  $channel = &drupal_static(__FUNCTION__);
+  if (!isset($channel)) {
+    if ($cache = cache_get('channel_' . $channel_id, 'cache_apple_news')) {
+      $channel = $cache->data;
+    }
+    else {
+      module_load_include('inc', 'apple_news', 'push_api');
+      $response = apple_news_get_channel($channel_id);
+      if (!isset($response->errors)) {
+        if (!empty($response->data)) {
+          $channel = $response->data;
+          cache_set('channel_' . $channel_id, $channel, 'cache_apple_news');
+        }
+      }
+      else {
+        return $response;
+      }
+    }
+  }
+  return $channel;
 }
 
 /**

@@ -149,6 +149,17 @@ function apple_news_menu() {
     'weight' => 1,
   ];
 
+  // [channel-id]
+  $items['admin/config/content/apple-news/settings/channels/%/sections'] = [
+    'title' => 'View Feed Sections',
+    'description' => t('View Apple News channel sections.'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['apple_news_settings_channel_sections_form', 6],
+    'access arguments' => ['administer apple news'],
+    'file' => 'apple_news.admin.inc',
+    'weight' => 1,
+  ];
+
   // Delete an article from Apple News channel
   // [entity-type]/[entity-id]/[article-id]/[channel-id]
   $items['admin/config/content/apple-news/%/%/%/%/delete'] = [
