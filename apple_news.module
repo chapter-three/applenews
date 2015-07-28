@@ -90,7 +90,7 @@ function apple_news_menu() {
     'weight' => 0,
   ];
 
-  $items['admin/config/content/apple-news/exports/%apple_news_export/edit'] = [
+  $items['admin/config/content/apple-news/exports/%apple_news_export'] = [
     'title' => 'Edit Export',
     'description' => t('Apple News Export configuration.'),
     'page callback' => 'drupal_get_form',
@@ -98,6 +98,27 @@ function apple_news_menu() {
     'access arguments' => ['administer apple news'],
     'file' => 'apple_news.admin.inc',
   ];
+
+  $items['admin/config/content/apple-news/exports/%apple_news_export/%/%'] = array(
+    'title' => 'Edit Export Destination',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array(
+      'apple_news_export_destination_edit_form',
+      5,
+      6,
+      7,
+    ),
+    'access arguments' => array('administer apple news'),
+    'file' => 'apple_news.admin.inc',
+  );
+
+  $items['admin/config/content/apple-news/exports/%apple_news_export/%/%/delete'] = array(
+    'title' => 'Delete Export Destination',
+    'page callback' => 'apple_news_export_destination_delete',
+    'page arguments' => array(5, 6, 7),
+    'access arguments' => array('administer apple news'),
+    'file' => 'apple_news.admin.inc',
+  );
 
   $items['admin/config/content/apple-news/settings'] = [
     'title' => 'Settings',
@@ -182,7 +203,7 @@ function apple_news_menu() {
  */
 function apple_news_export_load($id) {
   module_load_include('inc', 'apple_news');
-  list($module, $machine_name) = explode('::', $id);
+  list($module, $machine_name) = apple_news_export_id_extract($id);
   return apple_news_get_export($module, $machine_name);
 }
 
@@ -191,4 +212,45 @@ function apple_news_export_load($id) {
  */
 function apple_news_cron() {
   module_load_include('inc', 'apple_news');
+}
+
+/**
+ * Implements hook_theme().
+ */
+function apple_news_theme($existing, $type, $theme, $path) {
+  return array(
+    'apple_news_export_edit_form' => array(
+      'render element' => 'form',
+      'file' => 'apple_news.admin.inc',
+    ),
+  );
+}
+
+/**
+ * Implements hook_apple_news_api().
+ */
+function apple_news_apple_news_api() {
+  return array(
+    'api' => APPLE_NEWS_API_VERSION,
+    'sources' => array(
+      'entity' => array(
+        'class' => 'ApplenewsSourceEntity',
+        'name' => 'Entity',
+      ),
+      'node' => array(
+        'class' => 'ApplenewsSourceNode',
+        'name' => 'Node',
+      ),
+      'field' => array(
+        'class' => 'ApplenewsSourceField',
+        'name' => 'Field Value',
+      ),
+    ),
+    'destinations' => array(
+      'body' => array(
+        'class' => 'ApplenewsDestinationBody',
+        'name' => 'Body',
+      ),
+    ),
+  );
 }

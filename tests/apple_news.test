@@ -12,7 +12,7 @@ module_load_include('inc', 'apple_news', 'apple_news.batch');
 /**
  * Base class for Apple News web tests.
  */
-abstract class AppleNewsWebTestCase extends DrupalWebTestCase {
+abstract class ApplenewsWebTestCase extends DrupalWebTestCase {
 
   protected $watchdogSeverityLevel = WATCHDOG_WARNING;
 

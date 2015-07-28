@@ -29,9 +29,7 @@ function apple_news_drush_command() {
 function drush_apple_news_apple_news_export($module, $machine_name) {
   module_load_include('inc', 'apple_news');
   module_load_include('inc', 'apple_news', 'apple_news.batch');
-  $exports = apple_news_exports();
-  $info = $exports[$module . '::' . $machine_name];
-  $export = apple_news_get_export($module, $machine_name);
+  $export = apple_news_export_load($module, $machine_name);
   if ($export->enabled) {
     $batch = apple_news_bactch_run_export($info, $export);
     $batch['progressive'] = FALSE;

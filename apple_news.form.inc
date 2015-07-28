@@ -10,6 +10,11 @@
 function apple_news_form_alter(&$form, &$form_state, $form_id) {
   module_load_include('inc', 'apple_news');
 
+  // @todo alter only the node edit form.
+  if (TRUE) {
+    return;
+  }
+
   // Get all possible entity types and bundles available for export.
   $entity_types = apple_news_get_entity_types();
   foreach ($entity_types as $type => $export_data) {

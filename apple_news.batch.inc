@@ -64,10 +64,6 @@ function apple_news_bactch_post($info, $export_settings, $entity_type, $entity, 
   if (!isset($context['results']['info']['count'])) {
     $context['results']['info']['count'] = 0;
   }
-  if (!isset($context['results']['info']['initialhighwater'])) {
-    $context['results']['info']['initialhighwater'] = $wrapper->getIdentifier();
-  }
-  $context['results']['info']['finalhighwater'] = $wrapper->getIdentifier();
 
   // Check default channel settings for each export.
   // This is a requried field, make sure to enable at least one channel.
@@ -125,8 +121,6 @@ function apple_news_bactch_run_export_finished($success, $results, $operations) 
           'machine_name' => $results['info']['machine_name'],
           'starttime' => $results['info']['starttime'],
           'endtime' => REQUEST_TIME,
-          'initialhighwater' => $results['info']['initialhighwater'],
-          'finalhighwater' => $results['info']['finalhighwater'],
           'numprocessed' => $count,
         ];
         drupal_write_record('apple_news_log', $record);

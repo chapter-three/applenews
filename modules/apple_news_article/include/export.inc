@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Class for exporting Drupal article content to Apple News.
+ * ApplenewsExportArticle class.
  */
 
 use ChapterThree\AppleNews\Document;
@@ -10,33 +10,41 @@ use ChapterThree\AppleNews\Document;
 /**
  * Exports a Drupal article as defined by the default install profile.
  */
-class AppleNewsExportArticle extends AppleNewsExport {
+class ApplenewsExportArticle extends ApplenewsExport {
 
   /**
    * {@inheritdoc}
    */
-  public function __construct($module, $machine_name, array $arguments, $enabled = FALSE, $highwater = NULL, array $settings = []) {
-    $settings = array_merge([
-        'layout' => 'simple',
-        'channels' => []
-      ],
-      $settings
+  public function __construct($module, $machine_name, array $arguments) {
+    parent::__construct($module, $machine_name, $arguments);
+    $this->settings += array(
+      'layout' => 'simple',
     );
-    parent::__construct($module, $machine_name, $arguments, $enabled, $highwater, $settings);
   }
 
   /**
    * {@inheritdoc}
    */
   public function query() {
-    $query = parent::query();
-
-    $query->entityCondition('entity_type', 'node')
-      ->entityCondition('bundle', ['article'])
+    return parent::query()
+      ->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', array('article'))
       ->propertyCondition('status', NODE_PUBLISHED)
       ->entityOrderBy('entity_id');
+  }
 
-    return $query;
+  /**
+   * {@inheritdoc}
+   */
+  public function entityTypes() {
+    return array('node');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function bundles() {
+    return array('article');
   }
 
   /**
@@ -114,20 +122,18 @@ class AppleNewsExportArticle extends AppleNewsExport {
       ]
     );
 
-    $document = NULL;
-
     switch ($this->settings['layout']) {
 
       case 'simple':
         $layout = new Document\Layouts\Layout(7, 1024);
-        $document = new Document($id, $title,
+        $this->document = new Document($id, $title,
           apple_news_language_code($language), $layout);
         // Body.
-        $document->addComponent($body);
+        $this->document->addComponent($body);
         // Image.
         if ($file) {
           $image = new Document\Components\Image($file['uri']);
-          $document->addComponent($image);
+          $this->document->addComponent($image);
         }
         break;
 
@@ -135,24 +141,24 @@ class AppleNewsExportArticle extends AppleNewsExport {
         $layout = new Document\Layouts\Layout(7, 1024);
         $layout->setMargin(70)
           ->setGutter(40);
-        $document = new Document($id, $title,
+        $this->document = new Document($id, $title,
           apple_news_language_code($language), $layout);
         // Title component.
         $layout = new Document\Layouts\ComponentLayout();
         $layout->setColumnStart(0)->setColumnSpan(7)
           ->setMargin(new Document\Margin(50, 10));
-        $document->addComponentLayout('titleLayout', $layout);
+        $this->document->addComponentLayout('titleLayout', $layout);
         $style = new Document\Styles\ComponentTextStyle();
         $style->setTextAlignment('left')
           ->setFontName('HelveticaNeue-Bold')
           ->setFontSize(4)
           ->setLineHeight(4)
           ->setTextColor('#000');
-        $document->addComponentTextStyle('titleStyle', $style);
+        $this->document->addComponentTextStyle('titleStyle', $style);
         $title = new Document\Components\Title($title);
-        $title->setLayout('titleLayout', $document)
-          ->setTextStyle('titleStyle', $document);
-        $document->addComponent($title);
+        $title->setLayout('titleLayout', $this->document)
+          ->setTextStyle('titleStyle', $this->document);
+        $this->document->addComponent($title);
         // Header image.
         if ($file) {
           $layout = new Document\Layouts\ComponentLayout();
@@ -160,52 +166,52 @@ class AppleNewsExportArticle extends AppleNewsExport {
             ->setIgnoreDocumentMargin()
             ->setMinimumHeight('40vh')
             ->setMargin(new Document\Margin(15, 15));
-          $document->addComponentLayout('headerImageLayout', $layout);
+          $this->document->addComponentLayout('headerImageLayout', $layout);
           $fill = new Document\Styles\Fills\ImageFill($file['uri']);
           $fill->setFillMode('cover')
             ->setVerticalAlignment('center');
           $style = new Document\Styles\ComponentStyle();
           $style->setFill($fill);
           $header = new Document\Components\Header();
-          $header->setLayout('headerImageLayout', $document)
+          $header->setLayout('headerImageLayout', $this->document)
             ->setStyle($style);
-          $document->addComponent($header);
+          $this->document->addComponent($header);
         }
         // Byline.
         $layout = new Document\Layouts\ComponentLayout();
         $layout->setColumnStart(0)->setColumnSpan(7)
           ->setMargin(new Document\Margin(15, 15));
-        $document->addComponentLayout('authorLayout', $layout);
+        $this->document->addComponentLayout('authorLayout', $layout);
         $style = new Document\Styles\ComponentTextStyle();
         $style->setTextAlignment('left')
           ->setFontName('HelveticaNeue-Bold')
           ->setFontSize(16)
           ->setTextColor('#000');
-        $document->addComponentTextStyle('authorStyle', $style);
+        $this->document->addComponentTextStyle('authorStyle', $style);
         $author = new Document\Components\Author($byline);
-        $author->setLayout('authorLayout', $document)
-          ->setTextStyle('authorStyle', $document);
-        $document->addComponent($author);
+        $author->setLayout('authorLayout', $this->document)
+          ->setTextStyle('authorStyle', $this->document);
+        $this->document->addComponent($author);
         // Body.
         $layout = new Document\Layouts\ComponentLayout();
         $layout->setColumnStart(0)->setColumnSpan(5)
           ->setMargin(new Document\Margin(15, 15));
-        $document->addComponentLayout('bodyLayout', $layout);
+        $this->document->addComponentLayout('bodyLayout', $layout);
         $style = new Document\Styles\ComponentTextStyle();
         $style->setTextAlignment('left')
           ->setFontName('Georgia')
           ->setFontSize(18)
           ->setLineHeight(26)
           ->setTextColor('#000');
-        $document->addComponentTextStyle('bodyStyle', $style);
-        $body->setLayout('bodyLayout', $document)
-          ->setTextStyle('bodyStyle', $document);
-        $document->addComponent($body);
+        $this->document->addComponentTextStyle('bodyStyle', $style);
+        $body->setLayout('bodyLayout', $this->document)
+          ->setTextStyle('bodyStyle', $this->document);
+        $this->document->addComponent($body);
         break;
 
     }
 
-    return $document;
+    return $this->document;
   }
 
   /**
@@ -222,6 +228,38 @@ class AppleNewsExportArticle extends AppleNewsExport {
       $assets[] = drupal_realpath($file['uri']);
     }
     return $assets;
+  }
+
+}
+
+/**
+ * Exports a Drupal article as defined by the default install profile.
+ */
+class ApplenewsExportConfigurableArticle extends ApplenewsExportConfigurable {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function query() {
+    return parent::query()
+      ->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', array('article'))
+      ->propertyCondition('status', NODE_PUBLISHED)
+      ->entityOrderBy('entity_id');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function entityTypes() {
+    return array('node');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function bundles() {
+    return array('article');
   }
 
 }

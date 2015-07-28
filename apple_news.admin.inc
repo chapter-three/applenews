@@ -343,7 +343,7 @@ function apple_news_settings_delete_channel_form_submit($form, &$form_state) {
 }
 
 /**
- * Form builder for node export config.
+ * Form builder for export config.
  */
 function apple_news_settings_exports_form($form, &$form_state) {
   module_load_include('inc', 'apple_news');
@@ -447,10 +447,8 @@ function apple_news_settings_exports_form_submit($form, &$form_state) {
 
   $exports = apple_news_exports();
   $selected = array_map(function($key) use(&$exports) {
-      return $exports[$key];
-    },
-    array_filter($form_state['values']['exports'])
-  );
+    return $exports[$key];
+  }, array_filter($form_state['values']['exports']));
 
   switch ($form_state['values']['action']) {
 
@@ -511,10 +509,10 @@ function apple_news_settings_exports_form_submit($form, &$form_state) {
 /**
  * Form builder for an export config.
  *
- * @param AppleNewsExport $export
+ * @param ApplenewsExport $export
  *   Export object.
  */
-function apple_news_export_edit_form($form, &$form_state, AppleNewsExport $export) {
+function apple_news_export_edit_form($form, &$form_state, ApplenewsExport $export) {
   $form = $export->getConfigForm($form, $form_state);
 
   $form['#apple_news_export'] = $export;
@@ -530,17 +528,93 @@ function apple_news_export_edit_form($form, &$form_state, AppleNewsExport $expor
     ],
   ];
 
-  $form['#submit'][] = 'apple_news_export_edit_form_submit';
-  $form['#theme'] = 'system_settings_form';
-
   return $form;
+}
+
+/**
+ * Theme callback for the apple_news_export_edit_form().
+ *
+ * @see theme_tabledrag_example_parent_form()
+ */
+function theme_apple_news_export_edit_form($variables) {
+  $form = $variables['form'];
+  $output = '';
+
+  // In case we want to add more sets of destinations.
+  foreach (array('components') as $key) {
+    if (empty($form[$key])) {
+      continue;
+    }
+
+    $tree = &$form[$key];
+    $css_prefix = "apple-news-${key}-";
+
+    $rows = array();
+    foreach (element_children($tree) as $id) {
+      $tree[$id]['weight']['#attributes']['class'] = array($css_prefix . 'weight');
+      $tree[$id]['id']['#attributes']['class'] = array($css_prefix . 'id');
+      $tree[$id]['pid']['#attributes']['class'] = array($css_prefix . 'pid');
+      $class = array('draggable');
+      if (@$tree[$id]['#apple_news_destination']) {
+        /** @var ApplenewsDestination $destination */
+        $destination = $tree[$id]['#apple_news_destination'];
+        if ($destination->isRoot()) {
+          $class[] = 'tabledrag-root';
+        }
+        if ($destination->isLeaf()) {
+          $class[] = 'tabledrag-leaf';
+        }
+      }
+      $indent = theme('indentation', array('size' => $tree[$id]['depth']['#value']));
+      unset($tree[$id]['depth']);
+      $rows[] = array(
+        'data' => array(
+          $indent . drupal_render($tree[$id]['destination']),
+          drupal_render($tree[$id]['edit']),
+          drupal_render($tree[$id]['delete']),
+          drupal_render($tree[$id]['weight']) .
+            drupal_render($tree[$id]['id']) .
+            drupal_render($tree[$id]['pid']),
+        ),
+        'class' => $class,
+      );
+    }
+
+    $header = array(
+      t('Component'),
+      array(
+        'data' => t('Operations'),
+        'colspan' => 2,
+      ),
+      t('Weight'),
+    );
+    $table_id = $css_prefix . 'table';
+    $output .= theme('table', array(
+      'header' => $header,
+      'rows' => $rows,
+      'attributes' => array('id' => $table_id),
+    ));
+    drupal_add_tabledrag($table_id, 'match', 'parent',
+      $css_prefix . 'pid',
+      $css_prefix . 'pid',
+      $css_prefix . 'id',
+      TRUE);
+    drupal_add_tabledrag($table_id, 'order', 'sibling',
+      $css_prefix . 'weight',
+      NULL,
+      NULL,
+      TRUE);
+  }
+
+  $output .= drupal_render_children($form);
+  return $output;
 }
 
 /**
  * Form validatation handler.
  */
 function apple_news_export_edit_form_validate($form, &$form_state) {
-  /** @var AppleNewsExport $export */
+  /** @var ApplenewsExport $export */
   $export = $form['#apple_news_export'];
   $export->validateConfigForm($form, $form_state);
 }
@@ -550,12 +624,90 @@ function apple_news_export_edit_form_validate($form, &$form_state) {
  */
 function apple_news_export_edit_form_submit($form, &$form_state) {
   module_load_include('inc', 'apple_news');
-  /** @var AppleNewsExport $export */
+  /** @var ApplenewsExport $export */
   $export = $form['#apple_news_export'];
   $export->submitConfigForm($form, $form_state);
   apple_news_export_save($export);
   drupal_set_message(t('Changes have been successfully saved.'));
 }
+
+/**
+ * Form builder for an export config.
+ *
+ * @param ApplenewsExportConfigurable $export
+ *   Export object.
+ */
+function apple_news_export_destination_edit_form($form, &$form_state, ApplenewsExportConfigurable $export, $type, $id) {
+
+  switch ($type) {
+
+    case 'components':
+      /** @var ApplenewsDestination $destination */
+      $destination = $export->getComponent($id);
+      $form = $destination->getConfigForm($form, $form_state);
+      break;
+
+  }
+
+  $form['#apple_news_destination'] = $destination;
+
+  $form['actions'] = array(
+    '#type' => 'actions',
+    'submit' => array(
+      '#type' => 'submit',
+      '#value' => t('Save changes'),
+    ),
+    'cancel' => array(
+      '#markup' => l(t('Cancel'), 'admin/config/content/apple-news/exports/' . apple_news_export_id($export->getModule(), $export->getMachineName())),
+    ),
+  );
+
+  return $form;
+}
+
+/**
+ * Form validatation handler.
+ */
+function apple_news_export_destination_edit_form_validate($form, &$form_state) {
+  /** @var ApplenewsDestination $destination */
+  $destination = $form['#apple_news_destination'];
+  $destination->validateConfigForm($form, $form_state);
+}
+
+/**
+ * Form submit handler.
+ */
+function apple_news_export_destination_edit_form_submit($form, &$form_state) {
+  module_load_include('inc', 'apple_news');
+  /** @var ApplenewsDestination $destination */
+  $destination = $form['#apple_news_destination'];
+  $destination->submitConfigForm($form, $form_state);
+  apple_news_export_save($destination->export);
+  drupal_set_message(t('Changes have been successfully saved.'));
+}
+
+/**
+ * Menu callback to delete an export destination.
+ *
+ * @param ApplenewsExportConfigurable $export
+ *   Export object.
+ */
+function apple_news_export_destination_delete(ApplenewsExportConfigurable $export, $type, $id) {
+
+  switch ($type) {
+
+    case 'components':
+      /** @var ApplenewsExport $export */
+      $export->deleteComponent($id);
+      apple_news_export_save($export);
+      drupal_set_message(t('Destination deleted.'));
+      break;
+
+  }
+
+  drupal_goto('admin/config/content/apple-news/exports/' . apple_news_export_id($export->getModule(), $export->getMachineName()));
+}
+
 
 /**
  * Delete Apple News article w/ confirmation.
