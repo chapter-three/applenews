@@ -69,12 +69,12 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
    * Implements __sleep().
    */
   public function __sleep() {
-    return array(
+    return [
       'settings',
       'weight',
       'id',
       'pid',
-    );
+    ];
   }
 
   /**
@@ -95,7 +95,7 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
    * Implements __construct().
    */
   public function __construct() {
-    $this->settings = array();
+    $this->settings = [];
   }
 
   /**
@@ -137,12 +137,12 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
    * Provides a configuration form for this destination.
    */
   public function getConfigForm($form, &$form_state) {
-    $form['weight'] = array(
+    $form['weight'] = [
       '#type' => 'weight',
       '#title' => t('Weight'),
       '#default_value' => $this->weight,
       '#delta' => 50,
-    );
+    ];
 
     return $form;
   }
@@ -174,10 +174,10 @@ class ApplenewsDestinationBody extends ApplenewsDestination {
    */
   public function __construct() {
     parent::__construct();
-    $this->settings += array(
+    $this->settings += [
       'text' => NULL,
       'format' => 'markdown',
-    );
+    ];
   }
 
   /**
@@ -201,22 +201,22 @@ class ApplenewsDestinationBody extends ApplenewsDestination {
 
     $form = parent::getConfigForm($form, $form_state);
 
-    $form['text'] = array(
+    $form['text'] = [
       '#title' => t('Text'),
       '#type' => 'select',
       '#options' => apple_news_get_source_options($this),
       '#default_value' => $this->settings['text'],
-    );
+   ];
 
-    $form['format'] = array(
+    $form['format'] = [
       '#title' => t('Format'),
       '#type' => 'select',
       '#default_value' => $this->settings['format'],
-      '#options' => array(
+      '#options' => [
         '' => t('(None)'),
         'markdown' => t('Markdown'),
-      ),
-    );
+      ],
+    ];
 
     return $form;
   }

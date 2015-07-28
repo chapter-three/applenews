@@ -19,8 +19,8 @@ abstract class ApplenewsWebTestCase extends DrupalWebTestCase {
   /**
    * {@inheritdoc}
    */
-  public function setUp(array $modules = array()) {
-    parent::setUp(array_merge(array('apple_news', 'dblog'), $modules));
+  public function setUp(array $modules = []) {
+    parent::setUp(array_merge(['apple_news', 'dblog'], $modules));
   }
 
   /**
@@ -30,7 +30,7 @@ abstract class ApplenewsWebTestCase extends DrupalWebTestCase {
    */
   public function tearDown() {
     $query = db_select('watchdog')
-      ->fields(NULL, array('wid'))
+      ->fields(NULL, ['wid'])
       ->condition('severity', $this->watchdogSeverityLevel, '<=')
       ->countQuery();
     $count = $query->execute()->fetchField();

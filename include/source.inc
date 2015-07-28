@@ -77,9 +77,9 @@ class ApplenewsSourceEntity implements ApplenewsSourceInterface {
    * Exclude $this->wrapper.
    */
   public function __sleep() {
-    return array(
+    return [
       'entityType',
-    );
+    ];
   }
 
   /**
@@ -100,12 +100,12 @@ class ApplenewsSourceEntity implements ApplenewsSourceInterface {
    * {@inheritdoc}
    */
   static public function values() {
-    return array(
+    return [
       'identifier' => 'Identifier',
       'label' => 'Label',
       'bundle' => 'Bundle',
       'language' => 'Language',
-    );
+    ];
   }
 
   /**
@@ -113,12 +113,12 @@ class ApplenewsSourceEntity implements ApplenewsSourceInterface {
    */
   public function export($value) {
     $this->wrapper = entity_metadata_wrapper($this->entityType, $value);
-    return array(
+    return [
       'identifier' => $this->wrapper->getIdentifier(),
       'label' => $this->wrapper->label(),
       'bundle' => $this->wrapper->getBundle(),
       'language' => $this->wrapper->getPropertyLanguage(),
-    );
+    ];
   }
 
 }
@@ -139,11 +139,11 @@ class ApplenewsSourceNode extends ApplenewsSourceEntity {
    * {@inheritdoc}
    */
   static public function values() {
-    return array(
+    return [
       'identifier' => 'NID',
       'label' => 'Title',
       'bundle' => 'Content Type',
-    ) + parent::values();
+    ] + parent::values();
   }
 
   /**
@@ -186,9 +186,9 @@ class ApplenewsSourceField implements ApplenewsSourceInterface {
    * {@inheritdoc}
    */
   static public function values() {
-    return array(
+    return [
       'value' => 'Value',
-    );
+    ];
   }
 
   /**
@@ -203,7 +203,7 @@ class ApplenewsSourceField implements ApplenewsSourceInterface {
    * {@inheritdoc}
    */
   static public function fieldTypes() {
-    return array(
+    return [
       'text',
       'text_long',
       'text_with_summary',
@@ -216,7 +216,7 @@ class ApplenewsSourceField implements ApplenewsSourceInterface {
       'number_integer',
       'number_decimal',
       'number_float',
-    );
+    ];
   }
 
   /**
@@ -225,9 +225,9 @@ class ApplenewsSourceField implements ApplenewsSourceInterface {
   public function export($value) {
     /** @var EntityMetadataWrapper $field */
     $field = $this->parentEntity->{$this->fieldName};
-    return array(
-      'value' => $field->value()->value(array('decode' => TRUE)),
-    );
+    return [
+      'value' => $field->value()->value(['decode' => TRUE]),
+    ];
   }
 
 }

@@ -29,7 +29,7 @@ abstract class ApplenewsExport {
    *
    * @var array
    */
-  public $settings = array();
+  public $settings = [];
 
   /**
    * Apple News document object.
@@ -52,9 +52,9 @@ abstract class ApplenewsExport {
     $this->module = $module;
     $this->machineName = $machine_name;
     $this->arguments = $arguments;
-    $this->settings = array(
-      'channels' => array(),
-    );
+    $this->settings = [
+      'channels' => [],
+    ];
   }
 
   /**
@@ -63,13 +63,13 @@ abstract class ApplenewsExport {
    * Exclude $this->document.
    */
   public function __sleep() {
-    return array(
+    return [
       'module',
       'machineName',
       'arguments',
       'enabled',
       'settings',
-    );
+    ];
   }
 
   /**
@@ -196,7 +196,7 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
    *
    * @var array
    */
-  protected $destinations = array();
+  protected $destinations = [];
 
   /**
    * {@inheritdoc}
@@ -210,7 +210,7 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
    * Implements __sleep().
    */
   public function __sleep() {
-    return array_merge(parent::__sleep(), array('destinations'));
+    return array_merge(parent::__sleep(), ['destinations']);
   }
 
   /**
@@ -324,100 +324,100 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
   public function getConfigForm($form, &$form_state) {
     $form = parent::getConfigForm($form, $form_state);
 
-    $this->destinations += array(
-      'components' => array(),
-    );
+    $this->destinations += [
+      'components' => [],
+    ];
 
-    $form['components'] = array(
+    $form['components'] = [
       '#title' => t('Components'),
       '#tree' => TRUE,
-    );
+    ];
     /** @var ApplenewsDestination $destination */
     foreach ($this->getdestinations('components') as $destination) {
-      $form['components'][$destination->id] = array(
+      $form['components'][$destination->id] = [
         '#apple_news_destination' => $destination,
-        'destination' => array(
+        'destination' => [
           '#markup' => check_plain($destination->label()),
-        ),
-        'edit' => array(
+        ],
+        'edit' => [
           '#markup' => l(t('edit'), 'admin/config/content/apple-news/exports/' . apple_news_export_id($this->module, $this->machineName) . '/components/' . $destination->id),
-        ),
-        'delete' => array(
+        ],
+        'delete' => [
           '#markup' => l(t('delete'), 'admin/config/content/apple-news/exports/' . apple_news_export_id($this->module, $this->machineName) . '/components/' . $destination->id . '/delete'),
-        ),
-        'id' => array(
+        ],
+        'id' => [
           '#type' => 'hidden',
           '#default_value' => $destination->id,
           // '#type' => 'textfield',
           // '#size' => 3,
           // '#default_value' => $destination->id,
           // '#disabled' => TRUE,
-        ),
-        'pid' => array(
+        ],
+        'pid' => [
           '#type' => 'hidden',
           '#default_value' => $destination->pid,
           // '#type' => 'textfield',
           // '#size' => 3,
           // '#default_value' => $destination->pid,
-        ),
-        'weight' => array(
+        ],
+        'weight' => [
           '#type' => 'weight',
           '#title' => t('Weight'),
           '#default_value' => $destination->weight,
           '#delta' => 50,
           '#title_display' => 'invisible',
-        ),
-        'depth' => array(
+        ],
+        'depth' => [
           '#type' => 'hidden',
           '#value' => $destination->depth,
-        ),
-      );
+        ],
+      ];
     }
     $options = apple_news_get_module_apis()['destinations'];
-    $options = array('' => t('Select...')) +
+    $options = ['' => t('Select...')] +
       array_map(function($destination) {
         return "${destination['name']} (${destination['module']})";
       }, $options);
-    $form['components']['_new'] = array(
+    $form['components']['_new'] = [
       '#apple_news_destination' => FALSE,
-      'destination' => array(
+      'destination' => [
         '#title' => t('Add new component'),
         '#type' => 'select',
         '#options' => $options,
-      ),
-      'edit' => array(
+      ],
+      'edit' => [
         '#markup' => '',
-      ),
-      'delete' => array(
+      ],
+      'delete' => [
         '#markup' => '',
-      ),
-      'id' => array(
+      ],
+      'id' => [
         '#type' => 'hidden',
         '#default_value' => NULL,
         // '#type' => 'textfield',
         // '#size' => 3,
         // '#default_value' => NULL,
         // '#disabled' => TRUE,
-      ),
-      'pid' => array(
+      ],
+      'pid' => [
         '#type' => 'hidden',
         '#default_value' => NULL,
         // '#type' => 'textfield',
         // '#size' => 3,
         // '#default_value' => NULL,
-      ),
-      'weight' => array(
+      ],
+      'weight' => [
         '#type' => 'weight',
         '#title' => t('Weight'),
         '#default_value' => 50,
         '#delta' => 50,
         '#title_display' => 'invisible',
-      ),
-      'depth' => array(
+      ],
+      'depth' => [
         '#type' => 'hidden',
         '#value' => 0,
-      ),
-    );
+      ],
+    ];
 
     return $form;
   }

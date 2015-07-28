@@ -126,7 +126,7 @@ function apple_news_get_source($module, $machine_name) {
 function apple_news_validate_class($class_name, $is_a) {
   if (!class_exists($class_name)) {
     $msg = 'Class %class does not exist.';
-    $args = array('%class' => $class_name);
+    $args = ['%class' => $class_name];
     watchdog('apple_news', $msg, $args, WATCHDOG_WARNING);
     return FALSE;
   }
@@ -135,7 +135,7 @@ function apple_news_validate_class($class_name, $is_a) {
       !($class_name == $is_a || $reflect->isSubclassOf($is_a))
   ) {
     $msg = 'Class %class is not a valid concrete export class';
-    $args = array('%class' => $class_name);
+    $args = ['%class' => $class_name];
     watchdog('apple_news', $msg, $args, WATCHDOG_WARNING);
     return FALSE;
   }
@@ -179,7 +179,7 @@ function apple_news_get_export($module, $machine_name) {
 
   // Load saved.
   $query = db_select('apple_news_status', 's')
-    ->fields('s', array('instance'))
+    ->fields('s', ['instance'])
     ->condition('s.module', $module)
     ->condition('s.machine_name', $machine_name);
   if ($row = $query->execute()->fetchAssoc()) {
@@ -224,7 +224,7 @@ function apple_news_exports($reset = NULL) {
   $exports = $implementations['exports'];
 
   $result = db_select('apple_news_status', 's')
-    ->fields('s', array('module', 'machine_name', 'enabled'))
+    ->fields('s', ['module', 'machine_name', 'enabled'])
     ->execute();
   while ($row = $result->fetchAssoc()) {
     $key = apple_news_export_id($row['module'], $row['machine_name']);
@@ -255,11 +255,11 @@ function apple_news_exports($reset = NULL) {
 function apple_news_get_module_apis() {
 
   $validate = function($type, $module, $machine_name, $definition) {
-    $args = array(
+    $args = [
       '!type' => $type,
       '%machine_name' => $machine_name,
       '%module' => $module,
-    );
+    ];
     if (empty($definition['class'])) {
       $msg = '!type %machine_name defined by %module is missing required class';
       watchdog('apple_news', $msg, $args, WATCHDOG_WARNING);
@@ -277,11 +277,11 @@ function apple_news_get_module_apis() {
 
   foreach (module_implements('apple_news_api') as $module) {
     $function = $module . '_apple_news_api';
-    $info = $function() + array(
-      'exports' => array(),
-      'sources' => array(),
-      'destinations' => array(),
-    );
+    $info = $function() + [
+      'exports' => [],
+      'sources' => [],
+      'destinations' => [],
+    ];
 
     // Check API version.
     if (!isset($info['api']) || $info['api'] != APPLE_NEWS_API_VERSION) {
@@ -301,11 +301,11 @@ function apple_news_get_module_apis() {
         continue;
       }
       $key = apple_news_export_id($module, $machine_name);
-      $implementations['exports'][$key] = array_merge(array(
+      $implementations['exports'][$key] = array_merge([
           'name' => '',
           'description' => '',
           'arguments' => [],
-        ], 
+        ],
         $export,
         [
           'module' => $module,
@@ -320,13 +320,16 @@ function apple_news_get_module_apis() {
         continue;
       }
       $key = apple_news_export_id($module, $machine_name);
-      $implementations['sources'][$key] = array_merge(array(
+      $implementations['sources'][$key] = array_merge([
           'name' => '',
           'description' => '',
-        ), $source, array(
+        ],
+        $source,
+        [
           'module' => $module,
           'machine_name' => $machine_name,
-        ));
+        ]
+      );
     }
 
     // Destination classes.
@@ -335,13 +338,15 @@ function apple_news_get_module_apis() {
         continue;
       }
       $key = apple_news_export_id($module, $machine_name);
-      $implementations['destinations'][$key] = array_merge(array(
+      $implementations['destinations'][$key] = array_merge([
           'name' => '',
           'description' => '',
-        ), $destination, array(
+        ],
+        $destination, [
           'module' => $module,
           'machine_name' => $machine_name,
-        ));
+        ]
+      );
     }
 
   }
@@ -689,24 +694,24 @@ function apple_news_get_channels_count($entity_wrapper, $type) {
  * List available source options.
  */
 function apple_news_get_source_options(ApplenewsDestination $destination) {
-  $options = array();
+  $options = [];
   foreach (apple_news_get_module_apis()['sources'] as $info) {
     $field_types = $info['class']::fieldTypes();
     // Field source.
     if ($field_types) {
-      $filter = array(
+      $filter = [
         'entity_types' => $destination->export->entityTypes(),
         'bundles' => $destination->export->bundles(),
         'field_types' => $field_types,
-      );
+      ];
       foreach (apple_news_get_fields($filter) as $field_name => $field_info) {
         foreach ($info['class']::values() as $type) {
-          $id = implode('::', array(
+          $id = implode('::', [
             $info['module'],
             $info['machine_name'],
             $field_name,
             $type,
-          ));
+          ]);
           $options[$id] = "${info['name']} -- ${field_info['field_name']} -- ${type}";
         }
       }
@@ -735,7 +740,7 @@ function apple_news_get_source_options(ApplenewsDestination $destination) {
  *   As returned by field_info_field(), keyed on field name.
  */
 function apple_news_get_fields($filter) {
-  $return = array();
+  $return = [];
 
   foreach (field_info_instances() as $entity_type => $bundles) {
     if (!empty($filter['entity_types']) &&

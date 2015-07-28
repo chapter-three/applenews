@@ -18,18 +18,18 @@ class ApplenewsArticleExportTestCase extends ApplenewsWebTestCase {
    * {@inheritdoc}
    */
   public static function getInfo() {
-    return array(
+    return [
       'name' => t('Export article as defined by default profile to Apple News Format'),
       'description' => '',
       'group' => t('Apple News'),
-    );
+    ];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setUp(array $modules = array()) {
-    parent::setUp(array_merge(array('apple_news_article'), $modules));
+  public function setUp(array $modules = []) {
+    parent::setUp(array_merge(['apple_news_article'], $modules));
   }
 
   /**
@@ -42,31 +42,31 @@ class ApplenewsArticleExportTestCase extends ApplenewsWebTestCase {
     $file = file_save($file);
 
     // Some node content.
-    $contents = array(
-      array(
+    $contents = [
+      [
         '_desc' => 'no image',
         'title' => $this->randomName(32),
         'body' => $this->randomName(64),
         'file' => NULL,
-      ),
-      array(
+      ],
+      [
         '_desc' => 'image',
         'title' => $this->randomName(32),
         'body' => $this->randomName(64),
         'image' => $file,
-      ),
-    );
+      ],
+    ];
 
     // Create nodes.
-    $map = array();
+    $map = [];
     foreach ($contents as $i => $content) {
-      $settings = array(
+      $settings = [
         'type' => 'article',
         'title' => $content['title'],
-        'body' => array(LANGUAGE_NONE => array(array('value' => $content['body']))),
-      );
+        'body' => [LANGUAGE_NONE => [['value' => $content['body']]]],
+      ];
       if (isset($content['image'])) {
-        $settings['field_image'] = array(LANGUAGE_NONE => array(array('fid' => $content['image']->fid)));
+        $settings['field_image'] = [LANGUAGE_NONE => [['fid' => $content['image']->fid]]];
       }
       $node = $this->drupalCreateNode($settings);
       $this->assert($node->nid > 0, "Node \"${content['_desc']}\" created.");
@@ -141,25 +141,25 @@ class ApplenewsArticleExportTestCase extends ApplenewsWebTestCase {
     $file = file_save($file);
 
     // Some node content.
-    $contents = array(
-      array(
+    $contents = [
+      [
         '_desc' => 'default',
         'title' => $this->randomName(32),
         'body' => $this->randomName(64),
         'image' => $file,
-      ),
-    );
+      ],
+    ];
 
     // Create nodes.
-    $map = array();
+    $map = [];
     foreach ($contents as $i => $content) {
-      $settings = array(
+      $settings = [
         'type' => 'article',
         'title' => $content['title'],
-        'body' => array(LANGUAGE_NONE => array(array('value' => $content['body']))),
-      );
+        'body' => [LANGUAGE_NONE => [['value' => $content['body']]]],
+      ];
       if (isset($content['image'])) {
-        $settings['field_image'] = array(LANGUAGE_NONE => array(array('fid' => $content['image']->fid)));
+        $settings['field_image'] = [LANGUAGE_NONE => [['fid' => $content['image']->fid]]];
       }
       $node = $this->drupalCreateNode($settings);
       $this->assert($node->nid > 0, "Node \"${content['_desc']}\" created.");
@@ -174,7 +174,7 @@ class ApplenewsArticleExportTestCase extends ApplenewsWebTestCase {
 
     // Enable export.
     $export->enabled = TRUE;
-    $export->settings = array('layout' => 'header_image');
+    $export->settings = ['layout' => 'header_image'];
     $result = apple_news_export_save($export);
     $this->assert($result, 'Export enabled.');
 

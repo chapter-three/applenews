@@ -402,7 +402,7 @@ function apple_news_settings_exports_form($form, &$form_state) {
 
   $form['actions'] = [
     '#type' => 'actions',
-    'action' => 
+    'action' =>
     [
       '#type' => 'select',
       '#title' => t('Action'),
@@ -541,7 +541,7 @@ function theme_apple_news_export_edit_form($variables) {
   $output = '';
 
   // In case we want to add more sets of destinations.
-  foreach (array('components') as $key) {
+  foreach (['components'] as $key) {
     if (empty($form[$key])) {
       continue;
     }
@@ -549,12 +549,12 @@ function theme_apple_news_export_edit_form($variables) {
     $tree = &$form[$key];
     $css_prefix = "apple-news-${key}-";
 
-    $rows = array();
+    $rows = [];
     foreach (element_children($tree) as $id) {
-      $tree[$id]['weight']['#attributes']['class'] = array($css_prefix . 'weight');
-      $tree[$id]['id']['#attributes']['class'] = array($css_prefix . 'id');
-      $tree[$id]['pid']['#attributes']['class'] = array($css_prefix . 'pid');
-      $class = array('draggable');
+      $tree[$id]['weight']['#attributes']['class'] = [$css_prefix . 'weight'];
+      $tree[$id]['id']['#attributes']['class'] = [$css_prefix . 'id'];
+      $tree[$id]['pid']['#attributes']['class'] = [$css_prefix . 'pid'];
+      $class = ['draggable'];
       if (@$tree[$id]['#apple_news_destination']) {
         /** @var ApplenewsDestination $destination */
         $destination = $tree[$id]['#apple_news_destination'];
@@ -565,35 +565,35 @@ function theme_apple_news_export_edit_form($variables) {
           $class[] = 'tabledrag-leaf';
         }
       }
-      $indent = theme('indentation', array('size' => $tree[$id]['depth']['#value']));
+      $indent = theme('indentation', ['size' => $tree[$id]['depth']['#value']]);
       unset($tree[$id]['depth']);
-      $rows[] = array(
-        'data' => array(
+      $rows[] = [
+        'data' => [
           $indent . drupal_render($tree[$id]['destination']),
           drupal_render($tree[$id]['edit']),
           drupal_render($tree[$id]['delete']),
           drupal_render($tree[$id]['weight']) .
             drupal_render($tree[$id]['id']) .
             drupal_render($tree[$id]['pid']),
-        ),
+        ],
         'class' => $class,
-      );
+      ];
     }
 
-    $header = array(
+    $header = [
       t('Component'),
-      array(
+      [
         'data' => t('Operations'),
         'colspan' => 2,
-      ),
+      ],
       t('Weight'),
-    );
+    ];
     $table_id = $css_prefix . 'table';
-    $output .= theme('table', array(
+    $output .= theme('table', [
       'header' => $header,
       'rows' => $rows,
-      'attributes' => array('id' => $table_id),
-    ));
+      'attributes' => ['id' => $table_id],
+    ]);
     drupal_add_tabledrag($table_id, 'match', 'parent',
       $css_prefix . 'pid',
       $css_prefix . 'pid',
@@ -651,16 +651,16 @@ function apple_news_export_destination_edit_form($form, &$form_state, ApplenewsE
 
   $form['#apple_news_destination'] = $destination;
 
-  $form['actions'] = array(
+  $form['actions'] = [
     '#type' => 'actions',
-    'submit' => array(
+    'submit' => [
       '#type' => 'submit',
       '#value' => t('Save changes'),
-    ),
-    'cancel' => array(
+    ],
+    'cancel' => [
       '#markup' => l(t('Cancel'), 'admin/config/content/apple-news/exports/' . apple_news_export_id($export->getModule(), $export->getMachineName())),
-    ),
-  );
+    ],
+  ];
 
   return $form;
 }

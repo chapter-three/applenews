@@ -17,9 +17,9 @@ class ApplenewsExportArticle extends ApplenewsExport {
    */
   public function __construct($module, $machine_name, array $arguments) {
     parent::__construct($module, $machine_name, $arguments);
-    $this->settings += array(
+    $this->settings += [
       'layout' => 'simple',
-    );
+    ];
   }
 
   /**
@@ -28,7 +28,7 @@ class ApplenewsExportArticle extends ApplenewsExport {
   public function query() {
     return parent::query()
       ->entityCondition('entity_type', 'node')
-      ->entityCondition('bundle', array('article'))
+      ->entityCondition('bundle', ['article'])
       ->propertyCondition('status', NODE_PUBLISHED)
       ->entityOrderBy('entity_id');
   }
@@ -37,14 +37,14 @@ class ApplenewsExportArticle extends ApplenewsExport {
    * {@inheritdoc}
    */
   public function entityTypes() {
-    return array('node');
+    return ['node'];
   }
 
   /**
    * {@inheritdoc}
    */
   public function bundles() {
-    return array('article');
+    return ['article'];
   }
 
   /**
@@ -243,7 +243,7 @@ class ApplenewsExportConfigurableArticle extends ApplenewsExportConfigurable {
   public function query() {
     return parent::query()
       ->entityCondition('entity_type', 'node')
-      ->entityCondition('bundle', array('article'))
+      ->entityCondition('bundle', ['article'])
       ->propertyCondition('status', NODE_PUBLISHED)
       ->entityOrderBy('entity_id');
   }
@@ -252,14 +252,14 @@ class ApplenewsExportConfigurableArticle extends ApplenewsExportConfigurable {
    * {@inheritdoc}
    */
   public function entityTypes() {
-    return array('node');
+    return ['node'];
   }
 
   /**
    * {@inheritdoc}
    */
   public function bundles() {
-    return array('article');
+    return ['article'];
   }
 
 }
