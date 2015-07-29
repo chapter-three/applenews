@@ -69,11 +69,12 @@ function apple_news_bactch_post($info, $export_settings, $entity_type, $entity, 
   // This is a requried field, make sure to enable at least one channel.
   if (!empty($export_settings['channels'])) {
     foreach ($export_settings['channels'] as $channel_id) {
+      $channel = apple_news_channel($channel_id);
       $context['results'][] = $wrapper->getIdentifier() . ' : ' . check_plain($wrapper->label());
       $context['message'] = t('Posting "@title" entity to <em>@channel</em> feed.',
         [
           '@title' => $wrapper->label(),
-          '@channel' => $channels[$channel_id]['name']
+          '@channel' => filter_xss($channel->name)
         ]
       );
       // Check if the article had already been exported.
