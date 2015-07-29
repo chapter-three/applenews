@@ -203,6 +203,9 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
    */
   public function __construct($module, $machine_name, array $arguments) {
     parent::__construct($module, $machine_name, $arguments);
+    $this->destinations += [
+      'components' => [],
+    ];
     $this->init();
   }
 
@@ -323,10 +326,6 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
    */
   public function getConfigForm($form, &$form_state) {
     $form = parent::getConfigForm($form, $form_state);
-
-    $this->destinations += [
-      'components' => [],
-    ];
 
     $form['components'] = [
       '#title' => t('Components'),
