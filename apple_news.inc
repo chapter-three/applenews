@@ -193,10 +193,6 @@ function apple_news_get_export($module, $machine_name) {
     if (!isset($info['arguments']) || !is_array($info['arguments'])) {
       $info['arguments'] = [];
     }
-    if (isset($info['#status'])) {
-      return new $info['class']($module, $machine_name, $info['arguments'],
-        $info['#status']['enabled'], $info['#status']['settings']);
-    }
     return new $info['class']($module, $machine_name, $info['arguments']);
   }
   catch (Exception $e) {
@@ -243,7 +239,7 @@ function apple_news_exports($reset = NULL) {
       continue;
     }
     // Good to go.
-    $exports[$key]['#status'] = !empty($row['status']);
+    $exports[$key]['#enabled'] = !empty($row['enabled']);
   }
 
   return $exports;
