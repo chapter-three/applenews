@@ -16,39 +16,59 @@ interface ApplenewsSourceInterface {
   static public function label();
 
   /**
-   * List of field types handled by this handler.
+   * Implementation-specific types to limit application to.
    *
-   * @var array|NULL
-   *   NULL if this class does not apply to fields, otherwise a list of string
-   *   field types as defined in hook_field_info() implementations.
+   * @see ApplenewsDestination::getSourceOptions()
    */
-  static public function fieldTypes();
+  static public function types();
 
   /**
-   * Defines available values.
+   * Defines available attributes for the source.
    *
    * @return array
-   *   Associative array of field names.
+   *   Associative array of attributes. Values are either:
+   *   - String label, if attribute value is provided by this class.
+   *   - Array, if attribute value(s) are supplied by another source, with keys:
+   *     - label - as above.
+   *     - type - a value as returned by types().
+   *
+   * @see ApplenewsDestination::getSourceOptions()
    */
-  static public function values();
+  static public function attributes();
 
   /**
    * Dumps data from the source.
    *
-   * @param mixed $value
-   *   A source value.
-   *
    * @return array
-   *   Associative array keyed on same keys as values().
+   *   Associative array with keys defined in attributes().
    */
-  public function export($value);
+  public function export();
 
 }
 
 /**
- * Exports a Drupal entity.
+ * Base class for exporting a Drupal entity.
  */
-class ApplenewsSourceEntity implements ApplenewsSourceInterface {
+abstract class ApplenewsSourceEntity implements ApplenewsSourceInterface {
+
+  /**
+   * {@inheritdoc}
+   */
+  static public function label() {
+    return t('Entity');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  static public function attributes() {
+    return [
+      'identifier' => 'Identifier',
+      'label' => 'Label',
+      'bundle' => 'Bundle',
+      'language' => 'Language',
+    ];
+  }
 
   /**
    * Entity type.
@@ -66,53 +86,18 @@ class ApplenewsSourceEntity implements ApplenewsSourceInterface {
 
   /**
    * Implements __construct().
-   */
-  public function __construct($entity_type) {
-    $this->entityType = $entity_type;
-  }
-
-  /**
-   * Implements __sleep().
    *
-   * Exclude $this->wrapper.
+   * @param object $entity
+   *   Entity object.
    */
-  public function __sleep() {
-    return [
-      'entityType',
-    ];
+  public function __construct($entity) {
+    $this->wrapper = entity_metadata_wrapper($this->entityType, $entity);
   }
 
   /**
    * {@inheritdoc}
    */
-  static public function label() {
-    return t('Entity');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  static public function fieldTypes() {
-    return NULL;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  static public function values() {
-    return [
-      'identifier' => 'Identifier',
-      'label' => 'Label',
-      'bundle' => 'Bundle',
-      'language' => 'Language',
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function export($value) {
-    $this->wrapper = entity_metadata_wrapper($this->entityType, $value);
+  public function export() {
     return [
       'identifier' => $this->wrapper->getIdentifier(),
       'label' => $this->wrapper->label(),
@@ -136,44 +121,98 @@ class ApplenewsSourceNode extends ApplenewsSourceEntity {
   }
 
   /**
-   * {@inheritdoc}
+   * Entity types this class applies to.
    */
-  static public function values() {
-    return [
-      'identifier' => 'NID',
-      'label' => 'Title',
-      'bundle' => 'Content Type',
-    ] + parent::values();
+  static public function types() {
+    return array('node');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function export($value) {
-    $export = parent::export($value);
-    return $export;
+  static public function attributes() {
+    return [
+      'identifier' => 'NID',
+      'label' => 'Title',
+      'bundle' => 'Content Type',
+      'author' => [
+        'label' => 'Author',
+        'type' => 'user',
+      ],
+    ] + parent::attributes();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct($entity) {
+    $this->entityType = 'node';
+    parent::__construct($entity);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function export() {
+    return [
+      'author' => $this->wrapper->author->value(),
+    ] + parent::export();
   }
 
 }
 
 /**
- * Exports a Drupal field.
+ * Exports a Drupal node.
+ */
+class ApplenewsSourceUser extends ApplenewsSourceEntity {
+
+  /**
+   * {@inheritdoc}
+   */
+  static public function label() {
+    return t('User');
+  }
+
+  /**
+   * Entity types this class applies to.
+   */
+  static public function types() {
+    return array('user');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  static public function attributes() {
+    return [
+      'identifier' => 'UID',
+      'label' => 'Name',
+    ] + parent::attributes();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct($entity) {
+    $this->entityType = 'user';
+    parent::__construct($entity);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function export() {
+    return parent::export();
+  }
+
+}
+
+/**
+ * Exports a Drupal field value.
+ *
+ * All field source classes need to extend this class.
  */
 class ApplenewsSourceField implements ApplenewsSourceInterface {
-
-  /**
-   * Parent entity instantiating this field.
-   *
-   * @var ApplenewsSourceEntity
-   */
-  public $parentEntity;
-
-  /**
-   * Field key.
-   *
-   * @var string
-   */
-  public $fieldName;
 
   /**
    * {@inheritdoc}
@@ -185,24 +224,16 @@ class ApplenewsSourceField implements ApplenewsSourceInterface {
   /**
    * {@inheritdoc}
    */
-  static public function values() {
+  static public function attributes() {
     return [
       'value' => 'Value',
     ];
   }
 
   /**
-   * Implements __construct().
+   * Field types this class applies to.
    */
-  public function __construct(ApplenewsSourceEntity $parent_entity, $field_name) {
-    $this->parentEntity = $parent_entity;
-    $this->fieldName = $field_name;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  static public function fieldTypes() {
+  static public function types() {
     return [
       'text',
       'text_long',
@@ -220,13 +251,55 @@ class ApplenewsSourceField implements ApplenewsSourceInterface {
   }
 
   /**
+   * Entity type.
+   *
+   * @var string
+   */
+  public $entityType;
+
+  /**
+   * Metadata wrapper for the entity.
+   *
+   * @var EntityDrupalWrapper
+   */
+  public $wrapper;
+
+  /**
+   * Field key.
+   *
+   * @var string
+   */
+  public $fieldName;
+
+  /**
+   * Implements __construct().
+   *
+   * @param string $entity_type
+   *   Parent entity type.
+   * @param string $field_name
+   *   Entity key.
+   * @param object $entity
+   *   Parent entity object.
+   */
+  public function __construct($entity_type, $field_name, $entity) {
+    $this->entityType = $entity_type;
+    $this->wrapper = entity_metadata_wrapper($this->entityType, $entity);
+    $this->fieldName = $field_name;
+  }
+
+  /**
    * {@inheritdoc}
    */
-  public function export($value) {
-    /** @var EntityMetadataWrapper $field */
-    $field = $this->parentEntity->{$this->fieldName};
+  public function export() {
+    try {
+      $value = $this->wrapper
+        ->{$this->fieldName}->value->value(array('decode' => TRUE));
+    }
+    catch (EntityMetadataWrapperException $e) {
+      $value = '';
+    }
     return [
-      'value' => $field->value()->value(['decode' => TRUE]),
+      'value' => $value,
     ];
   }
 

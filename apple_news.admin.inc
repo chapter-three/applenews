@@ -632,6 +632,9 @@ function apple_news_export_destination_edit_form($form, &$form_state, ApplenewsE
       $form = $destination->getConfigForm($form, $form_state);
       break;
 
+    default:
+      return $form;
+
   }
 
   $form['#apple_news_destination'] = $destination;

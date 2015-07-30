@@ -41,3 +41,131 @@ abstract class ApplenewsWebTestCase extends DrupalWebTestCase {
   }
 
 }
+
+/**
+ * Test export to Apple News Format.
+ */
+class ApplenewsExportTestCase extends ApplenewsWebTestCase {
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function getInfo() {
+    return [
+      'name' => t('Export article using configurable export.'),
+      'description' => t('Export to Apple News Format, articles as defined by default profile, using configurable export.'),
+      'group' => t('Apple News'),
+    ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setUp(array $modules = []) {
+    parent::setUp(array_merge(['apple_news_article'], $modules));
+  }
+
+  /**
+   * Test default article export using simple layout.
+   */
+  public function testExport() {
+
+    // @see ImageFieldDefaultImagesTestCase::ImageFieldDefaultImagesTestCase()
+    $file = current($this->drupalGetTestFiles('image'));
+    $file = file_save($file);
+
+    // Some node content.
+    $contents = [
+      [
+        '_desc' => 'article',
+        'type' => 'article',
+        'title' => $this->randomName(32),
+        'body' => $this->randomName(64),
+        'image' => $file,
+      ],
+      [
+        '_desc' => 'page',
+        'type' => 'page',
+        'title' => $this->randomName(32),
+        'body' => $this->randomName(64),
+        'image' => $file,
+      ],
+    ];
+
+    // Create nodes.
+    $map = [];
+    foreach ($contents as $i => $content) {
+      $settings = [
+        'type' => $content['type'],
+        'title' => $content['title'],
+        'body' => [LANGUAGE_NONE => [['value' => $content['body']]]],
+      ];
+      if (isset($content['image'])) {
+        $settings['field_image'] = [LANGUAGE_NONE => [['fid' => $content['image']->fid]]];
+      }
+      $node = $this->drupalCreateNode($settings);
+      $this->assert($node->nid > 0, "Node \"${content['_desc']}\" created.");
+      $map[$node->nid] = $i;
+    }
+
+    // Load export object.
+    /** @var ApplenewsExportNode $export */
+    $export = apple_news_get_export('apple_news', 'node');
+    $this->assert(is_a($export, 'ApplenewsExportNode'),
+      "Export object loaded.");
+
+    // Enable export.
+    $export->enabled = TRUE;
+    $export->bundles = ['article', 'page'];
+    $export->settings = ['layout' => 'simple'];
+    $export->destinations['components'][0] = new ApplenewsDestinationBody();
+    $export->destinations['components'][0]->settings = [
+      'text' => '::::apple_news::field::node::body::value',
+      'format' => 'markdown',
+    ];
+    $export->destinations['components'][0]->weight = '50';
+    $export->destinations['components'][0]->id = 1;
+    $result = apple_news_export_save($export);
+    $this->assert($result, 'Export enabled.');
+
+    // Run query to get source ids.
+    /** @var EntityFieldQuery $query */
+    $query = $export->query();
+    $this->assert(is_a($query, 'EntityFieldQuery'), 'Query object loaded.');
+    $result = $query->execute();
+    $a = array_keys($map);
+    $b = array_keys($result['node']);
+    $this->assert(!array_diff($a, $b) && !array_diff($b, $a), 'Query result.');
+
+    // Export each.
+    foreach (array_keys($result['node']) as $nid) {
+      $content = $contents[$map[$nid]];
+
+      $document = $export->export(node_load($nid));
+      $this->assert(is_a($document, '\ChapterThree\AppleNews\Document'),
+        "Export document for node \"${content['_desc']}\" loaded.");
+      $json = $document->json();
+      $this->pass(var_export($json, TRUE));
+      $data = json_decode($json);
+      $this->assert(is_object($data) && !empty($data),
+        "Document exported.");
+
+      $this->assertEqual($nid, $data->identifier,
+        'Export node nid -> identifier.');
+      $this->assertEqual($content['title'], $data->title,
+        'Export node title -> title.');
+
+      $item = $data->components[0];
+      $this->assertEqual('body', $item->role,
+        'Export body component role.');
+      $this->assertEqual('markdown', $item->format,
+        'Export body component format.');
+      $this->assertEqual(
+        \ChapterThree\AppleNews\Document\Markdown::convert($content['body']),
+        $item->text,
+        'Export body component text -> component 1 text.');
+
+    }
+  }
+
+}

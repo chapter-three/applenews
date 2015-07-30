@@ -196,7 +196,7 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
    *
    * @var array
    */
-  protected $destinations = [];
+  public $destinations = [];
 
   /**
    * {@inheritdoc}
@@ -291,8 +291,8 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
     usort($destinations, function($a, $b) use($key) {
       // Account for hierarchy.
       if ($a->pid !== $b->pid) {
+        // Reassign $a or $b until both at same depth.
         if ($a->depth != $b->depth) {
-          // Reassign $a or $b until both at same depth.
           if ($a->depth > $b->depth) {
             $deeper =& $a;
             $target_depth = $b->depth;
@@ -305,13 +305,15 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
             $deeper = $this->getDestination($key, $deeper->pid);
           }
         }
-        // Different parents, sort by parent weight.
-        if ($a->pid !== $b->pid) {
-          $a = $this->getDestination($key, $a->pid);
-          $b = $this->getDestination($key, $b->pid);
+        // One is parent of the other -- parent before child.
+        if ($a == $b) {
+          return $deeper == $a ? -1 : 1;
         }
+        // Sort by parents.
+        $a = $this->getDestination($key, $a->pid);
+        $b = $this->getDestination($key, $b->pid);
       }
-      // Sort.
+      // Sort by weight.
       if ($a->weight == $b->weight) {
         return 0;
       }
@@ -443,6 +445,142 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
       $this->destinations['components'][$id] = $destination;
     }
     parent::submitConfigForm($form, $form_state);
+  }
+
+}
+
+/**
+ * A configurable node export.
+ */
+class ApplenewsExportNode extends ApplenewsExportConfigurable {
+
+  /**
+   * Bundles to export.
+   *
+   * @var array
+   */
+  public $bundles;
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct($module, $machine_name, array $arguments) {
+    parent::__construct($module, $machine_name, $arguments);
+    $this->settings += [
+      'layout' => 'simple',
+    ];
+  }
+
+  /**
+   * Implements __sleep().
+   */
+  public function __sleep() {
+    return array_merge(parent::__sleep(), ['bundles']);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function query() {
+    return parent::query()
+      ->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', $this->bundles)
+      ->propertyCondition('status', NODE_PUBLISHED)
+      ->entityOrderBy('entity_id');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function entityTypes() {
+    return ['node'];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function bundles() {
+    return $this->bundles;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getConfigForm($form, &$form_state) {
+    $form = parent::getConfigForm($form, $form_state);
+
+    $options = entity_get_info('node')['bundles'];
+    $options = array_map(function($info) {
+      return $info['label'];
+    }, $options);
+    $form['bundles'] = [
+      '#required'      => TRUE,
+      '#title'         => t('Content Types'),
+      '#type'          => 'select',
+      '#multiple'      => TRUE,
+      '#options'       => $options,
+      '#default_value' => $this->bundles,
+    ];
+
+    $form['layout'] = [
+      '#type'          => 'select',
+      '#title'         => t('Layout'),
+      '#default_value' => $this->settings['layout'],
+      '#options'       => [
+        'simple' => t('Simple'),
+      ],
+    ];
+
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function submitConfigForm($form, &$form_state) {
+    $this->bundles = array_filter($form_state['values']['bundles']);
+    parent::submitConfigForm($form, $form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function export($entity) {
+    /** @var EntityDrupalWrapper $wrapper */
+    $wrapper = entity_metadata_wrapper('node', $entity);
+
+    // Identifier;
+    $id = $wrapper->getIdentifier();
+
+    // Title.
+    $title = $wrapper->label();
+
+    // Language code.
+    $language = $wrapper->language->value();
+    if ($language == LANGUAGE_NONE) {
+      $language = language_default();
+      $language = $language->language;
+    }
+
+    switch ($this->settings['layout']) {
+
+      case 'simple':
+      default:
+        $layout = new Document\Layouts\Layout(7, 1024);
+        $this->document = new Document($id, $title,
+          apple_news_language_code($language), $layout);
+        // Components.
+        /** @var ApplenewsDestination $destination */
+        foreach ($this->getComponents() as $destination) {
+          foreach ($destination->export($entity) as $component) {
+            $this->document->addComponent($component);
+          }
+        }
+        break;
+
+    }
+
+    return parent::export($entity);
   }
 
 }

@@ -232,14 +232,21 @@ function apple_news_theme($existing, $type, $theme, $path) {
 function apple_news_apple_news_api() {
   return [
     'api' => APPLE_NEWS_API_VERSION,
-    'sources' => [
-      'entity' => [
-        'class' => 'ApplenewsSourceEntity',
-        'name' => 'Entity',
+    'exports' => [
+      'node' => [
+        'class' => 'ApplenewsExportNode',
+        'name' => t('Nodes'),
+        'description' => t('Configurable node export.'),
       ],
+    ],
+    'sources' => [
       'node' => [
         'class' => 'ApplenewsSourceNode',
         'name' => 'Node',
+      ],
+      'user' => [
+        'class' => 'ApplenewsSourceUser',
+        'name' => 'User',
       ],
       'field' => [
         'class' => 'ApplenewsSourceField',

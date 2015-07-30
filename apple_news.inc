@@ -90,8 +90,10 @@ function apple_news_get_destination($module, $machine_name) {
   $key = apple_news_export_id($module, $machine_name);
   if (isset($implementations[$key])) {
     $info = $implementations[$key];
-    if (apple_news_validate_class($info['class'], 'ApplenewsDestination')) {
-      return new $info['class']();
+    $reflection = apple_news_validate_class($info['class'],
+      'ApplenewsDestination');
+    if ($reflection) {
+      return $reflection->newInstanceArgs(func_get_args());
     }
   }
   return NULL;
@@ -104,17 +106,23 @@ function apple_news_get_destination($module, $machine_name) {
  *   Module machine name.
  * @param string $machine_name
  *   Source machine name.
+ * @param mixed $arg,...
+ *   Any additional parameters as defined by the implementation constructor.
  *
  * @return ApplenewsSourceInterface
  *   The instantiated class specified by the implementation..
  */
-function apple_news_get_source($module, $machine_name) {
+function apple_news_get_source($module, $machine_name, $arg = NULL) {
   $implementations = apple_news_get_module_apis()['sources'];
   $key = apple_news_export_id($module, $machine_name);
   if (isset($implementations[$key])) {
     $info = $implementations[$key];
-    if (apple_news_validate_class($info['class'], 'ApplenewsSourceInterface')) {
-      return new $info['class']();
+    $reflection = apple_news_validate_class($info['class'],
+      'ApplenewsSourceInterface');
+    if ($reflection) {
+      $args = func_get_args();
+      $args = array_splice($args, 2);
+      return $reflection->newInstanceArgs($args);
     }
   }
   return NULL;
@@ -122,24 +130,31 @@ function apple_news_get_source($module, $machine_name) {
 
 /**
  * Helper function for validating implementation defined classes.
+ *
+ * @return ReflectionClass|bool
+ *   Valid implementations return ReflectionClass, invalid FALSE.
  */
-function apple_news_validate_class($class_name, $is_a) {
+function apple_news_validate_class($class_name, $is_a = NULL) {
   if (!class_exists($class_name)) {
     $msg = 'Class %class does not exist.';
     $args = ['%class' => $class_name];
     watchdog('apple_news', $msg, $args, WATCHDOG_WARNING);
     return FALSE;
   }
-  $reflect = new ReflectionClass($class_name);
-  if ($reflect->isAbstract() ||
-      !($class_name == $is_a || $reflect->isSubclassOf($is_a))
-  ) {
-    $msg = 'Class %class is not a valid concrete export class';
+  $reflection = new ReflectionClass($class_name);
+  if ($reflection->isAbstract()) {
+    $msg = 'Class %class is not a concrete class';
     $args = ['%class' => $class_name];
     watchdog('apple_news', $msg, $args, WATCHDOG_WARNING);
     return FALSE;
   }
-  return TRUE;
+  if ($is_a && !($class_name == $is_a || $reflection->isSubclassOf($is_a))) {
+    $msg = 'Class %class is not a subclass of %isa';
+    $args = ['%class' => $class_name, '%isa' => $is_a];
+    watchdog('apple_news', $msg, $args, WATCHDOG_WARNING);
+    return FALSE;
+  }
+  return $reflection;
 }
 
 /**
@@ -316,6 +331,26 @@ function apple_news_get_module_apis() {
         continue;
       }
       $key = apple_news_export_id($module, $machine_name);
+      // Set "type" to classify source -- each type will take different
+      // different parameters in its constructor.
+      // @see ApplenewsDestination::getSource()
+      $reflection = apple_news_validate_class($source['class']);
+      if ($source['class'] == 'ApplenewsSourceEntity' ||
+          $reflection->isSubclassOf('ApplenewsSourceEntity')
+      ) {
+        $type = 'entity';
+      }
+      elseif ($source['class'] == 'ApplenewsSourceField' ||
+          $reflection->isSubclassOf('ApplenewsSourceField')
+      ) {
+        $type = 'field';
+      }
+      else {
+        $msg = 'Class %class is not a subclass of ApplenewsSourceEntity or ApplenewsSourceField.';
+        $args = ['%class' => $source['class']];
+        watchdog('apple_news', $msg, $args, WATCHDOG_WARNING);
+        return FALSE;
+      }
       $implementations['sources'][$key] = array_merge([
           'name' => '',
           'description' => '',
@@ -324,6 +359,7 @@ function apple_news_get_module_apis() {
         [
           'module' => $module,
           'machine_name' => $machine_name,
+          'type' => $type,
         ]
       );
     }
@@ -690,90 +726,4 @@ function apple_news_get_channels_count($entity_wrapper, $type) {
     ->condition('entity_id', $entity_wrapper->getIdentifier())
     ->execute();
   return $result->rowCount();
-}
-
-/**
- * List available source options.
- */
-function apple_news_get_source_options(ApplenewsDestination $destination) {
-  $options = [];
-  foreach (apple_news_get_module_apis()['sources'] as $info) {
-    $field_types = $info['class']::fieldTypes();
-    // Field source.
-    if ($field_types) {
-      $filter = [
-        'entity_types' => $destination->export->entityTypes(),
-        'bundles' => $destination->export->bundles(),
-        'field_types' => $field_types,
-      ];
-      foreach (apple_news_get_fields($filter) as $field_name => $field_info) {
-        foreach ($info['class']::values() as $type) {
-          $id = implode('::', [
-            $info['module'],
-            $info['machine_name'],
-            $field_name,
-            $type,
-          ]);
-          $options[$id] = "${info['name']} -- ${field_info['field_name']} -- ${type}";
-        }
-      }
-    }
-    // Entity source.
-    else {
-      foreach ($info['class']::values() as $type) {
-        $id = "${info['module']}::${info['machine_name']}::${type}";
-        $options[$id] = "${info['name']} -- ${type}";
-      }
-    }
-  }
-  return $options;
-}
-
-/**
- * Filter entity field instances.
- *
- * @param array $filter
- *   Optional associative array of allowable values, having one or more keys:
- *   - 'entity_types'.
- *   - 'bundles'.
- *   - 'field_types'.
- *
- * @return array
- *   As returned by field_info_field(), keyed on field name.
- */
-function apple_news_get_fields(array $filter) {
-  $return = [];
-
-  foreach (field_info_instances() as $entity_type => $bundles) {
-    if (!empty($filter['entity_types']) &&
-        !in_array($entity_type, $filter['entity_types'])
-    ) {
-      continue;
-    }
-
-    foreach ($bundles as $bundle => $fields) {
-      if (!empty($filter['bundles']) &&
-          !in_array($bundle, $filter['bundles'])
-      ) {
-        continue;
-      }
-
-      foreach ($fields as $field_name => $field) {
-        if (isset($return[$field_name])) {
-          continue;
-        }
-
-        $info = field_info_field($field_name);
-        if (!empty($filter['field_types']) &&
-            !in_array($info['type'], $filter['field_types'])
-        ) {
-          continue;
-        }
-
-        $return[$field_name] = $info;
-      }
-    }
-  }
-
-  return $return;
 }
