@@ -11,9 +11,10 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
   module_load_include('inc', 'apple_news');
 
   // Get all possible entity types and bundles available for export.
-  $entity_type_exports = apple_news_get_entity_types();
-  foreach ($entity_type_exports as $module => $info) {
-
+  foreach (apple_news_get_entity_types() as $module => $info) {
+    if (!isset($info['bundles']) && !$info['enabled']) {
+      return;
+    }
     foreach ($info['entity_types'] as $type) {
       foreach ($info['bundles'] as $bundle) {
         if ($form_id == $bundle . '_' . $type . '_form' && $info['enabled']) {

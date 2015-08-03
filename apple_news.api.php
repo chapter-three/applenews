@@ -71,6 +71,8 @@ function hook_apple_news_api_alter(array &$info) {
  *   Apple News channel ID.
  * @param EntityDrupalWrapper $entity_wrapper
  *   Entity wrapper object.
+ * @param ApplenewsExport $export
+ *   Export object.
  * @param string $entity_type
  *   Entity type.
  * @param array $data
@@ -78,7 +80,7 @@ function hook_apple_news_api_alter(array &$info) {
  *
  * @see apple_news_op()
  */
-function hook_apple_news_insert($article_id, $article_revision_id, $channel_id, EntityDrupalWrapper $entity_wrapper, $entity_type, array $data) {
+function hook_apple_news_insert($article_id, $article_revision_id, $channel_id, EntityDrupalWrapper $entity_wrapper, $entity_type, ApplenewsExport $export, array $data) {
 }
 
 /**
@@ -92,6 +94,8 @@ function hook_apple_news_insert($article_id, $article_revision_id, $channel_id, 
  *   Apple News channel ID.
  * @param EntityDrupalWrapper $entity_wrapper
  *   Entity wrapper object.
+ * @param ApplenewsExport $export
+ *   Export object.
  * @param string $entity_type
  *   Entity type.
  * @param array $data
@@ -99,7 +103,7 @@ function hook_apple_news_insert($article_id, $article_revision_id, $channel_id, 
  *
  * @see apple_news_op()
  */
-function hook_apple_news_update($article_id, $article_revision_id, $channel_id, EntityDrupalWrapper $entity_wrapper, $entity_type, array $data) {
+function hook_apple_news_update($article_id, $article_revision_id, $channel_id, EntityDrupalWrapper $entity_wrapper, $entity_type, ApplenewsExport $export, array $data) {
 }
 
 /**
