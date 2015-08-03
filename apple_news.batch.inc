@@ -61,7 +61,8 @@ function apple_news_bactch_post($info, $export_settings, $entity_type, $entity, 
   $context['results']['info']['name'] = $info['name'];
   $context['results']['info']['module'] = $info['module'];
   $context['results']['info']['machine_name'] = $info['machine_name'];
-  $context['results']['info']['default_channels'] = !empty($export_settings['channels']) ? $export_settings['channels'] : [];
+  $context['results']['info']['default_channels'] = !empty($export_settings['channels']) 
+    ? array_keys($export_settings['channels']) : [];
   if (!isset($context['results']['info']['count'])) {
     $context['results']['info']['count'] = 0;
   }
@@ -69,7 +70,7 @@ function apple_news_bactch_post($info, $export_settings, $entity_type, $entity, 
   // Check default channel settings for each export.
   // This is a requried field, make sure to enable at least one channel.
   if (!empty($export_settings['channels'])) {
-    foreach ($export_settings['channels'] as $channel_id) {
+    foreach (array_keys($export_settings['channels']) as $channel_id) {
       $channel = apple_news_channel($channel_id);
       $context['results'][] = $wrapper->getIdentifier() . ' : ' . check_plain($wrapper->label());
       $context['message'] = t('Posting "@title" entity to <em>@channel</em> feed.',

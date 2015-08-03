@@ -39,10 +39,11 @@ class views_handler_apple_news_metadata extends views_handler_field {
 
   function render($record) {
     module_load_include('inc', 'apple_news');
-    $metadata = apple_news_article_metadata(
-      $record->apple_news_published_entities_article_id,
-      $record->apple_news_published_entities_article_revision_id
-    );
+    $article_id = $record->apple_news_published_entities_article_id;
+    $article_revision_id = $record->apple_news_published_entities_article_revision_id;
+    // Load apple news metadata.
+    $metadata = apple_news_article_metadata($article_id, $article_revision_id);
+    // Dislay metadata.
     switch ($this->options['metadata']) {
       case 'shareUrl' :
         if (!empty($metadata['shareUrl'])) {

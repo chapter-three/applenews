@@ -765,13 +765,13 @@ function apple_news_get_channels_count($entity_wrapper, $type) {
  *   Metadata.
  */
 function apple_news_article_metadata($article_id, $article_revision_id) {
-  $metadata = db_select('apple_news_published_entities', 'e')
-    ->fields('e', ['metadata'])
+  $post = db_select('apple_news_published_entities', 'e')
+    ->fields('e')
     ->condition('article_id', $article_id)
     ->condition('article_revision_id', $article_revision_id)
     ->execute()
-    ->fetchField();
-  $metadata = unserialize($metadata);
+    ->fetchObject();
+  $metadata = unserialize($post->metadata);
   if (!empty($metadata)) {
     return $metadata;
   }
