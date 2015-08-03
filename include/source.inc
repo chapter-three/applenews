@@ -124,7 +124,7 @@ class ApplenewsSourceNode extends ApplenewsSourceEntity {
    * Entity types this class applies to.
    */
   static public function types() {
-    return array('node');
+    return ['node'];
   }
 
   /**
@@ -293,7 +293,7 @@ class ApplenewsSourceField implements ApplenewsSourceInterface {
   public function export() {
     try {
       $value = $this->wrapper
-        ->{$this->fieldName}->value->value(array('decode' => TRUE));
+        ->{$this->fieldName}->value->value(['decode' => TRUE]);
     }
     catch (EntityMetadataWrapperException $e) {
       $value = '';

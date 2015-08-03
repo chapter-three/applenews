@@ -33,7 +33,7 @@ function apple_news_export_save(ApplenewsExport $export) {
   $msg = t('Could not save export %machine_name defined by %module.');
   $var = [
     '%machine_name' => $export->getMachineName(),
-    '%module' => $export->getModule(),
+    '%module'       => $export->getModule(),
   ];
   try {
     $update = db_select('apple_news_status', 's')
@@ -43,7 +43,7 @@ function apple_news_export_save(ApplenewsExport $export) {
     if ($update) {
       $success = db_update('apple_news_status')
         ->fields([
-          'enabled' => (int) $export->enabled,
+          'enabled'  => (int) $export->enabled,
           'instance' => serialize($export),
         ])
         ->condition('module', $export->getModule())
@@ -58,10 +58,10 @@ function apple_news_export_save(ApplenewsExport $export) {
     else {
       db_insert('apple_news_status')
         ->fields([
-          'module' => $export->getModule(),
+          'module'       => $export->getModule(),
           'machine_name' => $export->getMachineName(),
-          'enabled' => (int) $export->enabled,
-          'instance' => serialize($export),
+          'enabled'      => (int) $export->enabled,
+          'instance'     => serialize($export),
         ])
         ->execute();
       return TRUE;
@@ -177,7 +177,7 @@ function apple_news_get_export($module, $machine_name) {
     $msg = t('No export %machine_name defined by %module.');
     $var = [
       '%machine_name' => $machine_name,
-      '%module' => $module,
+      '%module'       => $module,
     ];
     watchdog('apple_news', $msg, $var, WATCHDOG_ERROR);
     return NULL;
@@ -244,19 +244,18 @@ function apple_news_exports($reset = NULL) {
       $msg = 'Export %machine_name defined by %module no longer defined.';
       $args = [
         '%machine_name' => $row['machine_name'],
-        '%module' => $row['module'],
+        '%module'       => $row['module'],
       ];
       watchdog('apple_news', $msg, $args, WATCHDOG_INFO);
       continue;
     }
+    // Good to go.
+    $exports[$key]['#enabled'] = !empty($row['enabled']) ? $row['enabled'] : NULL;
     // Validate class.
     if (!apple_news_validate_class($exports[$key]['class'], 'ApplenewsExport')) {
       continue;
     }
-    // Good to go.
-    $exports[$key]['#enabled'] = !empty($row['enabled']);
   }
-
   return $exports;
 }
 
@@ -267,9 +266,9 @@ function apple_news_get_module_apis() {
 
   $validate = function($type, $module, $machine_name, $definition) {
     $args = [
-      '!type' => $type,
+      '!type'         => $type,
       '%machine_name' => $machine_name,
-      '%module' => $module,
+      '%module'       => $module,
     ];
     if (empty($definition['class'])) {
       $msg = '!type %machine_name defined by %module is missing required class';
@@ -289,8 +288,8 @@ function apple_news_get_module_apis() {
   foreach (module_implements('apple_news_api') as $module) {
     $function = $module . '_apple_news_api';
     $info = $function() + [
-      'exports' => [],
-      'sources' => [],
+      'exports'      => [],
+      'sources'      => [],
       'destinations' => [],
     ];
 
@@ -298,9 +297,9 @@ function apple_news_get_module_apis() {
     if (!isset($info['api']) || $info['api'] != APPLE_NEWS_API_VERSION) {
       $msg = t('%function supports Apple News API version %modversion, Apple News module API version is %version - migration support not loaded.');
       $args = [
-        '%function' => $function,
+        '%function'   => $function,
         '%modversion' => $info['api'],
-        '%version' => APPLE_NEWS_API_VERSION,
+        '%version'    => APPLE_NEWS_API_VERSION,
       ];
       watchdog('apple_news', $msg, $args, WATCHDOG_NOTICE);
       continue;
@@ -313,13 +312,13 @@ function apple_news_get_module_apis() {
       }
       $key = apple_news_export_id($module, $machine_name);
       $implementations['exports'][$key] = array_merge([
-          'name' => '',
+          'name'        => '',
           'description' => '',
-          'arguments' => [],
+          'arguments'   => [],
         ],
         $export,
         [
-          'module' => $module,
+          'module'       => $module,
           'machine_name' => $machine_name,
         ]
       );
@@ -352,14 +351,14 @@ function apple_news_get_module_apis() {
         return FALSE;
       }
       $implementations['sources'][$key] = array_merge([
-          'name' => '',
+          'name'        => '',
           'description' => '',
         ],
         $source,
         [
-          'module' => $module,
+          'module'       => $module,
           'machine_name' => $machine_name,
-          'type' => $type,
+          'type'         => $type,
         ]
       );
     }
@@ -371,11 +370,11 @@ function apple_news_get_module_apis() {
       }
       $key = apple_news_export_id($module, $machine_name);
       $implementations['destinations'][$key] = array_merge([
-          'name' => '',
+          'name'        => '',
           'description' => '',
         ],
         $destination, [
-          'module' => $module,
+          'module'       => $module,
           'machine_name' => $machine_name,
         ]
       );
@@ -403,14 +402,22 @@ function apple_news_post($channel_id, $entity_type, $entity_wrapper, $data) {
     // Invoke Apple News insert hooks.
     module_invoke_all('apple_news_insert', $response->data->id, $response->data->revision, $channel_id, $entity_wrapper, $entity_type, $data);
     $record = [
-      'entity_type' => $entity_type,
-      'entity_id' => $entity_wrapper->getIdentifier(),
+      'entity_type'         => $entity_type,
+      'entity_id'           => $entity_wrapper->getIdentifier(),
       // Need to work on revision support.
-      'revision_id' => $entity_wrapper->getIdentifier(),
-      'article_id' => $response->data->id,
+      'revision_id'         => $entity_wrapper->getIdentifier(),
+      'article_id'          => $response->data->id,
       'article_revision_id' => $response->data->revision,
-      'channel_id' => $channel_id,
-      'postdate' => REQUEST_TIME,
+      'channel_id'          => $channel_id,
+      'postdate'            => REQUEST_TIME,
+      'metadata'            => serialize(
+        [
+          'shareUrl'     => !empty($response->data->shareUrl) ? $response->data->shareUrl : '',
+          'type'         => !empty($response->data->type) ? $response->data->type : '',
+          'links'        => !empty($response->data->links) ? $response->data->links : '',
+          'isSponsored'  => !empty($response->data->isSponsored) ? $response->data->isSponsored : '',
+        ]
+      ),
     ];
     drupal_write_record('apple_news_published_entities', $record);
     return TRUE;
@@ -447,9 +454,17 @@ function apple_news_update($channel_id, $entity_type, $entity_wrapper, $data) {
       db_update('apple_news_published_entities')
         ->fields(
           [
-            'article_id' => $response->data->id,
+            'article_id'          => $response->data->id,
             'article_revision_id' => $response->data->revision,
-            'postdate' => REQUEST_TIME,
+            'postdate'            => REQUEST_TIME,
+            'metadata'            => serialize(
+              [
+                'shareUrl'     => !empty($response->data->shareUrl) ? $response->data->shareUrl : '',
+                'type'         => !empty($response->data->type) ? $response->data->type : '',
+                'links'        => !empty($response->data->links) ? $response->data->links : '',
+                'isSponsored'  => !empty($response->data->isSponsored) ? $response->data->isSponsored : '',
+              ]
+            )
           ]
         )
         ->condition('entity_id', $entity_wrapper->getIdentifier())
@@ -501,24 +516,22 @@ function apple_news_delete($channel_id, $entity_type, $entity_wrapper) {
  * @see apple_news_get_source_options()
  */
 function apple_news_get_entity_types() {
-  $entity_types = [];
-  // Loop through all exports and build an array so we can alter entity forms
-  // and add vertical tabs for individual Apple News publishing options.
+  $result = [];
+  // Get all available Apple News exportable entity types and bundles.
   foreach (apple_news_exports() as $info) {
     // Load export object.
     $export = apple_news_get_export($info['module'], $info['machine_name']);
-    $result = $export->query()->execute();
-    foreach (array_keys($result) as $entity_type) {
-      foreach ($result[$entity_type] as $entity_id => $object) {
-        // Load entity and pass it to entity wrapper.
-        $entity = entity_load_single($entity_type, $entity_id);
-        $wrapper = entity_metadata_wrapper($entity_type, $entity);
-        // Build an array of entity types and bundle names.
-        $entity_types[$entity_type][$wrapper->getBundle()] = $info;
-      }
-    }
+    $result[$info['module']] = 
+    [
+      'module'        => $info['module'],
+      'machine_name'  => $info['machine_name'],
+      'enabled'       => $export->enabled,
+      'entity_types'  => $export->entityTypes(),
+      'bundles'       => $export->bundles(),
+      '#export'        => $export,
+    ];
   }
-  return $entity_types;
+  return $result;
 }
 
 /**
@@ -596,13 +609,33 @@ function apple_news_settings_fields() {
 /**
  * Get Apple News channels.
  */
-function apple_news_channels() {
+function apple_news_channels($grouped = FALSE) {
   // Add Post to Apple News checkbox.
   $channels = [];
   $api_channels = variable_get('apple_news_variable_api_channels', []);
-  foreach ($api_channels as $channel_id) {
-    $channel = apple_news_channel($channel_id);
-    $channels[$channel->id] = filter_xss($channel->name);
+  if ($grouped) {
+    foreach ($api_channels as $channel_id) {
+      $sections = [];
+      $channel = apple_news_channel($channel_id);
+      $api_sections = apple_news_sections($channel->id);
+      foreach ($api_sections as $section) {
+        $sections[$section->id] = [
+          'name'    => filter_xss($section->name),
+          'url'     => $section->links->self,
+          'default' => $section->isDefault,
+        ];
+      }
+      $channels[$channel->id] = [
+        'name'     => filter_xss($channel->name),
+        'sections' => $sections,
+      ];
+    }
+  }
+  else {
+    foreach ($api_channels as $channel_id) {
+      $channel = apple_news_channel($channel_id);
+      $channels[$channel->id] = filter_xss($channel->name);
+    }
   }
   return $channels;
 }

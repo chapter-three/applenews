@@ -202,7 +202,7 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
           // Nested entity source.
           if (is_array($attr_info)) {
             $opts_refs[$attr_info['label']] = $this->getSourceOptions($id,
-              array($attr_info['type']));
+              [$attr_info['type']]);
           }
           // Value source.
           else {

@@ -354,11 +354,13 @@ function apple_news_settings_exports_form($form, &$form_state) {
 
   $rows = [];
   foreach (apple_news_exports() as $key => $info) {
+
     $query = db_select('apple_news_log', 'l')
       ->fields('l', ['starttime', 'endtime'])
       ->condition('l.module', $info['module'])
       ->condition('l.machine_name', $info['machine_name'])
       ->orderBy('l.starttime', 'DESC');
+
     $log = $query->range(0, 1)->execute()->fetchAssoc();
 
     $name = empty($info['name']) ? $info['machine_name'] : $info['name'];
