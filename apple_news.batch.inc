@@ -20,19 +20,15 @@ function apple_news_batch_run_export($info, $export) {
     foreach ($result[$entity_type] as $entity_id => $object) {
       // Load entity object and pass it to the document generator.
       $entity = entity_load_single($entity_type, $entity_id);
-      // Generate AppleNews Document.
-      $document = $export->export($entity);
-      if (!is_null($document)) {
-        $operations[] = [
-          'apple_news_batch_post',
-          [
-            $info,
-            $export,
-            $entity_type,
-            $entity
-          ],
-        ];
-      }
+      $operations[] = [
+        'apple_news_batch_post',
+        [
+          $info,
+          $export,
+          $entity_type,
+          $entity
+        ],
+      ];
     }
   }
 
