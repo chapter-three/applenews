@@ -528,7 +528,7 @@ function apple_news_get_entity_types() {
       'enabled'       => $export->enabled,
       'entity_types'  => $export->entityTypes(),
       'bundles'       => $export->bundles(),
-      '#export'        => $export,
+      '#export'       => $export,
     ];
   }
   return $result;
@@ -548,6 +548,7 @@ function apple_news_get_entity_types() {
  */
 function apple_news_op($op, $channel_id, $entity, $entity_type, $export = NULL, array $settings = []) {
   $result = FALSE;
+  $data = [];
   // Entity object wrapper.
   $wrapper = entity_metadata_wrapper($entity_type, $entity);
   // Generate Apple News Document formatted JSON string.
@@ -562,7 +563,7 @@ function apple_news_op($op, $channel_id, $entity, $entity_type, $export = NULL, 
     $data = [
       'json' => $document->json(),
       'files' => $export->assets($entity),
-      'metadata' => '',
+      'metadata' => !empty($settings['metadata']) ? json_encode(['data' => $settings['metadata']]) : '',
     ];
   }
   if ($op == 'insert') {
@@ -764,16 +765,22 @@ function apple_news_get_channels_count($entity_wrapper, $type) {
  * @return array
  *   Metadata.
  */
-function apple_news_article_metadata($article_id, $article_revision_id) {
-  $post = db_select('apple_news_published_entities', 'e')
-    ->fields('e')
-    ->condition('article_id', $article_id)
-    ->condition('article_revision_id', $article_revision_id)
-    ->execute()
+function apple_news_article_metadata($article_id, $article_revision_id = NULL) {
+  $query = db_select('apple_news_published_entities', 'e')->fields('e');
+  $query->condition('article_id', $article_id);
+  if (!empty($article_revision_id)) {
+    $query->condition('article_revision_id', $article_revision_id);
+  }
+  $post = $query->execute()
     ->fetchObject();
   $metadata = unserialize($post->metadata);
   if (!empty($metadata)) {
-    return $metadata;
+    if (!is_array($metadata)) {
+      return unserialize($metadata);
+    }
+    else {
+      return $metadata;
+    }
   }
   return FALSE;
 }

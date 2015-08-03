@@ -102,12 +102,7 @@ function apple_news_menu() {
   $items['admin/config/content/apple-news/exports/%apple_news_export/%/%'] = [
     'title' => 'Edit Export Destination',
     'page callback' => 'drupal_get_form',
-    'page arguments' => [
-      'apple_news_export_destination_edit_form',
-      5,
-      6,
-      7,
-    ],
+    'page arguments' => ['apple_news_export_destination_edit_form', 5, 6, 7],
     'access arguments' => ['administer apple news'],
     'file' => 'apple_news.admin.inc',
   ];
@@ -190,6 +185,18 @@ function apple_news_menu() {
     'page arguments' => ['apple_news_settings_delete_article_form', 4, 5, 6, 7],
     'access arguments' => ['administer apple news'],
     'file' => 'apple_news.admin.inc',
+    'weight' => 1,
+  ];
+
+  // [article-id]
+  $items['admin/config/content/apple-news/%/download'] = [
+    'title' => 'Download article.json file',
+    'description' => t('Download previewable Apple News formatted document.'),
+    'page callback' => 'apple_news_download_article_json',
+    'page arguments' => [4],
+    'access arguments' => ['administer apple news'],
+    'file' => 'apple_news.admin.inc',
+    'type' => MENU_CALLBACK,
     'weight' => 1,
   ];
 

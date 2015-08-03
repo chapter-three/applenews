@@ -61,20 +61,12 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
           ];
 
           if (empty($entity_id)) {
-            $preview_message = t('You have to save this content in order to be able to preview the Apple News generated document.');
+            $preview_message = t('You have to save this content in order to download previewable Apple News article file.');
+            $form['apple_news']['preview'] = [
+              '#markup' => '<div>' . $preview_message . '</div><br/>',
+              '#prefix' => '<div><strong>' . t('Preview') . '</strong></div>',
+            ];
           }
-          else {
-            $preview_message = t('<a href="!link">Download</a> the Apple News generated document.',
-              [
-                '!link' => url('<front>'),
-              ]
-            );
-          }
-
-          $form['apple_news']['preview'] = [
-            '#markup' => '<div>' . $preview_message . '</div><br/>',
-            '#prefix' => '<div><strong>' . t('Preview') . '</strong></div>',
-          ];
 
           // Get configuration form for the AppleNews exportable entity.
           $export_form = $export->getConfigForm([], $form_state);
@@ -84,6 +76,10 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
             $api_channels = apple_news_channels(TRUE);
             foreach ($api_channels as $channel_id => $channel) {
               $export_form['channels']['channel-' . $channel_id]['#required'] = FALSE;
+              $export_form['channels']['channel-' . $channel_id]['#default_value'] = FALSE;
+              foreach ($channel['sections'] as $section_id => $section) {
+                $export_form['channels']['section-' . $channel_id . '-' . $section_id]['#default_value'] = FALSE;
+              }
             }
             $form['apple_news']['container'] = $export_form['channels'];
           }
@@ -93,9 +89,11 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
             // option to removed it from Apple News.
             $rows = [];
             foreach ($entity_channels as $article_id => $info) {
+              $metadata = apple_news_article_metadata($article_id);
               $rows[] = [
                 ['data' => $info['channel']],
                 ['data' => $info['sections']],
+                ['data' => l($metadata['shareUrl'], $metadata['shareUrl'])],
                 ['data' => $info['postdate']],
                 ['data' => l(
                   t('Delete'), 'admin/config/content/apple-news/'
@@ -115,6 +113,7 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
                 'header' => [
                   t('Feed'),
                   t('Sections'),
+                  t('Share URL'),
                   t('Post date'),
                   ''
                 ],

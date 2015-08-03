@@ -39,6 +39,7 @@ class views_handler_apple_news_metadata extends views_handler_field {
 
   function render($record) {
     module_load_include('inc', 'apple_news');
+    $output = '';
     $article_id = $record->apple_news_published_entities_article_id;
     $article_revision_id = $record->apple_news_published_entities_article_revision_id;
     // Load apple news metadata.
@@ -47,7 +48,7 @@ class views_handler_apple_news_metadata extends views_handler_field {
     switch ($this->options['metadata']) {
       case 'shareUrl' :
         if (!empty($metadata['shareUrl'])) {
-          return l($metadata['shareUrl'], $metadata['shareUrl'],
+          $output = l($metadata['shareUrl'], $metadata['shareUrl'],
             [
               'absolute' => TRUE,
               'attributes' => [
@@ -58,9 +59,10 @@ class views_handler_apple_news_metadata extends views_handler_field {
         }
         break;
       default :
-        return filter_xss($metadata[$this->options['metadata']]);
+        $output = filter_xss($metadata[$this->options['metadata']]);
         break;
     }
+    return $output;
   }
 
 }

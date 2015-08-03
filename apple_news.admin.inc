@@ -453,7 +453,13 @@ function apple_news_settings_exports_form_submit($form, &$form_state) {
         $export = apple_news_get_export($info['module'], $info['machine_name']);
         $export->enabled = TRUE;
         apple_news_export_save($export);
-        drupal_set_message(t('<em>@name</em> export sucessfully <strong>enabled</strong>.', ['@name' => $info['name']]));
+        drupal_set_message(
+          t('<em>@name</em> export sucessfully <strong>enabled</strong>.',
+            [
+              '@name' => $info['name']
+            ]
+          )
+        );
       }
       break;
 
@@ -466,7 +472,9 @@ function apple_news_settings_exports_form_submit($form, &$form_state) {
           t('<em>@name</em> export sucessfully <strong>disabled</strong>.',
             [
               '@name' => $info['name']
-            ]));
+            ]
+          )
+        );
       }
       break;
 
@@ -757,9 +765,33 @@ function apple_news_settings_delete_article_form_submit($form, &$form_state) {
   }
   else {
     drupal_set_message(
-      t('Unable to delete <em>@title</em> from <em>@channel</em>', ['@title' => $form_state['storage']['title'], '@channel' => $form_state['storage']['channel_name']]),
+      t('Unable to delete <em>@title</em> from <em>@channel</em>',
+        [
+          '@title' => $form_state['storage']['title'],
+          '@channel' => $form_state['storage']['channel_name']
+        ]
+      ),
       'warning'
     );
   }
   drupal_goto($form_state['storage']['return_path']);
+}
+
+/**
+ * Download article.json previable file.
+ */
+function apple_news_download_article_json($article_id) {
+  module_load_include('inc', 'apple_news', 'push_api');
+  if ($response = apple_news_get_article($article_id)) {
+    if (!empty($response->data->document)) {
+      $document = drupal_json_output($response->data->document);
+      drupal_add_http_header('Content-Type', 'application/octet-stream');
+      drupal_add_http_header('Content-disposition', 'attachment; filename=article.json');
+      echo $document;
+    }
+  }
+  else {
+    return t('Article not found');
+  }
+  drupal_exit();
 }
