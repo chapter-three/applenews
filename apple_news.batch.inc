@@ -9,7 +9,7 @@
  *
  * @see apple_news_settings_exports_form_submit()
  */
-function apple_news_bactch_run_export($info, $export) {
+function apple_news_batch_run_export($info, $export) {
 
   $operations = [];
 
@@ -24,7 +24,7 @@ function apple_news_bactch_run_export($info, $export) {
       $document = $export->export($entity);
       if (!is_null($document)) {
         $operations[] = [
-          'apple_news_bactch_post',
+          'apple_news_batch_post',
           [
             $info,
             $export->settings,
@@ -39,7 +39,7 @@ function apple_news_bactch_run_export($info, $export) {
 
   return [
     'operations' => $operations,
-    'finished' => 'apple_news_bactch_run_export_finished',
+    'finished' => 'apple_news_batch_run_export_finished',
   ];
 }
 
@@ -48,13 +48,8 @@ function apple_news_bactch_run_export($info, $export) {
  *
  * This is the function that is called on each operation in batch 1.
  */
-function apple_news_bactch_post($info, $export_settings, $entity_type, $entity, $export, &$context) {
+function apple_news_batch_post($info, $export_settings, $entity_type, $entity, $export, &$context) {
   module_load_include('inc', 'apple_news');
-
-  // Successull request.
-  $success = FALSE;
-
-  $wrapper = entity_metadata_wrapper($entity_type, $entity);
 
   // Add data to context so it can be resused in 'finished' callback.
   $context['results']['info']['starttime'] = REQUEST_TIME;
@@ -66,6 +61,11 @@ function apple_news_bactch_post($info, $export_settings, $entity_type, $entity, 
   if (!isset($context['results']['info']['count'])) {
     $context['results']['info']['count'] = 0;
   }
+
+  // Successull request.
+  $success = FALSE;
+
+  $wrapper = entity_metadata_wrapper($entity_type, $entity);
 
   // Check default channel settings for each export.
   // This is a requried field, make sure to enable at least one channel.
@@ -103,11 +103,17 @@ function apple_news_bactch_post($info, $export_settings, $entity_type, $entity, 
 /**
  * Batch 'finished' callback used by batch Apple News export.
  */
-function apple_news_bactch_run_export_finished($success, $results, $operations) {
+function apple_news_batch_run_export_finished($success, $results, $operations) {
   if ($success) {
     if (empty($results['info']['default_channels'])) {
       drupal_set_message(
-        t('Please configure default Feed settings for <strong>@export_name</strong> export.', ['@export_name' => $results['info']['name']]), 'warning');
+        t('Please configure default Feed settings for <strong>@export_name</strong> export.',
+          [
+            '@export_name' => $results['info']['name']
+          ]
+        ),
+        'warning'
+      );
     }
     else {
       $count = $results['info']['count'];

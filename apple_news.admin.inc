@@ -475,7 +475,7 @@ function apple_news_settings_exports_form_submit($form, &$form_state) {
         // Batch entity export to Apple News.
         $export = apple_news_get_export($info['module'], $info['machine_name']);
         if ($export->enabled) {
-          $batch = apple_news_bactch_run_export($info, $export);
+          $batch = apple_news_batch_run_export($info, $export);
           batch_set($batch);
         }
         else {
