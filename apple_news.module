@@ -29,7 +29,9 @@ function apple_news_hook_info() {
 
   // Views hooks see {module_name}.views.inc
   $views = ['group' => 'views'];
+  $hooks['views_api'] = $views;
   $hooks['views_data'] = $views;
+  $hooks['views_default_views'] = $views;
 
   // Apple News hooks see {module_name}.apple_news.inc
   $apple_news = ['group' => 'apple_news'];

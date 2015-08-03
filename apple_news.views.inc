@@ -5,6 +5,15 @@
  */
 
 /**
+ * Implements hook_views_api().
+*/
+function apple_news_views_api() {
+  return [
+    'api' => 3,
+  ];
+}
+
+/**
  * Implements hook_views_data().
  */
 function apple_news_views_data() {
@@ -144,4 +153,150 @@ function apple_news_views_data() {
 
   return $data;
 
+}
+
+/**
+ * Implements hook_views_default_views().
+ */
+function apple_news_views_default_views() {
+  // Default view
+  $view = new view();
+  $view->name = 'apple_news';
+  $view->description = 'Apple News default view';
+  $view->tag = 'Apple News';
+  $view->base_table = 'apple_news_published_entities';
+  $view->human_name = 'Apple News';
+  $view->core = 7;
+  $view->api_version = '3.0';
+  $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+
+  /* Display: Master */
+  $handler = $view->new_display('default', 'Master', 'default');
+  $handler->display->display_options['title'] = 'Published content';
+  $handler->display->display_options['use_more_always'] = FALSE;
+  $handler->display->display_options['access']['type'] = 'perm';
+  $handler->display->display_options['access']['perm'] = 'administer apple news';
+  $handler->display->display_options['cache']['type'] = 'none';
+  $handler->display->display_options['query']['type'] = 'views_query';
+  $handler->display->display_options['exposed_form']['type'] = 'basic';
+  $handler->display->display_options['exposed_form']['options']['submit_button'] = 'Search';
+  $handler->display->display_options['pager']['type'] = 'full';
+  $handler->display->display_options['pager']['options']['items_per_page'] = '25';
+  $handler->display->display_options['style_plugin'] = 'table';
+  $handler->display->display_options['style_options']['columns'] = array(
+    'title' => 'title',
+    'article_id' => 'article_id',
+    'article_revision_id' => 'article_revision_id',
+    'postdate' => 'postdate',
+    'edit_node' => 'edit_node',
+  );
+  $handler->display->display_options['style_options']['default'] = 'postdate';
+  $handler->display->display_options['style_options']['info'] = array(
+    'title' => array(
+      'sortable' => 1,
+      'default_sort_order' => 'asc',
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'article_id' => array(
+      'sortable' => 1,
+      'default_sort_order' => 'asc',
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'article_revision_id' => array(
+      'sortable' => 1,
+      'default_sort_order' => 'asc',
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'postdate' => array(
+      'sortable' => 1,
+      'default_sort_order' => 'desc',
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'edit_node' => array(
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+  );
+  $handler->display->display_options['style_options']['empty_table'] = TRUE;
+  /* No results behavior: Global: Unfiltered text */
+  $handler->display->display_options['empty']['area_text_custom']['id'] = 'area_text_custom';
+  $handler->display->display_options['empty']['area_text_custom']['table'] = 'views';
+  $handler->display->display_options['empty']['area_text_custom']['field'] = 'area_text_custom';
+  $handler->display->display_options['empty']['area_text_custom']['empty'] = TRUE;
+  $handler->display->display_options['empty']['area_text_custom']['content'] = 'Currently there are no Apple News published content.';
+  /* Relationship: Apple News Articles: Apple News Referencing entity_id */
+  $handler->display->display_options['relationships']['reverse_entity_id_node']['id'] = 'reverse_entity_id_node';
+  $handler->display->display_options['relationships']['reverse_entity_id_node']['table'] = 'apple_news_published_entities';
+  $handler->display->display_options['relationships']['reverse_entity_id_node']['field'] = 'reverse_entity_id_node';
+  $handler->display->display_options['relationships']['reverse_entity_id_node']['required'] = TRUE;
+  /* Field: Content: Title */
+  $handler->display->display_options['fields']['title']['id'] = 'title';
+  $handler->display->display_options['fields']['title']['table'] = 'node';
+  $handler->display->display_options['fields']['title']['field'] = 'title';
+  $handler->display->display_options['fields']['title']['relationship'] = 'reverse_entity_id_node';
+  /* Field: Apple News Articles: Article ID */
+  $handler->display->display_options['fields']['article_id']['id'] = 'article_id';
+  $handler->display->display_options['fields']['article_id']['table'] = 'apple_news_published_entities';
+  $handler->display->display_options['fields']['article_id']['field'] = 'article_id';
+  /* Field: Apple News Articles: Revision ID */
+  $handler->display->display_options['fields']['article_revision_id']['id'] = 'article_revision_id';
+  $handler->display->display_options['fields']['article_revision_id']['table'] = 'apple_news_published_entities';
+  $handler->display->display_options['fields']['article_revision_id']['field'] = 'article_revision_id';
+  $handler->display->display_options['fields']['article_revision_id']['label'] = 'Revision';
+  /* Field: Apple News Articles: Post date */
+  $handler->display->display_options['fields']['postdate']['id'] = 'postdate';
+  $handler->display->display_options['fields']['postdate']['table'] = 'apple_news_published_entities';
+  $handler->display->display_options['fields']['postdate']['field'] = 'postdate';
+  $handler->display->display_options['fields']['postdate']['date_format'] = 'short';
+  $handler->display->display_options['fields']['postdate']['second_date_format'] = 'long';
+  /* Field: Apple News Articles: Apple News article metadata */
+  $handler->display->display_options['fields']['metadata']['id'] = 'metadata';
+  $handler->display->display_options['fields']['metadata']['table'] = 'apple_news_published_entities';
+  $handler->display->display_options['fields']['metadata']['field'] = 'metadata';
+  $handler->display->display_options['fields']['metadata']['label'] = 'Share URL';
+  /* Field: Content: Edit link */
+  $handler->display->display_options['fields']['edit_node']['id'] = 'edit_node';
+  $handler->display->display_options['fields']['edit_node']['table'] = 'views_entity_node';
+  $handler->display->display_options['fields']['edit_node']['field'] = 'edit_node';
+  $handler->display->display_options['fields']['edit_node']['relationship'] = 'reverse_entity_id_node';
+  $handler->display->display_options['fields']['edit_node']['label'] = '';
+  $handler->display->display_options['fields']['edit_node']['element_label_colon'] = FALSE;
+  /* Filter criterion: Content: Title */
+  $handler->display->display_options['filters']['title']['id'] = 'title';
+  $handler->display->display_options['filters']['title']['table'] = 'node';
+  $handler->display->display_options['filters']['title']['field'] = 'title';
+  $handler->display->display_options['filters']['title']['relationship'] = 'reverse_entity_id_node';
+  $handler->display->display_options['filters']['title']['operator'] = 'contains';
+  $handler->display->display_options['filters']['title']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['title']['expose']['operator_id'] = 'title_op';
+  $handler->display->display_options['filters']['title']['expose']['label'] = 'Title';
+  $handler->display->display_options['filters']['title']['expose']['operator'] = 'title_op';
+  $handler->display->display_options['filters']['title']['expose']['identifier'] = 'title';
+  $handler->display->display_options['filters']['title']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+  );
+
+  /* Display: Published content */
+  $handler = $view->new_display('page', 'Published content', 'page');
+  $handler->display->display_options['path'] = 'admin/config/content/apple-news/published';
+  $handler->display->display_options['menu']['type'] = 'tab';
+  $handler->display->display_options['menu']['title'] = 'Published content';
+  $handler->display->display_options['menu']['weight'] = '0';
+  $handler->display->display_options['menu']['context'] = 0;
+  $handler->display->display_options['menu']['context_only_inline'] = 0;
+
+  $views[$view->name] = $view;
+
+  return $views;
 }

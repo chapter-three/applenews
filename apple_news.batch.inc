@@ -27,10 +27,9 @@ function apple_news_batch_run_export($info, $export) {
           'apple_news_batch_post',
           [
             $info,
-            $export->settings,
+            $export,
             $entity_type,
-            $entity,
-            $export
+            $entity
           ],
         ];
       }
@@ -48,8 +47,10 @@ function apple_news_batch_run_export($info, $export) {
  *
  * This is the function that is called on each operation in batch 1.
  */
-function apple_news_batch_post($info, $export_settings, $entity_type, $entity, $export, &$context) {
+function apple_news_batch_post($info, $export, $entity_type, $entity, &$context) {
   module_load_include('inc', 'apple_news');
+
+  $export_settings = $export->settings;
 
   // Add data to context so it can be resused in 'finished' callback.
   $context['results']['info']['starttime'] = REQUEST_TIME;
@@ -70,7 +71,7 @@ function apple_news_batch_post($info, $export_settings, $entity_type, $entity, $
   // Check default channel settings for each export.
   // This is a requried field, make sure to enable at least one channel.
   if (!empty($export_settings['channels'])) {
-    foreach (array_keys($export_settings['channels']) as $channel_id) {
+    foreach ($export_settings['channels'] as $channel_id => $checked) {
       $channel = apple_news_channel($channel_id);
       $context['results'][] = $wrapper->getIdentifier() . ' : ' . check_plain($wrapper->label());
       $context['message'] = t('Posting "@title" entity to <em>@channel</em> feed.',

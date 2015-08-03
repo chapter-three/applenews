@@ -561,7 +561,7 @@ function apple_news_op($op, $channel_id, $entity, $entity_type, $export = NULL, 
       $export->settings = array_merge($export->settings, $settings);
     }
     $data = [
-      'json' => $document->json(),
+      'json' => $document->__toString(),
       'files' => $export->assets($entity),
       'metadata' => !empty($settings['metadata']) ? json_encode(['data' => $settings['metadata']]) : '',
     ];

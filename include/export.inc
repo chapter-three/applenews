@@ -150,7 +150,7 @@ abstract class ApplenewsExport {
         '#required' => TRUE,
         '#default_value' => !empty($saved_channels[$channel_id]) ? TRUE : FALSE,
       ];
-      if (count($channel['sections']) > 1) {
+      //if (count($channel['sections']) > 1) {
         foreach ($channel['sections'] as $section_id => $section) {
           $form['channels']['section-' . $channel_id . '-' . $section_id] = [
             '#type' => 'checkbox',
@@ -162,7 +162,7 @@ abstract class ApplenewsExport {
             '#default_value' => !empty($saved_sections[$section_id]) ? TRUE : FALSE,
           ];
         }
-      }
+      //}
     }
 
     return $form;
