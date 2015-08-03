@@ -703,8 +703,9 @@ function apple_news_export_destination_delete(ApplenewsExportConfigurable $expor
  * Delete Apple News article w/ confirmation.
  */
 function apple_news_settings_delete_article_form($form, &$form_state, $entity_type, $entity_id, $article_id, $channel_id) {
-  $channels = variable_get('apple_news_variable_api_channels', []);
-
+  module_load_include('inc', 'apple_news');
+  // Load channel information.
+  $channel = apple_news_channel($channel_id);
   // Load entity.
   $entity = entity_load_single($entity_type, $entity_id);
   $wrapper = entity_metadata_wrapper($entity_type, $entity);
@@ -717,14 +718,19 @@ function apple_news_settings_delete_article_form($form, &$form_state, $entity_ty
     'entity_id' => $entity_id,
     'article_id' => $article_id,
     'channel_id' => $channel_id,
-    'channel_name' => $channels[$channel_id]['name'],
+    'channel_name' => $channel->name,
     'return_path' => $path,
     'title' => $title
   ];
 
   return confirm_form(
     $form,
-    t("Do you really want to delete <em>@title</em> article from <em>@channel</em>?", ['@title' => $title, '@channel' => $channels[$channel_id]['name']]),
+    t("Do you really want to delete <em>@title</em> article from <em>@channel</em>?",
+      [
+        '@title' => $title,
+        '@channel' => $channel->name
+      ]
+    ),
     $path,
     t("This action cannot be undone."),
     t("Yes, delete")

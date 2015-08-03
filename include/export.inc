@@ -130,14 +130,40 @@ abstract class ApplenewsExport {
     ];
 
     $form['channels'] = [
-      '#title' => t('Feeds'),
-      '#type' => 'checkboxes',
-      '#default_value' => $this->settings['channels'],
-      '#multiple' => TRUE,
-      '#options' => apple_news_channels(),
-      '#required' => TRUE,
-      '#description' => t('Please select feeds.'),
+      '#type' => 'container',
+      '#prefix' => '<strong>' . t('Feeds') . '</strong>',
     ];
+
+    $saved_channels = !empty($this->settings['channels']) ? $this->settings['channels'] : [];
+    $saved_sections = !empty($this->settings['sections']) ? $this->settings['sections'] : [];
+
+    // Entity form JS helper (hide/show Apple News entity form options).
+    drupal_add_js(drupal_get_path('module', 'apple_news') . '/js/form.js');
+    $api_channels = apple_news_channels(TRUE);
+    foreach ($api_channels as $channel_id => $channel) {
+      $form['channels']['channel-' . $channel_id] = [
+        '#type' => 'checkbox',
+        '#title' => $channel['name'],
+        '#attributes' => [
+          'data-channel-id' => $channel_id
+        ],
+        '#required' => TRUE,
+        '#default_value' => !empty($saved_channels[$channel_id]) ? TRUE : FALSE,
+      ];
+      if (count($channel['sections']) > 1) {
+        foreach ($channel['sections'] as $section_id => $section) {
+          $form['channels']['section-' . $channel_id . '-' . $section_id] = [
+            '#type' => 'checkbox',
+            '#title' => $section['name'] . ' ' . (!empty($section['default']) ? t('(default)') : ''),
+            '#attributes' => [
+              'data-section-of' => $channel_id,
+              'class' => ['apple-news-sections']
+            ],
+            '#default_value' => !empty($saved_sections[$section_id]) ? TRUE : FALSE,
+          ];
+        }
+      }
+    }
 
     return $form;
   }
@@ -153,7 +179,23 @@ abstract class ApplenewsExport {
    */
   public function submitConfigForm($form, &$form_state) {
     $this->enabled = $form_state['values']['enabled'];
-    $this->settings['channels'] = $form_state['values']['channels'];
+    $channels = [];
+    $sections = [];
+    // Save default channel and section options.
+    $api_channels = apple_news_channels(TRUE);
+    foreach ($api_channels as $channel_id => $channel) {
+      if (!empty($form_state['values']['channel-' . $channel_id])) {
+        $channels[$channel_id] = TRUE;
+      }
+      foreach ($channel['sections'] as $section_id => $section) {
+        if (!empty($form_state['values']['section-' . $channel_id . '-' . $section_id])) {
+          $sections[$section_id] = TRUE;
+        }
+      }
+    }
+    // Save in two different arrays for now.
+    $this->settings['channels'] = $channels;
+    $this->settings['sections'] = $sections;
   }
 
   /**

@@ -14,13 +14,13 @@ function apple_news_bactch_run_export($info, $export) {
   $operations = [];
 
   $result = $export->query()->execute();
-  $entity_types = array_keys($result);
+  $entity_types = $export->entityTypes();
 
   foreach ($entity_types as $entity_type) {
     foreach ($result[$entity_type] as $entity_id => $object) {
       // Load entity object and pass it to the document generator.
       $entity = entity_load_single($entity_type, $entity_id);
-      // Generate AppleNews Document formatted JSON.
+      // Generate AppleNews Document.
       $document = $export->export($entity);
       if (!is_null($document)) {
         $operations[] = [
@@ -29,7 +29,8 @@ function apple_news_bactch_run_export($info, $export) {
             $info,
             $export->settings,
             $entity_type,
-            $entity
+            $entity,
+            $export
           ],
         ];
       }
@@ -47,10 +48,10 @@ function apple_news_bactch_run_export($info, $export) {
  *
  * This is the function that is called on each operation in batch 1.
  */
-function apple_news_bactch_post($info, $export_settings, $entity_type, $entity, &$context) {
+function apple_news_bactch_post($info, $export_settings, $entity_type, $entity, $export, &$context) {
   module_load_include('inc', 'apple_news');
-  // Get Apple News channels.
-  $channels = variable_get('apple_news_variable_api_channels', []);
+
+  // Successull request.
   $success = FALSE;
 
   $wrapper = entity_metadata_wrapper($entity_type, $entity);
@@ -82,12 +83,12 @@ function apple_news_bactch_post($info, $export_settings, $entity_type, $entity, 
       // Process only non-published articles.
       if (!$export_log) {
         // Post an article to Apple News.
-        $success = apple_news_op('insert', $channel_id, $entity, $entity_type);
+        $success = apple_news_op('insert', $channel_id, $entity, $entity_type, $export);
       }
       else {
         // Update an article only if the entity was updated since the last export.
         if ($export_log->postdate < $entity->changed) {
-          $success = apple_news_op('update', $channel_id, $entity, $entity_type);
+          $success = apple_news_op('update', $channel_id, $entity, $entity_type, $export);
         }
       }
       if ($success) {
@@ -119,13 +120,12 @@ function apple_news_bactch_run_export_finished($success, $results, $operations) 
           'numprocessed' => $count,
         ];
         drupal_write_record('apple_news_log', $record);
-        drupal_set_message(
-          t('@count entities were successfully posted to Apple News.',
-            [
-              '@count' => $count
-            ]
-          )
+        $plural_message = format_plural(
+          $count,
+          '1 entity successfully posted to Apple News.',
+          '@count entities were successfully posted to Apple News.'
         );
+        drupal_set_message($plural_message);
       }
       else {
         drupal_set_message(t('There is no content for export to Apple News.'));

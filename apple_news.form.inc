@@ -76,35 +76,16 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
             '#prefix' => '<div><strong>' . t('Preview') . '</strong></div>',
           ];
 
-          $form['apple_news']['container'] = [
-            '#type' => 'container',
-            '#prefix' => '<strong>' . t('Feeds') . '</strong>',
-          ];
-
-          $api_channels = apple_news_channels(TRUE);
-          foreach ($api_channels as $channel_id => $channel) {
-            $form['apple_news']['container']['channel-' . $channel_id] = [
-              '#type' => 'checkbox',
-              '#title' => $channel['name'],
-              '#attributes' => [
-                'data-channel-id' => $channel_id
-              ],
-              '#default_value' => !empty($entity->{'channel-' . $channel_id}) ? $entity->{'channel-' . $channel_id} : '',
-            ];
-            if (count($channel['sections']) > 1) {
-              foreach ($channel['sections'] as $section_id => $section) {
-                $form['apple_news']['container']['section-' . $channel_id . '-' . $section_id] = [
-                  '#type' => 'checkbox',
-                  '#title' => $section['name'] . ' ' . (!empty($section['default']) ? t('(default)') : ''),
-                  '#attributes' => [
-                    'data-section-of' => $channel_id,
-                    'class' => ['sections']
-                  ],
-                  '#default_value' => !empty($entity->{'section-'  . $channel_id . '-' . $section_id}) 
-                    ? $entity->{'section-'  . $channel_id . '-' . $section_id} : '',
-                ];
-              }
+          // Get configuration form for the AppleNews exportable entity.
+          $export_form = $export->getConfigForm([], $form_state);
+          if (isset($export_form['channels'])) {
+            // Remove '#required' from configuration form.
+            // This should be optional on entity add/edit forms.
+            $api_channels = apple_news_channels(TRUE);
+            foreach ($api_channels as $channel_id => $channel) {
+              $export_form['channels']['channel-' . $channel_id]['#required'] = FALSE;
             }
+            $form['apple_news']['container'] = $export_form['channels'];
           }
 
           if (!empty($entity_channels)) {
@@ -127,11 +108,8 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
                 ],
               ];
             }
+
             $form['apple_news']['info'] = [
-              '#type' => 'fieldset',
-              '#title' => t('Apple News published channels')
-            ];
-            $form['apple_news']['info']['table'] = [
               '#markup' => theme('table',
               [
                 'header' => [
@@ -141,7 +119,8 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
                   ''
                 ],
                 'rows' => $rows
-              ])
+              ]),
+              '#prefix' => '<br/><div><strong>' . t('Apple News feeds') . '</strong></div>',
             ];
           }
 

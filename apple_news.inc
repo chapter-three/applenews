@@ -546,43 +546,35 @@ function apple_news_get_entity_types() {
  * @param string $type
  *   Entity type.
  */
-function apple_news_op($op, $channel_id, $entity, $type, array $settings = []) {
-  // Get all possible entity types and bundles available for export.
-  $entity_types = apple_news_get_entity_types();
-  foreach ($entity_types as $entity_type => $export) {
-    foreach ($export as $bundle => $info) {
-      if ($entity_type == $type) {
-        $result = FALSE;
-        // Export object.
-        $export = apple_news_get_export($info['module'], $info['machine_name']);
-        // Entity object wrapper.
-        $wrapper = entity_metadata_wrapper($entity_type, $entity);
-        // Generate Apple News Document formatted JSON string.
-        $document = $export->export($entity);
-        if (count($settings)) {
-          // Merge export settings with custom fields from the entity add/edit
-          // form.
-          // @see apple_news_form_alter().
-          $export->settings = array_merge($export->settings, $settings);
-        }
-        $data = [
-          'json' => $document->__toString(),
-          'files' => $export->assets($entity),
-          'metadata' => '',
-        ];
-        if ($op == 'insert') {
-          $result = apple_news_post($channel_id, $entity_type, $wrapper, $data);
-        }
-        elseif ($op == 'update') {
-          $result = apple_news_update($channel_id, $entity_type, $wrapper, $data);
-        }
-        elseif ($op == 'delete') {
-          $result = apple_news_delete($channel_id, $entity_type, $wrapper);
-        }
-        return $result;
-      }
+function apple_news_op($op, $channel_id, $entity, $entity_type, $export = NULL, array $settings = []) {
+  $result = FALSE;
+  // Entity object wrapper.
+  $wrapper = entity_metadata_wrapper($entity_type, $entity);
+  // Generate Apple News Document formatted JSON string.
+  if (is_object($export)) {
+    $document = $export->export($entity);
+    if (count($settings)) {
+      // Merge export settings with custom fields from the entity add/edit
+      // form.
+      // @see apple_news_form_alter().
+      $export->settings = array_merge($export->settings, $settings);
     }
+    $data = [
+      'json' => $document->json(),
+      'files' => $export->assets($entity),
+      'metadata' => '',
+    ];
   }
+  if ($op == 'insert') {
+    $result = apple_news_post($channel_id, $entity_type, $wrapper, $data);
+  }
+  elseif ($op == 'update') {
+    $result = apple_news_update($channel_id, $entity_type, $wrapper, $data);
+  }
+  elseif ($op == 'delete') {
+    $result = apple_news_delete($channel_id, $entity_type, $wrapper);
+  }
+  return $result;
 }
 
 /**
@@ -643,7 +635,7 @@ function apple_news_channels($grouped = FALSE) {
 /**
  * Get Apple News sections.
  *
- * @see apple_news_get_sections()
+ * @see apple_news_get_sections().
  */
 function apple_news_sections($channel_id) {
   $sections = &drupal_static(__FUNCTION__);
@@ -668,7 +660,7 @@ function apple_news_sections($channel_id) {
 /**
  * Get Apple News channels.
  *
- * @see apple_news_get_sections()
+ * @see apple_news_get_sections().
  */
 function apple_news_channel($channel_id) {
   $channel = &drupal_static(__FUNCTION__);
@@ -759,4 +751,29 @@ function apple_news_get_channels_count($entity_wrapper, $type) {
     ->condition('entity_id', $entity_wrapper->getIdentifier())
     ->execute();
   return $result->rowCount();
+}
+
+/**
+ * Load Apple News article metadata.
+ *
+ * @param string $article_id
+ *   Apple News article ID.
+ * @param string $article_revision_id
+ *   Apple News article revision ID.
+ *
+ * @return array
+ *   Metadata.
+ */
+function apple_news_article_metadata($article_id, $article_revision_id) {
+  $metadata = db_select('apple_news_published_entities', 'e')
+    ->fields('e', ['metadata'])
+    ->condition('article_id', $article_id)
+    ->condition('article_revision_id', $article_revision_id)
+    ->execute()
+    ->fetchField();
+  $metadata = unserialize($metadata);
+  if (!empty($metadata)) {
+    return $metadata;
+  }
+  return FALSE;
 }

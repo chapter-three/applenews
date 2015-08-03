@@ -117,6 +117,15 @@ function apple_news_views_data() {
     ],
   ];
 
+  $data['apple_news_published_entities']['metadata'] = array(
+    'field' => array(
+      'title' => t('Apple News article metadata'),
+      'group' => t('Apple News Articles'),
+      'help' => t('Display Apple News post metadata.'),
+      'handler' => 'views_handler_apple_news_metadata',
+    ),
+  );
+
   $data['apple_news_published_entities']['postdate'] = [
     'title' => t('Post date'),
     'help' => t('Apple News post timestamp'),
