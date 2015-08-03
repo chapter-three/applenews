@@ -197,8 +197,8 @@ function apple_news_get_export($module, $machine_name) {
     ->fields('s', ['instance'])
     ->condition('s.module', $module)
     ->condition('s.machine_name', $machine_name);
-  if ($row = $query->execute()->fetchAssoc()) {
-    if ($export = unserialize($row['instance'])) {
+  if ($row = $query->execute()->fetchObject()) {
+    if ($export = unserialize($row->instance)) {
       return $export;
     }
   }
@@ -521,7 +521,7 @@ function apple_news_get_entity_types() {
   foreach (apple_news_exports() as $info) {
     // Load export object.
     $export = apple_news_get_export($info['module'], $info['machine_name']);
-    $result[$info['module']] = 
+    $result[$info['module'] . '::' . $info['machine_name']] = 
     [
       'module'        => $info['module'],
       'machine_name'  => $info['machine_name'],

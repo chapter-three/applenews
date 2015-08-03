@@ -12,11 +12,12 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
 
   // Get all possible entity types and bundles available for export.
   foreach (apple_news_get_entity_types() as $module => $info) {
-    if (!isset($info['bundles']) && !$info['enabled']) {
-      return;
+    if (!isset($info['bundles'])) {
+      continue;
     }
     foreach ($info['entity_types'] as $type) {
       foreach ($info['bundles'] as $bundle) {
+
         if ($form_id == $bundle . '_' . $type . '_form' && $info['enabled']) {
 
           // Load export object.
@@ -36,9 +37,9 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
             foreach ($results as $row) {
               $channel = apple_news_channel($row->channel_id);
               $entity_channels[$row->article_id] = [
-                'channel' => $channel->name,
-                'sections' => $channel->name,
-                'postdate' => format_date($row->postdate, 'short'),
+                'channel'    => $channel->name,
+                'sections'   => $channel->name,
+                'postdate'   => format_date($row->postdate, 'short'),
                 'article_id' => $row->article_id,
                 'channel_id' => $row->channel_id,
               ];
@@ -129,5 +130,4 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
     }
 
   }
-
 }
