@@ -27,6 +27,7 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
 
           // Entity object.
           $entity_id = isset($form['nid']['#value']) ? (int) $form['nid']['#value'] : NULL;
+          $article_id = '';
 
           if (!empty($entity_id)) {
 
@@ -44,6 +45,7 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
                 'channel_id' => $row->channel_id,
               ];
             }
+            $article_id = $row->article_id;
           }
 
           // Entity form JS helper (hide/show Apple News entity form options).
@@ -63,12 +65,20 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
           ];
 
           if (empty($entity_id)) {
-            $preview_message = t('You have to save this content in order to download previewable Apple News article file.');
-            $form['apple_news']['preview'] = [
-              '#markup' => '<div>' . $preview_message . '</div><br/>',
-              '#prefix' => '<div><strong>' . t('Preview') . '</strong></div>',
-            ];
+            $preview_message = t('You have to save this content in order to be able to preview the Apple News generated document.');
           }
+          else {
+            $preview_message = t('<a href="!link">Download</a> the Apple News generated document.',
+              [
+                '!link' => url('admin/config/content/apple-news/' . $article_id . '/download'),
+              ]
+            );
+          }
+
+          $form['apple_news']['preview'] = [
+            '#markup' => '<div>' . $preview_message . '</div><br/>',
+            '#prefix' => '<div><strong>' . t('Preview') . '</strong></div>',
+          ];
 
           // Get configuration form for the AppleNews exportable entity.
           $export_form = $export->getConfigForm([], $form_state);
@@ -95,7 +105,15 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
               $rows[] = [
                 ['data' => $info['channel']],
                 ['data' => $info['sections']],
-                ['data' => l($metadata['shareUrl'], $metadata['shareUrl'])],
+                ['data' => 
+                  l($metadata['shareUrl'], $metadata['shareUrl'],
+                    [
+                      'attributes' => [
+                        'target' => '_blank'
+                      ]
+                    ]
+                  )
+                ],
                 ['data' => $info['postdate']],
                 ['data' => l(
                   t('Delete'), 'admin/config/content/apple-news/'

@@ -224,8 +224,9 @@ class ApplenewsExportArticle extends ApplenewsExport {
     // Image field.
     /** @var EntityDrupalWrapper $file */
     $file = $wrapper->__isset('field_image') ? $wrapper->field_image->value() : FALSE;
-    if (count($file)) {
-      $assets[] = drupal_realpath($file['uri']);
+    if (!empty($file['fid'])) {
+      $file = file_load($file['fid']);
+      $assets[] = drupal_realpath($file->uri);
     }
     return $assets;
   }
