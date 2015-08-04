@@ -474,6 +474,10 @@ function apple_news_update($channel_id, $entity_type, $entity_wrapper, $data) {
         ->condition('article_revision_id', $article->article_revision_id)
         ->condition('channel_id', $channel_id)
         ->execute();
+      // @todo implement preview
+      //module_load_include('inc', 'apple_news', 'include/preview');
+      //$preview = new ChapterThree\AppleNews\Preview\ApplenewsPreview($article->article_id, $data);
+      //$preview->archive();
       return TRUE;
     }
   }
@@ -563,7 +567,7 @@ function apple_news_op($op, $channel_id, $entity, $entity_type, $export = NULL, 
       $export->settings = array_merge($export->settings, $settings);
     }
     $data = [
-      'json' => $document->json(),
+      'json' => $document->__toString(),
       'files' => $export->assets($entity),
       'metadata' => !empty($settings['metadata']) ? json_encode($settings['metadata']) : '',
     ];

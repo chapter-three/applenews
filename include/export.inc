@@ -154,7 +154,7 @@ abstract class ApplenewsExport {
         foreach ($channel['sections'] as $section_id => $section) {
           $form['channels']['section-' . $channel_id . '-' . $section_id] = [
             '#type' => 'checkbox',
-            '#title' => $section['name'] . ' ' . (!empty($section['default']) ? t('(default)') : ''),
+            '#title' => $section['name'] . ' ' . (!empty($section['default']) ? t('<em>(default)</em>') : ''),
             '#attributes' => [
               'data-section-of' => $channel_id,
               'class' => ['apple-news-sections']

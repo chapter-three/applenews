@@ -110,6 +110,10 @@ class ApplenewsExportArticle extends ApplenewsExport {
     // Image field.
     /** @var EntityDrupalWrapper $file */
     $file = $wrapper->__isset('field_image') ? $wrapper->field_image->value() : FALSE;
+    if (!empty($file['fid'])) {
+      $file = file_load($file['fid']);
+      $file = (array)$file;
+    }
 
     // Byline.
     $byline = t('By !author on !date',

@@ -23,7 +23,7 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
           // Load export object.
           $export = $info['#export'];
 
-          $entity_channels = [];
+          $punlished_channels = [];
 
           // Entity object.
           $entity_id = isset($form['nid']['#value']) ? (int) $form['nid']['#value'] : NULL;
@@ -37,15 +37,18 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
             // Collect article id, channel name and postdate for the table below.
             foreach ($results as $row) {
               $channel = apple_news_channel($row->channel_id);
-              $entity_channels[$row->article_id] = [
-                'channel'    => $channel->name,
-                'sections'   => $channel->name,
-                'postdate'   => format_date($row->postdate, 'short'),
-                'article_id' => $row->article_id,
-                'channel_id' => $row->channel_id,
-              ];
+              if (!empty($channel->name)) {
+                $metadata = apple_news_article_metadata($row->article_id);
+                $punlished_channels[$row->article_id] = [
+                  'channel'    => $channel->name,
+                  'sections'   => $channel->name,
+                  'postdate'   => format_date($row->postdate, 'short'),
+                  'article_id' => $row->article_id,
+                  'channel_id' => $row->channel_id,
+                ];
+              }
+              $article_id = $row->article_id;
             }
-            $article_id = $row->article_id;
           }
 
           // Entity form JS helper (hide/show Apple News entity form options).
@@ -96,35 +99,37 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
             $form['apple_news']['container'] = $export_form['channels'];
           }
 
-          if (!empty($entity_channels)) {
+          if (!empty($punlished_channels)) {
             // If this article was already published we should give an
             // option to removed it from Apple News.
             $rows = [];
-            foreach ($entity_channels as $article_id => $info) {
+            foreach ($punlished_channels as $article_id => $info) {
               $metadata = apple_news_article_metadata($article_id);
-              $rows[] = [
-                ['data' => $info['channel']],
-                ['data' => $info['sections']],
-                ['data' => 
-                  l($metadata['shareUrl'], $metadata['shareUrl'],
-                    [
-                      'attributes' => [
-                        'target' => '_blank'
+              if (!empty($info['channel']) && !empty($info['sections'])) {
+                $rows[] = [
+                  ['data' => $info['channel']],
+                  ['data' => $info['sections']],
+                  ['data' => 
+                    l($metadata['shareUrl'], $metadata['shareUrl'],
+                      [
+                        'attributes' => [
+                          'target' => '_blank'
+                        ]
                       ]
-                    ]
-                  )
-                ],
-                ['data' => $info['postdate']],
-                ['data' => l(
-                  t('Delete'), 'admin/config/content/apple-news/'
-                    . $type . '/'
-                    . $entity_id
-                    . '/' . $info['article_id'] . '/'
-                    . $info['channel_id']
-                    . '/delete'
-                  )
-                ],
-              ];
+                    )
+                  ],
+                  ['data' => $info['postdate']],
+                  ['data' => l(
+                    t('Delete'), 'admin/config/content/apple-news/'
+                      . $type . '/'
+                      . $entity_id
+                      . '/' . $info['article_id'] . '/'
+                      . $info['channel_id']
+                      . '/delete'
+                    )
+                  ],
+                ];
+              }
             }
 
             $form['apple_news']['info'] = [
@@ -141,6 +146,7 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
               ]),
               '#prefix' => '<br/><div><strong>' . t('Apple News feeds') . '</strong></div>',
             ];
+
           }
 
         }

@@ -245,10 +245,10 @@ function apple_news_settings_channel_sections_form($form, &$form_state, $channel
   $channel_sections = apple_news_sections($channel_id);
   if (!empty($channel_sections)) {
     foreach ($channel_sections as $section) {
+      $default = ($section->isDefault) ? ' ' . t('<em>(default)</em>') : '';
       $sections[] = [
-        'name' => filter_xss($section->name),
+        'name' => filter_xss($section->name) . $default,
         'id' => $section->id,
-        'default' => ($section->isDefault) ? t('Yes') : '',
       ];
     }
   }
@@ -258,8 +258,7 @@ function apple_news_settings_channel_sections_form($form, &$form_state, $channel
       [
         'header' => [
           t('Section Name'),
-          t('Section ID'),
-          t('Default')
+          t('Section ID')
         ],
         'rows' => $sections
       ]
