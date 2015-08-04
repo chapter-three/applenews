@@ -243,26 +243,28 @@ function apple_news_views_default_views() {
   $handler->display->display_options['fields']['title']['table'] = 'node';
   $handler->display->display_options['fields']['title']['field'] = 'title';
   $handler->display->display_options['fields']['title']['relationship'] = 'reverse_entity_id_node';
+  /* Field: Apple News Articles: Apple News article metadata */
+  $handler->display->display_options['fields']['metadata']['id'] = 'metadata';
+  $handler->display->display_options['fields']['metadata']['table'] = 'apple_news_published_entities';
+  $handler->display->display_options['fields']['metadata']['field'] = 'metadata';
+  $handler->display->display_options['fields']['metadata']['label'] = 'Share URL';
   /* Field: Apple News Articles: Article ID */
   $handler->display->display_options['fields']['article_id']['id'] = 'article_id';
   $handler->display->display_options['fields']['article_id']['table'] = 'apple_news_published_entities';
   $handler->display->display_options['fields']['article_id']['field'] = 'article_id';
+  $handler->display->display_options['fields']['article_id']['exclude'] = TRUE;
   /* Field: Apple News Articles: Revision ID */
   $handler->display->display_options['fields']['article_revision_id']['id'] = 'article_revision_id';
   $handler->display->display_options['fields']['article_revision_id']['table'] = 'apple_news_published_entities';
   $handler->display->display_options['fields']['article_revision_id']['field'] = 'article_revision_id';
   $handler->display->display_options['fields']['article_revision_id']['label'] = 'Revision';
+  $handler->display->display_options['fields']['article_revision_id']['exclude'] = TRUE;
   /* Field: Apple News Articles: Post date */
   $handler->display->display_options['fields']['postdate']['id'] = 'postdate';
   $handler->display->display_options['fields']['postdate']['table'] = 'apple_news_published_entities';
   $handler->display->display_options['fields']['postdate']['field'] = 'postdate';
   $handler->display->display_options['fields']['postdate']['date_format'] = 'short';
   $handler->display->display_options['fields']['postdate']['second_date_format'] = 'long';
-  /* Field: Apple News Articles: Apple News article metadata */
-  $handler->display->display_options['fields']['metadata']['id'] = 'metadata';
-  $handler->display->display_options['fields']['metadata']['table'] = 'apple_news_published_entities';
-  $handler->display->display_options['fields']['metadata']['field'] = 'metadata';
-  $handler->display->display_options['fields']['metadata']['label'] = 'Share URL';
   /* Field: Content: Edit link */
   $handler->display->display_options['fields']['edit_node']['id'] = 'edit_node';
   $handler->display->display_options['fields']['edit_node']['table'] = 'views_entity_node';
