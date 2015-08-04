@@ -23,7 +23,7 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
           // Load export object.
           $export = $info['#export'];
 
-          $punlished_channels = [];
+          $published_channels = [];
 
           // Entity object.
           $entity_id = isset($form['nid']['#value']) ? (int) $form['nid']['#value'] : NULL;
@@ -39,9 +39,15 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
               $channel = apple_news_channel($row->channel_id);
               if (!empty($channel->name)) {
                 $metadata = apple_news_article_metadata($row->article_id);
-                $punlished_channels[$row->article_id] = [
+                $sections = [];
+                foreach ($metadata['links']->sections as $section_url) {
+                  $url_components = explode("/", $section_url);
+                  $section = apple_news_section($url_components[count($url_components) - 1]);
+                  $sections[] = $section['name'];
+                }
+                $published_channels[$row->article_id] = [
                   'channel'    => $channel->name,
-                  'sections'   => $channel->name,
+                  'sections'   => join('<br>', $sections),
                   'postdate'   => format_date($row->postdate, 'short'),
                   'article_id' => $row->article_id,
                   'channel_id' => $row->channel_id,
@@ -99,12 +105,11 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
             $form['apple_news']['container'] = $export_form['channels'];
           }
 
-          if (!empty($punlished_channels)) {
+          if (!empty($published_channels)) {
             // If this article was already published we should give an
             // option to removed it from Apple News.
             $rows = [];
-            foreach ($punlished_channels as $article_id => $info) {
-              $metadata = apple_news_article_metadata($article_id);
+            foreach ($published_channels as $article_id => $info) {
               if (!empty($info['channel']) && !empty($info['sections'])) {
                 $rows[] = [
                   ['data' => $info['channel']],

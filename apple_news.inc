@@ -567,7 +567,7 @@ function apple_news_op($op, $channel_id, $entity, $entity_type, $export = NULL, 
       $export->settings = array_merge($export->settings, $settings);
     }
     $data = [
-      'json' => $document->__toString(),
+      'json' => $document->json(),
       'files' => $export->assets($entity),
       'metadata' => !empty($settings['metadata']) ? json_encode($settings['metadata']) : '',
     ];
@@ -662,6 +662,19 @@ function apple_news_sections($channel_id) {
     }
   }
   return $sections;
+}
+
+/**
+ * Get Apple News section information.
+ */
+function apple_news_section($section_id) {
+  $sections = apple_news_channels(TRUE);
+  foreach ($sections as $channel_id => $channel) {
+    if (!empty($channel['sections'][$section_id])) {
+      return $channel['sections'][$section_id];
+    }
+  }
+  return FALSE;
 }
 
 /**
