@@ -442,7 +442,9 @@ function apple_news_update($channel_id, $entity_type, $entity_wrapper, $data) {
   // Make sure article exists.
   if (!empty($article->article_id)) {
     // Add metadata.
-    $metadata = !empty($data['metadata']) ? json_decode($data['metadata']) : [];
+    if (!empty($data['metadata'])) {
+      $data['metadata'] = json_decode($data['metadata'], true);
+    }
     $data['metadata']['data']['revision'] = $article->article_revision_id;
     $data['metadata'] = json_encode($data['metadata']);
     // Make POST request to Apple News via PushAPI.
@@ -563,7 +565,7 @@ function apple_news_op($op, $channel_id, $entity, $entity_type, $export = NULL, 
     $data = [
       'json' => $document->json(),
       'files' => $export->assets($entity),
-      'metadata' => !empty($settings['metadata']) ? json_encode(['data' => $settings['metadata']]) : '',
+      'metadata' => !empty($settings['metadata']) ? json_encode($settings['metadata']) : '',
     ];
   }
   if ($op == 'insert') {
