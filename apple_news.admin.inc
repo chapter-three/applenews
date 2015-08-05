@@ -158,10 +158,8 @@ function apple_news_settings_channels_form() {
       '#markup' => '<br/>' . theme('table',
         [
           'header' => [
-            // Channel Name.
-            t('Feed Name'),
-            // Channel ID.
-            t('Feed ID'),
+            t('Feed Name'), // Channel Name.
+            t('Feed ID'), // Channel ID.
             t('Operations'),
           ],
           'rows' => $channels,
@@ -406,6 +404,7 @@ function apple_news_settings_exports_form($form, &$form_state) {
         'enable' => t('Enable'),
         'disable' => t('Disable'),
         'export' => t('Export'),
+        'export-to-file' => t('Export to file'),
       ],
     ],
     'submit' => [
@@ -483,6 +482,26 @@ function apple_news_settings_exports_form_submit($form, &$form_state) {
         $export = apple_news_get_export($info['module'], $info['machine_name']);
         if ($export->enabled) {
           $batch = apple_news_batch_run_export($info, $export);
+          batch_set($batch);
+        }
+        else {
+          drupal_set_message(
+            t('<em>@name</em> export is disabled.',
+              [
+                '@name' => $info['name']
+              ]),
+              'warning'
+          );
+        }
+      }
+      break;
+
+    case 'export-to-file':
+      foreach ($selected as $info) {
+        // Export entities as Apple News previewable files.
+        $export = apple_news_get_export($info['module'], $info['machine_name']);
+        if ($export->enabled) {
+          $batch = apple_news_batch_export_to_file($info, $export);
           batch_set($batch);
         }
         else {

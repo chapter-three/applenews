@@ -13,33 +13,43 @@ namespace ChapterThree\AppleNews\Preview;
  */
 class ApplenewsPreview {
 
-  private $destination = '';
+  private $entity_dir = '';
+  private $entity_realpath = '';
   private $realpath = '';
   private $files = [];
   private $files_names = [];
   private $article_json = '';
-  private $archive_path = '';
+  private $archive_file = '';
+  private $archive_url = '';
+  private $archive_realpath = '';
+
+  private $directory = 'apple-news/';
+  private $archive = 'apple-news.zip';
 
   /**
    * Implements __construct().
    * Initialize all required variables.
    */
-  public function __construct($entity_id, array $data = []) {
+  public function init($entity_id, array $data = []) {
 
-    $drupal_files_dir = variable_get('file_public_path', conf_path() . '/files');
-    $drupal_dir = file_build_uri('apple-news/' . $entity_id);
+    $this->archive_realpath = drupal_realpath(file_build_uri($this->directory));
+    $this->archive_file = drupal_realpath(file_build_uri($this->directory . $this->archive));
+    $this->archive_url = file_create_url(file_build_uri($this->directory . $this->archive));
 
-    $this->destination = $drupal_dir;
-    $this->realpath = drupal_realpath($drupal_dir);
-    $this->files = $data['files'];
-    foreach ($data['files'] as $file) {
-      $this->files_names[] = basename($file);
+    if ($entity_id) {
+      $drupal_entity_dir = file_build_uri($this->directory . $entity_id);
+      $this->entity_dir = $drupal_entity_dir;
+      $this->entity_realpath = drupal_realpath($drupal_entity_dir);
+      if (count($data)) {
+        $this->files = $data['files'];
+        $this->article_json = $data['json'];
+        foreach ($this->files as $file) {
+          $this->files_names[] = basename($file);
+        }
+      }
+      $this->removeEntityDirectories();
+      file_prepare_directory($drupal_entity_dir, FILE_CREATE_DIRECTORY);
     }
-    $this->article_json = $data['json'];
-    $this->archive_path = drupal_realpath(file_build_uri('apple-news/' . $entity_id . '.zip'));
-
-    $this->removeArchive();
-    file_prepare_directory($drupal_dir, FILE_CREATE_DIRECTORY);
 
   }
 
@@ -47,73 +57,127 @@ class ApplenewsPreview {
    * Save JSON string into article.json file.
    */
   private function saveArticleJSON() {
-    file_unmanaged_save_data($this->article_json, $this->destination . '/article.json');
+    file_unmanaged_save_data($this->article_json, $this->entity_dir . '/article.json');
     $this->files_names[] = 'article.json';
   }
 
   /**
    * Save article assets into article directory.
    */
-  private function saveFiles() {
-    foreach ($this->files as $path) {
-      $contents = file_get_contents($path);
-      $filename = explode("/", $path);
-      file_unmanaged_save_data($contents, $this->destination . '/' . $filename[count($filename) - 1]);
+  private function saveArticleAssets() {
+    foreach ($this->files as $file) {
+      $contents = file_get_contents($file);
+      file_unmanaged_save_data($contents, $this->entity_dir . '/' . basename($file));
     }
+  }
+
+  /**
+   * Add directory to archive.
+   */
+  private function archiveDirectory($zip, $dir, $base) {
+    $newFolder = str_replace($base, '', $dir);
+    $zip->addEmptyDir($newFolder);
+    foreach(glob($dir . '/*') as $file) {
+      if(is_dir($file)) {
+        $zip = $this->archiveDirectory($zip, $file, $base);
+      }
+      else {
+        $newFile = str_replace($base, '', $file);
+        $zip->addFile($file, $newFile);
+      }
+    }
+    return $zip;
+  }
+
+  /**
+   * Scan a directory and return a list of file names and directories.
+   */
+  private function scanDirectory($path) {
+    $items = array_values(array_filter(scandir($path), function($file) {
+      return !is_dir($file);
+    }));
+    return $items;
   }
 
   /**
    * Create [article-id].zip file archive.
    */
   private function createArchive() {
-    // create object
+
+    // Make sure to remove archive file first.
+    file_unmanaged_delete($this->archive_file);
+
+    // Start creating a new archive file.
     $zip = new \ZipArchive();
     // open archive 
-    if ($zip->open($this->archive_path, \ZipArchive::CREATE) !== TRUE) {
+    if ($zip->open($this->archive_file, \ZipArchive::CREATE) !== TRUE) {
       die ("Could not open archive");
     }
 
-    $files = array_values(array_filter(scandir($this->realpath), function($file) {
-      return !is_dir($file);
-    }));
-
-    foreach ($files as $file) {
-      if (in_array($file, $this->files_names)) {
-        $zip->addFile($this->realpath . '/' . $file, $file) or die ("ERROR: Could not add file: $file");
+    // Scan through all entity directories and add each file to an archive.
+    foreach ($this->scanDirectory($this->archive_realpath) as $item) {
+      $dir = $this->archive_realpath . '/' . $item;
+      if (is_dir($dir)) {
+        $zip->addEmptyDir($item);
+        $files = $this->scanDirectory($this->archive_realpath . '/' . $item);
+        foreach ($files as $file) {
+          $zip->addFile($this->archive_realpath . '/' . $item . '/' . $file, $item . '/' . $file);
+        }
       }
     }
+
     // close and save archive
     $zip->close();
+
   }
 
   /**
    * Removes previewable AppleNews article file.
    */
-  public function removeArchive() {
-    if (is_dir($this->realpath)) {
-
-      $files = array_values(array_filter(scandir($this->realpath), function($file) {
-        return !is_dir($file);
-      }));
-
-      foreach ($files as $file) {
-        file_unmanaged_delete($this->destination . '/' . $file);
+  public function removeEntityDirectories() {
+    if (is_dir($this->entity_realpath)) {
+      foreach ($this->scanDirectory($this->entity_realpath) as $file) {
+        file_unmanaged_delete($this->entity_dir . '/' . $file);
       }
-      file_unmanaged_delete_recursive($this->destination);
+      file_unmanaged_delete_recursive($this->entity_dir);
     }
-
   }
 
   /**
-   * Archive article assets and generate downloadable zip file.
+   * Removes directories.
+   */
+  public function removeDirectories() {
+    if (is_dir($this->archive_realpath)) {
+      foreach ($this->scanDirectory($this->archive_realpath) as $file) {
+        $dir = $this->archive_realpath . '/' . $file;
+        if (is_dir($dir)) {
+          file_unmanaged_delete_recursive($dir);
+        }
+      }
+    }
+  }
+
+  /**
+   * Returns URL path to an archive file.
+   */
+  public function getArchiveFilePath() {
+    return $this->archive_url;
+  }
+
+  /**
+   * Export entities to files.
+   */
+  public function toFile() {
+    $this->saveArticleJSON();
+    $this->saveArticleAssets();
+  }
+
+  /**
+   * Generate downloadable zip file.
    */
   public function archive() {
-    $this->saveArticleJSON();
-    $this->saveFiles();
     $this->createArchive();
-
-    // Remove directory but the archived file.
-    $this->removeArchive();
+    $this->removeDirectories();
   }
 
 }

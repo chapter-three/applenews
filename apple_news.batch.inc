@@ -41,7 +41,7 @@ function apple_news_batch_run_export($info, $export) {
 /**
  * Batch operation for bactch export.
  *
- * This is the function that is called on each operation in batch 1.
+ * This is the function that is called on each operation in Apple News export.
  */
 function apple_news_batch_post($info, $export, $entity_type, $entity, &$context) {
   module_load_include('inc', 'apple_news');
@@ -134,6 +134,104 @@ function apple_news_batch_run_export_finished($success, $results, $operations) {
       else {
         drupal_set_message(t('There is no content for export to Apple News.'));
       }
+    }
+  }
+  else {
+    // An error occurred.
+    // $operations contains the operations that remained unprocessed.
+    $error_operation = reset($operations);
+    drupal_set_message(
+      t('An error occurred while processing @operation with arguments : @args',
+        [
+          '@operation' => $error_operation[0],
+          '@args' => print_r($error_operation[0], TRUE),
+        ]
+      )
+    );
+  }
+}
+
+/**
+ * Batch Apple News export to file.
+ *
+ * @see apple_news_settings_exports_form_submit()
+ */
+function apple_news_batch_export_to_file($info, $export) {
+
+  $operations = [];
+
+  $result = $export->query()->execute();
+  $entity_types = $export->entityTypes();
+
+  foreach ($entity_types as $entity_type) {
+    foreach ($result[$entity_type] as $entity_id => $object) {
+      // Load entity object and pass it to the document generator.
+      $entity = entity_load_single($entity_type, $entity_id);
+      $operations[] = [
+        'apple_news_batch_preview_generate',
+        [
+          $export,
+          $entity_type,
+          $entity
+        ],
+      ];
+    }
+  }
+
+  return [
+    'operations' => $operations,
+    'finished' => 'apple_news_batch_export_to_file_finished',
+  ];
+}
+
+/**
+ * Batch operation for bactch export.
+ *
+ * This is the function that is called on each operation in Export to File.
+ */
+function apple_news_batch_preview_generate($export, $entity_type, $entity, &$context) {
+  module_load_include('inc', 'apple_news');
+
+  $entity_wrapper = entity_metadata_wrapper($entity_type, $entity);
+  $context['results'][] = $entity_wrapper->getIdentifier() . ' : ' . check_plain($entity_wrapper->label());
+  $context['message'] = t('Exporting "@title" entity to file.',
+    [
+      '@title' => $entity_wrapper->label(),
+    ]
+  );
+
+  $document = $export->export($entity);
+  $data = [
+    'json' => $document->json(),
+    'files' => $export->assets($entity),
+  ];
+
+  module_load_include('inc', 'apple_news', 'include/preview');
+  $preview = new ChapterThree\AppleNews\Preview\ApplenewsPreview();
+  $preview->init($entity_wrapper->getIdentifier(), $data);
+  $preview->toFile();
+  $context['results']['preview'] = $preview;
+
+}
+
+/**
+ * Batch 'finished' callback used by batch Apple News export to file.
+ */
+function apple_news_batch_export_to_file_finished($success, $results, $operations) {
+  module_load_include('inc', 'apple_news', 'include/preview');
+  $count = count($results);
+  $preview = new ChapterThree\AppleNews\Preview\ApplenewsPreview();
+  $preview->init(NULL, []);
+  $file_url = $preview->getArchiveFilePath();
+  if ($success) {
+    if ($count > 0) {
+      $plural_message = format_plural(
+        $count,
+        '1 entity successfully exported to a file.',
+        '@count entities were successfully exported to a file. <a href="' . $file_url . '">Download</a> the file and preview it in Apple News Preview Tool.'
+      );
+      $preview->archive();
+      drupal_set_message($plural_message);
     }
   }
   else {

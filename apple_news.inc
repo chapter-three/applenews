@@ -420,9 +420,6 @@ function apple_news_post($channel_id, $entity_type, $entity_wrapper, $data) {
       ),
     ];
     drupal_write_record('apple_news_published_entities', $record);
-    module_load_include('inc', 'apple_news', 'include/preview');
-    $preview = new ChapterThree\AppleNews\Preview\ApplenewsPreview($entity_wrapper->getIdentifier(), $data);
-    $preview->archive();
     return TRUE;
   }
   return FALSE;
@@ -477,10 +474,6 @@ function apple_news_update($channel_id, $entity_type, $entity_wrapper, $data) {
         ->condition('article_revision_id', $article->article_revision_id)
         ->condition('channel_id', $channel_id)
         ->execute();
-      // @todo implement preview
-      module_load_include('inc', 'apple_news', 'include/preview');
-      $preview = new ChapterThree\AppleNews\Preview\ApplenewsPreview($entity_wrapper->getIdentifier(), $data);
-      $preview->archive();
       return TRUE;
     }
   }

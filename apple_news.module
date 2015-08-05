@@ -64,10 +64,6 @@ function apple_news_permission() {
       'title' => t('Administer Apple News'),
       'description' => t('Perform administration tasks for Apple News'),
     ],
-    'push content to apple news' => [
-      'title' => t('Push content to Apple News'),
-      'description' => '',
-    ],
   ];
 }
 
