@@ -31,7 +31,7 @@ function drush_apple_news_apple_news_export($module, $machine_name) {
   module_load_include('inc', 'apple_news', 'apple_news.batch');
   $export = apple_news_export_load($module, $machine_name);
   if ($export->enabled) {
-    $batch = apple_news_bactch_run_export($info, $export);
+    $batch = apple_news_batch_run_export($info, $export);
     $batch['progressive'] = FALSE;
     batch_set($batch);
     drush_log('Entities successfully exported to Apple News.', 'ok');
