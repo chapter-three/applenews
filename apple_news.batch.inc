@@ -225,10 +225,15 @@ function apple_news_batch_export_to_file_finished($success, $results, $operation
   $file_url = $preview->getArchiveFilePath();
   if ($success) {
     if ($count > 0) {
+      $download = t('<strong><a href="!link">Download</a></strong> the file and preview articles in Apple News Preview Tool.',
+        [
+          '!link' => $file_url,
+        ]
+      );
       $plural_message = format_plural(
         $count,
-        '1 entity successfully exported to a file.',
-        '@count entities were successfully exported to a file. <a href="' . $file_url . '">Download</a> the file and preview it in Apple News Preview Tool.'
+        '1 entity successfully exported to a file. ' . $download,
+        '@count entities were successfully exported to a file. ' . $download
       );
       $preview->archive();
       drupal_set_message($plural_message);
