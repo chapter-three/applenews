@@ -150,19 +150,17 @@ abstract class ApplenewsExport {
         '#required' => TRUE,
         '#default_value' => !empty($saved_channels[$channel_id]) ? TRUE : FALSE,
       ];
-      //if (count($channel['sections']) > 1) {
-        foreach ($channel['sections'] as $section_id => $section) {
-          $form['channels']['section-' . $channel_id . '-' . $section_id] = [
-            '#type' => 'checkbox',
-            '#title' => $section['name'] . ' ' . (!empty($section['default']) ? t('<em>(default)</em>') : ''),
-            '#attributes' => [
-              'data-section-of' => $channel_id,
-              'class' => ['apple-news-sections']
-            ],
-            '#default_value' => !empty($saved_sections[$section_id]) ? TRUE : FALSE,
-          ];
-        }
-      //}
+      foreach ($channel['sections'] as $section_id => $section) {
+        $form['channels']['section-' . $channel_id . '-' . $section_id] = [
+          '#type' => 'checkbox',
+          '#title' => $section['name'] . ' ' . (!empty($section['default']) ? t('<em>(default)</em>') : ''),
+          '#attributes' => [
+            'data-section-of' => $channel_id,
+            'class' => ['apple-news-sections']
+          ],
+          '#default_value' => !empty($saved_sections[$section_id]) ? TRUE : FALSE,
+        ];
+      }
     }
 
     return $form;

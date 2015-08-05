@@ -40,6 +40,9 @@ function apple_news_entity_update($entity, $type) {
   module_load_include('inc', 'apple_news', 'push_api');
   foreach (apple_news_get_entity_types() as $module => $info) {
     $export = $info['#export'];
+    if (!$info['enabled']) {
+      continue;
+    }
     $wrapper = entity_metadata_wrapper($type, $entity);
     if (in_array($wrapper->getBundle(), $export->bundles()) && in_array($type, $export->entityTypes()) && $info['enabled']) {
       foreach (apple_news_channels(TRUE) as $channel_id => $channel) {

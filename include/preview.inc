@@ -16,25 +16,31 @@ class ApplenewsPreview {
   private $destination = '';
   private $realpath = '';
   private $files = [];
+  private $files_names = [];
   private $article_json = '';
-  private $article_id = '';
+  private $archive_path = '';
 
   /**
    * Implements __construct().
    * Initialize all required variables.
    */
-  public function __construct($article_id, array $data = []) {
+  public function __construct($entity_id, array $data = []) {
+
     $drupal_files_dir = variable_get('file_public_path', conf_path() . '/files');
-    $drupal_dir = file_build_uri('apple-news/' . $article_id);
-      drupal_mkdir($drupal_dir);
-    if (!is_dir($dir)) {
-      drupal_mkdir($drupal_dir);
-    }
+    $drupal_dir = file_build_uri('apple-news/' . $entity_id);
+
     $this->destination = $drupal_dir;
     $this->realpath = drupal_realpath($drupal_dir);
     $this->files = $data['files'];
+    foreach ($data['files'] as $file) {
+      $this->files_names[] = basename($file);
+    }
     $this->article_json = $data['json'];
-    $this->article_id = $article_id;
+    $this->archive_path = drupal_realpath(file_build_uri('apple-news/' . $entity_id . '.zip'));
+
+    $this->removeArchive();
+    file_prepare_directory($drupal_dir, FILE_CREATE_DIRECTORY);
+
   }
 
   /**
@@ -42,6 +48,7 @@ class ApplenewsPreview {
    */
   private function saveArticleJSON() {
     file_unmanaged_save_data($this->article_json, $this->destination . '/article.json');
+    $this->files_names[] = 'article.json';
   }
 
   /**
@@ -62,14 +69,19 @@ class ApplenewsPreview {
     // create object
     $zip = new \ZipArchive();
     // open archive 
-    if ($zip->open($this->article_id . '.zip', \ZipArchive::CREATE) !== TRUE) {
+    if ($zip->open($this->archive_path, \ZipArchive::CREATE) !== TRUE) {
       die ("Could not open archive");
     }
-    $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($this->realpath));
-    foreach ($iterator as $key => $value) {
-      $zip->addFile(realpath($key), $key) or die ("ERROR: Could not add file: $key");
-    }
 
+    $files = array_values(array_filter(scandir($this->realpath), function($file) {
+      return !is_dir($file);
+    }));
+
+    foreach ($files as $file) {
+      if (in_array($file, $this->files_names)) {
+        $zip->addFile($this->realpath . '/' . $file, $file) or die ("ERROR: Could not add file: $file");
+      }
+    }
     // close and save archive
     $zip->close();
   }
@@ -77,8 +89,19 @@ class ApplenewsPreview {
   /**
    * Removes previewable AppleNews article file.
    */
-  public function removeArchive($article_id) {
-    drupal_rmdir($this->destination);
+  public function removeArchive() {
+  
+    if (is_dir($this->realpath)) {
+
+      $files = array_values(array_filter(scandir($this->realpath), function($file) {
+        return !is_dir($file);
+      }));
+
+      foreach ($files as $file) {
+        file_unmanaged_delete($this->destination . '/' . $file);
+      }
+      file_unmanaged_delete_recursive($this->destination);
+    }
   }
 
   /**
@@ -88,6 +111,9 @@ class ApplenewsPreview {
     $this->saveArticleJSON();
     $this->saveFiles();
     $this->createArchive();
+
+    // Remove directory but the archived file.
+    $this->removeArchive();
   }
 
 }
