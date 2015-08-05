@@ -220,11 +220,11 @@ function apple_news_batch_preview_generate($export, $entity_type, $entity, &$con
 function apple_news_batch_export_to_file_finished($success, $results, $operations) {
   module_load_include('inc', 'apple_news', 'include/preview');
   $count = count($results);
-  $preview = new ChapterThree\AppleNews\Preview\ApplenewsPreview();
-  $preview->init(NULL, []);
-  $file_url = $preview->getArchiveFilePath();
   if ($success) {
     if ($count > 0) {
+      $preview = new ChapterThree\AppleNews\Preview\ApplenewsPreview();
+      $preview->init(NULL, []);
+      $file_url = $preview->getArchiveFilePath();
       $download = t('<strong><a href="!link">Download</a></strong> the file and preview articles in Apple News Preview Tool.',
         [
           '!link' => $file_url,
