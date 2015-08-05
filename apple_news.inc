@@ -530,7 +530,7 @@ function apple_news_get_entity_types() {
   foreach (apple_news_exports() as $info) {
     // Load export object.
     $export = apple_news_get_export($info['module'], $info['machine_name']);
-    $result[$info['module'] . '::' . $info['machine_name']] = 
+    $result[apple_news_export_id($info['module'], $info['machine_name'])] = 
     [
       'module'        => $info['module'],
       'machine_name'  => $info['machine_name'],
