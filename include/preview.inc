@@ -90,7 +90,6 @@ class ApplenewsPreview {
    * Removes previewable AppleNews article file.
    */
   public function removeArchive() {
-  
     if (is_dir($this->realpath)) {
 
       $files = array_values(array_filter(scandir($this->realpath), function($file) {
@@ -102,6 +101,7 @@ class ApplenewsPreview {
       }
       file_unmanaged_delete_recursive($this->destination);
     }
+
   }
 
   /**
