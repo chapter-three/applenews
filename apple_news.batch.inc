@@ -194,7 +194,7 @@ function apple_news_batch_preview_generate($export, $entity_type, $entity, &$con
 
   $entity_wrapper = entity_metadata_wrapper($entity_type, $entity);
   $context['results'][] = $entity_wrapper->getIdentifier() . ' : ' . check_plain($entity_wrapper->label());
-  $context['message'] = t('Exporting "@title" entity to file.',
+  $context['message'] = t('Exporting "@title" entity to a file.',
     [
       '@title' => $entity_wrapper->label(),
     ]
