@@ -23,6 +23,9 @@ class ApplenewsPreview {
   private $archive_url = '';
   private $archive_realpath = '';
 
+  private $entity_id = '';
+  private $entity_archive = FALSE;
+
   private $directory = 'apple-news/';
   private $archive = 'apple-news.zip';
 
@@ -30,7 +33,7 @@ class ApplenewsPreview {
    * Implements __construct().
    * Initialize all required variables.
    */
-  public function init($entity_id, array $data = []) {
+  public function init($entity_id, $entity_archive = FALSE, array $data = []) {
 
     $this->archive_realpath = drupal_realpath(file_build_uri($this->directory));
     $this->archive_file = drupal_realpath(file_build_uri($this->directory . $this->archive));
@@ -40,6 +43,9 @@ class ApplenewsPreview {
       $drupal_entity_dir = file_build_uri($this->directory . $entity_id);
       $this->entity_dir = $drupal_entity_dir;
       $this->entity_realpath = drupal_realpath($drupal_entity_dir);
+      // Boolean value that indicated if we should create tmp archive file for an entity.
+      $this->entity_archive = $entity_archive;
+      $this->entity_id = $entity_id;
       if (count($data)) {
         $this->files = $data['files'];
         $this->article_json = $data['json'];
@@ -72,24 +78,6 @@ class ApplenewsPreview {
   }
 
   /**
-   * Add directory to archive.
-   */
-  private function archiveDirectory($zip, $dir, $base) {
-    $newFolder = str_replace($base, '', $dir);
-    $zip->addEmptyDir($newFolder);
-    foreach(glob($dir . '/*') as $file) {
-      if(is_dir($file)) {
-        $zip = $this->archiveDirectory($zip, $file, $base);
-      }
-      else {
-        $newFile = str_replace($base, '', $file);
-        $zip->addFile($file, $newFile);
-      }
-    }
-    return $zip;
-  }
-
-  /**
    * Scan a directory and return a list of file names and directories.
    */
   private function scanDirectory($path) {
@@ -104,26 +92,49 @@ class ApplenewsPreview {
    */
   private function createArchive() {
 
-    // Make sure to remove archive file first.
-    file_unmanaged_delete($this->archive_file);
-
     // Start creating a new archive file.
     $zip = new \ZipArchive();
-    // open archive 
-    if ($zip->open($this->archive_file, \ZipArchive::CREATE) !== TRUE) {
-      die ("Could not open archive");
-    }
 
-    // Scan through all entity directories and add each file to an archive.
-    foreach ($this->scanDirectory($this->archive_realpath) as $item) {
-      $dir = $this->archive_realpath . '/' . $item;
-      if (is_dir($dir)) {
-        $zip->addEmptyDir($item);
-        $files = $this->scanDirectory($this->archive_realpath . '/' . $item);
-        foreach ($files as $file) {
-          $zip->addFile($this->archive_realpath . '/' . $item . '/' . $file, $item . '/' . $file);
+    if (!empty($this->entity_archive)) {
+
+      $entity_archive = $this->directory . $this->entity_id . '.zip';
+
+      // Make sure to remove archive file first.
+      file_unmanaged_delete($entity_archive);
+
+      // open archive 
+      if ($zip->open($entity_archive, \ZipArchive::CREATE) !== TRUE) {
+        die ("Could not open archive");
+      }
+
+      // Create an archive of an article assets and content.
+      foreach ($this->scanDirectory($this->directory . $this->entity_id) as $file) {
+        $zip->addFile($this->directory . $this->entity_id . '/' . $file, $file);
+      }
+
+    }
+    else {
+
+      // Make sure to remove archive file first.
+      file_unmanaged_delete($this->archive_file);
+
+      // open archive 
+      if ($zip->open($this->archive_file, \ZipArchive::CREATE) !== TRUE) {
+        die ("Could not open archive");
+      }
+
+      // Scan through all entity directories and add each file to an archive.
+      foreach ($this->scanDirectory($this->archive_realpath) as $item) {
+        $dir = $this->archive_realpath . '/' . $item;
+        if (is_dir($dir)) {
+          $zip->addEmptyDir($item);
+          $files = $this->scanDirectory($this->archive_realpath . '/' . $item);
+          foreach ($files as $file) {
+            $zip->addFile($this->archive_realpath . '/' . $item . '/' . $file, $item . '/' . $file);
+          }
         }
       }
+
     }
 
     // close and save archive
