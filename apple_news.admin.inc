@@ -366,14 +366,7 @@ function apple_news_settings_exports_form($form, &$form_state) {
     $enabled = empty($info['#enabled']) ? t('no') : t('yes');
     $status = empty($log['endtime']) ? (empty($log['starttime']) ? '' : t('incomplete')) : t('complete');
     $lastexport = empty($log['starttime']) ? t('never') : format_date($log['starttime'], 'short');
-    $edit = l(t('edit'),
-      'admin/config/content/apple-news/exports/' . $key . '/edit',
-      [
-        'query' => [
-          'destination' => 'admin/config/content/apple-news/exports',
-        ],
-      ]
-    );
+    $edit = l(t('edit'), 'admin/config/content/apple-news/exports/' . $key . '/edit');
     $rows[$key] = [
       'name' => $name,
       'description' => $info['description'],
@@ -404,7 +397,7 @@ function apple_news_settings_exports_form($form, &$form_state) {
         'enable' => t('Enable'),
         'disable' => t('Disable'),
         'export' => t('Export'),
-        'export-to-file' => t('Export to file'),
+        'export-to-file' => t('Export to File'),
       ],
     ],
     'submit' => [
@@ -537,7 +530,7 @@ function apple_news_export_edit_form($form, &$form_state, ApplenewsExport $expor
       '#value' => t('Save changes'),
     ],
     'cancel' => [
-      '#markup' => l(t('Cancel'), 'admin/config/content/apple-news'),
+      '#markup' => l(t('Back'), 'admin/config/content/apple-news'),
     ],
   ];
 

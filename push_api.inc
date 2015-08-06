@@ -158,16 +158,3 @@ function apple_news_delete_article($article_id) {
   }
   return $response;
 }
-
-/**
- * Get section URL.
- *
- * @return URL.
- */
-function apple_news_push_api_section_url($section_id) {
-  $url = variable_get('apple_news_variable_api_endpoint', FALSE);
-  if ($url) {
-    $url .= '/sections/' . $section_id;
-  }
-  return $url;
-}

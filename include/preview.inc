@@ -17,7 +17,6 @@ class ApplenewsPreview {
   private $entity_realpath = '';
   private $realpath = '';
   private $files = [];
-  private $files_names = [];
   private $article_json = '';
   private $archive_file = '';
   private $archive_url = '';
@@ -26,15 +25,17 @@ class ApplenewsPreview {
   private $entity_id = '';
   private $entity_archive = FALSE;
 
-  private $directory = 'apple-news/';
-  private $archive = 'apple-news.zip';
+  private $directory = '';
+  private $archive = '';
 
   /**
    * Implements __construct().
    * Initialize all required variables.
    */
-  public function init($entity_id, $entity_archive = FALSE, array $data = []) {
+  public function __construct($entity_id, $filename, $entity_archive = FALSE, array $data = []) {
 
+    $this->directory = variable_get('apple_news_export_directory', 'apple-news/');
+    $this->archive = !empty($filename) ? 'apple-news-' . $filename . '.zip' : 'apple-news.zip';
     $this->archive_realpath = drupal_realpath(file_build_uri($this->directory));
     $this->archive_file = drupal_realpath(file_build_uri($this->directory . $this->archive));
     $this->archive_url = file_create_url(file_build_uri($this->directory . $this->archive));
@@ -49,11 +50,7 @@ class ApplenewsPreview {
       if (count($data)) {
         $this->files = $data['files'];
         $this->article_json = $data['json'];
-        foreach ($this->files as $file) {
-          $this->files_names[] = basename($file);
-        }
       }
-      $this->removeEntityDirectories();
       file_prepare_directory($drupal_entity_dir, FILE_CREATE_DIRECTORY);
     }
 
@@ -64,7 +61,6 @@ class ApplenewsPreview {
    */
   private function saveArticleJSON() {
     file_unmanaged_save_data($this->article_json, $this->entity_dir . '/article.json');
-    $this->files_names[] = 'article.json';
   }
 
   /**
@@ -90,12 +86,12 @@ class ApplenewsPreview {
   /**
    * Create [article-id].zip file archive.
    */
-  private function createArchive() {
+  private function createArchive($entity_ids = []) {
 
     // Start creating a new archive file.
     $zip = new \ZipArchive();
 
-    if (!empty($this->entity_archive)) {
+    /*if (!empty($this->entity_archive)) {
 
       $entity_archive = $this->directory . $this->entity_id . '.zip';
 
@@ -103,7 +99,7 @@ class ApplenewsPreview {
       file_unmanaged_delete($entity_archive);
 
       // open archive 
-      if ($zip->open($entity_archive, \ZipArchive::CREATE) !== TRUE) {
+      if ($zip->open($entity_archive, \ZipArchive::OVERWRITE) !== TRUE) {
         die ("Could not open archive");
       }
 
@@ -113,10 +109,10 @@ class ApplenewsPreview {
       }
 
     }
-    else {
+    else {*/
 
       // Make sure to remove archive file first.
-      file_unmanaged_delete($this->archive_file);
+      //file_unmanaged_delete($this->archive_file);
 
       // open archive 
       if ($zip->open($this->archive_file, \ZipArchive::CREATE) !== TRUE) {
@@ -126,7 +122,7 @@ class ApplenewsPreview {
       // Scan through all entity directories and add each file to an archive.
       foreach ($this->scanDirectory($this->archive_realpath) as $item) {
         $dir = $this->archive_realpath . '/' . $item;
-        if (is_dir($dir)) {
+        if (is_dir($dir) && in_array($item, $entity_ids)) {
           $zip->addEmptyDir($item);
           $files = $this->scanDirectory($this->archive_realpath . '/' . $item);
           foreach ($files as $file) {
@@ -135,7 +131,7 @@ class ApplenewsPreview {
         }
       }
 
-    }
+    //}
 
     // close and save archive
     $zip->close();
@@ -157,11 +153,11 @@ class ApplenewsPreview {
   /**
    * Removes directories.
    */
-  public function removeDirectories() {
+  public function removeDirectories($entity_ids = []) {
     if (is_dir($this->archive_realpath)) {
       foreach ($this->scanDirectory($this->archive_realpath) as $file) {
         $dir = $this->archive_realpath . '/' . $file;
-        if (is_dir($dir)) {
+        if (is_dir($dir) && in_array($file, $entity_ids)) {
           file_unmanaged_delete_recursive($dir);
         }
       }
@@ -186,9 +182,8 @@ class ApplenewsPreview {
   /**
    * Generate downloadable zip file.
    */
-  public function archive() {
-    $this->createArchive();
-    $this->removeDirectories();
+  public function archive($entity_ids = []) {
+    $this->createArchive($entity_ids);
   }
 
 }

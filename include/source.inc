@@ -44,14 +44,6 @@ interface ApplenewsSourceInterface {
    */
   public function export();
 
-  /**
-   * Exports entity assets.
-   *
-   * @return array
-   *   Array of assets (images)
-   */
-  public function assets();
-
 }
 
 /**
@@ -114,13 +106,6 @@ abstract class ApplenewsSourceEntity implements ApplenewsSourceInterface {
     ];
   }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function assets() {
-    return [];
-  }
-
 }
 
 /**
@@ -174,10 +159,6 @@ class ApplenewsSourceNode extends ApplenewsSourceEntity {
     ] + parent::export();
   }
 
-  public function assets() {
-    return parent::assets();
-  }
-
 }
 
 /**
@@ -215,13 +196,6 @@ class ApplenewsSourceUser extends ApplenewsSourceEntity {
   public function __construct($entity) {
     $this->entityType = 'user';
     parent::__construct($entity);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function export() {
-    return parent::export();
   }
 
 }
@@ -320,13 +294,6 @@ class ApplenewsSourceField implements ApplenewsSourceInterface {
     return [
       'value' => $value,
     ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function assets() {
-    return parent::assets();
   }
 
 }

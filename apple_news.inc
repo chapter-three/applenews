@@ -477,11 +477,12 @@ function apple_news_update($channel_id, $entity_type, $entity_wrapper, $data) {
         ->condition('article_revision_id', $article->article_revision_id)
         ->condition('channel_id', $channel_id)
         ->execute();
-      module_load_include('inc', 'apple_news', 'include/preview');
-      $preview = new ChapterThree\AppleNews\Preview\ApplenewsPreview();
-      $preview->init($entity_wrapper->getIdentifier(), TRUE, $data);
-      $preview->toFile();
-      $preview->archive();
+      // Generate a preview 
+      //module_load_include('inc', 'apple_news', 'include/preview');
+      //$preview = new ChapterThree\AppleNews\Preview\ApplenewsPreview();
+      //$preview->init($entity_wrapper->getIdentifier(), TRUE, $data);
+      //$preview->toFile();
+      //$preview->archive();
       return TRUE;
     }
   }
@@ -565,8 +566,7 @@ function apple_news_op($op, $channel_id, $entity, $entity_type, $export = NULL, 
   if (is_object($export)) {
     $document = $export->export($entity);
     if (count($settings)) {
-      // Merge export settings with custom fields from the entity add/edit
-      // form.
+      // Merge export settings with custom fields from the entity add/edit form.
       // @see apple_news_form_alter().
       $export->settings = array_merge($export->settings, $settings);
     }
@@ -576,6 +576,7 @@ function apple_news_op($op, $channel_id, $entity, $entity_type, $export = NULL, 
       'metadata' => !empty($settings['metadata']) ? json_encode($settings['metadata']) : '',
     ];
   }
+
   if ($op == 'insert') {
     $result = apple_news_post($channel_id, $entity_type, $wrapper, $data);
   }
@@ -806,4 +807,42 @@ function apple_news_article_metadata($article_id, $article_revision_id = NULL) {
     }
   }
   return FALSE;
+}
+
+/**
+ * Get section URL.
+ *
+ * @return URL.
+ */
+function apple_news_section_url($section_id) {
+  $url = variable_get('apple_news_variable_api_endpoint', FALSE);
+  if ($url) {
+    $url .= '/sections/' . $section_id;
+  }
+  return $url;
+}
+
+/**
+ * Export to the Apple News previable format documents.
+ */
+function apple_news_export_to_file($entity_id, $entity_ids = [], $filename = NULL, $entity_archive = FALSE, $data = []) {
+  module_load_include('inc', 'apple_news', 'include/preview');
+  $preview = new ChapterThree\AppleNews\Preview\ApplenewsPreview($entity_id, $filename, $entity_archive, $data);
+  if (!empty($entity_id)) {
+    $preview->toFile();
+  }
+  else {
+    $file_url = $preview->getArchiveFilePath();
+    $preview->archive($entity_ids);
+    return $file_url;
+  }
+}
+
+/**
+ * Remove all temporary files.
+ */
+function apple_news_export_dir_cleanup($entity_ids = []) {
+  module_load_include('inc', 'apple_news', 'include/preview');
+  $preview = new ChapterThree\AppleNews\Preview\ApplenewsPreview(NULL, '', FALSE, []);
+  $preview->removeDirectories($entity_ids);
 }
