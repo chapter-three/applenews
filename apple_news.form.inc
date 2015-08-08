@@ -27,34 +27,19 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
 
           // Entity object.
           $entity_id = isset($form['nid']['#value']) ? (int) $form['nid']['#value'] : NULL;
-          $article_id = '';
+          $article_id = NULL;
 
           if (!empty($entity_id)) {
 
             $entity = entity_load_single($type, $entity_id);
-            $results = apple_news_load_articles($entity, $type);
 
-            // Collect article id, channel name and postdate for the table below.
-            foreach ($results as $row) {
-              $channel = apple_news_channel($row->channel_id);
-              if (!empty($channel->name)) {
-                $metadata = apple_news_article_metadata($row->article_id);
-                $sections = [];
-                foreach ($metadata['links']->sections as $section_url) {
-                  $url_components = explode("/", $section_url);
-                  $section = apple_news_section($url_components[count($url_components) - 1]);
-                  $sections[] = $section['name'];
-                }
-                $published_channels[$row->article_id] = [
-                  'channel'    => $channel->name,
-                  'sections'   => join('<br>', $sections),
-                  'postdate'   => format_date($row->postdate, 'short'),
-                  'article_id' => $row->article_id,
-                  'channel_id' => $row->channel_id,
-                ];
-              }
-              $article_id = $row->article_id;
-            }
+            module_load_include('inc', 'apple_news', 'include/db');
+            $post = new ChapterThree\AppleNews\Database\ApplenewsDatabase();
+            $post->setPostId($type, $entity_id, $entity_id);
+            $article = $post->getArticle();
+
+            $article_id = !empty($article['article_id']) ? $article['article_id'] : NULL;
+
           }
 
           // Entity form JS helper (hide/show Apple News entity form options).
@@ -105,51 +90,58 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
             $form['apple_news']['container'] = $export_form['channels'];
           }
 
-          if (!empty($published_channels)) {
-            // If this article was already published we should give an
-            // option to removed it from Apple News.
+
+          if (!empty($article_id)) {
+
             $rows = [];
-            foreach ($published_channels as $article_id => $info) {
-              if (!empty($info['channel']) && !empty($info['sections'])) {
-                $rows[] = [
-                  ['data' => $info['channel']],
-                  ['data' => $info['sections']],
-                  ['data' => 
-                    l($metadata['shareUrl'], $metadata['shareUrl'],
-                      [
-                        'attributes' => [
-                          'target' => '_blank'
-                        ]
+
+            foreach ($article['sections'] as $section_id => $channel_id) {
+              $channel = apple_news_channel($channel_id);
+              $section = apple_news_section($section_id);
+
+              $rows[] = [
+                ['data' => $channel->name],
+                ['data' => $section['name']],
+                ['data' => 
+                  l($article['share_url'], $article['share_url'],
+                    [
+                      'attributes' => [
+                        'target' => '_blank'
                       ]
-                    )
-                  ],
-                  ['data' => $info['postdate']],
-                  ['data' => l(
-                    t('Delete'), 'admin/config/content/apple-news/'
-                      . $type . '/'
-                      . $entity_id
-                      . '/' . $info['article_id'] . '/'
-                      . $info['channel_id']
-                      . '/delete'
-                    )
-                  ],
-                ];
-              }
+                    ]
+                  )
+                ],
+                ['data' => format_date($article['postdate'], 'sort')],
+              ];
             }
 
             $form['apple_news']['info'] = [
               '#markup' => theme('table',
               [
                 'header' => [
-                  t('Feed'),
-                  t('Sections'),
+                  t('Channel'),
+                  t('Section'),
                   t('Share URL'),
-                  t('Post date'),
-                  ''
+                  t('Post date')
                 ],
                 'rows' => $rows
               ]),
               '#prefix' => '<br/><div><strong>' . t('Apple News feeds') . '</strong></div>',
+            ];
+
+            $form['apple_news']['delete'] = [
+              '#markup' => '<div>' . t('<a href="!link">Delete</a> this article from Apple News.',
+                [
+                  '!link' => url('admin/config/content/apple-news/'
+                    . $type . '/'
+                    . $entity_id
+                    . '/' . $article['article_id'] . '/'
+                    . $channel_id
+                    . '/delete'
+                  ),
+                ]
+              ) 
+              . '</div><br/>',
             ];
 
           }

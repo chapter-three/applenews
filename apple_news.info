@@ -10,6 +10,5 @@ files[] = include/export.inc
 files[] = include/source.inc
 files[] = include/preview.inc
 files[] = tests/apple_news.test
-files[] = handlers/views_handler_apple_news_metadata.inc
 
 dependencies[] = entity

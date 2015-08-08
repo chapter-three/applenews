@@ -91,7 +91,7 @@ class ApplenewsPreview {
     // Start creating a new archive file.
     $zip = new \ZipArchive();
 
-    /*if (!empty($this->entity_archive)) {
+    if (!empty($this->entity_archive)) {
 
       $entity_archive = $this->directory . $this->entity_id . '.zip';
 
@@ -109,13 +109,13 @@ class ApplenewsPreview {
       }
 
     }
-    else {*/
+    else {
 
       // Make sure to remove archive file first.
       //file_unmanaged_delete($this->archive_file);
 
       // open archive 
-      if ($zip->open($this->archive_file, \ZipArchive::CREATE) !== TRUE) {
+      if ($zip->open($this->archive_file, \ZipArchive::OVERWRITE) !== TRUE) {
         die ("Could not open archive");
       }
 
@@ -131,23 +131,11 @@ class ApplenewsPreview {
         }
       }
 
-    //}
+    }
 
     // close and save archive
     $zip->close();
 
-  }
-
-  /**
-   * Removes previewable AppleNews article file.
-   */
-  public function removeEntityDirectories() {
-    if (is_dir($this->entity_realpath)) {
-      foreach ($this->scanDirectory($this->entity_realpath) as $file) {
-        file_unmanaged_delete($this->entity_dir . '/' . $file);
-      }
-      file_unmanaged_delete_recursive($this->entity_dir);
-    }
   }
 
   /**

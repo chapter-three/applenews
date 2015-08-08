@@ -107,9 +107,15 @@ function apple_news_schema() {
     ],
   ];
 
-  $schema['apple_news_published_entities'] = [
+  $schema['apple_news_entities'] = [
     'description' => 'Information about entities published to Apple News',
     'fields' => [
+      'post_id' => [
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Primary Key',
+      ],
       'entity_type' => [
         'type' => 'varchar',
         'length' => 255,
@@ -142,18 +148,11 @@ function apple_news_schema() {
         'not null' => TRUE,
         'description' => 'Apple News article revision ID',
       ],
-      'channel_id' => [
+      'share_url' => [
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
-        'description' => 'Apple News channel ID',
-      ],
-      'metadata' => [
-        'type' => 'blob',
-        'not null' => FALSE,
-        'size' => 'big',
-        'serialize' => TRUE,
-        'description' => 'A serialized array of article metadata',
+        'description' => 'Apple News Share URL',
       ],
       'postdate' => [
         'type' => 'int',
@@ -163,15 +162,113 @@ function apple_news_schema() {
         'description' => 'Post date timestamp',
       ],
     ],
-    'primary key' => ['entity_id', 'revision_id', 'article_id', 'channel_id'],
+    'primary key' => ['post_id'],
     'indexes' => [
+      'post_id' => ['post_id'],
       'entity_type' => ['entity_type'],
       'entity_id' => ['entity_id'],
       'revision_id' => ['revision_id'],
       'article_id' => ['article_id'],
       'article_revision_id' => ['article_revision_id'],
-      'channel_id' => ['channel_id'],
       'postdate' => ['postdate']
+    ],
+  ];
+
+  $schema['apple_news_channels'] = [
+    'description' => 'Information about Apple News channels',
+    'fields' => [
+      'post_id' => [
+        'type' => 'int',
+        'size' => 'big',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Primary Key',
+      ],
+      'channel_id' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'description' => 'Apple News channel ID',
+      ],
+    ],
+    'foreign keys' => [
+      'apple_news_entities' => [
+        'table' => 'apple_news_entities',
+        'columns' => ['post_id' => 'post_id'],
+      ],
+    ],
+    'indexes' => [
+      'post_id' => ['post_id'],
+      'channel_id' => ['channel_id']
+    ],
+  ];
+
+  $schema['apple_news_sections'] = [
+    'description' => 'Information about Apple News sections',
+    'fields' => [
+      'post_id' => [
+        'type' => 'int',
+        'size' => 'big',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Primary Key',
+      ],
+      'channel_id' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'description' => 'Apple News channel ID',
+      ],
+      'section_id' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'description' => 'Apple News section ID',
+      ],
+    ],
+    'foreign keys' => [
+      'apple_news_entities' => [
+        'table' => 'apple_news_entities',
+        'columns' => ['post_id' => 'post_id'],
+      ],
+      'apple_news_channels' => [
+        'table' => 'apple_news_channels',
+        'columns' => ['channel_id' => 'channel_id'],
+      ],
+    ],
+    'indexes' => [
+      'post_id' => ['post_id'],
+      'channel_id' => ['channel_id'],
+      'section_id' => ['section_id']
+    ],
+  ];
+
+  $schema['apple_news_metadata'] = [
+    'description' => 'Information about Apple News metadata',
+    'fields' => [
+      'post_id' => [
+        'type' => 'int',
+        'size' => 'big',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Primary Key',
+      ],
+      'data' => [
+        'type' => 'blob',
+        'not null' => FALSE,
+        'size' => 'big',
+        'serialize' => TRUE,
+        'description' => 'A serialized array of article metadata',
+      ],
+    ],
+    'foreign keys' => [
+      'apple_news_entities' => [
+        'table' => 'apple_news_entities',
+        'columns' => ['post_id' => 'post_id'],
+      ],
+    ],
+    'indexes' => [
+      'post_id' => ['post_id'],
     ],
   ];
 

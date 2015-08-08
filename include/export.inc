@@ -140,27 +140,39 @@ abstract class ApplenewsExport {
     // Entity form JS helper (hide/show Apple News entity form options).
     drupal_add_js(drupal_get_path('module', 'apple_news') . '/js/form.js');
     $api_channels = apple_news_channels(TRUE);
-    foreach ($api_channels as $channel_id => $channel) {
-      $form['channels']['channel-' . $channel_id] = [
-        '#type' => 'checkbox',
-        '#title' => $channel['name'],
-        '#attributes' => [
-          'data-channel-id' => $channel_id
-        ],
-        '#required' => TRUE,
-        '#default_value' => !empty($saved_channels[$channel_id]) ? TRUE : FALSE,
-      ];
-      foreach ($channel['sections'] as $section_id => $section) {
-        $form['channels']['section-' . $channel_id . '-' . $section_id] = [
+    if (!empty($api_channels)) {
+      foreach ($api_channels as $channel_id => $channel) {
+        $form['channels']['channel-' . $channel_id] = [
           '#type' => 'checkbox',
-          '#title' => $section['name'] . ' ' . (!empty($section['default']) ? t('<em>(default)</em>') : ''),
+          '#title' => $channel['name'],
           '#attributes' => [
-            'data-section-of' => $channel_id,
-            'class' => ['apple-news-sections']
+            'data-channel-id' => $channel_id
           ],
-          '#default_value' => !empty($saved_sections[$section_id]) ? TRUE : FALSE,
+          '#required' => TRUE,
+          '#default_value' => !empty($saved_channels[$channel_id]) ? TRUE : FALSE,
         ];
+        foreach ($channel['sections'] as $section_id => $section) {
+          $form['channels']['section-' . $channel_id . '-' . $section_id] = [
+            '#type' => 'checkbox',
+            '#title' => $section['name'] . ' ' . (!empty($section['default']) ? t('<em>(default)</em>') : ''),
+            '#attributes' => [
+              'data-section-of' => $channel_id,
+              'class' => ['apple-news-sections']
+            ],
+            '#default_value' => !empty($saved_sections[$section_id]) ? TRUE : FALSE,
+          ];
+        }
       }
+    }
+    else {
+      $form['channels']['info'] = [
+        '#markup' => t('Please provide Apple News <a href="!credentials">credentials</a> and add at least one <a href="!feed">feed</a>.',
+          [
+            '!credentials' => url('admin/config/content/apple-news/settings'),
+            '!feed'        => url('admin/config/content/apple-news/settings/channels'),
+          ]
+        )
+      ];
     }
 
     return $form;

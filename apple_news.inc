@@ -401,28 +401,43 @@ function apple_news_post($channel_id, $entity_type, $entity_wrapper, $data) {
   if (!isset($response->errors)) {
     // Invoke Apple News insert hooks.
     module_invoke_all('apple_news_insert', $response->data->id, $response->data->revision, $channel_id, $entity_wrapper, $entity_type, $data);
+    $sections = [];
+    foreach ($response->data->links->sections as $section_url) {
+      $c = explode("/", $section_url);
+      $sections[] = [
+        'channel_id' => $channel_id,
+        'section_id' => $c[count($c) - 1],
+      ];
+    }
     $record = [
-      'entity_type'         => $entity_type,
-      'entity_id'           => $entity_wrapper->getIdentifier(),
-      // Need to work on revision support.
-      'revision_id'         => $entity_wrapper->getIdentifier(),
-      'article_id'          => $response->data->id,
-      'article_revision_id' => $response->data->revision,
-      'channel_id'          => $channel_id,
-      'postdate'            => REQUEST_TIME,
-      'metadata'            => serialize(
+      'entity'   => [
+        'article_id'          => $response->data->id,
+        'article_revision_id' => $response->data->revision,
+        'share_url'           => $response->data->shareUrl,
+        'postdate'            => REQUEST_TIME,
+      ],
+      'channels' => [
+        [
+          'channel_id' => $channel_id,
+        ]
+      ],
+      'sections' => $sections,
+      'metadata' => [
+        'data' =>
         [
           'shareUrl'     => !empty($response->data->shareUrl) ? $response->data->shareUrl : '',
           'type'         => !empty($response->data->type) ? $response->data->type : '',
           'links'        => !empty($response->data->links) ? $response->data->links : '',
           'isSponsored'  => !empty($response->data->isSponsored) ? $response->data->isSponsored : '',
         ]
-      ),
+      ],
     ];
-    drupal_write_record('apple_news_published_entities', $record);
-    module_load_include('inc', 'apple_news', 'include/preview');
-    $preview = new ChapterThree\AppleNews\Preview\ApplenewsPreview();
-    $preview->init($entity_wrapper->getIdentifier(), TRUE, $data);
+    module_load_include('inc', 'apple_news', 'include/db');
+    $post = new ChapterThree\AppleNews\Database\ApplenewsDatabase();
+    $post->setEntityId($entity_wrapper->getIdentifier());
+    $post->setEntityRevisionId($entity_wrapper->getIdentifier());
+    $post->setEntityType($entity_type);
+    $post->insert($record);
     return TRUE;
   }
   return FALSE;
@@ -435,10 +450,9 @@ function apple_news_post($channel_id, $entity_type, $entity_wrapper, $data) {
  */
 function apple_news_update($channel_id, $entity_type, $entity_wrapper, $data) {
   module_load_include('inc', 'apple_news', 'push_api');
-  $article = db_select('apple_news_published_entities', 'e')
+  $article = db_select('apple_news_entities', 'e')
     ->fields('e', ['article_id', 'article_revision_id'])
     ->condition('entity_type', $entity_type)
-    ->condition('channel_id', $channel_id)
     ->condition('entity_id', $entity_wrapper->getIdentifier())
     ->execute()
     ->fetchObject();
@@ -456,33 +470,41 @@ function apple_news_update($channel_id, $entity_type, $entity_wrapper, $data) {
     if (!isset($response->errors)) {
       // Invoke Apple News update hooks.
       module_invoke_all('apple_news_update', $article->article_id, $article->article_revision_id, $channel_id, $entity_wrapper, $entity_type, $data);
-      db_update('apple_news_published_entities')
-        ->fields(
+      $sections = [];
+      foreach ($response->data->links->sections as $section_url) {
+        $c = explode("/", $section_url);
+        $sections[] = [
+          'channel_id' => $channel_id,
+          'section_id' => $c[count($c) - 1],
+        ];
+      }
+      $record = [
+        'entity'   => [
+          'article_id'          => $response->data->id,
+          'article_revision_id' => $response->data->revision,
+          'share_url'           => $response->data->shareUrl,
+          'postdate'            => REQUEST_TIME,
+        ],
+        'channels' => [
           [
-            'article_id'          => $response->data->id,
-            'article_revision_id' => $response->data->revision,
-            'postdate'            => REQUEST_TIME,
-            'metadata'            => serialize(
-              [
-                'shareUrl'     => !empty($response->data->shareUrl) ? $response->data->shareUrl : '',
-                'type'         => !empty($response->data->type) ? $response->data->type : '',
-                'links'        => !empty($response->data->links) ? $response->data->links : '',
-                'isSponsored'  => !empty($response->data->isSponsored) ? $response->data->isSponsored : '',
-              ]
-            )
+            'channel_id' => $channel_id,
           ]
-        )
-        ->condition('entity_id', $entity_wrapper->getIdentifier())
-        ->condition('article_id', $article->article_id)
-        ->condition('article_revision_id', $article->article_revision_id)
-        ->condition('channel_id', $channel_id)
-        ->execute();
-      // Generate a preview 
-      //module_load_include('inc', 'apple_news', 'include/preview');
-      //$preview = new ChapterThree\AppleNews\Preview\ApplenewsPreview();
-      //$preview->init($entity_wrapper->getIdentifier(), TRUE, $data);
-      //$preview->toFile();
-      //$preview->archive();
+        ],
+        'sections' => $sections,
+        'metadata' => [
+          'data' =>
+          [
+            'shareUrl'     => !empty($response->data->shareUrl) ? $response->data->shareUrl : '',
+            'type'         => !empty($response->data->type) ? $response->data->type : '',
+            'links'        => !empty($response->data->links) ? $response->data->links : '',
+            'isSponsored'  => !empty($response->data->isSponsored) ? $response->data->isSponsored : '',
+          ]
+        ],
+      ];
+      module_load_include('inc', 'apple_news', 'include/db');
+      $post = new ChapterThree\AppleNews\Database\ApplenewsDatabase();
+      $post->setPostId($entity_type, $entity_wrapper->getIdentifier(), $entity_wrapper->getIdentifier());
+      $post->update($record);
       return TRUE;
     }
   }
@@ -498,10 +520,9 @@ function apple_news_update($channel_id, $entity_type, $entity_wrapper, $data) {
  */
 function apple_news_delete($channel_id, $entity_type, $entity_wrapper) {
   module_load_include('inc', 'apple_news', 'push_api');
-  $article_id = db_select('apple_news_published_entities', 'e')
+  $article_id = db_select('apple_news_entities', 'e')
     ->fields('e', ['article_id'])
     ->condition('entity_type', $entity_type)
-    ->condition('channel_id', $channel_id)
     ->condition('entity_id', $entity_wrapper->getIdentifier())
     ->execute()
     ->fetchField();
@@ -511,9 +532,10 @@ function apple_news_delete($channel_id, $entity_type, $entity_wrapper) {
   if (empty($response)) {
     // Invoke Apple News delete hooks.
     module_invoke_all('apple_news_delete', $article_id, $channel_id, $entity_wrapper, $entity_type);
-    db_delete('apple_news_published_entities')
-      ->condition('article_id', $article_id)
-      ->execute();
+    module_load_include('inc', 'apple_news', 'include/db');
+    $post = new ChapterThree\AppleNews\Database\ApplenewsDatabase();
+    $post->setPostId($entity_type, $entity_wrapper->getIdentifier(), $entity_wrapper->getIdentifier());
+    $post->delete();
     return TRUE;
   }
   return FALSE;
@@ -723,7 +745,7 @@ function apple_news_channel($channel_id) {
  */
 function apple_news_load_articles($entity, $type) {
   $wrapper = entity_metadata_wrapper($type, $entity);
-  $result = db_select('apple_news_published_entities', 'e')
+  $result = db_select('apple_news_entities', 'e')
     ->fields('e')
     ->condition('entity_type', $type)
     ->condition('entity_id', $wrapper->getIdentifier())
@@ -738,66 +760,42 @@ function apple_news_load_articles($entity, $type) {
  *   Apple News channel ID.
  * @param object $entity_wrapper
  *   Entity wrapper object.
- * @param string $type
+ * @param string $entity_type
  *   Entity type.
  *
  * @return object|NULL
  *   Export log record or FALSE if not results.
  */
-function apple_news_is_exported($channel_id, $entity_wrapper, $type) {
-  $article = db_select('apple_news_published_entities', 'e')
-    ->fields('e')
-    ->condition('channel_id', $channel_id)
-    ->condition('entity_type', $type)
-    ->condition('entity_id', $entity_wrapper->getIdentifier())
-    ->execute()
-    ->fetchObject();
-  if (!empty($article->article_id)) {
+function apple_news_is_exported($channel_id, $entity_wrapper, $entity_type) {
+  module_load_include('inc', 'apple_news', 'include/db');
+  $post = new ChapterThree\AppleNews\Database\ApplenewsDatabase();
+  $post->setPostId($entity_type, $entity_wrapper->getIdentifier(), $entity_wrapper->getIdentifier());
+  $post->setChannelId($channel_id);
+  $article = $post->getArticle();
+  if (!empty($article['article_id'])) {
     return $article;
   }
   return FALSE;
 }
 
 /**
- * Get total number of channels where the given article is published.
- *
- * @param object $entity_wrapper
- *   Entity wrapper object.
- * @param string $type
- *   Entity type.
- *
- * @return int
- *   Total number of channels where the given article is published.
- */
-function apple_news_get_channels_count($entity_wrapper, $type) {
-  $result = db_select('apple_news_published_entities', 'e')
-    ->fields('e')
-    ->condition('entity_type', $type)
-    ->condition('entity_id', $entity_wrapper->getIdentifier())
-    ->execute();
-  return $result->rowCount();
-}
-
-/**
  * Load Apple News article metadata.
  *
- * @param string $article_id
- *   Apple News article ID.
- * @param string $article_revision_id
- *   Apple News article revision ID.
+ * @param string $post_id
+ *   Apple News post ID.
  *
  * @return array
  *   Metadata.
  */
-function apple_news_article_metadata($article_id, $article_revision_id = NULL) {
-  $query = db_select('apple_news_published_entities', 'e')->fields('e');
-  $query->condition('article_id', $article_id);
-  if (!empty($article_revision_id)) {
-    $query->condition('article_revision_id', $article_revision_id);
-  }
+function apple_news_article_metadata($post_id) {
+  $query = db_select('apple_news_entities', 'e');
+  $query->join('apple_news_metadata', 'm', 'm.post_id = e.post_id');
+  $query->fields('e');
+  $query->fields('m');
+  $query->condition('e.post_id', $post_id);
   $post = $query->execute()
     ->fetchObject();
-  $metadata = unserialize($post->metadata);
+  $metadata = unserialize($post->data);
   if (!empty($metadata)) {
     if (!is_array($metadata)) {
       return unserialize($metadata);

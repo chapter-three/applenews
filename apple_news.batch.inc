@@ -99,7 +99,7 @@ function apple_news_batch_post($info, $export, $entity_type, $entity, &$context)
       }
       else {
         // Update an article only if the entity was updated since the last export.
-        if ($export_log->postdate < $entity->changed) {
+        if ($export_log['postdate'] < $entity->changed) {
           $success = apple_news_op('update', $channel_id, $entity, $entity_type, $export, $settings);
         }
       }
@@ -248,6 +248,7 @@ function apple_news_batch_export_to_file_finished($success, $results, $operation
     if ($count > 0) {
       // Archive exported artciles and generate a link to the archive.
       $file_url = apple_news_export_to_file(NULL, $results['entity_ids'], $results['info']['module'] . '-' . $results['info']['machine_name'], FALSE, []);
+      // Remove exported entity directories.
       apple_news_export_dir_cleanup($results['entity_ids']);
       // Show message.
       if (!empty($file_url)) {
