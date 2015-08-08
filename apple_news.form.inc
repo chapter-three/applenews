@@ -76,10 +76,10 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
 
           // Get configuration form for the AppleNews exportable entity.
           $export_form = $export->getConfigForm([], $form_state);
+          $api_channels = apple_news_channels(TRUE);
           if (isset($export_form['channels'])) {
             // Remove '#required' from configuration form.
             // This should be optional on entity add/edit forms.
-            $api_channels = apple_news_channels(TRUE);
             foreach ($api_channels as $channel_id => $channel) {
               $export_form['channels']['channel-' . $channel_id]['#required'] = FALSE;
               $export_form['channels']['channel-' . $channel_id]['#default_value'] = FALSE;
@@ -90,8 +90,7 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
             $form['apple_news']['container'] = $export_form['channels'];
           }
 
-
-          if (!empty($article_id)) {
+          if (!empty($article_id) && count($api_channels)) {
 
             $rows = [];
 
@@ -99,20 +98,22 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
               $channel = apple_news_channel($channel_id);
               $section = apple_news_section($section_id);
 
-              $rows[] = [
-                ['data' => $channel->name],
-                ['data' => $section['name']],
-                ['data' => 
-                  l($article['share_url'], $article['share_url'],
-                    [
-                      'attributes' => [
-                        'target' => '_blank'
+              if (!empty($channel->name)) {
+                $rows[] = [
+                  ['data' => $channel->name],
+                  ['data' => $section['name']],
+                  ['data' => 
+                    l($article['share_url'], $article['share_url'],
+                      [
+                        'attributes' => [
+                          'target' => '_blank'
+                        ]
                       ]
-                    ]
-                  )
-                ],
-                ['data' => format_date($article['postdate'], 'sort')],
-              ];
+                    )
+                  ],
+                  ['data' => format_date($article['postdate'], 'sort')],
+                ];
+              }
             }
 
             $form['apple_news']['info'] = [

@@ -450,12 +450,16 @@ function apple_news_post($channel_id, $entity_type, $entity_wrapper, $data) {
  */
 function apple_news_update($channel_id, $entity_type, $entity_wrapper, $data) {
   module_load_include('inc', 'apple_news', 'push_api');
-  $article = db_select('apple_news_entities', 'e')
-    ->fields('e', ['article_id', 'article_revision_id'])
-    ->condition('entity_type', $entity_type)
-    ->condition('entity_id', $entity_wrapper->getIdentifier())
-    ->execute()
-    ->fetchObject();
+
+  $query = db_select('apple_news_entities', 'e');
+  $query->join('apple_news_channels', 'c', 'c.post_id = e.post_id');
+  $query->fields('e', ['article_id', 'article_revision_id']);
+  $query->fields('c', ['channel_id']);
+  $query->condition('e.entity_type', $entity_type);
+  $query->condition('e.entity_id', $entity_wrapper->getIdentifier());
+  $query->condition('c.channel_id', $channel_id);
+  $article = $query->execute()->fetchObject();
+
   // Make sure article exists.
   if (!empty($article->article_id)) {
     // Add metadata.
@@ -639,6 +643,9 @@ function apple_news_channels($grouped = FALSE) {
   // Add Post to Apple News checkbox.
   $channels = [];
   $api_channels = variable_get('apple_news_variable_api_channels', []);
+  if (empty($api_channels)) {
+    return [];
+  }
   if ($grouped) {
     foreach ($api_channels as $channel_id) {
       $sections = [];
