@@ -210,30 +210,51 @@ class ApplenewsDatabase implements ApplenewsDatabaseInterface {
    * Save new Apple News post information.
    */
   public function insert($record) {
-    $this->save_entities($record['entity']);
-    $this->save_channels($record['channels']);
-    $this->save_sections($record['sections']);
-    $this->save_metadata($record['metadata']);
+    $transaction = db_transaction();
+    try {
+      $this->save_entities($record['entity']);
+      $this->save_channels($record['channels']);
+      $this->save_sections($record['sections']);
+      $this->save_metadata($record['metadata']);
+    }
+    catch (Exception $e) {
+      $transaction->rollback();
+      watchdog_exception('apple_news', $e, $msg, $var, WATCHDOG_ERROR);
+    }
   }
 
   /**
    * Update Apple News related tables.
    */
   public function update($record) {
-    $this->save_entities($record['entity'], 'post_id');
-    $this->save_channels($record['channels']);
-    $this->save_sections($record['sections']);
-    $this->save_metadata($record['metadata']);
+    $transaction = db_transaction();
+    try {
+      $this->save_entities($record['entity'], 'post_id');
+      $this->save_channels($record['channels']);
+      $this->save_sections($record['sections']);
+      $this->save_metadata($record['metadata']);
+    }
+    catch (Exception $e) {
+      $transaction->rollback();
+      watchdog_exception('apple_news', $e, $msg, $var, WATCHDOG_ERROR);
+    }
   }
 
   /**
    * Delete Apple News related records.
    */
   public function delete() {
-    $this->delete_entities();
-    $this->delete_channels();
-    $this->delete_sections();
-    $this->delete_metadata();
+    $transaction = db_transaction();
+    try {
+      $this->delete_entities();
+      $this->delete_channels();
+      $this->delete_sections();
+      $this->delete_metadata();
+    }
+    catch (Exception $e) {
+      $transaction->rollback();
+      watchdog_exception('apple_news', $e, $msg, $var, WATCHDOG_ERROR);
+    }
   }
 
 }
