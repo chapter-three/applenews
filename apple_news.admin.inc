@@ -396,7 +396,7 @@ function apple_news_settings_exports_form($form, &$form_state) {
 
   if ($conflict_found) {
     $msg = t('Possible export conflict found, please make sure you export one content type and one bundle at a time.');
-    $msg .=  ' ' . t('Exporting the same content type twice you may created duplicate articles in Apple News.');
+    $msg .=  ' ' . t('Exporting the same content type twice you may cause duplicate articles in Apple News.');
     drupal_set_message($msg, 'warning');
   }
 
