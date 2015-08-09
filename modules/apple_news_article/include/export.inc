@@ -110,9 +110,12 @@ class ApplenewsExportArticle extends ApplenewsExport {
     // Image field.
     /** @var EntityDrupalWrapper $file */
     $file = $wrapper->__isset('field_image') ? $wrapper->field_image->value() : FALSE;
+    $bundle = '';
     if (!empty($file['fid'])) {
-      $file = file_load($file['fid']);
-      $file = (array)$file;
+      $file_object = file_load($file['fid']);
+      $file['uri'] = $file_object->uri;
+      $slashes = explode("/", $file['uri']);
+      $bundle = 'bundle://' . $slashes[count($slashes) - 1];
     }
 
     // Byline.
@@ -134,10 +137,11 @@ class ApplenewsExportArticle extends ApplenewsExport {
           apple_news_language_code($language), $layout);
         // Body.
         $this->document->addComponent($body);
-        // Image.
+        // Photo.
         if ($file) {
-          $image = new Document\Components\Image($file['uri']);
-          $this->document->addComponent($image);
+          $photo = new Document\Components\Photo($bundle);
+          $photo->setCaption($file['alt']);
+          $this->document->addComponent($photo);
         }
         break;
 

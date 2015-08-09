@@ -8,6 +8,6 @@
         }
     ],
     "require": {
-        "chapter-three/AppleNews": "0.1.6"
+        "chapter-three/AppleNews": "0.1.7"
     }
 }
