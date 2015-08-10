@@ -18,7 +18,7 @@ Otherwise, to manually install:
 2.  Visit `admin/modules` and enable the Apple News module.
 3.  Change into the the "Composer File Directory" as configured in Composer Manager's settings page which is where the consolidated composer.json file was generated.
 4.  If necessary, [download and install the Composer tool](https://getcomposer.org/doc/00-intro.md#installation-linux-unix-osx).
-5.  Run php composer.phar install --no-dev on the command line, replace install with update when updating dependencies.
+5.  Run `php composer.phar install --no-dev` on the command line, replace install with update when updating dependencies.
 
 ## Run Tests
 
