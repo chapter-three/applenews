@@ -180,18 +180,20 @@ function apple_news_batch_export_to_file($info, $export) {
 
   foreach ($entity_types as $entity_type) {
     apple_news_export_dir_cleanup();
-    foreach ($result[$entity_type] as $entity_id => $object) {
-      // Load entity object and pass it to the document generator.
-      $entity = entity_load_single($entity_type, $entity_id);
-      $operations[] = [
-        'apple_news_batch_preview_generate',
-        [
-          $info,
-          $export,
-          $entity_type,
-          $entity
-        ],
-      ];
+    if (isset($result[$entity_type])) {
+      foreach ($result[$entity_type] as $entity_id => $object) {
+        // Load entity object and pass it to the document generator.
+        $entity = entity_load_single($entity_type, $entity_id);
+        $operations[] = [
+          'apple_news_batch_preview_generate',
+          [
+            $info,
+            $export,
+            $entity_type,
+            $entity
+          ],
+        ];
+      }
     }
   }
 
@@ -243,7 +245,7 @@ function apple_news_batch_preview_generate($info, $export, $entity_type, $entity
  */
 function apple_news_batch_export_to_file_finished($success, $results, $operations) {
   module_load_include('inc', 'apple_news');
-  $count = $results['count'];
+  $count = isset($results['count']) ? $results['count'] : 0;
   if ($success) {
     if ($count > 0) {
       // Archive exported artciles and generate a link to the archive.
