@@ -12,3 +12,4 @@ files[] = include/preview.inc
 files[] = tests/apple_news.test
 
 dependencies[] = entity
+dependencies[] = composer_manager
