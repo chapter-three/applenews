@@ -19,6 +19,7 @@ interface ApplenewsDatabaseInterface {
   public function setEntityRevisionId($id);
   public function setEntityType($type);
   public function setChannelId($id);
+  public function getChannels();
 
   public function setPostId($entity_type, $entity_id, $revision_id);
   public function setArticleId($article_id);
@@ -26,6 +27,7 @@ interface ApplenewsDatabaseInterface {
   public function insert($record);
   public function update($record);
   public function delete();
+  public function deleteByEntity($entity_id, $entity_type);
 
 }
 
@@ -196,6 +198,34 @@ class ApplenewsDatabase implements ApplenewsDatabaseInterface {
   }
 
   /**
+   * Get channels.
+   */
+  public function getChannels() {
+    $channel_ids = [];
+
+    $query = db_select('apple_news_entities', 'e');
+    $query->join('apple_news_channels', 'c', 'c.post_id = e.post_id');
+    $query->fields('c', ['channel_id']);
+    $query->condition('e.entity_type', $this->entity_type);
+    $query->condition('e.entity_id', $this->entity_id);
+    $query->condition('e.revision_id', $this->revision_id);
+
+    if (!empty($this->channel_id)) {
+      if (is_array($this->channel_id)) {
+        $query->condition('c.channel_id', $this->channel_id, 'IN');
+      }
+      else {
+        $query->condition('c.channel_id', $this->channel_id);
+      }
+    }
+    $result = $query->execute();
+    foreach ($result as $row) {
+      $channel_ids[] = $row->channel_id;
+    }
+    return $channel_ids;
+  }
+
+  /**
    * Get primary key by entity information.
    */
   public function setPostId($entity_type, $entity_id, $revision_id) {
@@ -289,6 +319,37 @@ class ApplenewsDatabase implements ApplenewsDatabaseInterface {
       $this->delete_channels();
       $this->delete_sections();
       $this->delete_metadata();
+    }
+    catch (Exception $e) {
+      $transaction->rollback();
+      $msg = "Couldn't delete post ID @id";
+      $var = [
+        '@id' => $this->post_id
+      ];
+      watchdog_exception('apple_news', $e, $msg, $var, WATCHDOG_ERROR);
+    }
+  }
+
+  /**
+   * Delete Apple News related records by Entity ID and Entity Type.
+   */
+  public function deleteByEntity($entity_wrapper, $entity_type) {
+    $transaction = db_transaction();
+    try {
+      $entity_id = $entity_wrapper->getIdentifier();
+
+      $result = db_select('apple_news_entities', 'e')
+        ->fields('e', ['post_id'])
+        ->condition('e.entity_id', $entity_id)
+        ->condition('e.entity_type', $entity_type)
+        ->execute();
+      foreach ($result as $row) {
+        $this->post_id = $row->post_id;
+        $this->delete_entities();
+        $this->delete_channels();
+        $this->delete_sections();
+        $this->delete_metadata();
+      }
     }
     catch (Exception $e) {
       $transaction->rollback();

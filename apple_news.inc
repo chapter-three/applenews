@@ -562,6 +562,7 @@ function apple_news_delete($channel_id, $entity_type, $entity_wrapper) {
     $post = new ChapterThree\AppleNews\Database\ApplenewsDatabase();
     $post->setPostId($entity_type, $entity_wrapper->getIdentifier(), $entity_wrapper->getIdentifier());
     $post->delete();
+    //$post->deleteByEntity($entity_wrapper, $entity_type);
     return TRUE;
   }
   return FALSE;
@@ -817,7 +818,7 @@ function apple_news_channel($channel_id) {
 }
 
 /**
- * Load posted entities from {apple_news_published_entities} table.
+ * Load entity channels.
  *
  * @param object $entity
  *   Entity object.
@@ -827,14 +828,19 @@ function apple_news_channel($channel_id) {
  * @return object
  *   Entity objects.
  */
-function apple_news_load_articles($entity, $type) {
-  $wrapper = entity_metadata_wrapper($type, $entity);
-  $result = db_select('apple_news_entities', 'e')
-    ->fields('e')
-    ->condition('entity_type', $type)
-    ->condition('entity_id', $wrapper->getIdentifier())
-    ->execute();
-  return $result;
+function apple_news_load_article_channels($entity, $type) {
+  module_load_include('inc', 'apple_news', 'include/db');
+  $post = new ChapterThree\AppleNews\Database\ApplenewsDatabase();
+  $entity_wrapper = entity_metadata_wrapper($type, $entity);
+  $post->setPostId($type, $entity_wrapper->getIdentifier(), $entity_wrapper->getIdentifier());
+  $channels_all = apple_news_channels();
+  $channel_ids = array_keys($channels_all);
+  $post->setChannelId($channel_ids);
+  $channels = $post->getChannels();
+  if (!empty($channels)) {
+    return $channels;
+  }
+  return FALSE;
 }
 
 /**
