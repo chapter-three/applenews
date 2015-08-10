@@ -389,6 +389,28 @@ function apple_news_get_module_apis() {
 }
 
 /**
+ * Load export object for individual entity.
+ */
+function apple_news_entity_export($entity_type, $entity_id, $revision_id) {
+  foreach (apple_news_exports() as $info) {
+    if (!empty($info['#enabled'])) {
+      $entity = entity_load_single($entity_type, $entity_id);
+      $entity_wrapper = entity_metadata_wrapper($entity_type, $entity);
+      $export = apple_news_get_export($info['module'], $info['machine_name']);
+      if (in_array($entity_type, $export->entityTypes()) && in_array($entity_wrapper->getBundle(), $export->bundles())) {
+        $document = $export->export($entity);
+        $data = [
+          'json' => $document->json(),
+          'files' => $export->assets($entity),
+        ];
+        return $data;
+      }
+    }
+  }
+  return FALSE;
+}
+
+/**
  * Post Article to Apple News.
  *
  * @todo Add Revision support.
@@ -674,6 +696,61 @@ function apple_news_channels($grouped = FALSE) {
 }
 
 /**
+ * Remove data related to $channel_id
+ * Use this when removing channel ID from settings.
+ *
+ * @see apple_news.admin.inc.
+ */
+function apple_news_cleanup_data(stdClass $channel) {
+
+  // Delete from custom cache table.
+  db_delete('cache_apple_news')
+    ->condition('cid', 'channel_' . $channel->id)
+    ->execute();
+  db_delete('cache_apple_news')
+    ->condition('cid', 'sections_' . $channel->id)
+    ->execute();// Delete settings when channel ID removed.
+    $result = db_select('apple_news_status', 's')
+      ->fields('s')
+      ->execute();
+
+  foreach ($result as $row) {
+    $enabled = $row->enabled;
+    $instance = unserialize($row->instance);
+    $channels_all = apple_news_channels(TRUE);
+    if (isset($channels_all[$channel->id])) {
+      unset($instance->settings['channels'][$channel->id]);
+      foreach ($channels_all[$channel->id]['sections'] as $section_id => $section) {
+        unset($instance->settings['sections'][$section_id]);
+      }
+    }
+    // Automatically disable export when no channels available.
+    if (empty($instance->settings['channels'])) {
+      $enabled = 0;
+      $instance->enabled = $enabled;
+    }
+    db_update('apple_news_status')
+      ->fields(
+        [
+          'enabled'  => $enabled,
+          'instance' => serialize($instance),
+        ]
+      )
+      ->condition('module', $row->module)
+      ->condition('machine_name', $row->machine_name)
+      ->execute();
+
+    $channels = variable_get('apple_news_variable_api_channels', []);
+    foreach ($channels as $i => $channel_id) {
+      if ($channel_id == $channel->id) {
+        unset($channels[$i]);
+      }
+    }
+    variable_set('apple_news_variable_api_channels', $channels);
+  }
+}
+
+/**
  * Get Apple News sections.
  *
  * @see apple_news_get_sections().
@@ -786,35 +863,6 @@ function apple_news_is_exported($channel_id, $entity_wrapper, $entity_type) {
 }
 
 /**
- * Load Apple News article metadata.
- *
- * @param string $post_id
- *   Apple News post ID.
- *
- * @return array
- *   Metadata.
- */
-function apple_news_article_metadata($post_id) {
-  $query = db_select('apple_news_entities', 'e');
-  $query->join('apple_news_metadata', 'm', 'm.post_id = e.post_id');
-  $query->fields('e');
-  $query->fields('m');
-  $query->condition('e.post_id', $post_id);
-  $post = $query->execute()
-    ->fetchObject();
-  $metadata = unserialize($post->data);
-  if (!empty($metadata)) {
-    if (!is_array($metadata)) {
-      return unserialize($metadata);
-    }
-    else {
-      return $metadata;
-    }
-  }
-  return FALSE;
-}
-
-/**
  * Get section URL.
  *
  * @return URL.
@@ -835,12 +883,31 @@ function apple_news_export_to_file($entity_id, $entity_ids = [], $filename = NUL
   $preview = new ChapterThree\AppleNews\Preview\ApplenewsPreview($entity_id, $filename, $entity_archive, $data);
   if (!empty($entity_id)) {
     $preview->toFile();
+    $preview->archive($entity_ids);
   }
   else {
     $file_url = $preview->getArchiveFilePath();
     $preview->archive($entity_ids);
     return $file_url;
   }
+}
+
+/**
+ * Get file archive path.
+ */
+function apple_news_export_file_path($entity_id) {
+  module_load_include('inc', 'apple_news', 'include/preview');
+  $preview = new ChapterThree\AppleNews\Preview\ApplenewsPreview(NULL, '', FALSE, []);
+  return $preview->entityArchivePath($entity_id);
+}
+
+/**
+ * Get file archive path.
+ */
+function apple_news_export_file_delete($entity_id) {
+  module_load_include('inc', 'apple_news', 'include/preview');
+  $preview = new ChapterThree\AppleNews\Preview\ApplenewsPreview(NULL, '', FALSE, []);
+  return $preview->entityArchiveDelete($entity_id);
 }
 
 /**

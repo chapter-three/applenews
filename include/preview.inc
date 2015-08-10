@@ -51,6 +51,9 @@ class ApplenewsPreview {
         $this->files = $data['files'];
         $this->article_json = $data['json'];
       }
+      if ($entity_archive) {
+        $this->removeDirectories([$this->entity_id]);
+      }
       file_prepare_directory($drupal_entity_dir, FILE_CREATE_DIRECTORY);
     }
 
@@ -91,30 +94,29 @@ class ApplenewsPreview {
     // Start creating a new archive file.
     $zip = new \ZipArchive();
 
-    if (!empty($this->entity_archive)) {
+    if ($this->entity_archive) {
 
-      $entity_archive = $this->directory . $this->entity_id . '.zip';
+      $entity_archive_realpath = $this->archive_realpath . '/' . $this->entity_id;
+      $entity_archive = $entity_archive_realpath . '.zip';
 
       // Make sure to remove archive file first.
-      file_unmanaged_delete($entity_archive);
+      if (file_exists($entity_archive)) {
+        file_unmanaged_delete($entity_archive);
+      }
 
-      // open archive 
+      // Open archive 
       if ($zip->open($entity_archive, \ZipArchive::OVERWRITE) !== TRUE) {
         die ("Could not open archive");
       }
-
       // Create an archive of an article assets and content.
-      foreach ($this->scanDirectory($this->directory . $this->entity_id) as $file) {
-        $zip->addFile($this->directory . $this->entity_id . '/' . $file, $file);
+      foreach ($this->scanDirectory($entity_archive_realpath) as $item) {
+        $zip->addFile($entity_archive_realpath . '/' . $item, $item);
       }
 
     }
     else {
 
-      // Make sure to remove archive file first.
-      //file_unmanaged_delete($this->archive_file);
-
-      // open archive 
+      // Open archive 
       if ($zip->open($this->archive_file, \ZipArchive::OVERWRITE) !== TRUE) {
         die ("Could not open archive");
       }
@@ -153,10 +155,25 @@ class ApplenewsPreview {
   }
 
   /**
+   * Delete individual entity archive.
+   */
+  public function entityArchiveDelete($entity_id) {
+    $archive_file = $this->archive_realpath . '/' . $entity_id . '.zip';
+    file_unmanaged_delete_recursive($archive_file);
+  }
+
+  /**
    * Returns URL path to an archive file.
    */
   public function getArchiveFilePath() {
     return $this->archive_url;
+  }
+
+  /**
+   * Get path to the individula entity archive.
+   */
+  public function entityArchivePath($entity_id) {
+    return $this->archive_realpath . '/' . $entity_id;
   }
 
   /**

@@ -33,8 +33,14 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
 
             $entity = entity_load_single($type, $entity_id);
 
+            $chnnels_all = apple_news_channels();
+
             module_load_include('inc', 'apple_news', 'include/db');
             $post = new ChapterThree\AppleNews\Database\ApplenewsDatabase();
+            if (!empty($chnnels_all)) {
+              $channel_ids = array_keys($chnnels_all);
+              $post->setChannelId($channel_ids);
+            }
             $post->setPostId($type, $entity_id, $entity_id);
             $article = $post->getArticle();
 
@@ -58,7 +64,7 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
             ]
           ];
 
-          if (empty($entity_id)) {
+          if (empty($article_id)) {
             $preview_message = t('You have to save this content in order to be able to preview the Apple News generated document.');
           }
           else {

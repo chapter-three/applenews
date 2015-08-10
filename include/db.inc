@@ -142,7 +142,12 @@ class ApplenewsDatabase implements ApplenewsDatabaseInterface {
     $query->fields('m');
     $query->condition('e.post_id', $this->post_id);
     if (!empty($this->channel_id)) {
-      $query->condition('c.channel_id', $this->channel_id);
+      if (is_array($this->channel_id)) {
+        $query->condition('c.channel_id', $this->channel_id, 'IN');
+      }
+      else {
+        $query->condition('c.channel_id', $this->channel_id);
+      }
     }
     $query->orderBy('e.postdate', 'DESC');
     foreach ($query->execute() as $row) {
@@ -197,13 +202,24 @@ class ApplenewsDatabase implements ApplenewsDatabaseInterface {
     $this->setEntityId($entity_id);
     $this->setEntityRevisionId($revision_id);
     $this->setEntityType($entity_type);
-    $this->post_id = db_select('apple_news_entities', 'e')
-      ->fields('e', ['post_id'])
-      ->condition('entity_type', $entity_type)
-      ->condition('entity_id', $entity_id)
-      ->condition('revision_id', $revision_id)
-      ->execute()
-      ->fetchField();
+
+    $query = db_select('apple_news_entities', 'e');
+    $query->join('apple_news_channels', 'c', 'c.post_id = e.post_id');
+    $query->fields('e', ['post_id']);
+    $query->fields('c');
+    $query->condition('e.entity_type', $entity_type);
+    $query->condition('e.entity_id', $entity_id);
+    $query->condition('e.revision_id', $revision_id);
+    if (!empty($this->channel_id)) {
+      if (is_array($this->channel_id)) {
+        $query->condition('c.channel_id', $this->channel_id, 'IN');
+      }
+      else {
+        $query->condition('c.channel_id', $this->channel_id);
+      }
+    }
+
+    $this->post_id = $query->execute()->fetchField();
     return $this->post_id;
   }
 
@@ -232,6 +248,12 @@ class ApplenewsDatabase implements ApplenewsDatabaseInterface {
     }
     catch (Exception $e) {
       $transaction->rollback();
+      $msg = "Couldn't write post data for entity ID @id";
+      $var = [
+        '@id' => !empty($record['entity']['entity_id'])
+                   ? $record['entity']['entity_id']
+                   : 'N/A'
+      ];
       watchdog_exception('apple_news', $e, $msg, $var, WATCHDOG_ERROR);
     }
   }
@@ -249,6 +271,10 @@ class ApplenewsDatabase implements ApplenewsDatabaseInterface {
     }
     catch (Exception $e) {
       $transaction->rollback();
+      $msg = "Couldn't write post ID @id";
+      $var = [
+        '@id' => $this->post_id
+      ];
       watchdog_exception('apple_news', $e, $msg, $var, WATCHDOG_ERROR);
     }
   }
@@ -266,6 +292,10 @@ class ApplenewsDatabase implements ApplenewsDatabaseInterface {
     }
     catch (Exception $e) {
       $transaction->rollback();
+      $msg = "Couldn't delete post ID @id";
+      $var = [
+        '@id' => $this->post_id
+      ];
       watchdog_exception('apple_news', $e, $msg, $var, WATCHDOG_ERROR);
     }
   }

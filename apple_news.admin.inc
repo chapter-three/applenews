@@ -124,6 +124,12 @@ function apple_news_settings_delete_configuration_form_submit($form, &$form_stat
   }
   // Remove data from custom cache table.
   db_truncate('cache_apple_news')->execute();
+  // Remove associated data.
+  $chnnels_all = apple_news_channels();
+  foreach ($chnnels_all as $channel_id => $name) {
+    $channel = apple_news_channel($channel_id);
+    apple_news_cleanup_data($channel);
+  }
   // Reset channels.
   variable_set('apple_news_variable_api_channels', []);
   drupal_set_message(t('The configuration options have been deleted.'));
@@ -295,54 +301,10 @@ function apple_news_settings_delete_channel_form_submit($form, &$form_state) {
   }
   else {
 
-    // Delete from custom cache table.
-    db_delete('cache_apple_news')
-      ->condition('cid', 'channel_' . $channel->id)
-      ->execute();
-    db_delete('cache_apple_news')
-      ->condition('cid', 'sections_' . $channel->id)
-      ->execute();
-
-    // Delete settings when channel ID removed.
-    $result = db_select('apple_news_status', 's')
-      ->fields('s')
-      ->execute();
-
-    foreach ($result as $row) {
-      $enabled = $row->enabled;
-      $instance = unserialize($row->instance);
-      $channels_all = apple_news_channels(TRUE);
-      if (isset($channels_all[$channel->id])) {
-        unset($instance->settings['channels'][$channel->id]);
-        foreach ($channels_all[$channel->id]['sections'] as $section_id => $section) {
-          unset($instance->settings['sections'][$section_id]);
-        }
-      }
-      // Automatically disable export when no channels available.
-      if (empty($instance->settings['channels'])) {
-        $enabled = 0;
-        $instance->enabled = $enabled;
-      }
-      db_update('apple_news_status')
-        ->fields(
-          [
-            'enabled'  => $enabled,
-            'instance' => serialize($instance),
-          ]
-        )
-        ->condition('module', $row->module)
-        ->condition('machine_name', $row->machine_name)
-        ->execute();
-    }
+    // Remove all channel ID related data.
+    apple_news_cleanup_data($channel);
     drupal_set_message(t('<em>@name</em> feed successfully removed.', ['@name' => filter_xss($channel->name)]));
 
-    $channels = variable_get('apple_news_variable_api_channels', []);
-    foreach ($channels as $i => $channel_id) {
-      if ($channel_id == $channel->id) {
-        unset($channels[$i]);
-      }
-    }
-    variable_set('apple_news_variable_api_channels', $channels);
     drupal_goto('admin/config/content/apple-news/settings/channels');
   }
 }
@@ -808,14 +770,32 @@ function apple_news_settings_delete_article_form_submit($form, &$form_state) {
 function apple_news_download_article_json($article_id = NULL) {
   module_load_include('inc', 'apple_news');
   if (!empty($article_id)) {
+
     module_load_include('inc', 'apple_news', 'include/db');
     $post = new ChapterThree\AppleNews\Database\ApplenewsDatabase();
     $article = $post->setArticleId($article_id);
+
     if (!empty($article['article_id'])) {
+
       $data = apple_news_entity_export($article['entity_type'], $article['entity_id'], $article['revision_id']);
       apple_news_export_to_file($article['entity_id'], [$article['entity_id']], NULL, TRUE, $data);
-      //apple_news_export_dir_cleanup([$article['entity_id']]);
+      $archive_path = apple_news_export_file_path($article['entity_id']);
+
+      $archive = $archive_path . '.zip';
+      $output = file_get_contents($archive, FILE_USE_INCLUDE_PATH);
+
+      // Remove individual entity archive.
+      apple_news_export_file_delete($article['entity_id']);
+      // Remove individual entity directory
+      apple_news_export_dir_cleanup([$article['entity_id']]);
+
+      drupal_add_http_header('Content-Type', 'application/zip');
+      drupal_add_http_header('Content-Disposition', 'attachment; filename=' . $article['entity_id'] . '.zip');
+
+      echo $output;
+
     }
+
   }
   else {
     return t('Article not found');
