@@ -349,9 +349,6 @@ function apple_news_settings_exports_form($form, &$form_state) {
     'edit' => ['data' => ''],
   ];
 
-  $bundles = [];
-  $conflict_found = FALSE;
-
   $rows = [];
   foreach (apple_news_exports() as $key => $info) {
 
