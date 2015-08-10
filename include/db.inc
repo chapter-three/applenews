@@ -21,6 +21,7 @@ interface ApplenewsDatabaseInterface {
   public function setChannelId($id);
 
   public function setPostId($entity_type, $entity_id, $revision_id);
+  public function setArticleId($article_id);
 
   public function insert($record);
   public function update($record);
@@ -204,6 +205,18 @@ class ApplenewsDatabase implements ApplenewsDatabaseInterface {
       ->execute()
       ->fetchField();
     return $this->post_id;
+  }
+
+  /**
+   * Get Apple News post by article ID.
+   */
+  public function setArticleId($article_id) {
+    $this->post_id = db_select('apple_news_entities', 'e')
+      ->fields('e', ['post_id'])
+      ->condition('article_id', $article_id)
+      ->execute()
+      ->fetchField();
+    return $this->getArticle();
   }
 
   /**
