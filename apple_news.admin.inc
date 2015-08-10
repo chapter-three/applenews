@@ -363,9 +363,6 @@ function apple_news_settings_exports_form($form, &$form_state) {
     'edit' => ['data' => ''],
   ];
 
-  $bundles = [];
-  $conflict_found = FALSE;
-
   $rows = [];
   foreach (apple_news_exports() as $key => $info) {
 
@@ -374,19 +371,6 @@ function apple_news_settings_exports_form($form, &$form_state) {
       ->condition('l.module', $info['module'])
       ->condition('l.machine_name', $info['machine_name'])
       ->orderBy('l.starttime', 'DESC');
-
-    $export = apple_news_get_export($info['module'], $info['machine_name']);
-    foreach ($export->bundles() as $bundle) {
-      if (empty($info['#enabled'])) {
-        continue;
-      }
-      if (!in_array($bundle, $bundles)) {
-        $bundles[] = $bundle;
-      }
-      else {
-        $conflict_found = TRUE;
-      }
-    }
 
     $log = $query->range(0, 1)->execute()->fetchAssoc();
 
@@ -406,12 +390,6 @@ function apple_news_settings_exports_form($form, &$form_state) {
       'lastexport' => $lastexport,
       'edit' => $edit,
     ];
-  }
-
-  if ($conflict_found) {
-    $msg = t('Possible export conflict found, please make sure you export one content type and one bundle at a time.');
-    $msg .=  ' ' . t('Exporting the same content type twice you may cause duplicate articles in Apple News.');
-    drupal_set_message($msg, 'warning');
   }
 
   $form['exports'] = [

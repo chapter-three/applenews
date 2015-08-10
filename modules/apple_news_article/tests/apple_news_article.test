@@ -123,9 +123,9 @@ class ApplenewsArticleExportTestCase extends ApplenewsWebTestCase {
 
       if (!empty($content['image'])) {
         $item = $data->components[1];
-        $this->assertEqual('image', $item->role,
+        $this->assertEqual('photo', $item->role,
           'Export image component role.');
-        $this->assertEqual($content['image']->uri, $item->url,
+        $this->assertEqual($content['image']->uri, $item->URL,
           'Export image component uri -> component 2 url.');
       }
     }
@@ -227,7 +227,7 @@ class ApplenewsArticleExportTestCase extends ApplenewsWebTestCase {
         'Export header fill fillMode.');
       $this->assertEqual('center', $item->style->fill->verticalAlignment,
         'Export header fill verticalAlignment.');
-      $this->assertEqual($content['image']->uri, $item->style->fill->url,
+      $this->assertEqual($content['image']->uri, $item->style->fill->URL,
         'Export image uri -> header fill url.');
 
       $item = $data->components[$i++];
