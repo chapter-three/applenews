@@ -220,7 +220,7 @@ function apple_news_settings_channels_form_submit($form, &$form_state) {
       // Save new channel ID.
       $channels[] = $channel->id;
       variable_set('apple_news_variable_api_channels', $channels);
-      $msg = t('Successfully connected to the feed "@channel".', [
+      $msg = t('Successfully connected to the "@channel" feed.', [
         '@channel' => filter_xss($channel->name),
       ]);
       drupal_set_message($msg, 'status');
