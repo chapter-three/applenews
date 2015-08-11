@@ -286,7 +286,7 @@ class ApplenewsSourceField implements ApplenewsSourceInterface {
   public function export() {
     try {
       $value = $this->wrapper
-        ->{$this->fieldName}->value->value(['decode' => TRUE]);
+        ->{$this->fieldName}->value->value(['decode' => FALSE]);
     }
     catch (EntityMetadataWrapperException $e) {
       $value = '';
