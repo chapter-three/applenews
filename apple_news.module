@@ -16,41 +16,38 @@ module_load_include('inc', 'apple_news', 'apple_news.batch');
  * Implements hook_init().
  */
 function apple_news_init() {
-  // Detect and load 'php-curl-class' PHP library.
-  if (($library = libraries_detect('php-curl-class')) && 
-      !empty($library['installed']) &&
-      $library['version'] == CURL_SUPPORTED_VERSION)
-  {
-    libraries_load('php-curl-class');
-  }
-  else {
-    $error_message = !empty($library['error message']) ? $library['error message'] : '';
-    $msg = t('Please <a href="!link" target="_blank"><strong>download @name</strong> (version <strong>@v</strong>)</a> library to <strong><em>sites/all/libraries/php-curl-class</em></strong> directory.',
-      [
-        '!link' => $library['download url'],
-        '@name' => $library['name'],
-        '@v'    => CURL_SUPPORTED_VERSION,
-      ]
-    );
-    drupal_set_message($error_message . ' ' . $msg, 'error');
-  }
-  // Detect and load 'AppleNews' PHP library.
-  if (($library = libraries_detect('AppleNews')) &&
-      !empty($library['installed']) &&
-      $library['version'] == APPLE_NEWS_SUPPORTED_VERSION)
-  {
-    libraries_load('AppleNews');
-  }
-  else {
-    $error_message = !empty($library['error message']) ? $library['error message'] : '';
-    $msg = t('Please <a href="!link" target="_blank"><strong>download @name</strong> (version <strong>@v</strong>)</a> library to <strong><em>sites/all/libraries/AppleNews</em></strong> directory.',
-      [
-        '!link' => $library['download url'],
-        '@name' => $library['name'],
-        '@v'    => APPLE_NEWS_SUPPORTED_VERSION,
-      ]
-    );
-    drupal_set_message($error_message . ' ' . $msg, 'error');
+  $libraries = [
+    'AppleNews'      => [
+      'version' => APPLE_NEWS_SUPPORTED_VERSION,
+      'path'    => 'sites/all/libraries/AppleNews-' . APPLE_NEWS_SUPPORTED_VERSION,
+    ],
+    'php-curl-class' => [
+      'version' => CURL_SUPPORTED_VERSION,
+      'path'    => 'sites/all/libraries/php-curl-class-' . CURL_SUPPORTED_VERSION,
+    ],
+  ];
+  foreach ($libraries as $name => $info) {
+    $library_name = $name . '-' . $info['version'];
+    // Detect and load PHP library.
+    if (($library = libraries_detect($library_name)) && 
+        !empty($library['installed']) &&
+        !empty($library['version']) &&
+        $library['version'] == $info['version'])
+    {
+      libraries_load($library_name);
+    }
+    else {
+      $error_message = !empty($library['error message']) ? $library['error message'] : '';
+      $msg = t('Please <a href="!link" target="_blank"><strong>download @name</strong> (version <strong>@v</strong>)</a> library to <strong><em>@path</em></strong> directory.',
+        [
+          '!link' => $library['download url'],
+          '@name' => $library['name'],
+          '@v'    => CURL_SUPPORTED_VERSION,
+          '@path' => $info['path'],
+        ]
+      );
+      drupal_set_message($error_message . ' ' . $msg, 'error');
+    }
   }
 }
 
@@ -59,7 +56,7 @@ function apple_news_init() {
  */
 function apple_news_libraries_info() {
 
-  $libraries['AppleNews'] = [
+  $libraries['AppleNews-' . APPLE_NEWS_SUPPORTED_VERSION] = [
     'name' => 'Apple News',
     'vendor url' => 'https://github.com/chapter-three/AppleNews',
     'download url' => 'https://github.com/chapter-three/AppleNews/archive/0.1.9.zip',
@@ -76,7 +73,7 @@ function apple_news_libraries_info() {
     ],
   ];
 
-  $libraries['php-curl-class'] = [
+  $libraries['php-curl-class-' . CURL_SUPPORTED_VERSION] = [
     'name' => 'PHP Curl Class',
     'vendor url' => 'https://github.com/php-curl-class/php-curl-class',
     'download url' => 'https://github.com/php-curl-class/php-curl-class/archive/3.5.5.zip',
@@ -104,14 +101,22 @@ function apple_news_requirements($phase) {
   $requirements = [];
   if ($phase == 'runtime') {
     $libraries = [
-      'AppleNews'      => APPLE_NEWS_SUPPORTED_VERSION,
-      'php-curl-class' => CURL_SUPPORTED_VERSION
+      'AppleNews'      => [
+        'version' => APPLE_NEWS_SUPPORTED_VERSION,
+        'path'    => 'sites/all/libraries/AppleNews-' . APPLE_NEWS_SUPPORTED_VERSION,
+      ],
+      'php-curl-class' => [
+        'version' => CURL_SUPPORTED_VERSION,
+        'path'    => 'sites/all/libraries/php-curl-class-' . CURL_SUPPORTED_VERSION,
+      ],
     ];
-    foreach ($libraries as $name => $version) {
-      if ($library = libraries_detect($name)) {
+    foreach ($libraries as $name => $info) {
+      $library_name = $name . '-' . $info['version'];
+      if ($library = libraries_detect($library_name)) {
         $msg = '';
+        $lib_version = !empty($library['version']) ? $library['version'] : '';
         $severity = REQUIREMENT_OK;
-        if ($library['version'] != $version) {
+        if ($lib_version != $info['version']) {
           $msg = t("You're using unsupported version of the <em>@name</em> library.",
               [
                 '@name' => $library['name']
@@ -121,15 +126,15 @@ function apple_news_requirements($phase) {
            . t('Please <a href="!link" target="_blank">download version (@v)</a>. to <em>@path</em>',
               [
                 '!link' => $library['download url'],
-                '@v'    => $library['version'],
-                '@path' => $library['library path']
+                '@v'    => $info['version'],
+                '@path' => $info['path']
               ]
             );
           $severity = REQUIREMENT_ERROR;
         }
-        $requirements [$name] = [
-          'title'       => $library['name'],
-          'value'       => $library['version'],
+        $requirements[$name] = [
+          'title'       => !empty($library['name']) ? $library['name'] : 'N/A',
+          'value'       => !empty($library['version']) ? $library['version'] : 'N/A',
           'severity'    => $severity,
           'description' => $msg,
         ];
