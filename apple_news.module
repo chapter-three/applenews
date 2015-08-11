@@ -6,6 +6,8 @@
  */
 
 define('APPLE_NEWS_API_VERSION', 1);
+define('CURL_SUPPORTED_VERSION', '3.5.5');
+define('APPLE_NEWS_SUPPORTED_VERSION', '0.1.9');
 
 // Load Batch API helper functions.
 module_load_include('inc', 'apple_news', 'apple_news.batch');
@@ -14,28 +16,41 @@ module_load_include('inc', 'apple_news', 'apple_news.batch');
  * Implements hook_init().
  */
 function apple_news_init() {
-  // Detect libraries
-  if (!class_exists('PushAPI') && !class_exists('Document') && function_exists('libraries_load')) {
-    $apple_news = libraries_load('AppleNews');
-    if (empty($apple_news['name'])) {
-      drupal_set_message(t('<em>@library</em> is mising. Please follow instructions in README.md file',
-          [
-            '@library' => $apple_news['name']
-          ]
-        )
-      );
-    }
+  // Detect and load 'php-curl-class' PHP library.
+  if (($library = libraries_detect('php-curl-class')) && 
+      !empty($library['installed']) &&
+      $library['version'] == CURL_SUPPORTED_VERSION)
+  {
+    libraries_load('php-curl-class');
   }
-  if (!class_exists('Curl') && function_exists('libraries_load')) {
-    $php_curl = libraries_load('php-curl-class');
-    if (empty($php_curl['name'])) {
-      drupal_set_message(t('<em>@library</em> is mising. Please follow instructions in README.md file',
-          [
-            '@library' => $php_curl['name']
-          ]
-        )
-      );
-    }
+  else {
+    $error_message = !empty($library['error message']) ? $library['error message'] : '';
+    $msg = t('Please <a href="!link" target="_blank">@name (version @v)</a> library to <em>sites/all/libraries/php-curl-class</em> directory.',
+      [
+        '!link' => $library['download url'],
+        '@name' => $library['name'],
+        '@v'    => CURL_SUPPORTED_VERSION,
+      ]
+    );
+    drupal_set_message($error_message . ' ' . $msg, 'error');
+  }
+  // Detect and load 'AppleNews' PHP library.
+  if (($library = libraries_detect('AppleNews')) &&
+      !empty($library['installed']) &&
+      $library['version'] == APPLE_NEWS_SUPPORTED_VERSION)
+  {
+    libraries_load('AppleNews');
+  }
+  else {
+    $error_message = !empty($library['error message']) ? $library['error message'] : '';
+    $msg = t('Please <a href="!link" target="_blank">@name (version @v)</a> library to <em>sites/all/libraries/AppleNews</em> directory.',
+      [
+        '!link' => $library['download url'],
+        '@name' => $library['name'],
+        '@v'    => APPLE_NEWS_SUPPORTED_VERSION,
+      ]
+    );
+    drupal_set_message($error_message . ' ' . $msg, 'error');
   }
 }
 
