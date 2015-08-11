@@ -25,7 +25,7 @@ function apple_news_init() {
   }
   else {
     $error_message = !empty($library['error message']) ? $library['error message'] : '';
-    $msg = t('Please download <a href="!link" target="_blank">@name (version @v)</a> library to <em>sites/all/libraries/php-curl-class</em> directory.',
+    $msg = t('Please <a href="!link" target="_blank"><strong>download @name</strong> (version <strong>@v</strong>)</a> library to <strong><em>sites/all/libraries/php-curl-class</em></strong> directory.',
       [
         '!link' => $library['download url'],
         '@name' => $library['name'],
@@ -43,7 +43,7 @@ function apple_news_init() {
   }
   else {
     $error_message = !empty($library['error message']) ? $library['error message'] : '';
-    $msg = t('Please download <a href="!link" target="_blank">@name (version @v)</a> library to <em>sites/all/libraries/AppleNews</em> directory.',
+    $msg = t('Please <a href="!link" target="_blank"><strong>download @name</strong> (version <strong>@v</strong>)</a> library to <strong><em>sites/all/libraries/AppleNews</em></strong> directory.',
       [
         '!link' => $library['download url'],
         '@name' => $library['name'],
@@ -77,7 +77,7 @@ function apple_news_libraries_info() {
   ];
 
   $libraries['php-curl-class'] = [
-    'name' => 'PHP Curl Class: HTTP requests made easy',
+    'name' => 'PHP Curl Class',
     'vendor url' => 'https://github.com/php-curl-class/php-curl-class',
     'download url' => 'https://github.com/php-curl-class/php-curl-class/archive/3.5.5.zip',
     'files' => [
