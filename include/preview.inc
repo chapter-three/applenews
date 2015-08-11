@@ -110,7 +110,7 @@ class ApplenewsPreview {
       }
       // Create an archive of an article assets and content.
       foreach ($this->scanDirectory($entity_archive_realpath) as $item) {
-        $zip->addFile($entity_archive_realpath . '/' . $item, $item);
+        $zip->addFile($entity_archive_realpath . '/' . $item, $this->entity_id . '/' . $item);
       }
 
     }
