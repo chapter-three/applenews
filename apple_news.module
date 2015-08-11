@@ -42,7 +42,7 @@ function apple_news_init() {
         [
           '!link' => $library['download url'],
           '@name' => $library['name'],
-          '@v'    => CURL_SUPPORTED_VERSION,
+          '@v'    => $info['version'],
           '@path' => $info['path'],
         ]
       );
