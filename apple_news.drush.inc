@@ -79,7 +79,7 @@ function drush_apple_news_apple_news_preview_all($module, $machine_name) {
     $batch = apple_news_batch_export_to_file($info, $export);
     $batch['progressive'] = FALSE;
     batch_set($batch);
-    drush_log('Apple News formatted documents successfully exported. The file archive file can be downloaded from files/apple-news/ directory.', 'ok');
+    drush_log('Apple News Native formatted entities successfully exported. The file archive file can be downloaded from files/apple-news/ directory.', 'ok');
   }
   else {
     drush_log($info['name'] . ' export is disabled.', 'warning');
