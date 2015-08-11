@@ -25,7 +25,7 @@ function apple_news_init() {
   }
   else {
     $error_message = !empty($library['error message']) ? $library['error message'] : '';
-    $msg = t('Please <a href="!link" target="_blank">@name (version @v)</a> library to <em>sites/all/libraries/php-curl-class</em> directory.',
+    $msg = t('Please download <a href="!link" target="_blank">@name (version @v)</a> library to <em>sites/all/libraries/php-curl-class</em> directory.',
       [
         '!link' => $library['download url'],
         '@name' => $library['name'],
@@ -43,7 +43,7 @@ function apple_news_init() {
   }
   else {
     $error_message = !empty($library['error message']) ? $library['error message'] : '';
-    $msg = t('Please <a href="!link" target="_blank">@name (version @v)</a> library to <em>sites/all/libraries/AppleNews</em> directory.',
+    $msg = t('Please download <a href="!link" target="_blank">@name (version @v)</a> library to <em>sites/all/libraries/AppleNews</em> directory.',
       [
         '!link' => $library['download url'],
         '@name' => $library['name'],
