@@ -17,18 +17,20 @@ function apple_news_batch_run_export($info, $export) {
   $entity_types = $export->entityTypes();
 
   foreach ($entity_types as $entity_type) {
-    foreach ($result[$entity_type] as $entity_id => $object) {
-      // Load entity object and pass it to the document generator.
-      $entity = entity_load_single($entity_type, $entity_id);
-      $operations[] = [
-        'apple_news_batch_post',
-        [
-          $info,
-          $export,
-          $entity_type,
-          $entity
-        ],
-      ];
+    if (isset($result[$entity_type])) {
+      foreach ($result[$entity_type] as $entity_id => $object) {
+        // Load entity object and pass it to the document generator.
+        $entity = entity_load_single($entity_type, $entity_id);
+        $operations[] = [
+          'apple_news_batch_post',
+          [
+            $info,
+            $export,
+            $entity_type,
+            $entity
+          ],
+        ];
+      }
     }
   }
 
@@ -120,7 +122,7 @@ function apple_news_batch_run_export_finished($success, $results, $operations) {
       drupal_set_message(
         t('Please configure default Feed settings for <strong>@export_name</strong> export.',
           [
-            '@export_name' => $results['info']['name']
+            '@export_name' => !empty($results['info']['name']) ? $results['info']['name'] : ''
           ]
         ),
         'warning'
