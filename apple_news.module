@@ -11,6 +11,78 @@ define('APPLE_NEWS_API_VERSION', 1);
 module_load_include('inc', 'apple_news', 'apple_news.batch');
 
 /**
+ * Implements hook_init().
+ */
+function apple_news_init() {
+  // Detect libraries
+  if (!class_exists('PushAPI') && !class_exists('Document') && function_exists('libraries_load')) {
+    $apple_news = libraries_load('AppleNews');
+    if (empty($apple_news['name'])) {
+      drupal_set_message(t('<em>@library</em> is mising. Please follow instructions in README.md file',
+          [
+            '@library' => $apple_news['name']
+          ]
+        )
+      );
+    }
+  }
+  if (!class_exists('Curl') && function_exists('libraries_load')) {
+    $php_curl = libraries_load('php-curl-class');
+    if (empty($php_curl['name'])) {
+      drupal_set_message(t('<em>@library</em> is mising. Please follow instructions in README.md file',
+          [
+            '@library' => $php_curl['name']
+          ]
+        )
+      );
+    }
+  }
+}
+
+/**
+ * Implements hook_libraries_info().
+ */
+function apple_news_libraries_info() {
+
+  $libraries['AppleNews'] = [
+    'name' => 'Apple News',
+    'vendor url' => 'https://github.com/chapter-three/AppleNews',
+    'download url' => 'https://github.com/chapter-three/AppleNews',
+    'files' => [
+      'php' => [
+        'autoload.php',
+      ],
+    ],
+    'version arguments' => [
+      'file' => 'src/PushAPI.php',
+      'pattern' => "/'([^']+)'/",
+      'lines' => 25,
+      'cols' => 200,
+    ],
+  ];
+
+  $libraries['php-curl-class'] = [
+    'name' => 'PHP Curl Class: HTTP requests made easy',
+    'vendor url' => 'https://github.com/php-curl-class/php-curl-class',
+    'download url' => 'https://github.com/php-curl-class/php-curl-class',
+    'files' => [
+      'php' => [
+        'src/Curl/Curl.php',
+        'src/Curl/MultiCurl.php',
+      ],
+    ],
+    'version arguments' => [
+      'file' => 'src/Curl/Curl.php',
+      'pattern' => "/'([^']+)'/",
+      'lines' => 25,
+      'cols' => 10,
+    ],
+  ];
+
+  return $libraries;
+}
+
+/**
  * Implements hook_hook_info().
  */
 function apple_news_hook_info() {
