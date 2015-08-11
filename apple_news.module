@@ -350,6 +350,10 @@ function apple_news_apple_news_api() {
         'class' => 'ApplenewsDestinationBody',
         'name' => 'Body',
       ],
+      'bodyphoto' => [
+        'class' => 'ApplenewsDestinationBodyPhoto',
+        'name' => 'Body and Photos',
+      ],
     ],
   ];
 }

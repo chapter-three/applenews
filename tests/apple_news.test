@@ -167,4 +167,124 @@ class ApplenewsExportTestCase extends ApplenewsWebTestCase {
     }
   }
 
+  /**
+   * Test default article export with inline images.
+   */
+  public function testExportInlineImages() {
+
+    // Some node content.
+    $contents = [
+      [
+        '_desc' => 'article',
+        'type' => 'article',
+        'title' => $this->randomName(32),
+        'body' => <<<'EOD'
+<p>a well-formed paragraph.</p>
+<img src="/some/local/image.png"/>
+<p>a paragraph with a nested image: <img src="http://example.com/some/external/image.png"/></p>
+EOD
+        ,
+      ],
+    ];
+
+    // Create nodes.
+    $map = [];
+    foreach ($contents as $i => $content) {
+      $settings = [
+        'type' => $content['type'],
+        'title' => $content['title'],
+        'body' => [
+          LANGUAGE_NONE => [
+            [
+              'value' => $content['body'],
+              'format' => 'full_html',
+            ],
+          ],
+        ],
+      ];
+      $node = $this->drupalCreateNode($settings);
+      $this->assert($node->nid > 0, "Node \"${content['_desc']}\" created.");
+      $map[$node->nid] = $i;
+    }
+
+    // Load export object.
+    /** @var ApplenewsExportNode $export */
+    $export = apple_news_get_export('apple_news', 'node');
+    $this->assert(is_a($export, 'ApplenewsExportNode'),
+      "Export object loaded.");
+
+    // Enable export.
+    $export->enabled = TRUE;
+    $export->bundles = ['article'];
+    $export->settings = ['layout' => 'simple'];
+    $export->destinations['components'][0] = new ApplenewsDestinationBodyPhoto();
+    $export->destinations['components'][0]->settings = [
+      'text' => '::::apple_news::field::node::body::value',
+      'format' => 'markdown',
+    ];
+    $export->destinations['components'][0]->weight = '50';
+    $export->destinations['components'][0]->id = 1;
+    $result = apple_news_export_save($export);
+    $this->assert($result, 'Export enabled.');
+
+    // Run query to get source ids.
+    /** @var EntityFieldQuery $query */
+    $query = $export->query();
+    $this->assert(is_a($query, 'EntityFieldQuery'), 'Query object loaded.');
+    $result = $query->execute();
+    $a = array_keys($map);
+    $b = array_keys($result['node']);
+    $this->assert(!array_diff($a, $b) && !array_diff($b, $a), 'Query result.');
+
+    // Export each.
+    foreach (array_keys($result['node']) as $nid) {
+      $content = $contents[$map[$nid]];
+
+      $document = $export->export(node_load($nid));
+      $this->assert(is_a($document, '\ChapterThree\AppleNews\Document'),
+        "Export document for node \"${content['_desc']}\" loaded.");
+      $json = $document->json();
+      $this->pass(var_export($json, TRUE));
+      $data = json_decode($json);
+      $this->assert(is_object($data) && !empty($data),
+        "Document exported.");
+
+      $this->assertEqual($nid, $data->identifier,
+        'Export node nid -> identifier.');
+      $this->assertEqual($content['title'], $data->title,
+        'Export node title -> title.');
+
+      $item = $data->components[0];
+      $this->assertEqual('body', $item->role,
+        'Export body component role.');
+      $this->assertEqual('markdown', $item->format,
+        'Export body component format.');
+      $expected = \ChapterThree\AppleNews\Document\Markdown::convert('<p>a well-formed paragraph.</p>');
+      $this->assertEqual($expected, $item->text,
+        'Export body fragment -> component 1 body text.');
+
+      $item = $data->components[1];
+      $this->assertEqual('photo', $item->role,
+        'Export inline image component role.');
+      $this->assertEqual('http://localhost/some/local/image.png', $item->URL,
+        'Export body fragment -> component 2 image URL.');
+
+      $item = $data->components[2];
+      $this->assertEqual('body', $item->role,
+        'Export body component role.');
+      $this->assertEqual('markdown', $item->format,
+        'Export body component format.');
+      $expected = \ChapterThree\AppleNews\Document\Markdown::convert('<p>a paragraph with a nested image: </p>');
+      $this->assertEqual($expected, $item->text,
+        'Export body fragment -> component 3 body text.');
+
+      $item = $data->components[3];
+      $this->assertEqual('photo', $item->role,
+        'Export inline image component role.');
+      $this->assertEqual('http://example.com/some/external/image.png', $item->URL,
+        'Export body fragment -> component 4 image URL.');
+
+    }
+  }
+
 }

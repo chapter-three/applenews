@@ -376,3 +376,191 @@ class ApplenewsDestinationBody extends ApplenewsDestination {
   }
 
 }
+
+/**
+ * Body with embedded images.
+ */
+class ApplenewsDestinationBodyPhoto extends ApplenewsDestinationBody {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function label() {
+    return t('Body and Photos') . ' (' . $this->id . ')';
+  }
+
+  /**
+   * Create image object from img element src attribute value.
+   */
+  public function exportCreateImage($src) {
+    // @todo Bundle local files instead of using URL.
+    $scheme = parse_url($src, PHP_URL_SCHEME);
+    if (empty($scheme)) {
+      // @todo handle relative paths.
+      $src = url(ltrim($src, '/'), ['absolute' => TRUE]);
+    }
+    $image = new Components\Photo($src);
+    return $image;
+  }
+
+  /**
+   * Converts an HTML string into a series of Body and image components.
+   */
+  public function exportConvertHtml($value) {
+    $components = [];
+
+    $value = filter_xss($value, [
+      // Handled by ChapterThree\AppleNews\Document\Markdown.
+      'a', 'i', 'em', 'b', 'strong',
+      'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+      'ul', 'ol', 'li', 'hr',
+      // Handled by this destination.
+      'img',
+    ]);
+
+    $reader = new \XMLReader();
+    if (!$reader->XML("<html>${value}</html>")) {
+      $msg = t('Could not parse content as HTML.');
+      $var = [];
+      watchdog('apple_news', $msg, $var, WATCHDOG_ERROR);
+      return $components;
+    }
+
+    // When img element found, create Body object with any preceding content
+    // then add an image object.
+    $body = '';
+    // To keep Body markup valid, move nested images outside any containing
+    // elements.
+    $images = [];
+    $add_components = function($src = NULL) use(&$body, &$images, &$components) {
+      // If $body contains markup, move into Body component.
+      if (!empty($body)) {
+        $body = new Components\Body(Markdown::convert($body));
+        $body->setFormat('markdown');
+        $components[] = $body;
+        $body = '';
+      }
+      // Append any nested img from preceding markup.
+      if (!empty($images)) {
+        while ($image = array_shift($images)) {
+          $components[] = $this->exportCreateImage($image);
+        }
+      }
+      // Add image.
+      if (!empty($src)) {
+        $components[] = $this->exportCreateImage($src);
+      }
+    };
+
+    // Main event loop.
+    $stack = [];
+    while ($reader->read()) {
+
+      switch ($reader->nodeType) {
+
+        case \XMLREADER::ELEMENT:
+          switch ($reader->localName) {
+
+            case 'i':
+            case 'em':
+            case 'b':
+            case 'strong':
+            case 'p':
+            case 'h1':
+            case 'h2':
+            case 'h3':
+            case 'h4':
+            case 'h5':
+            case 'h6':
+            case 'ul':
+            case 'ol':
+            case 'li':
+              array_push($stack, $reader->localName);
+              $body .= '<' . $reader->localName . '>';
+              break;
+
+            case 'a':
+              array_push($stack, $reader->localName);
+              $reader->moveToAttribute('href');
+              if ($reader->value) {
+                $body .= '<a href="' . $reader->value . '">';
+              }
+              break;
+
+            case 'hr':
+              $body .= '<' . $reader->localName . '>';
+              break;
+
+            case 'img':
+              $reader->moveToAttribute('src');
+              if ($reader->value) {
+                // If contained inside other element, move outside ancestors.
+                if (count($stack)) {
+                  array_push($images, $reader->value);
+                }
+                else {
+                  $add_components($reader->value);
+                }
+              }
+              break;
+
+          }
+          break;
+
+        case \XMLReader::END_ELEMENT:
+          switch ($reader->localName) {
+
+            case 'i':
+            case 'em':
+            case 'b':
+            case 'strong':
+            case 'p':
+            case 'h1':
+            case 'h2':
+            case 'h3':
+            case 'h4':
+            case 'h5':
+            case 'h6':
+            case 'ul':
+            case 'ol':
+            case 'li':
+            case 'a':
+              $expected = array_pop($stack);
+              if ($reader->localName != $expected) {
+                $msg = t('Found %f element but expected %e.');
+                $var = ['%f' => $reader->localName, '%e' => $expected];
+                watchdog('apple_news', $msg, $var, WATCHDOG_ERROR);
+                return $components;
+              }
+              $body .= '</' . $reader->localName . '>';
+              break;
+
+          }
+          break;
+
+        case \XMLReader::TEXT:
+          $body .= $reader->value;
+          break;
+
+      }
+
+      if (!empty($images) && empty($stack)) {
+        $add_components();
+      }
+    }
+
+    $add_components();
+
+    return $components;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function export(stdClass $value) {
+    $source = $this->getSource($value, $this->settings['text']);
+    $key = $this->getSourceKey($this->settings['text']);
+    return $this->exportConvertHTML($source->export()[$key]);
+  }
+
+}
