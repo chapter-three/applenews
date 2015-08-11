@@ -63,8 +63,9 @@ function apple_news_entity_update($entity, $type) {
  */
 function apple_news_entity_delete($entity, $type) {
   module_load_include('inc', 'apple_news');
-  $channel_ids = apple_news_load_article_channels($entity, $type);
-  foreach ($channel_ids as $channel_id) {
-    apple_news_op('delete', $channel_id, $entity, $type);
+  if ($channel_ids = apple_news_load_article_channels($entity, $type)) {
+    foreach ($channel_ids as $channel_id) {
+      apple_news_op('delete', $channel_id, $entity, $type);
+    }
   }
 }
