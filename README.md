@@ -13,12 +13,11 @@ drush en apple_news
 Otherwise, to manually install:
 
 1.  Download this module and its dependencies in the [usual manner](https://www.drupal.org/documentation/install/modules-themes):
-    -   [Composer Manager](https://www.drupal.org/project/composer_manager)
+    -   [Libraries](https://www.drupal.org/project/libraries)
     -   [Entity](https://www.drupal.org/project/entity)
-2.  Visit `admin/modules` and enable the Apple News module.
-3.  Change into the the "Composer File Directory" as configured in Composer Manager's settings page which is where the consolidated composer.json file was generated.
-4.  If necessary, [download and install the Composer tool](https://getcomposer.org/doc/00-intro.md#installation-linux-unix-osx).
-5.  Run `php composer.phar install --no-dev` on the command line, replace install with update when updating dependencies.
+2.  [Download and install the Apple News library](https://github.com/chapter-three/AppleNews) into your libraries folder.
+3.  [Download and install the PHP Curl Class library (version 3.5.5)](https://github.com/php-curl-class/php-curl-class/tree/3.5.5) into your libraries folder. **Must be version 3.5.5 or above**
+4.  Visit `admin/modules` and enable the Apple News module.
 
 ## Run Tests
 
