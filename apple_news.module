@@ -62,7 +62,7 @@ function apple_news_libraries_info() {
   $libraries['AppleNews'] = [
     'name' => 'Apple News',
     'vendor url' => 'https://github.com/chapter-three/AppleNews',
-    'download url' => 'https://github.com/chapter-three/AppleNews',
+    'download url' => 'https://github.com/chapter-three/AppleNews/archive/0.1.9.zip',
     'files' => [
       'php' => [
         'autoload.php',
@@ -79,7 +79,7 @@ function apple_news_libraries_info() {
   $libraries['php-curl-class'] = [
     'name' => 'PHP Curl Class: HTTP requests made easy',
     'vendor url' => 'https://github.com/php-curl-class/php-curl-class',
-    'download url' => 'https://github.com/php-curl-class/php-curl-class',
+    'download url' => 'https://github.com/php-curl-class/php-curl-class/archive/3.5.5.zip',
     'files' => [
       'php' => [
         'src/Curl/Curl.php',
