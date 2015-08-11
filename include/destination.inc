@@ -5,7 +5,7 @@
  * Destination classes.
  */
 
-use \ChapterThree\AppleNews\Document\Components\Body;
+use \ChapterThree\AppleNews\Document\Components;
 use \ChapterThree\AppleNews\Document\Markdown;
 
 /**
@@ -329,7 +329,6 @@ class ApplenewsDestinationBody extends ApplenewsDestination {
     parent::__construct();
     $this->settings += [
       'text' => NULL,
-      'format' => 'markdown',
     ];
   }
 
@@ -361,16 +360,6 @@ class ApplenewsDestinationBody extends ApplenewsDestination {
       '#default_value' => $this->settings['text'],
     ];
 
-    $form['format'] = [
-      '#title' => t('Format'),
-      '#type' => 'select',
-      '#default_value' => $this->settings['format'],
-      '#options' => [
-        '' => t('(None)'),
-        'markdown' => t('Markdown'),
-      ],
-    ];
-
     return $form;
   }
 
@@ -381,9 +370,8 @@ class ApplenewsDestinationBody extends ApplenewsDestination {
     $source = $this->getSource($value, $this->settings['text']);
     $key = $this->getSourceKey($this->settings['text']);
     $value = $source->export()[$key];
-    $identifier = isset($array['identifier']) ? $array['identifier'] : NULL;
-    $body = new Body(Markdown::convert($value), $identifier);
-    $body->setFormat($this->settings['format']);
+    $body = new Components\Body(Markdown::convert($value));
+    $body->setFormat('markdown');
     return [$body];
   }
 
