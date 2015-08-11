@@ -276,6 +276,16 @@ function apple_news_schema() {
 }
 
 /**
+ * Implements hook_install().
+ */
+function apple_news_install() {
+  // Create apple-news directory to dump exportable files.
+  $directory = variable_get('apple_news_export_directory', 'apple-news/');
+  $path = file_build_uri($directory);
+  file_prepare_directory($path, FILE_CREATE_DIRECTORY);
+}
+
+/**
  * Implements hook_uninstall().
  */
 function apple_news_uninstall() {
