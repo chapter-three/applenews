@@ -134,6 +134,7 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
                 'rows' => $rows
               ]),
               '#prefix' => '<br/><div><strong>' . t('Apple News feeds') . '</strong></div>',
+              '#weight' => 20,
             ];
 
             $form['apple_news']['delete'] = [
@@ -149,6 +150,7 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
                 ]
               ) 
               . '</div><br/>',
+              '#weight' => 21,
             ];
 
           }
