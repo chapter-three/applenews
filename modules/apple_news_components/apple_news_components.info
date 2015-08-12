@@ -1,0 +1,7 @@
+name = Apple News Components
+description = Various Apple News components.
+core = 7.x
+
+files[] = include/destination.inc
+
+dependencies[] = apple_news
