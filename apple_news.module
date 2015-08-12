@@ -59,7 +59,7 @@ function apple_news_init() {
  */
 function apple_news_libraries_info() {
 
-  $libraries['AppleNews-' . APPLE_NEWS_SUPPORTED_VERSION] = [
+  $libraries['AppleNews'] = [
     'name' => 'Apple News',
     'vendor url' => 'https://github.com/chapter-three/AppleNews',
     'download url' => 'https://github.com/chapter-three/AppleNews/archive/' . APPLE_NEWS_SUPPORTED_VERSION . '.zip',
@@ -74,9 +74,12 @@ function apple_news_libraries_info() {
       'lines' => 25,
       'cols' => 200,
     ],
+    'versions' => [
+      (string) APPLE_NEWS_SUPPORTED_VERSION => [],
+    ],
   ];
 
-  $libraries['php-curl-class-' . CURL_SUPPORTED_VERSION] = [
+  $libraries['php-curl-class'] = [
     'name' => 'PHP Curl Class',
     'vendor url' => 'https://github.com/php-curl-class/php-curl-class',
     'download url' => 'https://github.com/php-curl-class/php-curl-class/archive/' . CURL_SUPPORTED_VERSION . '.zip',
@@ -92,6 +95,9 @@ function apple_news_libraries_info() {
       'lines' => 25,
       'cols' => 10,
     ],
+    'versions' => [
+      (string) CURL_SUPPORTED_VERSION => [],
+    ],
   ];
 
   return $libraries;
@@ -106,11 +112,11 @@ function apple_news_requirements($phase) {
     $libraries = [
       'AppleNews'      => [
         'version' => APPLE_NEWS_SUPPORTED_VERSION,
-        'path'    => 'sites/all/libraries/AppleNews-' . APPLE_NEWS_SUPPORTED_VERSION,
+        'path'    => 'sites/all/libraries/AppleNews',
       ],
       'php-curl-class' => [
         'version' => CURL_SUPPORTED_VERSION,
-        'path'    => 'sites/all/libraries/php-curl-class-' . CURL_SUPPORTED_VERSION,
+        'path'    => 'sites/all/libraries/php-curl-class',
       ],
     ];
     foreach ($libraries as $name => $info) {
