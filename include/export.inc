@@ -254,7 +254,7 @@ abstract class ApplenewsExport {
         $path = drupal_realpath(ltrim(parse_url($uri, PHP_URL_PATH), '/'));
       }
       // A drupal uri.
-      elseif (file_valid_uri($scheme)) {
+      elseif (file_valid_uri($uri)) {
         if ($wrapper = file_stream_wrapper_get_instance_by_uri($uri)) {
           $path = $wrapper->realPath();
         }
