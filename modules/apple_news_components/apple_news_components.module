@@ -30,6 +30,10 @@ function apple_news_components_apple_news_api() {
         'class' => 'ApplenewscomponentsDestinationHeaderGradContainer',
         'name' => 'Header Gradient Container',
       ],
+      'pullquote' => [
+        'class' => 'ApplenewscomponentsDestinationAnimatedPullQuote',
+        'name' => 'Animated Pull Quote',
+      ],
     ],
   ];
 }
