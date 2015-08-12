@@ -904,7 +904,7 @@ function apple_news_export_to_file($entity_id, $entity_ids = [], $filename = NUL
 function apple_news_export_file_path($entity_id) {
   module_load_include('inc', 'apple_news', 'include/preview');
   $preview = new ChapterThree\AppleNews\Preview\ApplenewsPreview(NULL, '', FALSE, []);
-  return $preview->entityArchivePath($entity_id);
+  return $preview->getEntityArchivePath($entity_id);
 }
 
 /**

@@ -172,7 +172,7 @@ class ApplenewsPreview {
   /**
    * Get path to the individula entity archive.
    */
-  public function entityArchivePath($entity_id) {
+  public function getEntityArchivePath($entity_id) {
     return $this->archive_realpath . '/' . $entity_id;
   }
 
