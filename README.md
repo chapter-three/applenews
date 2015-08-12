@@ -1,17 +1,42 @@
 # [DRAFT] Apple News
 
-## Before you start
+#### Table of Contents
 
-These instructions assume that you have a working Drupal 7 site (brand new or pre-existing) ready to work with, and that you have access to administer modules and add code to the site's code base. To install Drupal locally or on remote server, please see these guides on [Quick installation](https://www.drupal.org/documentation/install) and [Quick installation for developers](https://www.drupal.org/documentation/install/developers).
+1. [Before you Start](#before)
+2. [Minimum Requirements](#minimum-req)
+3. [Installation](#installation)
+    1. [Drush based installation](#drush-install)
+    2. [Manually based installation](#manual-install)
+4. [Configuration](#configuration)
+    1. [Initial settings configuration](#initial)
+    2. [Feed/Channel settings](#feed)
+    3. [Node configuration](#node)
+    4. [Preview post](#preview)
+    5. [Delete from channel](#delete)
+4. [Troubleshoot](#troubleshoot)
+5. [Run Tests](#run-tests)
+
+## <a name="before"></a>Before you start
+
+These instructions assume that you have a working Drupal 7 site (brand new or pre-existing) ready to work with, that you have access to administer modules and add code to the site's code base, And that you meet the minimum requirements for installing this module. Please confirm that you have the [Minimum Requirements](#minimum-req) before proceeding with this installation.
+
+To install Drupal locally or on remote server, please see these guides on [Quick installation](https://www.drupal.org/documentation/install) and [Quick installation for developers](https://www.drupal.org/documentation/install/developers).
 
 [Drush](https://github.com/drush-ops/drush) is not mandatory but will make for an easier, and faster installation.
 
+## <a name="minimum-req"></a>Minimum Requirements
+Please make sure that your Drupal site matches these minimum requirements, in order to avoid installation problems.
 
-## Installation
+* **PHP version 5.4 and above.** Version 5.3, and below, will cause fatal error.
+* **Drupal 7.** Latest version of Drupal always recommended.
+* **Curl enabled for php**. One way to check is to install your drupal site and then visit (`admin/reports/status/php`), and check for 'curl'. If not enabled, a quick google search with 'enable curl php [your server type]' will help.
+* **(Optional) Drush 5.9 and above**. You will need Drush installed to follow the [Drush based installation](#drush-install) guide, Otherwise, you will have to follow the [Manually based installation](#manual-install) guide
+
+## <a name="installation"></a>Installation
 
 You can install the apple_news module using Drush or manually adding the modules and libraries to your code base.
 
-#### Drush based installation
+### <a name="drush-install"></a>Drush based installation
 
 To properly run drush commands on your site you must shell into your Drupal sites directory, into the folder that contains the settings.php file specifically for your site. Some examples of what this would be are: 
 ```shell
@@ -61,7 +86,7 @@ If you enable the module before downloading the required libraries, you will rec
 
 After installing all modules and libraries, check the status of the installation on your sites Status Report page (`admin/reports/status`). Look for "Apple News" and "PHP Curl Class" and make sure they are green. If green, you are good to go and jump to the [Configuration Section](#configuration). If not, please see the [Troubleshooting section](#troubleshoot).
 
-#### Manually based installation
+### <a name="manual-install"></a>Manually based installation
 
 To manually install:
 
@@ -84,12 +109,12 @@ After installing all modules and libraries, check the status of the installation
 ## <a name="configuration"></a>Configuration
 Congrats on installing the Apple News module. Please follow these configuration instructions to start publishing your content.
 
-#### Initial settings configuration
+### <a name="initial"></a>Initial settings configuration
 1. Visit apple.com to get your credentials and create a news channel that your Drupal site will use.
 2. In your Drupal site, navigate to the "Apple news credentials page" (`admin/config/content/apple-news/settings`) and add your Apple News credentials.
 3. In your Drupal site, navigate to the "Apple news feeds/channels page" (`admin/config/content/apple-news/settings/channels`) and add a feed ID from your apple account. Please add one ID at a time. The channels are validated by the apple credentials you added to your Drupal site, and if valid, will fetch the channel information and add them to your sites list of channels.
 
-#### Default Feed/Export configuration
+### <a name="feed"></a>Default Feed/Export configuration
 1. In your Drupal site, navigate to the "Apple news export manager page" (`admin/config/content/apple-news`).
 2. Click on the **'edit'** link of the feed you would like to connect to an apple news channel. The default export that comes with the Apple News module is "Nodes", but other exports can be created in code, using custom modules. For an example module, check out the "apple_news_article" module that comes with the Apple News module.
 3. In this "Edit page", the minimum requirements to properly configure a feed to an apple news channel are:
@@ -98,29 +123,29 @@ Congrats on installing the Apple News module. Please follow these configuration 
     3. Under "Content types", select the content types that should be processed with this feed.
     4. Under "Layout", the default value is "Simple", but it is possible to create new layouts using a custom module.
     5. Click **Save Changes**
-    6. After saving, you will see some options to the right of the new components we just added. These are **"edit"** and **"delete"**. Click on **"edit"**
+    6. After saving, you will see some options to the right of the new components we just added. These are "edit" and "delete". Click on **"edit"**
     7. Select the source field for this component. This is where we tell apple news that this apple news component will be getting it's data from this Drupal field.
     8. Click **Save Changes**
 
-#### Node configuration
+### <a name="node"></a>Node configuration
 Once a content type is enabled in an export/feed, the option to add the individual post reside in the nodes add/edit page. If a content type is not added to any feed export, these options will not be available on the node add/edit page.
 
 1. To add a node to the feed sent to apple, In the "Apple News" tab, select one or more feeds from the available list. 
 2. And for each selected feed, select an available "Section" that it belongs to. ("Sections" are created on apple.com, where you initially created the channel).
 3. Once a node is initially published to an apple news channel, It will also display a general information section showing Post date, Share URL, the Section, and the Channel its published to.
 
-#### Preview a post before publishing
+### <a name="preview"></a>Preview a post before publishing
 If you want to preview a post before sending it to apple, You will need to first download and install the Apple "News Preview" Application (LINK TBD).
 
 1. After saving the node, return to the nodes edit page
 2. Find the "Apple News" Tab, and click the "Download" link under "Preview". This will download a folder containing the specialy formatted file needed by the News Preview App.
 2. Drag the whole folder into the App icon to open, and it will display the page just as the Apple News App will be displaying it.
 
-#### Delete a post from publishing
+### <a name="delete"></a>Delete a post from publishing
 If you want to delete a post from a channel, but not delete the post itself, There is a **delete** link in the "Apple News" tab.
 
 
-###Congrats!
+##Congrats!
 You are now ready to start sharing your posts and articles with the Apple News Service and with the world. Happy Posting!
 
 
@@ -128,11 +153,43 @@ You are now ready to start sharing your posts and articles with the Apple News S
 
 If you are having trouble installing the module or it's dependencies, review the common scenarios below.
 
-(Troubleshooting section under works. 
-Creating list of common issues as we continue development).
 
+**Problem:** I'm getting the error message that includes: 
+    
+```shell
+Fatal error: undefined '['
+```
+**Solution:** This means that your version of PHP does not meet minimum standards. Version 5.3 and below are not able to process the bracketed php formatting of the AppleNews library. Updating your version of PHP to 5.4 and above will fix this.
+    
+---
+**Problem:** I'm getting the error message that includes: 
+    
+```shell
+SSL certificate problem: unable to get local issuer certificate
+```
+**Solution:** This is a mis-configuration in your server setup. Depending on what server OS you are using, the fix is different. Please see this StackOverflow post "[curl: (60) SSL certificate : unable to get local issuer certificate](http://stackoverflow.com/questions/24611640/curl-60-ssl-certificate-unable-to-get-local-issuer-certificate)" For more information on possible fixes specific for your system
+    
+---
+**Problem:** I'm getting the error message: 
+    
+```shell
+Please download PHP-Curl-Class (version 3.5.5) library to sites/all/libraries/php-curl-class
+```
+**Solution:** This means that the library has not been downloaded, the wrong version is in place, or the folder for the library is labeled wrong. Double check that the library was downloaded into `sites/all/libraries/php-curl-class`. Check that the version is 3.5.5 by opening up the composer.json file and search for "version": "3.5.5". Lastly, if still not resolved, make sure the folder is named `php-curl-class` and **NOT** something like `php-curl-class-master` or `php-curl-class-3.5-x`.
 
-## Run Tests
+---
+**Problem:** I'm getting the error message: 
+    
+```shell
+Please download AppleNews (version 0.2.0) library to sites/all/libraries/AppleNews
+```
+**Solution:** This means that the library has not been downloaded, the wrong version is in place, or the folder for the library is labeled wrong. Double check that the library was downloaded into `sites/all/libraries/AppleNews`. Check that the version is 0.2.0 by opening up the composer.json file and search for "version": "0.2.0". Lastly, if still not resolved, make sure the folder is named `AppleNews` and **NOT** something like `AppleNews-master` or `AppleNews-0.2.0`.
+
+---
+
+Please consult drupal.org for any issues outside of this scope.
+
+## <a name="run-tests"></a>Run Tests
 
 To run Drupal testing, Enable the core "Testing" module, from the Modules admin page or with command line.
 
