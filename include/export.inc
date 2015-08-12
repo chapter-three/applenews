@@ -126,6 +126,7 @@ abstract class ApplenewsExport {
     $form['channels'] = [
       '#type' => 'container',
       '#prefix' => '<strong>' . t('Feeds') . '</strong>',
+      '#weight' => 9,
     ];
 
     $saved_channels = !empty($this->settings['channels']) ? $this->settings['channels'] : [];
@@ -174,6 +175,7 @@ abstract class ApplenewsExport {
       '#type' => 'checkbox',
       '#default_value' => $this->enabled,
       '#description' => t('This export will not publish to Apple News until enabled.'),
+      '#prefix' => '<strong>' . t('Status') . '</strong>',
       '#weight' => 10,
     ];
 
