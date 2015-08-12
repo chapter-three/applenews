@@ -123,12 +123,6 @@ abstract class ApplenewsExport {
    */
   public function getConfigForm($form, &$form_state) {
 
-    $form['enabled'] = [
-      '#title' => t('Enabled'),
-      '#type' => 'checkbox',
-      '#default_value' => $this->enabled,
-    ];
-
     $form['channels'] = [
       '#type' => 'container',
       '#prefix' => '<strong>' . t('Feeds') . '</strong>',
@@ -174,6 +168,14 @@ abstract class ApplenewsExport {
         )
       ];
     }
+
+    $form['enabled'] = [
+      '#title' => t('Enable this export'),
+      '#type' => 'checkbox',
+      '#default_value' => $this->enabled,
+      '#description' => t('This export will not publish to Apple News until enabled.'),
+      '#weight' => 10,
+    ];
 
     return $form;
   }
