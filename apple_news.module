@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Main module file.
+ * Apple News module file.
  */
 
 define('APPLE_NEWS_API_VERSION', 1);
@@ -110,22 +110,15 @@ function apple_news_requirements($phase) {
   $requirements = [];
   if ($phase == 'runtime') {
     $libraries = [
-      'AppleNews'      => [
-        'version' => APPLE_NEWS_SUPPORTED_VERSION,
-        'path'    => 'sites/all/libraries/AppleNews',
-      ],
-      'php-curl-class' => [
-        'version' => CURL_SUPPORTED_VERSION,
-        'path'    => 'sites/all/libraries/php-curl-class',
-      ],
+      'AppleNews'      => APPLE_NEWS_SUPPORTED_VERSION,
+      'php-curl-class' => CURL_SUPPORTED_VERSION,
     ];
-    foreach ($libraries as $name => $info) {
-      $library_name = $name . '-' . $info['version'];
-      if ($library = libraries_detect($library_name)) {
+    foreach ($libraries as $name => $version) {
+      if ($library = libraries_detect($name)) {
         $msg = '';
         $lib_version = !empty($library['version']) ? $library['version'] : '';
         $severity = REQUIREMENT_OK;
-        if ($lib_version != $info['version']) {
+        if ($lib_version != $version) {
           $msg = t("You're using unsupported version of the <em>@name</em> library.",
               [
                 '@name' => $library['name']
