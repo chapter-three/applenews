@@ -21,13 +21,13 @@ interface ApplenewsDestinationInterface {
   /**
    * Exports to an Apple News Document object.
    *
-   * @param object $value
+   * @param mixed $value
    *   Value.
    *
    * @return array
    *   A list of \ChapterThree\AppleNews\Document\Base objects.
    */
-  public function export(stdClass $value);
+  public function export($value);
 
 }
 
@@ -92,6 +92,14 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
   public $depth;
 
   /**
+   * Child components.
+   *
+   * @var array
+   *   List of \ChapterThree\AppleNews\Document objects.
+   */
+  public $children;
+
+  /**
    * Implements __construct().
    */
   public function __construct() {
@@ -111,7 +119,7 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
   /**
    * {@inheritdoc}
    */
-  abstract public function export(stdClass $value);
+  abstract public function export($value);
 
   /**
    * Root-only -- can not be a child.
@@ -120,7 +128,7 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
    *   Is a root.
    */
   public function isRoot() {
-    return TRUE;
+    return FALSE;
   }
 
   /**
@@ -131,6 +139,16 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
    */
   public function isLeaf() {
     return TRUE;
+  }
+
+  /**
+   * If isLeaf() returns FALSE, this should set any child components.
+   *
+   * @return array
+   *   Child components.
+   */
+  public function setChildren($children) {
+    $this->children = $children;
   }
 
   /**
@@ -366,7 +384,7 @@ class ApplenewsDestinationBody extends ApplenewsDestination {
   /**
    * {@inheritdoc}
    */
-  public function export(stdClass $value) {
+  public function export($value) {
     $source = $this->getSource($value, $this->settings['text']);
     $key = $this->getSourceKey($this->settings['text']);
     $value = $source->export()[$key];
@@ -550,10 +568,11 @@ class ApplenewsDestinationBodyPhoto extends ApplenewsDestinationBody {
   /**
    * {@inheritdoc}
    */
-  public function export(stdClass $value) {
+  public function export($value) {
     $source = $this->getSource($value, $this->settings['text']);
     $key = $this->getSourceKey($this->settings['text']);
     return $this->exportConvertHTML($source->export()[$key]);
   }
 
 }
+
