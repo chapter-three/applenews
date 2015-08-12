@@ -26,6 +26,10 @@ function apple_news_components_apple_news_api() {
         'class' => 'ApplenewscomponentsDestinationHeaderImage',
         'name' => 'Header Image',
       ],
+      'header_image' => [
+        'class' => 'ApplenewscomponentsDestinationHeaderGradContainer',
+        'name' => 'Header Gradient Container',
+      ],
     ],
   ];
 }
