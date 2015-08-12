@@ -284,16 +284,18 @@ class ApplenewsSourceField implements ApplenewsSourceInterface {
    * {@inheritdoc}
    */
   public function export() {
+    $return = [
+      'value' => '',
+    ];
     try {
-      $value = $this->wrapper
-        ->{$this->fieldName}->value->value(['decode' => FALSE]);
+      /** @var EntityValueWrapper $value */
+      $value = $this->wrapper->{$this->fieldName};
     }
     catch (EntityMetadataWrapperException $e) {
-      $value = '';
+      return $return;
     }
-    return [
-      'value' => $value,
-    ];
+    $return['value'] = $value->value ? $value->value->value(['decode' => FALSE]) : '';
+    return $return;
   }
 
 }
@@ -334,17 +336,21 @@ class ApplenewsSourceFieldFile extends ApplenewsSourceField {
    * {@inheritdoc}
    */
   public function export() {
+    $return = [
+      'url' => '',
+      'file' => NULL,
+    ];
     try {
       $value = $this->wrapper->{$this->fieldName}->value();
     }
     catch (EntityMetadataWrapperException $e) {
-      $value = '';
+      return $return;
     }
-    $file = file_load($value['fid']);
-    return [
-      'url' => file_create_url($file->uri),
-      'file' => $file,
-    ];
+    if ($file = file_load($value['fid'])) {
+      $return['url'] = file_create_url($file->uri);
+      $return['file'] = $file;
+    }
+    return $return;
   }
 
 }
