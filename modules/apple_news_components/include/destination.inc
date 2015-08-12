@@ -55,9 +55,12 @@ class ApplenewscomponentsDestinationHeaderImage extends ApplenewsDestination {
     $key = $this->getSourceKey($this->settings['file']);
     $file = $source->export()[$key];
     $fill = new Styles\Fills\ImageFill($this->export->addAsset($file->uri));
-    $container = new Components\Container();
-    $container->setStyle($fill);
-    return [$container];
+    $fill->setFillMode('cover')->setVerticalAlignment('bottom');
+    $style = new Styles\ComponentStyle();
+    $style->setFill($fill);
+    $header = new Components\Header();
+    $header->setStyle($style);
+    return [$header];
   }
 
 }
