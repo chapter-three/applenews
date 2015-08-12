@@ -135,7 +135,7 @@ class ApplenewsPreview {
 
     }
 
-    // close and save archive
+    // Close and save archive
     $zip->close();
 
   }
