@@ -41,7 +41,7 @@ function apple_news_drush_command() {
 /**
  * Callback for the "apple-news" command.
  */
-function drush_apple_news_apple_news($op, $module, $machine_name) {
+function drush_apple_news($op, $module, $machine_name) {
 
   module_load_include('inc', 'apple_news');
   module_load_include('inc', 'apple_news', 'apple_news.batch');
@@ -75,7 +75,7 @@ function drush_apple_news_apple_news($op, $module, $machine_name) {
  * Downloads remote ZIP archive, extracts the file and
  * create library specific directory.
  */
-function drush_apple_news_apple_news_libraries() {
+function drush_apple_news_libraries() {
 
   $libraries = [
     'AppleNews'      => APPLE_NEWS_SUPPORTED_VERSION,
