@@ -393,6 +393,10 @@ function apple_news_apple_news_api() {
         'class' => 'ApplenewsSourceField',
         'name' => 'Field Value',
       ],
+      'file' => [
+        'class' => 'ApplenewsSourceFieldFile',
+        'name' => 'File Field',
+      ],
     ],
     'destinations' => [
       'body' => [

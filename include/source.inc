@@ -297,3 +297,54 @@ class ApplenewsSourceField implements ApplenewsSourceInterface {
   }
 
 }
+
+/**
+ * Exports a Drupal file.
+ */
+class ApplenewsSourceFieldFile extends ApplenewsSourceField {
+
+  /**
+   * {@inheritdoc}
+   */
+  static public function label() {
+    return t('File');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  static public function attributes() {
+    return [
+      'url' => 'URL',
+      'file' => 'File',
+    ];
+  }
+
+  /**
+   * Field types this class applies to.
+   */
+  static public function types() {
+    return [
+      'file',
+      'image',
+    ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function export() {
+    try {
+      $value = $this->wrapper->{$this->fieldName}->value();
+    }
+    catch (EntityMetadataWrapperException $e) {
+      $value = '';
+    }
+    $file = file_load($value['fid']);
+    return [
+      'url' => file_create_url($file->uri),
+      'file' => $file,
+    ];
+  }
+
+}
