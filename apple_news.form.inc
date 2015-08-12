@@ -78,6 +78,7 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
           $form['apple_news']['preview'] = [
             '#markup' => '<div>' . $preview_message . '</div><br/>',
             '#prefix' => '<div><strong>' . t('Preview') . '</strong></div>',
+            '#weight' => 20,
           ];
 
           // Get configuration form for the AppleNews exportable entity.
@@ -108,15 +109,6 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
                 $rows[] = [
                   ['data' => $channel->name],
                   ['data' => $section['name']],
-                  ['data' => 
-                    l($article['share_url'], $article['share_url'],
-                      [
-                        'attributes' => [
-                          'target' => '_blank'
-                        ]
-                      ]
-                    )
-                  ],
                   ['data' => format_date($article['postdate'], 'sort')],
                 ];
               }
@@ -128,13 +120,25 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
                 'header' => [
                   t('Channel'),
                   t('Section'),
-                  t('Share URL'),
                   t('Post date')
                 ],
                 'rows' => $rows
               ]),
               '#prefix' => '<br/><div><strong>' . t('Apple News feeds') . '</strong></div>',
-              '#weight' => 20,
+              '#weight' => 19,
+            ];
+
+            $form['apple_news']['share-url'] = [
+              '#markup' => '<div>' . l($article['share_url'], $article['share_url'],
+                  [
+                    'attributes' => [
+                      'target' => '_blank'
+                    ]
+                  ]
+                )
+              . '</div><br/>',
+              '#prefix' => '<div><strong>' . t('Share URL') . '</strong></div>',
+              '#weight' => 21,
             ];
 
             $form['apple_news']['delete'] = [
@@ -150,6 +154,7 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
                 ]
               ) 
               . '</div><br/>',
+              '#prefix' => '<div><strong>' . t('Delete') . '</strong></div>',
               '#weight' => 21,
             ];
 
