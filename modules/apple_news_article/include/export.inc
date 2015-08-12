@@ -85,6 +85,8 @@ class ApplenewsExportArticle extends ApplenewsExport {
    * {@inheritdoc}
    */
   public function export($entity) {
+    parent::export($entity);
+
     /** @var EntityDrupalWrapper $wrapper */
     $wrapper = entity_metadata_wrapper('node', $entity);
 
@@ -110,13 +112,6 @@ class ApplenewsExportArticle extends ApplenewsExport {
     // Image field.
     /** @var EntityDrupalWrapper $file */
     $file = $wrapper->__isset('field_image') ? $wrapper->field_image->value() : FALSE;
-    $bundle = '';
-    if (!empty($file['fid'])) {
-      $file_object = file_load($file['fid']);
-      $file['uri'] = $file_object->uri;
-      $slashes = explode("/", $file['uri']);
-      $bundle = 'bundle://' . $slashes[count($slashes) - 1];
-    }
 
     // Byline.
     $byline = t('By !author on !date',
@@ -138,9 +133,10 @@ class ApplenewsExportArticle extends ApplenewsExport {
         // Body.
         $this->document->addComponent($body);
         // Photo.
-        if ($file) {
-          $photo = new Document\Components\Photo($bundle);
-          $photo->setCaption($file['alt']);
+        if (@$file['uri']) {
+          $photo = new Document\Components\Photo($this->addAsset($file['uri']));
+          $photo->setCaption(
+            isset($file['title']) ? $file['title'] : $file['alt']);
           $this->document->addComponent($photo);
         }
         break;
@@ -175,7 +171,8 @@ class ApplenewsExportArticle extends ApplenewsExport {
             ->setMinimumHeight('40vh')
             ->setMargin(new Document\Margin(15, 15));
           $this->document->addComponentLayout('headerImageLayout', $layout);
-          $fill = new Document\Styles\Fills\ImageFill($file['uri']);
+          $fill = new Document\Styles\Fills\ImageFill(
+            $this->addAsset($file['uri']));
           $fill->setFillMode('cover')
             ->setVerticalAlignment('center');
           $style = new Document\Styles\ComponentStyle();
@@ -220,23 +217,6 @@ class ApplenewsExportArticle extends ApplenewsExport {
     }
 
     return $this->document;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function assets($entity) {
-    $assets = [];
-    /** @var EntityDrupalWrapper $wrapper */
-    $wrapper = entity_metadata_wrapper('node', $entity);
-    // Image field.
-    /** @var EntityDrupalWrapper $file */
-    $file = $wrapper->__isset('field_image') ? $wrapper->field_image->value() : FALSE;
-    if (!empty($file['fid'])) {
-      $file = file_load($file['fid']);
-      $assets[] = drupal_realpath($file->uri);
-    }
-    return $assets;
   }
 
 }

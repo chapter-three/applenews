@@ -70,9 +70,9 @@ class ApplenewsPreview {
    * Save article assets into article directory.
    */
   private function saveArticleAssets() {
-    foreach ($this->files as $file) {
-      $contents = file_get_contents($file);
-      file_unmanaged_save_data($contents, $this->entity_dir . '/' . basename($file));
+    foreach ($this->files as $url => $path) {
+      $contents = file_get_contents($path);
+      file_unmanaged_save_data($contents, $this->entity_dir . '/' . basename($url));
     }
   }
 

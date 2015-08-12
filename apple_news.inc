@@ -401,7 +401,7 @@ function apple_news_entity_export($entity_type, $entity_id, $revision_id) {
         $document = $export->export($entity);
         $data = [
           'json' => $document->json(),
-          'files' => $export->assets($entity),
+          'files' => $export->getAssets(),
         ];
         return $data;
       }
@@ -621,7 +621,7 @@ function apple_news_op($op, $channel_id, $entity, $entity_type, $export = NULL, 
     }
     $data = [
       'json' => $document->json(),
-      'files' => $export->assets($entity),
+      'files' => $export->getAssets(),
       'metadata' => !empty($settings['metadata']) ? json_encode($settings['metadata']) : '',
     ];
   }

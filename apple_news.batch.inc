@@ -55,7 +55,7 @@ function apple_news_batch_post($info, $export, $entity_type, $entity, &$context)
   $context['results']['info']['name'] = $info['name'];
   $context['results']['info']['module'] = $info['module'];
   $context['results']['info']['machine_name'] = $info['machine_name'];
-  $context['results']['info']['default_channels'] = !empty($export_settings['channels']) 
+  $context['results']['info']['default_channels'] = !empty($export_settings['channels'])
     ? array_keys($export_settings['channels']) : [];
 
   if (!isset($context['results']['info']['count'])) {
@@ -229,7 +229,7 @@ function apple_news_batch_preview_generate($info, $export, $entity_type, $entity
   $document = $export->export($entity);
   $data = [
     'json' => $document->json(),
-    'files' => $export->assets($entity),
+    'files' => $export->getAssets(),
   ];
 
   $context['results']['info'] = $info;

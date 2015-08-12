@@ -393,14 +393,7 @@ class ApplenewsDestinationBodyPhoto extends ApplenewsDestinationBody {
    * Create image object from img element src attribute value.
    */
   public function exportCreateImage($src) {
-    // @todo Bundle local files instead of using URL.
-    $scheme = parse_url($src, PHP_URL_SCHEME);
-    if (empty($scheme)) {
-      // @todo handle relative paths.
-      $src = url(ltrim($src, '/'), ['absolute' => TRUE]);
-    }
-    $image = new Components\Photo($src);
-    return $image;
+    return new Components\Photo($this->export->addAsset($src));
   }
 
   /**

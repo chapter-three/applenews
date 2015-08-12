@@ -39,6 +39,13 @@ abstract class ApplenewsExport {
   public $document;
 
   /**
+   * Assets bundled with an export.
+   *
+   * @var array
+   */
+  public $assets;
+
+  /**
    * Implements __construct().
    *
    * @param string $module
@@ -224,20 +231,69 @@ abstract class ApplenewsExport {
    * @todo verify NULL return aborts push.
    */
   public function export($entity) {
+    $this->assets = [];
     return $this->document;
   }
 
   /**
-   * Exports entity assets.
+   * Generates a News Document URL for an asset.
    *
-   * @param object $entity
-   *   An entity to export.
-   *
-   * @return array
-   *   Array of assets (images)
+   * @param string $uri
+   *   URI of the file -- if no scheme assumed to be local link.
    */
-  public function assets($entity) {
-    return [];
+  public function addAsset($uri) {
+    if (!isset($this->assets[$uri])) {
+      global $base_url;
+      $scheme = parse_url($uri, PHP_URL_SCHEME);
+      // Handle uri to local file.
+      if (parse_url($uri, PHP_URL_HOST) == parse_url($base_url, PHP_URL_HOST)) {
+        $scheme = '';
+      }
+      // A local link.
+      if ($scheme == '') {
+        $path = drupal_realpath(ltrim(parse_url($uri, PHP_URL_PATH), '/'));
+      }
+      // A drupal uri.
+      elseif (file_valid_uri($scheme)) {
+        if ($wrapper = file_stream_wrapper_get_instance_by_uri($uri)) {
+          $path = $wrapper->realPath();
+        }
+      }
+      // External, try to fetch.
+      else {
+        $path = system_retrieve_file($uri);
+      }
+      if ($path) {
+        $url = 'bundle://' . count($this->assets);
+        if ($ext = pathinfo($uri, PATHINFO_EXTENSION)) {
+          $url .= ".${ext}";
+        }
+        $this->assets[$uri] = [
+          'path' => $path,
+          'url' => $url,
+        ];
+      }
+    }
+    return @$this->assets[$uri]['url'];
+  }
+
+  /**
+   * Get assets associated with an export.
+   *
+   * Note that running export() will populate the data for this method. If ran
+   * on an instance where export() has not run, will return NULL.
+   *
+   * @return array|NULL
+   *   Array of asset paths keyed on Apple Document URL.
+   *
+   * @see addAsset()
+   */
+  public function getAssets() {
+    $files = [];
+    foreach ($this->assets as $info) {
+      $files[$info['url']] = $info['path'];
+    }
+    return $files;
   }
 
 }
@@ -602,6 +658,8 @@ class ApplenewsExportNode extends ApplenewsExportConfigurable {
    * {@inheritdoc}
    */
   public function export($entity) {
+    parent::export($entity);
+
     /** @var EntityDrupalWrapper $wrapper */
     $wrapper = entity_metadata_wrapper('node', $entity);
 
@@ -636,7 +694,7 @@ class ApplenewsExportNode extends ApplenewsExportConfigurable {
 
     }
 
-    return parent::export($entity);
+    return $this->document;
   }
 
 }
