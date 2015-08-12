@@ -17,14 +17,20 @@ module_load_include('inc', 'apple_news', 'apple_news.batch');
  */
 function apple_news_init() {
   $libraries = [
-    'php-curl-class' => CURL_SUPPORTED_VERSION,
-    'AppleNews'      => APPLE_NEWS_SUPPORTED_VERSION,
+    'php-curl-class' => [
+      'version' => CURL_SUPPORTED_VERSION,
+      'path'    => 'sites/all/libraries/php-curl-class'
+    ],
+    'AppleNews'      => [
+      'version' => APPLE_NEWS_SUPPORTED_VERSION,
+      'path'    => 'sites/all/libraries/AppleNews'
+    ]
   ];
-  foreach ($libraries as $name => $version) {
+  foreach ($libraries as $name => $info) {
     // Detect and load 'php-curl-class' PHP library.
     if (($library = libraries_detect($name)) &&
         !empty($library['installed']) &&
-        $library['version'] == $version
+        $library['version'] == $info['version']
     ) {
       libraries_load($name);
     }
@@ -34,8 +40,8 @@ function apple_news_init() {
         [
           '!link' => $library['download url'],
           '@name' => $library['name'],
-          '@path' => $libraries['library path'],
-          '@v'    => $version,
+          '@path' => $info['path'],
+          '@v'    => $info['version'],
         ]
       );
       drupal_set_message($error_message . ' ' . $msg, 'error');
