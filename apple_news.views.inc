@@ -55,34 +55,36 @@ function apple_news_views_data() {
   // Add relationship to entity base via entity_id and revision_id fields.
   $entity_type_exports = apple_news_get_entity_types();
   foreach ($entity_type_exports as $module => $info) {
-    foreach ($info['entity_types'] as $entity_type) {
-      $entity_info = entity_get_info($entity_type);
-      foreach ($fields as $field_name) {
+    if (!empty($info['entity_types'])) {
+      foreach ($info['entity_types'] as $entity_type) {
+        $entity_info = entity_get_info($entity_type);
+        foreach ($fields as $field_name) {
 
-        $data['apple_news_entities']['reverse_' . $field_name . '_' . $entity_type]['relationship'] = [
-          'handler' => 'views_handler_relationship_entity_reverse',
-          'field_name' => $field_name,
-          'field table' => 'apple_news_entities',
-          'field field' => $field_name,
-          'base' => $entity_info['base table'],
-          'base field' => $entity_info['entity keys']['id'],
-          'label' => t('Apple News articles referencing Drupal entities'),
-          'group' => t('Apple News Article'),
-          'title' => t('Apple News Referencing !field_name', ['!field_name' => $field_name]),
-          'help' => t('A bridge to the @entity_type entity that is referencing Apple News article via !field_name',
-            [
-              '@entity_type' => $entity_type,
-              '!field_name' => $field_name,
-            ]
-          ),
-          'join_extra' => [
-            0 => [
-              'field' => 'entity_type',
-              'value' => $entity_type,
+          $data['apple_news_entities']['reverse_' . $field_name . '_' . $entity_type]['relationship'] = [
+            'handler' => 'views_handler_relationship_entity_reverse',
+            'field_name' => $field_name,
+            'field table' => 'apple_news_entities',
+            'field field' => $field_name,
+            'base' => $entity_info['base table'],
+            'base field' => $entity_info['entity keys']['id'],
+            'label' => t('Apple News articles referencing Drupal entities'),
+            'group' => t('Apple News Article'),
+            'title' => t('Apple News Referencing !field_name', ['!field_name' => $field_name]),
+            'help' => t('A bridge to the @entity_type entity that is referencing Apple News article via !field_name',
+              [
+                '@entity_type' => $entity_type,
+                '!field_name' => $field_name,
+              ]
+            ),
+            'join_extra' => [
+              0 => [
+                'field' => 'entity_type',
+                'value' => $entity_type,
+              ],
             ],
-          ],
-        ];
+          ];
 
+        }
       }
     }
   }
