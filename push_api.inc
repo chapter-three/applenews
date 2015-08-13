@@ -24,9 +24,7 @@ function apple_news_push_api() {
 
   /** @var \Curl\Curl $client */
   $client = $pushapi->client;
-  foreach ($opts as $key => $val) {
-    $client->setOpt($key, $val);
-  }
+  $client->setOpt(CURLOPT_SSL_VERIFYPEER, $opts['ssl']);
 
   return $pushapi;
 }
