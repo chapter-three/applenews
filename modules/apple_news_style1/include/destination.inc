@@ -15,7 +15,7 @@ use \ChapterThree\AppleNews\Document\Animations;
 /**
  * Body component.
  */
-class ApplenewscomponentsDestinationBody extends ApplenewsDestinationBodyPhoto {
+class Applenewsstyle1DestinationBody extends ApplenewsDestinationBodyPhoto {
 
   /**
    * {@inheritdoc}
@@ -67,7 +67,7 @@ class ApplenewscomponentsDestinationBody extends ApplenewsDestinationBodyPhoto {
 /**
  * Image header component.
  */
-class ApplenewscomponentsDestinationHeaderImage extends ApplenewsDestination {
+class Applenewsstyle1DestinationHeaderImage extends ApplenewsDestination {
 
   /**
    * {@inheritdoc}
@@ -137,7 +137,7 @@ class ApplenewscomponentsDestinationHeaderImage extends ApplenewsDestination {
 /**
  * Gradient header container component.
  */
-class ApplenewscomponentsDestinationHeaderGradContainer extends ApplenewsDestination {
+class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination {
 
   /**
    * {@inheritdoc}
@@ -333,7 +333,7 @@ class ApplenewscomponentsDestinationHeaderGradContainer extends ApplenewsDestina
 /**
  * Animated pullquote component.
  */
-class ApplenewscomponentsDestinationAnimatedPullQuote extends ApplenewsDestination {
+class Applenewsstyle1DestinationAnimatedPullQuote extends ApplenewsDestination {
 
   /**
    * {@inheritdoc}
@@ -454,7 +454,7 @@ class ApplenewscomponentsDestinationAnimatedPullQuote extends ApplenewsDestinati
 /**
  * Mosaic component.
  */
-class ApplenewscomponentsDestinationMosaic extends ApplenewsDestinationMosaic {
+class Applenewsstyle1DestinationMosaic extends ApplenewsDestinationMosaic {
 
   /**
    * Exports to an Apple News Document container object.

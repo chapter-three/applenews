@@ -8,38 +8,38 @@
 /**
  * Implements hook_help().
  */
-function apple_news_components_help($path, $arg) {
+function apple_news_style1_help($path, $arg) {
   switch ($path) {
-    case 'admin/help#apple_news':
-      return '<p>' . t('Various Apple News components.') . '</p>';
+    case 'admin/help#apple_news_style1':
+      return '<p>' . t('Apple news style 1.') . '</p>';
   }
 }
 
 /**
  * Implements hook_apple_news_api().
  */
-function apple_news_components_apple_news_api() {
+function apple_news_style1_apple_news_api() {
   return [
     'api' => 1,
     'destinations' => [
       'body' => [
-        'class' => 'ApplenewscomponentsDestinationBody',
+        'class' => 'Applenewsstyle1DestinationBody',
         'name' => 'Body',
       ],
       'header_image' => [
-        'class' => 'ApplenewscomponentsDestinationHeaderImage',
+        'class' => 'Applenewsstyle1DestinationHeaderImage',
         'name' => 'Header Image',
       ],
       'header_image' => [
-        'class' => 'ApplenewscomponentsDestinationHeaderGradContainer',
+        'class' => 'Applenewsstyle1DestinationHeaderGradContainer',
         'name' => 'Header Gradient Container',
       ],
       'pullquote' => [
-        'class' => 'ApplenewscomponentsDestinationAnimatedPullQuote',
+        'class' => 'Applenewsstyle1DestinationAnimatedPullQuote',
         'name' => 'Animated Pull Quote',
       ],
       'mosiac' => [
-        'class' => 'ApplenewscomponentsDestinationMosaic',
+        'class' => 'Applenewsstyle1DestinationMosaic',
         'name' => 'Mosaic',
       ],
     ],
