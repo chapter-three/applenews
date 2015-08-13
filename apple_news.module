@@ -191,9 +191,14 @@ function apple_news_help($path, $arg) {
         }
       }
       else {
+        $help = '<strong>';
+        $help .= t('The README.md file is using Markdown - lightweight markup language with plain text formatting syntax.');
+        $help .= ' ';
+        $help .= t('Install <a href="https://www.drupal.org/project/markdown" target="_blank">Markdown filter</a> module to parse the text and make it more readable.');
+        $help .= '</strong>';
         // Users may override text format of the help text.
         $format = variable_get('apple_news_help_format', 'filtered_html');
-        $help = check_markup($contents, $format);
+        $help .= check_markup($contents, $format);
       }
       return $help;
   }
