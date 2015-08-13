@@ -25,6 +25,10 @@ interface ApplenewsSourceInterface {
   /**
    * Defines available attributes for the source.
    *
+   * Note attributes must be alphanumeric, as export() may return a single value
+   * (an associative array with these attributes as keys), or a list of values
+   * (an array of such associative arrays).
+   *
    * @return array
    *   Associative array of attributes. Values are either:
    *   - String label, if attribute value is provided by this class.
@@ -40,7 +44,7 @@ interface ApplenewsSourceInterface {
    * Dumps data from the source.
    *
    * @return array
-   *   Associative array with keys defined in attributes().
+   *   Associative array (or a list of such) with keys defined in attributes().
    */
   public function export();
 
@@ -283,25 +287,34 @@ class ApplenewsSourceField implements ApplenewsSourceInterface {
   /**
    * {@inheritdoc}
    */
-  public function export() {
+  public function export($value = NULL) {
     $return = [
       'value' => '',
     ];
-    try {
-      /** @var EntityValueWrapper $value */
-      $value = $this->wrapper->{$this->fieldName};
+    if (!isset($value)) {
+      try {
+        $value = $this->wrapper->{$this->fieldName};
+      }
+      catch (EntityMetadataWrapperException $e) {
+        return $return;
+      }
     }
-    catch (EntityMetadataWrapperException $e) {
-      return $return;
+    if (is_a($value, 'EntityListWrapper')) {
+      /** @var EntityListWrapper $value */
+      $return = array();
+      foreach ($value as $v) {
+        $return[] = $this->export($v);
+      }
     }
-    if (is_a($value, 'EntityValueWrapper')) {
-      $return['value'] = $value->value(['decode' => FALSE]);
-    }
-    elseif (is_a($value, 'EntityStructureWrapper')) {
-      $return['value'] = $value->value->value(['decode' => FALSE]);
-    }
-    elseif (is_a($value, 'EntityListWrapper')) {
-      // @todo
+    else {
+      if (is_a($value, 'EntityValueWrapper')) {
+        /** @var EntityValueWrapper $value */
+        $return['value'] = $value->value(['decode' => FALSE]);
+      }
+      else {
+        /** @var EntityStructureWrapper $value */
+        $return['value'] = $value->value->value(['decode' => FALSE]);
+      }
     }
     return $return;
   }
@@ -343,20 +356,32 @@ class ApplenewsSourceFieldFile extends ApplenewsSourceField {
   /**
    * {@inheritdoc}
    */
-  public function export() {
+  public function export($value = NULL) {
     $return = [
       'url' => '',
       'file' => NULL,
     ];
-    try {
-      $value = $this->wrapper->{$this->fieldName}->value();
+    if (!isset($value)) {
+      try {
+        $value = $this->wrapper->{$this->fieldName};
+      }
+      catch (EntityMetadataWrapperException $e) {
+        return $return;
+      }
     }
-    catch (EntityMetadataWrapperException $e) {
-      return $return;
+    if (is_a($value, 'EntityListWrapper')) {
+      /** @var EntityListWrapper $value */
+      $return = array();
+      foreach ($value as $v) {
+        $return[] = $this->export($v);
+      }
     }
-    if ($file = file_load($value['fid'])) {
-      $return['url'] = file_create_url($file->uri);
-      $return['file'] = $file;
+    else {
+      $v = $value->value();
+      if ($file = file_load($v['fid'])) {
+        $return['url'] = file_create_url($file->uri);
+        $return['file'] = $file;
+      }
     }
     return $return;
   }

@@ -251,17 +251,6 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
   }
 
   /**
-   * Get the value key for a source object.
-   *
-   * @return string
-   *   E.g. sourceobj->export()[$key]
-   */
-  public function getSourceKey($key) {
-    $key = explode('::', $key);
-    return $key[count($key) - 1];
-  }
-
-  /**
    * Load a source object.
    *
    * @return ApplenewsSourceInterface
@@ -299,6 +288,21 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
     }
 
     return $source;
+  }
+
+  /**
+   * Helper to get a list of values and the configured source key.
+   */
+  public function getSourceValues(stdClass $value, $source_key) {
+    $source = $this->getSource($value, $source_key);
+    $key = explode('::', $source_key);
+    $key = array_pop($key);
+    $values = $source->export();
+    // Handle single/multiple values similarly, as a list of values.
+    if (!isset($values[0])) {
+      $values = [$values];
+    }
+    return [$key, $values];
   }
 
   /**
@@ -375,12 +379,15 @@ class ApplenewsDestinationBody extends ApplenewsDestination {
    * {@inheritdoc}
    */
   public function export($value) {
-    $source = $this->getSource($value, $this->settings['text']);
-    $key = $this->getSourceKey($this->settings['text']);
-    $value = $source->export()[$key];
-    $body = new Components\Body(Markdown::convert($value));
-    $body->setFormat('markdown');
-    return [$body];
+    list($key, $values) = $this->getSourceValues($value,
+      $this->settings['text']);
+    $components = array();
+    foreach ($values as $value) {
+      $body = new Components\Body(Markdown::convert($value[$key]));
+      $body->setFormat('markdown');
+      $components[] = $body;
+    }
+    return $components;
   }
 
 }
@@ -559,9 +566,15 @@ class ApplenewsDestinationBodyPhoto extends ApplenewsDestinationBody {
    * {@inheritdoc}
    */
   public function export($value) {
-    $source = $this->getSource($value, $this->settings['text']);
-    $key = $this->getSourceKey($this->settings['text']);
-    return $this->exportConvertHTML($source->export()[$key]);
+    list($key, $values) = $this->getSourceValues($value,
+      $this->settings['text']);
+
+    $components = array();
+    foreach ($values as $value) {
+      $components = array_merge($components,
+        $this->exportConvertHTML($value[$key]));
+    }
+    return $components;
   }
 
 }

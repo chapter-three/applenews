@@ -55,16 +55,24 @@ class ApplenewscomponentsDestinationHeaderImage extends ApplenewsDestination {
    * {@inheritdoc}
    */
   public function export($value) {
-    $source = $this->getSource($value, $this->settings['file']);
-    $key = $this->getSourceKey($this->settings['file']);
-    $file = $source->export()[$key];
-    $fill = new Styles\Fills\ImageFill($this->export->addAsset($file->uri));
+    list($key, $values) = $this->getSourceValues($value,
+      $this->settings['file']);
+    if (empty($values[0][$key])) {
+      return [];
+    }
+    $file = $values[0][$key];
+    if (is_object($file)) {
+      $fill = new Styles\Fills\ImageFill($this->export->addAsset($file->uri));
+    }
+    else {
+      $fill = new Styles\Fills\ImageFill($this->export->addAsset($file));
+    }
     $fill->setFillMode('cover')->setVerticalAlignment('bottom');
     $style = new Styles\ComponentStyle();
     $style->setFill($fill);
     $header = new Components\Header();
     $header->setStyle($style);
-    //  ->setLayout('headerImageContainerLayout');
+    // ->setLayout('headerImageContainerLayout');
     return [$header];
   }
 
@@ -136,14 +144,14 @@ class ApplenewscomponentsDestinationHeaderGradContainer extends ApplenewsDestina
   /**
    * Exports to an Apple News Document container object.
    *
-   * @param array $value
+   * @param mixed $value
    *   An array of children component objects.
    *
    * @return array
    *   A list of \ChapterThree\AppleNews\Document\Base objects.
    */
   public function export($value) {
-    // Components container
+    // Components container.
     $container = new Components\Header();
     // $container->setLayout('titleContainerLayout');
     $behavior = new Behaviors\Parallax();
@@ -162,10 +170,12 @@ class ApplenewscomponentsDestinationHeaderGradContainer extends ApplenewsDestina
     $container->addComponent($divider);
 
     // Title.
-    $source = $this->getSource($value, $this->settings['title']);
-    $key = $this->getSourceKey($this->settings['title']);
-    $title = $source->export()[$key];
-    $title = new Components\Title($title);
+    list($key, $values) = $this->getSourceValues($value,
+      $this->settings['title']);
+    if (empty($values[0][$key])) {
+      return [];
+    }
+    $title = new Components\Title($values[0][$key]);
     $container->addComponent($title);
 
     // Another, slightly different, divider.
@@ -175,33 +185,32 @@ class ApplenewscomponentsDestinationHeaderGradContainer extends ApplenewsDestina
     $container->addComponent($divider);
 
     // Intro.
-    $source = $this->getSource($value, $this->settings['intro']);
-    $key = $this->getSourceKey($this->settings['intro']);
-    $intro = $source->export()[$key];
-    if ($intro) {
-      $intro = new Components\Intro($intro);
+    list($key, $values) = $this->getSourceValues($value,
+      $this->settings['intro']);
+    if (!empty($values[0][$key])) {
+      $intro = new Components\Intro($values[0][$key]);
       // $intro->setLayout('introLayout')->setTextStyle('introStyle');
       $container->addComponent($intro);
     }
 
     // Author.
-    $source = $this->getSource($value, $this->settings['author']);
-    $key = $this->getSourceKey($this->settings['author']);
-    $author = $source->export()[$key];
-    $author = new Components\Author($author);
-    $layout = new Layouts\ComponentLayout();
-    $layout->setColumnStart(0)->setColumnSpan(7)
-      ->setMargin(new Margin(10, 5));
-    $author->setLayout($layout);
-    // $author->setTextStyle('authorStyle');
-    $container->addComponent($author);
+    list($key, $values) = $this->getSourceValues($value,
+      $this->settings['author']);
+    if (!empty($values[0][$key])) {
+      $author = new Components\Author($values[0][$key]);
+      $layout = new Layouts\ComponentLayout();
+      $layout->setColumnStart(0)->setColumnSpan(7)
+        ->setMargin(new Margin(10, 5));
+      $author->setLayout($layout);
+      // $author->setTextStyle('authorStyle');
+      $container->addComponent($author);
+    }
 
     // Photographer.
-    $source = $this->getSource($value, $this->settings['photographer']);
-    $key = $this->getSourceKey($this->settings['photographer']);
-    $photog = $source->export()[$key];
-    if ($photog) {
-      $photog = new Components\Photographer($photog);
+    list($key, $values) = $this->getSourceValues($value,
+      $this->settings['photographer']);
+    if (!empty($values[0][$key])) {
+      $photog = new Components\Photographer($values[0][$key]);
       $layout = new Layouts\ComponentLayout();
       $layout->setColumnStart(0)->setColumnSpan(7)
         ->setMargin(new Margin(NULL, 15));
@@ -213,7 +222,7 @@ class ApplenewscomponentsDestinationHeaderGradContainer extends ApplenewsDestina
     // Parent container.
     $header = new Components\Container();
     // $header->setLayout('headerGradientContainerLayout')
-    //   ->setStyle('headerGradientContainerStyle');
+    // ->setStyle('headerGradientContainerStyle');
     $header->addComponent($container);
     return [$header];
   }
@@ -270,7 +279,7 @@ class ApplenewscomponentsDestinationAnimatedPullQuote extends ApplenewsDestinati
   /**
    * Exports to an Apple News Document container object.
    *
-   * @param array $value
+   * @param mixed $value
    *   An array of children component objects.
    *
    * @return array
@@ -278,14 +287,12 @@ class ApplenewscomponentsDestinationAnimatedPullQuote extends ApplenewsDestinati
    */
   public function export($value) {
     // Pullquote.
-    $source = $this->getSource($value, $this->settings['quote']);
-    $key = $this->getSourceKey($this->settings['quote']);
-    $quote = $source->export()[$key];
-    if (empty($quote)) {
+    list($key, $quote) = $this->getSourceValues($value,
+      $this->settings['quote']);
+    if (empty($quote[0][$key])) {
       return [];
     }
-
-    $quote = new Components\Pullquote($quote);
+    $quote = new Components\Pullquote($quote[0][$key]);
     $layout = new Layouts\ComponentLayout();
     $layout->setColumnStart(0)->setColumnSpan(7)->setMargin(new Margin(70));
     $quote->setLayout($layout);
@@ -300,10 +307,18 @@ class ApplenewscomponentsDestinationAnimatedPullQuote extends ApplenewsDestinati
     $section->setScene(new Animations\Scenes\ParallaxScaleHeader());
 
     // Header.
-    $source = $this->getSource($value, $this->settings['image']);
-    $key = $this->getSourceKey($this->settings['image']);
-    $file = $source->export()[$key];
-    $fill = new Styles\Fills\ImageFill($this->export->addAsset($file->uri));
+    list($key, $file) = $this->getSourceValues($value,
+      $this->settings['image']);
+    if (empty($file[0][$key])) {
+      return [];
+    }
+    $file = $file[0][$key];
+    if (is_object($file)) {
+      $fill = new Styles\Fills\ImageFill($this->export->addAsset($file->uri));
+    }
+    else {
+      $fill = new Styles\Fills\ImageFill($this->export->addAsset($file));
+    }
     $fill->setFillMode('cover')->setVerticalAlignment('top');
     $style = new Styles\ComponentStyle();
     $style->setFill($fill);
