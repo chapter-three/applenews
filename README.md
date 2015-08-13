@@ -55,32 +55,32 @@ To install Apple News using drush and command line:
     The following drush command will download and enable both modules.
     
     ```shell
-    drush en libraries entity -y
+    $ drush en libraries entity -y
     ```
 2. Next, in your terminal, navigate to your `sites/all/libraries` folder and run the following curl commands to download the proper library versions. If the `libraries` folder does not exist, please create it before running the following command: 
     
     ```shell
     $ curl -L https://github.com/php-curl-class/php-curl-class/archive/4.6.8.tar.gz | tar xz
     ```
-     **NOTE: The AppleNews library is currently gated in a private repo. the curl command won't work until publicly released. To get around this, if you have access to the repo, you can download from [the github page](https://github.com/chapter-three/AppleNews/tree/0.2.2)**
+     **NOTE: The AppleNews library is currently gated in a private repo. the curl command won't work until publicly released. To get around this, if you have access to the repo, you can download from [the github page](https://github.com/chapter-three/AppleNews/tree/0.2.3)**
 3. Next, still inside the libraries folder, run the following curl command:
 
     ```shell
-    $ curl -L https://github.com/chapter-three/AppleNews/archive/0.2.2.zip | tar xz
+    $ curl -L https://github.com/chapter-three/AppleNews/archive/0.2.3.zip | tar xz
     ```
 4. After the libraries are downloaded, your should see directories matching the following setups (You may need to rename the folders you just downloaded to match):
 
-    ```shell
-    sites/all/libraries/AppleNews
-    sites/all/libraries/php-curl-class
+    ```
+    sites/all/libraries/AppleNews/[files start here]
+    sites/all/libraries/php-curl-class/[files start here]
     ```
     
 5. Add the apple_news module to your code base in the [usual manner](https://www.drupal.org/documentation/install/modules-themes), enable it using the drush command:
 **NOTE: Before the module is added to drupal.org, the apple_news module can't be downloaded using [Drush](https://github.com/drush-ops/drush). It must be manually added to the sites/all/modules/contrib directory. If you have access to the repo, you can download the module from [the github page](https://github.com/chapter-three/apple_news)**
 
     ```shell
-drush en apple_news -y
-```
+    $ drush en apple_news -y
+    ```
 
 If you enable the module before downloading the required libraries, you will receive error messages telling you download them. Please try re-installing the libraries or check out the [Troubleshooting Section](#troubleshooting).
 
@@ -93,13 +93,13 @@ To manually install:
 1.  Download this module and its dependencies in the [usual manner](https://www.drupal.org/documentation/install/modules-themes):
     -   [Libraries](https://www.drupal.org/project/libraries)
     -   [Entity](https://www.drupal.org/project/entity)
-2.  Next, [Download and install the Apple News library](https://github.com/chapter-three/AppleNews/archive/0.2.2.zip) into your libraries folder. If you do not have a sites/all/libraries folder, please create it before downloading **Note: The AppleNews library is currently gated in a private repo. This download may not be accessible unless you have access to the private repository**
+2.  Next, [Download and install the Apple News library (version 0.2.3)](https://github.com/chapter-three/AppleNews/archive/0.2.3.zip) into your libraries folder. If you do not have a sites/all/libraries folder, please create it before downloading **Note: The AppleNews library is currently gated in a private repo. This download may not be accessible unless you have access to the private repository**
 3.  [Download and install the PHP Curl Class library (version 4.6.8)](https://github.com/php-curl-class/php-curl-class/archive/4.6.8.tar.gz) into your libraries folder. **Note: Must be version 4.6.8, not higher or lower.**
 4. After the libraries are downloaded, you should see directories matching the following setups (You may need to rename the folders you just downloaded to match):
 
     ```shell
-    sites/all/libraries/AppleNews
-    sites/all/libraries/php-curl-class
+    sites/all/libraries/AppleNews/[files start here]
+    sites/all/libraries/php-curl-class/[files start here]
     ```
 5.  Visit `admin/modules` and enable the Apple News module. This will enable the Libraries module and the Entities module, as well as any other additional dependencies. 
 
@@ -176,15 +176,15 @@ SSL certificate problem: unable to get local issuer certificate
 ```shell
 Please download PHP-Curl-Class (version 4.6.8) library to sites/all/libraries/php-curl-class
 ```
-**Solution:** This means that the library has not been downloaded, the wrong version is in place, or the folder for the library is labeled wrong. Double check that the library was downloaded into `sites/all/libraries/php-curl-class/[library files here]`. Check that the version is 4.6.8 by opening up the composer.json file and search for "version": "4.6.8". Lastly, if still not resolved, make sure the folder is named `php-curl-class` and **NOT** something like `php-curl-class-master` or `php-curl-class-4.6.8`.
+**Solution:** This means that the library has not been downloaded, the wrong version is in place, or the folder for the library is labeled wrong. Double check that the library was downloaded into `sites/all/libraries/php-curl-class/[files start here]`. Check that the version is 4.6.8 by opening up the composer.json file and search for "version": "4.6.8". Lastly, if still not resolved, make sure the folder is named `php-curl-class` and **NOT** something like `php-curl-class-master` or `php-curl-class-4.6.8`.
 
 ---
 **Problem:** I'm getting the error message: 
     
 ```shell
-Please download AppleNews (version 0.2.2) library to sites/all/libraries/AppleNews
+Please download AppleNews (version 0.2.3) library to sites/all/libraries/AppleNews
 ```
-**Solution:** This means that the library has not been downloaded, the wrong version is in place, or the folder for the library is labeled wrong. Double check that the library was downloaded into `sites/all/libraries/AppleNews/[library files here]`. Check that the version is 0.2.2 by opening up the composer.json file and search for "version": "0.2.2". Lastly, if still not resolved, make sure the folder is named `AppleNews` and **NOT** something like `AppleNews-master` or `AppleNews-0.2.2`.
+**Solution:** This means that the library has not been downloaded, the wrong version is in place, or the folder for the library is labeled wrong. Double check that the library was downloaded into `sites/all/libraries/AppleNews/[files start here]`. Check that the version is 0.2.3 by opening up the composer.json file and search for "version": "0.2.3". Lastly, if still not resolved, make sure the folder is named `AppleNews` and **NOT** something like `AppleNews-master` or `AppleNews-0.2.3`.
 
 ---
 
