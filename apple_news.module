@@ -182,9 +182,19 @@ function apple_news_hook_info() {
 function apple_news_help($path, $arg) {
   switch ($path) {
     case 'admin/help#apple_news':
-      // Users may override text format of the help text.
-      $format = variable_get('apple_news_help_format', 'filtered_html');
-      $help = check_markup(file_get_contents(dirname(__FILE__) . "/README.md"), $format);
+      $contents = file_get_contents(dirname(__FILE__) . "/README.md");
+      // Add Markdown support by installing Markdown module (https://www.drupal.org/project/markdown)
+      if (module_exists('markdown')) {
+        module_load_include('php', 'markdown', 'markdown');
+        if (function_exists('Markdown')) {
+          $help = Markdown($contents);
+        }
+      }
+      else {
+        // Users may override text format of the help text.
+        $format = variable_get('apple_news_help_format', 'filtered_html');
+        $help = check_markup($contents, $format);
+      }
       return $help;
   }
 }
