@@ -21,7 +21,6 @@ function apple_news_push_api() {
 
   // Allow configuring curl for debugging.
   $opts = variable_get('apple_news_variable_api_curlopt', ['ssl' => FALSE]);
-  $pushapi->client->setOpt(CURLOPT_SSL_VERIFYPEER, $opts['ssl']);
 
   /** @var \Curl\Curl $client */
   $client = $pushapi->client;
