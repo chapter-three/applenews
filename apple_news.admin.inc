@@ -20,6 +20,7 @@ function apple_news_settings_api_credentials_form($form, &$form_state) {
   $endpoint = variable_get('apple_news_variable_api_endpoint', '');
   $api_key = variable_get('apple_news_variable_api_key', '');
   $api_secret = variable_get('apple_news_variable_api_secret', '');
+  $curl_opts = variable_get('apple_news_variable_api_curlopt', ['ssl' => TRUE]);
 
   $form['credentials']['apple_news_variable_api_endpoint'] = [
     '#type' => 'textfield',
@@ -40,6 +41,13 @@ function apple_news_settings_api_credentials_form($form, &$form_state) {
     '#title' => t('API Secret Key'),
     '#default_value' => $api_secret,
     '#description' => t('Push API Secret Key'),
+  ];
+
+  $form['credentials']['apple_news_ssl_verification'] = [
+    '#type' => 'checkbox',
+    '#title' => t('SSL Verification'),
+    '#default_value' => $curl_opts['ssl'],
+    '#description' => t('Please make sure to enable this checkbox on production site.'),
   ];
 
   $form['save_config'] = [
@@ -94,12 +102,19 @@ function apple_news_settings_api_credentials_form_submit($form, &$form_state) {
       variable_set($key, $value);
     }
   }
+  // SSL Verification.
+  variable_set('apple_news_variable_api_curlopt',
+    [
+      'ssl' => !empty($form_state['values']['apple_news_ssl_verification']) ? TRUE : FALSE,
+    ]
+  );
   drupal_set_message(
     t('The configuration options have been saved. Please <a href="!link">add Channel ID</a> to verify connection and start posting content to Apple News.',
       [
         '!link' => url('admin/config/content/apple-news/settings/channels')
       ]
-      ));
+    )
+  );
 }
 
 /**
