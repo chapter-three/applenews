@@ -132,8 +132,11 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
                 }
               }
               else {
-                $label = t('Publish new content to Apple News');
+                $label = t('Publish this content to Apple News');
               }
+            }
+            else {
+              $label = t('Publish new content to Apple News');
             }
 
             // Apple News publish flag.
