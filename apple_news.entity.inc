@@ -8,7 +8,7 @@
  * Implements hook_entity_insert().
  */
 function apple_news_entity_insert($entity, $type) {
-  if (empty($entity->apple_news_publish_flag)) {
+  if (!empty($entity->apple_news_publish_flag)) {
     module_load_include('inc', 'apple_news');
     foreach (apple_news_get_entity_types() as $module => $info) {
       if (!$info['enabled']) {
