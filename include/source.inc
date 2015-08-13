@@ -378,7 +378,7 @@ class ApplenewsSourceFieldFile extends ApplenewsSourceField {
     }
     else {
       $v = $value->value();
-      if ($file = file_load($v['fid'])) {
+      if (!empty($v['fid']) && $file = file_load($v['fid'])) {
         $return['url'] = file_create_url($file->uri);
         $return['file'] = $file;
       }

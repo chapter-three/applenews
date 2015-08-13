@@ -628,6 +628,9 @@ class ApplenewsDestinationMosaic extends ApplenewsDestination {
 
     $items = [];
     foreach ($values as $i => $value) {
+      if (empty($value[$key])) {
+        continue;
+      }
       $file = $value[$key];
       if (is_object($file)) {
         $item = new GalleryItem($this->export->addAsset($file->uri));
@@ -639,8 +642,11 @@ class ApplenewsDestinationMosaic extends ApplenewsDestination {
       $items[] = $item;
     }
 
-    $mosaic = new Components\Mosaic($items);
-    return [$mosaic];
+    if (count($items)) {
+      $mosaic = new Components\Mosaic($items);
+      return [$mosaic];
+    }
+    return [];
   }
 
 }

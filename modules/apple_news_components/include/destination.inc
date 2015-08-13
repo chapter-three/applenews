@@ -393,8 +393,12 @@ class ApplenewscomponentsDestinationMosaic extends ApplenewsDestinationMosaic {
    *   A list of \ChapterThree\AppleNews\Document\Base objects.
    */
   public function export($value) {
+    $components = parent::export($value);
+    if (empty($components)) {
+      return [];
+    }
     /** @var \ChapterThree\AppleNews\Document\Components\Mosaic $mosaic */
-    list($mosaic) = parent::export($value);
+    list($mosaic) = $components;
     // $mosaic->setLayout('galleryLayout');
     $animation = new Animations\ComponentAnimations\ScaleFadeAnimation();
     $animation->setInitialAlpha(0.5)->setInitialScale(0.75);
