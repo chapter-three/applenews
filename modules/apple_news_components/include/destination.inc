@@ -337,3 +337,29 @@ class ApplenewscomponentsDestinationAnimatedPullQuote extends ApplenewsDestinati
   }
 
 }
+
+/**
+ * Mosaic component.
+ */
+class ApplenewscomponentsDestinationMosaic extends ApplenewsDestinationMosaic {
+
+  /**
+   * Exports to an Apple News Document container object.
+   *
+   * @param mixed $value
+   *   An array of children component objects.
+   *
+   * @return array
+   *   A list of \ChapterThree\AppleNews\Document\Base objects.
+   */
+  public function export($value) {
+    /** @var \ChapterThree\AppleNews\Document\Components\Mosaic $mosaic */
+    list($mosaic) = parent::export($value);
+    // $mosaic->setLayout('galleryLayout');
+    $animation = new Animations\ComponentAnimations\ScaleFadeAnimation();
+    $animation->setInitialAlpha(0.5)->setInitialScale(0.75);
+    $mosaic->setAnimation($animation);
+    return [$mosaic];
+  }
+
+}

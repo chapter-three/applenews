@@ -34,6 +34,10 @@ function apple_news_components_apple_news_api() {
         'class' => 'ApplenewscomponentsDestinationAnimatedPullQuote',
         'name' => 'Animated Pull Quote',
       ],
+      'mosiac' => [
+        'class' => 'ApplenewscomponentsDestinationMosaic',
+        'name' => 'Mosaic',
+      ],
     ],
   ];
 }

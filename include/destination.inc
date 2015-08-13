@@ -6,6 +6,7 @@
  */
 
 use \ChapterThree\AppleNews\Document\Components;
+use \ChapterThree\AppleNews\Document\GalleryItem;
 use \ChapterThree\AppleNews\Document\Markdown;
 
 /**
@@ -579,3 +580,67 @@ class ApplenewsDestinationBodyPhoto extends ApplenewsDestinationBody {
 
 }
 
+/**
+ * Mosaic component.
+ */
+class ApplenewsDestinationMosaic extends ApplenewsDestination {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct() {
+    parent::__construct();
+    $this->settings += [
+      'items' => NULL,
+    ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function label() {
+    return t('Mosaic') . ' (' . $this->id . ')';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getConfigForm($form, &$form_state) {
+
+    $form = parent::getConfigForm($form, $form_state);
+
+    $form['items'] = [
+      '#title' => t('Items'),
+      '#type' => 'select',
+      '#options' => $this->getSourceOptions(),
+      '#default_value' => $this->settings['items'],
+    ];
+
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function export($value) {
+    list($key, $values) = $this->getSourceValues($value,
+      $this->settings['items']);
+
+    $items = [];
+    foreach ($values as $i => $value) {
+      $file = $value[$key];
+      if (is_object($file)) {
+        $item = new GalleryItem($this->export->addAsset($file->uri));
+        $item->setCaption(empty($file->title) ? (empty($file->alt) ? '' : $file->alt) : $file->title);
+      }
+      else {
+        $item = new GalleryItem($this->export->addAsset($file));
+      }
+      $items[] = $item;
+    }
+
+    $mosaic = new Components\Mosaic($items);
+    return [$mosaic];
+  }
+
+}

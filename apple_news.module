@@ -403,6 +403,10 @@ function apple_news_apple_news_api() {
         'class' => 'ApplenewsDestinationBodyPhoto',
         'name' => 'Body and Photos',
       ],
+      'mosaic' => [
+        'class' => 'ApplenewsDestinationMosaic',
+        'name' => 'Mosaic',
+      ],
     ],
   ];
 }
