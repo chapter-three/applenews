@@ -13,7 +13,8 @@ function apple_news_settings_api_credentials_form($form, &$form_state) {
 
   $form['credentials'] = [
     '#type' => 'fieldset',
-    '#title' => t('Apple News Credentials')
+    '#title' => t('Apple News Credentials'),
+    '#description' => t('You can find your connection information in News Publisher. Go to Channel Info tab to view your API Key and Channel ID.'),
   ];
 
   $endpoint = variable_get('apple_news_variable_api_endpoint', '');

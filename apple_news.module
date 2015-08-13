@@ -280,7 +280,7 @@ function apple_news_menu() {
     'access arguments' => ['administer apple news'],
     'file' => 'apple_news.admin.inc',
     'type' => MENU_LOCAL_TASK,
-    'weight' => 1,
+    'weight' => 2,
   ];
 
   // [channel-id]
