@@ -8,6 +8,8 @@
 use \ChapterThree\AppleNews\Document\Components;
 use \ChapterThree\AppleNews\Document\GalleryItem;
 use \ChapterThree\AppleNews\Document\Markdown;
+use \ChapterThree\AppleNews\Document\Styles;
+use \ChapterThree\AppleNews\Document\Animations\ComponentAnimations;
 
 /**
  * Interface for an Apple News source.
@@ -384,8 +386,18 @@ class ApplenewsDestinationBody extends ApplenewsDestination {
       $this->settings['text']);
     $components = array();
     foreach ($values as $value) {
+      $textStyle = new Styles\TextStyle();
+      $textStyle->setTextTransform('uppercase')
+        ->setTextColor('#FF00007F');
+      $addInlineTextStyles = new Styles\InlineTextStyle(1, 19, $textStyle);
+      $animation = new ComponentAnimations\FadeInAnimation();
+      $animation->setInitialAlpha(0.0)
+        ->setUserControllable(true);
       $body = new Components\Body(Markdown::convert($value[$key]));
-      $body->setFormat('markdown');
+      $body->setFormat('markdown')
+        ->addInlineTextStyles($addInlineTextStyles)
+        ->setTextStyle($textStyle)
+        ->setAnimation($animation);
       $components[] = $body;
     }
     return $components;
