@@ -262,7 +262,7 @@ abstract class ApplenewsExport {
         }
         // External, try to fetch.
         else {
-          $path = system_retrieve_file($uri);
+          $path = drupal_realpath(system_retrieve_file($uri));
         }
       }
       if ($path) {
