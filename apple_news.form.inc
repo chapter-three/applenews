@@ -157,7 +157,7 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
 
             $form['apple_news']['publish_date'] = [
               '#markup' => '<div>' . format_date($article['postdate'], 'sort') . '</div><br/>',
-              '#prefix' => '<div><strong>' . t('Apple News publish date') . '</strong></div>',
+              '#prefix' => '<div><strong>' . t('Apple News post date') . '</strong></div>',
               '#weight' => -12,
             ];
 
