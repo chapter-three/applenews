@@ -123,7 +123,7 @@ function apple_news_requirements($phase) {
            . t('Please <a href="!link" target="_blank">download version (@v)</a>. to <em>@path</em>',
               [
                 '!link' => $library['download url'],
-                '@v'    => !empty($library['version']) ? $library['version'] : 'N/A',
+                '@v'    => $version,
                 '@path' => !empty($library['library path']) ? $library['library path'] : t('See README.md'),
               ]
             );
