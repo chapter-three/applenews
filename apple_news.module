@@ -182,7 +182,8 @@ function apple_news_hook_info() {
 function apple_news_help($path, $arg) {
   switch ($path) {
     case 'admin/help#apple_news':
-      $help = check_markup(file_get_contents(dirname(__FILE__) . "/README.md"));
+      $format = variable_get('apple_news_help_format', 'filtered_html');
+      $help = check_markup(file_get_contents(dirname(__FILE__) . "/README.md"), $format);
       return $help;
   }
 }
