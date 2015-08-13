@@ -152,7 +152,7 @@ class ApplenewscomponentsDestinationHeaderGradContainer extends ApplenewsDestina
    */
   public function export($value) {
     // Components container.
-    $container = new Components\Header();
+    $container = new Components\Container();
     // $container->setLayout('titleContainerLayout');
     $behavior = new Behaviors\Parallax();
     $behavior->setFactor(0.7);
@@ -178,10 +178,15 @@ class ApplenewscomponentsDestinationHeaderGradContainer extends ApplenewsDestina
     $title = new Components\Title($values[0][$key]);
     $container->addComponent($title);
 
-    // Another, slightly different, divider.
-    $divider = clone $divider;
-    $divider->getLayout()
+    // Divider.
+    $divider = new Components\Divider();
+    $layout = new Layouts\ComponentLayout();
+    $layout->setColumnStart(0)->setColumnSpan(7)
       ->setMargin(new Margin(15, 15));
+    $divider->setLayout($layout);
+    $stroke = new Styles\StrokeStyle();
+    $stroke->setColor('#FFF')->setWidth(1);
+    $divider->setStroke($stroke);
     $container->addComponent($divider);
 
     // Intro.
@@ -220,7 +225,7 @@ class ApplenewscomponentsDestinationHeaderGradContainer extends ApplenewsDestina
     }
 
     // Parent container.
-    $header = new Components\Container();
+    $header = new Components\Header();
     // $header->setLayout('headerGradientContainerLayout')
     // ->setStyle('headerGradientContainerStyle');
     $header->addComponent($container);
