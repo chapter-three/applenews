@@ -143,9 +143,6 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
 
   /**
    * If isLeaf() returns FALSE, this should set any child components.
-   *
-   * @return array
-   *   Child components.
    */
   public function setChildren($children) {
     $this->children = $children;
@@ -355,13 +352,6 @@ class ApplenewsDestinationBody extends ApplenewsDestination {
    */
   public function label() {
     return t('Body') . ' ' . parent::label();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function isRoot() {
-    return FALSE;
   }
 
   /**
