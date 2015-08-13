@@ -43,7 +43,7 @@ function apple_news_get_channel($channel_id) {
   );
   if (!$response) {
     /** @var \Curl\Curl $client */
-    watchdog('apple_news', $pushapi->client->curl_error_message, [], WATCHDOG_ERROR);
+    watchdog('apple_news', $pushapi->client->errorMessage, [], WATCHDOG_ERROR);
     return FALSE;
   }
   return $response;
@@ -61,7 +61,7 @@ function apple_news_get_sections($channel_id) {
   );
   if (!$response) {
     /** @var \Curl\Curl $client */
-    watchdog('apple_news', $pushapi->client->curl_error_message, [], WATCHDOG_ERROR);
+    watchdog('apple_news', $pushapi->client->errorMessage, [], WATCHDOG_ERROR);
     return FALSE;
   }
   return $response;
@@ -79,7 +79,7 @@ function apple_news_get_section($section_id) {
   );
   if (!$response) {
     /** @var \Curl\Curl $client */
-    watchdog('apple_news', $pushapi->client->curl_error_message, [], WATCHDOG_ERROR);
+    watchdog('apple_news', $pushapi->client->errorMessage, [], WATCHDOG_ERROR);
     return FALSE;
   }
   return $response;
@@ -97,7 +97,7 @@ function apple_news_get_article($article_id) {
   );
   if (!$response) {
     /** @var \Curl\Curl $client */
-    watchdog('apple_news', $pushapi->client->curl_error_message, [], WATCHDOG_ERROR);
+    watchdog('apple_news', $pushapi->client->errorMessage, [], WATCHDOG_ERROR);
     return FALSE;
   }
   return $response;
@@ -116,7 +116,7 @@ function apple_news_update_article($article_id, $data = []) {
   );
   if (!$response) {
     /** @var \Curl\Curl $client */
-    watchdog('apple_news', $pushapi->client->curl_error_message, [], WATCHDOG_ERROR);
+    watchdog('apple_news', $pushapi->client->errorMessage, [], WATCHDOG_ERROR);
     return FALSE;
   }
   return $response;
@@ -135,7 +135,7 @@ function apple_news_post_article($channel_id, $data = []) {
   );
   if (!$response) {
     /** @var \Curl\Curl $client */
-    watchdog('apple_news', $pushapi->client->curl_error_message, [], WATCHDOG_ERROR);
+    watchdog('apple_news', $pushapi->client->errorMessage, [], WATCHDOG_ERROR);
     return FALSE;
   }
   return $response;
@@ -153,7 +153,7 @@ function apple_news_delete_article($article_id) {
   );
   if (!empty($response)) {
     /** @var \Curl\Curl $client */
-    watchdog('apple_news', $pushapi->client->curl_error_message, [], WATCHDOG_ERROR);
+    watchdog('apple_news', $pushapi->client->errorMessage, [], WATCHDOG_ERROR);
     return FALSE;
   }
   return $response;
