@@ -13,6 +13,46 @@ use \ChapterThree\AppleNews\Document\Behaviors;
 use \ChapterThree\AppleNews\Document\Animations;
 
 /**
+ * Body component.
+ */
+class ApplenewscomponentsDestinationBody extends ApplenewsDestinationBodyPhoto {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function label() {
+    return t('Body') . ' (' . $this->id . ')';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function export($value) {
+    $text_style = new Styles\TextStyle();
+    $text_style->setTextTransform('uppercase')
+      ->setTextColor('#FF00007F');
+    $inline_text_style = new Styles\InlineTextStyle(1, 19, $text_style);
+    $animation = new Animations\ComponentAnimations\FadeInAnimation();
+    $animation->setInitialAlpha(0.0)
+      ->setUserControllable(TRUE);
+
+    $components = parent::export($value);
+    foreach ($components as $component) {
+      if (is_a($component, '\ChapterThree\AppleNews\Document\Components\Body')) {
+        /** @var \ChapterThree\AppleNews\Document\Components\Body $component */
+        $component
+          ->addInlineTextStyles($inline_text_style)
+          ->setTextStyle($text_style)
+          ->setAnimation($animation);
+      }
+    }
+
+    return $components;
+  }
+
+}
+
+/**
  * Image header component.
  */
 class ApplenewscomponentsDestinationHeaderImage extends ApplenewsDestination {

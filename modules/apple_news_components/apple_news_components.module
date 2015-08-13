@@ -22,6 +22,10 @@ function apple_news_components_apple_news_api() {
   return [
     'api' => 1,
     'destinations' => [
+      'body' => [
+        'class' => 'ApplenewscomponentsDestinationBody',
+        'name' => 'Body',
+      ],
       'header_image' => [
         'class' => 'ApplenewscomponentsDestinationHeaderImage',
         'name' => 'Header Image',
