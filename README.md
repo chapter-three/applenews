@@ -9,7 +9,7 @@
     2. [Manually based installation](#manual-install)
 4. [Configuration](#configuration)
     1. [Initial settings configuration](#initial)
-    2. [Feed/Channel settings](#feed)
+    2. [Channel/Channel settings](#channel)
     3. [Node configuration](#node)
     4. [Preview post](#preview)
     5. [Delete from channel](#delete)
@@ -112,15 +112,15 @@ Congrats on installing the Apple News module. Please follow these configuration 
 ### <a name="initial"></a>Initial settings configuration
 1. Visit apple.com to get your credentials and create a news channel that your Drupal site will use.
 2. In your Drupal site, navigate to the "Apple news credentials page" (`admin/config/content/apple-news/settings`) and add your Apple News credentials.
-3. In your Drupal site, navigate to the "Apple news feeds/channels page" (`admin/config/content/apple-news/settings/channels`) and add a feed ID from your apple account. Please add one ID at a time. The channels are validated by the apple credentials you added to your Drupal site, and if valid, will fetch the channel information and add them to your sites list of channels.
+3. In your Drupal site, navigate to the "Apple news channels page" (`admin/config/content/apple-news/settings/channels`) and add a channel ID from your apple account. Please add one ID at a time. The channels are validated by the apple credentials you added to your Drupal site, and if valid, will fetch the channel information and add them to your sites list of channels.
 
-### <a name="feed"></a>Default Feed/Export configuration
+### <a name="channel"></a>Default Channel/Export configuration
 1. In your Drupal site, navigate to the "Apple news export manager page" (`admin/config/content/apple-news`).
-2. Click on the **'edit'** link of the feed you would like to connect to an apple news channel. The default export that comes with the Apple News module is "Nodes", but other exports can be created in code, using custom modules. For an example module, check out the "apple_news_article" module that comes with the Apple News module.
-3. In this "Edit page", the minimum requirements to properly configure a feed to an apple news channel are:
+2. Click on the **'edit'** link of the channel you would like to connect to an apple news channel. The default export that comes with the Apple News module is "Nodes", but other exports can be created in code, using custom modules. For an example module, check out the "apple_news_article" module that comes with the Apple News module.
+3. In this "Edit page", the minimum requirements to properly configure a channel to an apple news channel are:
     1. Under "Add new component", select "Body(apple_news)".
-    2. Under "Feeds", select the Feed (Apple News Channel) that this export will be tied to. (in other words, this export feed will get nodes, process them, and send them to this selected channel for display in the Apple News app.)
-    3. Under "Content types", select the content types that should be processed with this feed.
+    2. Under "Channels", select the channel (Apple News Channel) that this export will be tied to. (in other words, this export channel will get nodes, process them, and send them to this selected channel for display in the Apple News app.)
+    3. Under "Content types", select the content types that should be processed with this channel.
     4. Under "Layout", the default value is "Simple", but it is possible to create new layouts using a custom module.
     5. Click **Save Changes**
     6. After saving, you will see some options to the right of the new components we just added. These are "edit" and "delete". Click on **"edit"**
@@ -128,10 +128,10 @@ Congrats on installing the Apple News module. Please follow these configuration 
     8. Click **Save Changes**
 
 ### <a name="node"></a>Node configuration
-Once a content type is enabled in an export/feed, the option to add the individual post reside in the nodes add/edit page. If a content type is not added to any feed export, these options will not be available on the node add/edit page.
+Once a content type is enabled in an export/channel, the option to add the individual post reside in the nodes add/edit page. If a content type is not added to any channel export, these options will not be available on the node add/edit page.
 
-1. To add a node to the feed sent to apple, In the "Apple News" tab, select one or more feeds from the available list. 
-2. And for each selected feed, select an available "Section" that it belongs to. ("Sections" are created on apple.com, where you initially created the channel).
+1. To add a node to the channel sent to apple, In the "Apple News" tab, select one or more channels from the available list. 
+2. And for each selected channel, select an available "Section" that it belongs to. ("Sections" are created on apple.com, where you initially created the channel).
 3. Once a node is initially published to an apple news channel, It will also display a general information section showing Post date, Share URL, the Section, and the Channel its published to.
 
 ### <a name="preview"></a>Preview a post before publishing

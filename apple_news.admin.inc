@@ -94,7 +94,7 @@ function apple_news_settings_api_credentials_form_submit($form, &$form_state) {
     }
   }
   drupal_set_message(
-    t('The configuration options have been saved. Please <a href="!link">add Feed ID</a> to verify connection and start posting content to Apple News.',
+    t('The configuration options have been saved. Please <a href="!link">add Channel ID</a> to verify connection and start posting content to Apple News.',
       [
         '!link' => url('admin/config/content/apple-news/settings/channels')
       ]
@@ -164,34 +164,33 @@ function apple_news_settings_channels_form() {
       '#markup' => '<br/>' . theme('table',
         [
           'header' => [
-            t('Feed Name'), // Channel Name.
-            t('Feed ID'), // Channel ID.
+            t('Channel Name'),
+            t('Channel ID'),
             t('Operations'),
           ],
           'rows' => $channels,
-          'empty' => t('Please add at least one feed in order to be able to publish content to Apple News.'),
+          'empty' => t('Please add at least one Channel ID in order to be able to publish content to Apple News.'),
         ]
       )
     ];
 
     $form['apple_news_channel_id'] = [
       '#type' => 'textfield',
-      // Channel ID.
-      '#title' => t('Feed ID'),
-      '#description' => t("Provide a Feed ID"),
+      '#title' => t('Channel ID'),
+      '#description' => t("You can find your Channel ID in News Publisher. Go to Channel Info tab to view your API Key and Channel ID."),
       '#required' => TRUE,
     ];
 
     $form['submit'] = [
       '#type' => 'submit',
-      '#value' => t('Add new feed'),
+      '#value' => t('Add new channel'),
     ];
 
   }
   else {
 
     $form['requirements'] = [
-      '#markup' => t('Please provide Apple News <a href="!link">credentials</a> in order to be able to see and add Feeds.',
+      '#markup' => t('Please provide Apple News <a href="!link">credentials</a> in order to be able to see and add channels.',
         [
           '!link' => url('admin/config/content/apple-news/settings'),
         ]
@@ -220,13 +219,13 @@ function apple_news_settings_channels_form_submit($form, &$form_state) {
       // Save new channel ID.
       $channels[] = $channel->id;
       variable_set('apple_news_variable_api_channels', $channels);
-      $msg = t('Successfully connected to the "@channel" feed.', [
+      $msg = t('Successfully connected to the "@channel" channel.', [
         '@channel' => filter_xss($channel->name),
       ]);
       drupal_set_message($msg, 'status');
     }
     else {
-      $msg = t('There was an error communicating with the server. Please make sure you have correct Feed ID and Apple News credentials.');
+      $msg = t('There was an error communicating with the server. Please make sure you have correct channel ID and Apple News credentials.');
       drupal_set_message($msg, 'error');
     }
   }
@@ -280,9 +279,9 @@ function apple_news_settings_delete_channel_form($form, &$form_state, $channel_i
   $form_state['storage'] = ['channel' => $channel];
   return confirm_form(
     $form,
-    t("Do you really want to delete this feed?"),
+    t("Do you really want to delete this channel?"),
     'admin/config/content/apple-news/settings/channels',
-    t("You will no long be able to publish content to <em>@name</em> feed. This action cannot be undone.",
+    t("You will no long be able to publish content to <em>@name</em> channel. This action cannot be undone.",
       [
         '@name' => $channel->name
       ]),
@@ -297,13 +296,13 @@ function apple_news_settings_delete_channel_form_submit($form, &$form_state) {
   module_load_include('inc', 'apple_news');
   $channel = $form_state['storage']['channel'];
   if (empty($channel->id)) {
-    drupal_set_message(t('You are trying to remove non-existing feed.'), 'warning');
+    drupal_set_message(t('You are trying to remove non-existing channel.'), 'warning');
   }
   else {
 
     // Remove all channel ID related data.
     apple_news_cleanup_data($channel);
-    drupal_set_message(t('<em>@name</em> feed successfully removed.', ['@name' => filter_xss($channel->name)]));
+    drupal_set_message(t('<em>@name</em> channel successfully removed.', ['@name' => filter_xss($channel->name)]));
 
     drupal_goto('admin/config/content/apple-news/settings/channels');
   }

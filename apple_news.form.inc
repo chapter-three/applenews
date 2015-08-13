@@ -124,7 +124,7 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
                 ],
                 'rows' => $rows
               ]),
-              '#prefix' => '<br/><div><strong>' . t('Apple News feeds') . '</strong></div>',
+              '#prefix' => '<br/><div><strong>' . t('Apple News channels') . '</strong></div>',
               '#weight' => 19,
             ];
 

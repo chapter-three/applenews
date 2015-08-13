@@ -85,7 +85,7 @@ function apple_news_batch_post($info, $export, $entity_type, $entity, &$context)
       }
       $channel = apple_news_channel($channel_id);
       $context['results'][] = $wrapper->getIdentifier() . ' : ' . check_plain($wrapper->label());
-      $context['message'] = t('<strong>@export</strong>: Posting "@title" entity to <em>@channel</em> feed.',
+      $context['message'] = t('<strong>@export</strong>: Posting "@title" entity to <em>@channel</em> channel.',
         [
           '@export' => $info['name'],
           '@title' => $wrapper->label(),
@@ -120,7 +120,7 @@ function apple_news_batch_run_export_finished($success, $results, $operations) {
   if ($success) {
     if (empty($results['info']['default_channels'])) {
       drupal_set_message(
-        t('Please configure default Feed settings for <strong>@export_name</strong> export.',
+        t('Please configure default channel settings for <strong>@export_name</strong> export.',
           [
             '@export_name' => !empty($results['info']['name']) ? $results['info']['name'] : ''
           ]

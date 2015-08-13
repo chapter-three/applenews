@@ -132,7 +132,7 @@ abstract class ApplenewsExport {
 
     $form['channels'] = [
       '#type' => 'container',
-      '#prefix' => '<strong>' . t('Feeds') . '</strong>',
+      '#prefix' => '<strong>' . t('Channels') . '</strong>',
       '#weight' => 9,
     ];
 
@@ -168,10 +168,10 @@ abstract class ApplenewsExport {
     }
     else {
       $form['channels']['info'] = [
-        '#markup' => t('Please provide Apple News <a href="!credentials">credentials</a> and add at least one <a href="!feed">feed</a>.',
+        '#markup' => t('Please provide Apple News <a href="!credentials">credentials</a> and add at least one <a href="!channel">channel</a>.',
           [
             '!credentials' => url('admin/config/content/apple-news/settings'),
-            '!feed'        => url('admin/config/content/apple-news/settings/channels'),
+            '!channel'        => url('admin/config/content/apple-news/settings/channels'),
           ]
         )
       ];

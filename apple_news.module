@@ -273,7 +273,7 @@ function apple_news_menu() {
   ];
 
   $items['admin/config/content/apple-news/settings/channels'] = [
-    'title' => 'Feeds',
+    'title' => 'Channels',
     'description' => t('Apple News Push API channels.'),
     'page callback' => 'drupal_get_form',
     'page arguments' => ['apple_news_settings_channels_form'],
@@ -296,7 +296,7 @@ function apple_news_menu() {
 
   // [channel-id]
   $items['admin/config/content/apple-news/settings/channels/%/sections'] = [
-    'title' => 'View Feed Sections',
+    'title' => 'View Channel Sections',
     'description' => t('View Apple News channel sections.'),
     'page callback' => 'drupal_get_form',
     'page arguments' => ['apple_news_settings_channel_sections_form', 6],
