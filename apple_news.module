@@ -182,7 +182,8 @@ function apple_news_hook_info() {
 function apple_news_help($path, $arg) {
   switch ($path) {
     case 'admin/help#apple_news':
-      return '<p>' . t('Push content to <a href="https://www.apple.com/news/">Apple News</a>.') . '</p>';
+      $help = check_markup(file_get_contents(dirname(__FILE__) . "/README.md"));
+      return $help;
   }
 }
 
