@@ -68,7 +68,7 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
             $preview_message = t('You have to save this content in order to be able to preview the Apple News generated document.');
           }
           else {
-            $preview_message = t('<a href="!link">Download</a> the Apple News generated document.',
+            $preview_message = t('<a href="!link">Download</a> the Apple News generated document and use the News Preview app to preview the article.',
               [
                 '!link' => url('admin/config/content/apple-news/' . $article_id . '/download'),
               ]
