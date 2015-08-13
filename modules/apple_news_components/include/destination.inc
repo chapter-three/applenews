@@ -28,13 +28,25 @@ class ApplenewscomponentsDestinationBody extends ApplenewsDestinationBodyPhoto {
    * {@inheritdoc}
    */
   public function export($value) {
-    $text_style = new Styles\TextStyle();
-    $text_style->setTextTransform('uppercase')
-      ->setTextColor('#FF00007F');
+    $dc_style = new Styles\DropCapStyle(5);
+    $dc_style->setNumberOfCharacters(1)
+      ->setFontName('AvenirNext-UltraLight')
+      ->setTextColor('#222E33')
+      ->setPadding(5);
+    $text_style = new Styles\ComponentTextStyle();
+    $text_style->setTextAlignment('left')
+      ->setFontName('AvenirNext-Regular')
+      ->setFontSize(10)
+      ->setLineHeight(26)
+      ->setTextColor('#000')
+      ->setDropCapStyle($dc_style);
     $inline_text_style = new Styles\InlineTextStyle(1, 19, $text_style);
     $animation = new Animations\ComponentAnimations\FadeInAnimation();
     $animation->setInitialAlpha(0.0)
       ->setUserControllable(TRUE);
+    $layout = new Layouts\ComponentLayout();
+    $layout->setColumnStart(0)->setColumnSpan(7)
+      ->setMargin(new Margin(15, 15));
 
     $components = parent::export($value);
     foreach ($components as $component) {
@@ -112,7 +124,11 @@ class ApplenewscomponentsDestinationHeaderImage extends ApplenewsDestination {
     $style->setFill($fill);
     $header = new Components\Header();
     $header->setStyle($style);
-    // ->setLayout('headerImageContainerLayout');
+    $layout = new Layouts\ComponentLayout();
+    $layout->setColumnStart(0)->setColumnSpan(7)
+      ->setIgnoreDocumentMargin()
+      ->setMinimumHeight('42vh');
+    $header->setLayout($layout);
     return [$header];
   }
 
@@ -193,7 +209,9 @@ class ApplenewscomponentsDestinationHeaderGradContainer extends ApplenewsDestina
   public function export($value) {
     // Components container.
     $container = new Components\Container();
-    // $container->setLayout('titleContainerLayout');
+    $layout = new Layouts\ComponentLayout();
+    $layout->setColumnStart(0)->setColumnSpan(7);
+    $container->setLayout($layout);
     $behavior = new Behaviors\Parallax();
     $behavior->setFactor(0.7);
     $container->setBehavior($behavior);
@@ -216,6 +234,17 @@ class ApplenewscomponentsDestinationHeaderGradContainer extends ApplenewsDestina
       return [];
     }
     $title = new Components\Title($values[0][$key]);
+    $layout = new Layouts\ComponentLayout();
+    $layout->setColumnStart(0)->setColumnSpan(7);
+    $title->setLayout($layout);
+    $text_style = new Styles\ComponentTextStyle();
+    $text_style->setTextAlignment('center')
+      ->setFontName('AvenirNext-UltraLight')
+      ->setTextTransform('uppercase')
+      ->setFontSize(64)
+      ->setLineHeight(68)
+      ->setTextColor('#FFF');
+    $title->setTextStyle($text_style);
     $container->addComponent($title);
 
     // Divider.
@@ -234,11 +263,26 @@ class ApplenewscomponentsDestinationHeaderGradContainer extends ApplenewsDestina
       $this->settings['intro']);
     if (!empty($values[0][$key])) {
       $intro = new Components\Intro($values[0][$key]);
-      // $intro->setLayout('introLayout')->setTextStyle('introStyle');
+      $layout = new Layouts\ComponentLayout();
+      $layout->setColumnStart(0)->setColumnSpan(7)
+        ->setMargin(new Margin(10, 5));
+      $intro->setLayout($layout);
+      $text_style = new Styles\ComponentTextStyle();
+      $text_style->setTextAlignment('center')
+        ->setFontName('AvenirNext-Regular')
+        ->setFontSize(18)
+        ->setLineHeight(26)
+        ->setTextColor('#FFF');
+      $intro->setTextStyle($text_style);
       $container->addComponent($intro);
     }
 
     // Author.
+    $text_style = new Styles\ComponentTextStyle();
+    $text_style->setTextAlignment('center')
+      ->setFontName('AvenirNextCondensed-DemiBold')
+      ->setFontSize(13)
+      ->setTextColor('#FFF');
     list($key, $values) = $this->getSourceValues($value,
       $this->settings['author']);
     if (!empty($values[0][$key])) {
@@ -247,11 +291,9 @@ class ApplenewscomponentsDestinationHeaderGradContainer extends ApplenewsDestina
       $layout->setColumnStart(0)->setColumnSpan(7)
         ->setMargin(new Margin(10, 5));
       $author->setLayout($layout);
-      // $author->setTextStyle('authorStyle');
+      $author->setTextStyle($text_style);
       $container->addComponent($author);
     }
-
-    // Photographer.
     list($key, $values) = $this->getSourceValues($value,
       $this->settings['photographer']);
     if (!empty($values[0][$key])) {
@@ -260,14 +302,28 @@ class ApplenewscomponentsDestinationHeaderGradContainer extends ApplenewsDestina
       $layout->setColumnStart(0)->setColumnSpan(7)
         ->setMargin(new Margin(NULL, 15));
       $photog->setLayout($layout);
-      // $photog->setTextStyle('authorStyle');
+      $photog->setTextStyle($text_style);
       $container->addComponent($photog);
     }
 
     // Parent container.
     $header = new Components\Header();
-    // $header->setLayout('headerGradientContainerLayout')
-    // ->setStyle('headerGradientContainerStyle');
+    $layout = new Layouts\ComponentLayout();
+    $layout->setColumnStart(0)->setColumnSpan(7)
+      ->setIgnoreDocumentMargin()
+      ->setMinimumHeight('80vh')
+      ->setMargin(new Margin(NULL, 25));
+    $header->setLayout($layout);
+    $fill = new Styles\Fills\Gradients\LinearGradientFill([
+      new Styles\Fills\Gradients\ColorStop('#263236'),
+      new Styles\Fills\Gradients\ColorStop('#3B4A4E'),
+      new Styles\Fills\Gradients\ColorStop('#6D8A95'),
+      new Styles\Fills\Gradients\ColorStop('#FFFFFF'),
+    ]);
+    $fill->setAngle(180);
+    $style = new Styles\ComponentStyle();
+    $style->setFill($fill);
+    $header->setStyle($style);
     $header->addComponent($container);
     return [$header];
   }
@@ -344,12 +400,23 @@ class ApplenewscomponentsDestinationAnimatedPullQuote extends ApplenewsDestinati
     $behavior = new Behaviors\Parallax();
     $behavior->setFactor(1.1);
     $quote->setBehavior($behavior);
-    // $quote->setStyle('pullquoteWhiteStyle');
+    $text_style = new Styles\ComponentTextStyle();
+    $text_style->setTextAlignment('center')
+      ->setTextTransform('uppercase')
+      ->setFontName('AvenirNext-Regular')
+      ->setFontSize(36)
+      ->setLineHeight(45)
+      ->setTextColor('#FFF');
+    $quote->setTextStyle($text_style);
 
     // Parent section.
     $section = new Components\Section('animatedPullQuote');
-    // $section->setLayout('headerImageContainerLayout');
     $section->setScene(new Animations\Scenes\ParallaxScaleHeader());
+    $layout = new Layouts\ComponentLayout();
+    $layout->setColumnStart(0)->setColumnSpan(7)
+      ->setIgnoreDocumentMargin()
+      ->setMinimumHeight('42vh');
+    $section->setLayout($layout);
 
     // Header.
     list($key, $file) = $this->getSourceValues($value,
@@ -369,6 +436,12 @@ class ApplenewscomponentsDestinationAnimatedPullQuote extends ApplenewsDestinati
     $style->setFill($fill);
     $header = new Components\Header();
     $header->setStyle($style);
+    $layout = new Layouts\ComponentLayout();
+    $layout->setColumnStart(0)->setColumnSpan(7)
+      ->setIgnoreDocumentMargin()
+      ->setMinimumHeight('75vw')
+      ->setMargin(new Margin(25, 25));
+    $header->setLayout($layout);
 
     $header->addComponent($quote);
     $section->addComponent($header);
@@ -403,6 +476,11 @@ class ApplenewscomponentsDestinationMosaic extends ApplenewsDestinationMosaic {
     $animation = new Animations\ComponentAnimations\ScaleFadeAnimation();
     $animation->setInitialAlpha(0.5)->setInitialScale(0.75);
     $mosaic->setAnimation($animation);
+    $layout = new Layouts\ComponentLayout();
+    $layout->setColumnStart(0)->setColumnSpan(7)
+      ->setIgnoreDocumentMargin()
+      ->setMargin(new Margin(25, 25));
+    $mosaic->setLayout($layout);
     return [$mosaic];
   }
 
