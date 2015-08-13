@@ -243,25 +243,27 @@ abstract class ApplenewsExport {
    */
   public function addAsset($uri) {
     if (!isset($this->assets[$uri])) {
-      global $base_url;
-      $scheme = parse_url($uri, PHP_URL_SCHEME);
-      // Handle uri to local file.
-      if (parse_url($uri, PHP_URL_HOST) == parse_url($base_url, PHP_URL_HOST)) {
-        $scheme = '';
-      }
-      // A local link.
-      if ($scheme == '') {
-        $path = drupal_realpath(ltrim(parse_url($uri, PHP_URL_PATH), '/'));
-      }
       // A drupal uri.
-      elseif (file_valid_uri($uri)) {
+      if (file_valid_uri($uri)) {
         if ($wrapper = file_stream_wrapper_get_instance_by_uri($uri)) {
           $path = $wrapper->realPath();
         }
       }
-      // External, try to fetch.
       else {
-        $path = system_retrieve_file($uri);
+        global $base_url;
+        $scheme = parse_url($uri, PHP_URL_SCHEME);
+        // Handle uri to local file.
+        if (parse_url($uri, PHP_URL_HOST) == parse_url($base_url, PHP_URL_HOST)) {
+          $scheme = '';
+        }
+        // A local link.
+        if ($scheme == '') {
+          $path = drupal_realpath(ltrim(parse_url($uri, PHP_URL_PATH), '/'));
+        }
+        // External, try to fetch.
+        else {
+          $path = system_retrieve_file($uri);
+        }
       }
       if ($path) {
         $url = 'bundle://' . count($this->assets);
