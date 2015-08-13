@@ -84,6 +84,7 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
           // Get configuration form for the AppleNews exportable entity.
           $export_form = $export->getConfigForm([], $form_state);
           $api_channels = apple_news_channels(TRUE);
+
           if (isset($export_form['channels'])) {
             // Remove '#required' from configuration form.
             // This should be optional on entity add/edit forms.
@@ -94,38 +95,66 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
                 $export_form['channels']['section-' . $channel_id . '-' . $section_id]['#default_value'] = FALSE;
               }
             }
+            // Set Apple News default values for current entity.
+            if (!empty($article_id) && count($api_channels)) {
+              foreach ($article['sections'] as $section_id => $channel_id) {
+                if (!empty($export_form['channels']['channel-' . $channel_id])) {
+                  $export_form['channels']['channel-' . $channel_id]['#default_value'] = TRUE;
+                }
+                if (!empty($export_form['channels']['section-' . $channel_id . '-' . $section_id])) {
+                  $export_form['channels']['section-' . $channel_id . '-' . $section_id]['#default_value'] = TRUE;
+                }
+              }
+            }
+            $form['apple_news']['container'] = [
+              '#type' => 'tree',
+              '#states' => [
+                'invisible' => [
+                  ':input[name="apple_news_publish_flag"]' => [
+                    'checked' => FALSE
+                  ]
+                ],
+              ],
+            ];
             $form['apple_news']['container'] = $export_form['channels'];
+
+            $description = '';
+            $label = t('Publish to Apple News');
+            if (!empty($entity->changed)) {
+              if (!empty($article['postdate'])) {
+                if ($entity->created != $entity->changed && $entity->changed != $article['postdate']) {
+                  $label = t('Publish updates to Apple News');
+                  $description = t('The article has local changes that are not published to Apple News.');
+                }
+                else {
+                  $label = t('Publish updates to Apple News');
+                  $description = t('Apple News published article is in sync with the current content.');
+                }
+              }
+              else {
+                $label = t('Publish new content to Apple News');
+              }
+            }
+
+            // Apple News publish flag.
+            if (count($api_channels)) {
+              $form['apple_news']['apple_news_publish_flag'] = [
+                '#type' => 'checkbox',
+                '#title' => $label,
+                '#prefix' => '<div><strong>' . $description . '</strong></div>',
+                '#default_value' => FALSE,
+                '#weight' => -14,
+              ];
+            }
+
           }
 
           if (!empty($article_id) && count($api_channels)) {
 
-            $rows = [];
-
-            foreach ($article['sections'] as $section_id => $channel_id) {
-              $channel = apple_news_channel($channel_id);
-              $section = apple_news_section($section_id);
-
-              if (!empty($channel->name)) {
-                $rows[] = [
-                  ['data' => $channel->name],
-                  ['data' => $section['name']],
-                  ['data' => format_date($article['postdate'], 'sort')],
-                ];
-              }
-            }
-
-            $form['apple_news']['info'] = [
-              '#markup' => theme('table',
-              [
-                'header' => [
-                  t('Channel'),
-                  t('Section'),
-                  t('Post date')
-                ],
-                'rows' => $rows
-              ]),
-              '#prefix' => '<br/><div><strong>' . t('Apple News channels') . '</strong></div>',
-              '#weight' => 19,
+            $form['apple_news']['publish_date'] = [
+              '#markup' => '<div>' . format_date($article['postdate'], 'sort') . '</div><br/>',
+              '#prefix' => '<div><strong>' . t('Apple News publish date') . '</strong></div>',
+              '#weight' => -12,
             ];
 
             $form['apple_news']['share-url'] = [
@@ -138,7 +167,7 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
                 )
               . '</div><br/>',
               '#prefix' => '<div><strong>' . t('Share URL') . '</strong></div>',
-              '#weight' => 21,
+              '#weight' => 19,
             ];
 
             $form['apple_news']['delete'] = [
@@ -155,7 +184,7 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
               ) 
               . '</div><br/>',
               '#prefix' => '<div><strong>' . t('Delete') . '</strong></div>',
-              '#weight' => 21,
+              '#weight' => 50,
             ];
 
           }
