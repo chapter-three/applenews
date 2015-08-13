@@ -146,6 +146,7 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
                 '#title' => $label,
                 '#prefix' => '<div><strong>' . $description . '</strong></div>',
                 '#default_value' => FALSE,
+                '#description' => t('Check this option if you would like to post this content to Apple News.'),
                 '#weight' => -14,
               ];
             }
