@@ -52,9 +52,10 @@ class Applenewsstyle1DestinationBody extends ApplenewsDestinationBodyPhoto {
     foreach ($components as $component) {
       if (is_a($component, '\ChapterThree\AppleNews\Document\Components\Body')) {
         /** @var \ChapterThree\AppleNews\Document\Components\Body $component */
-        $component
-          ->addInlineTextStyles($inline_text_style)
-          ->setTextStyle($text_style)
+        if ($component->getFormat() != 'markdown') {
+          $component->addInlineTextStyles($inline_text_style);
+        }
+        $component->setTextStyle($text_style)
           ->setAnimation($animation);
       }
     }
