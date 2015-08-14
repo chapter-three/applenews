@@ -30,9 +30,9 @@ function apple_news_style1_apple_news_api() {
         'class' => 'Applenewsstyle1DestinationHeaderImage',
         'name' => 'Header Image',
       ],
-      'header_image' => [
+      'header_container' => [
         'class' => 'Applenewsstyle1DestinationHeaderGradContainer',
-        'name' => 'Header Gradient Container',
+        'name' => 'Gradient Header with Title, Intro and Credits',
       ],
       'pullquote' => [
         'class' => 'Applenewsstyle1DestinationAnimatedPullQuote',
