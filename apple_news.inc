@@ -882,7 +882,7 @@ function apple_news_section_url($section_id) {
 }
 
 /**
- * Export to the Apple News previable format documents.
+ * Export to the Apple News previewable format documents.
  */
 function apple_news_export_to_file($entity_id, $entity_ids = [], $filename = NULL, $entity_archive = FALSE, $data = []) {
   module_load_include('inc', 'apple_news', 'include/preview');
