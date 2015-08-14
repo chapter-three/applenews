@@ -158,7 +158,7 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
    *   Internal use.
    */
   public function getSourceOptions($ancestors = '', array $entity_types = NULL) {
-    $options = [];
+    $options = $ancestors ? [] : ['' => '- ' . t('none') . ' -'];
 
     // Source implementations.
     $sources = apple_news_get_module_apis()['sources'];
@@ -260,6 +260,10 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
   public function getSource(stdClass $value, $key) {
     $implementations = apple_news_get_module_apis()['sources'];
 
+    if (empty($key)) {
+      return NULL;
+    }
+
     // Parse key.
     // @see self::getSourceOptions()
     // Source classes may have a parent -- delineated by '::::'.
@@ -296,6 +300,9 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
    */
   public function getSourceValues(stdClass $value, $source_key) {
     $source = $this->getSource($value, $source_key);
+    if (empty($source)) {
+      return NULL;
+    }
     $key = explode('::', $source_key);
     $key = array_pop($key);
     $values = $source->export();
