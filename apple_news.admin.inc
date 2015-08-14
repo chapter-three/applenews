@@ -20,7 +20,13 @@ function apple_news_settings_api_credentials_form($form, &$form_state) {
   $endpoint = variable_get('apple_news_variable_api_endpoint', '');
   $api_key = variable_get('apple_news_variable_api_key', '');
   $api_secret = variable_get('apple_news_variable_api_secret', '');
-  $curl_opts = variable_get('apple_news_variable_api_curlopt', ['ssl' => TRUE]);
+  $curl_opts = variable_get('apple_news_variable_api_curlopt', 
+    [
+      'ssl'        => TRUE,
+      'proxy'      => '',
+      'proxy_port' => '',
+    ]
+  );
 
   $form['credentials']['apple_news_variable_api_endpoint'] = [
     '#type' => 'textfield',
@@ -43,11 +49,33 @@ function apple_news_settings_api_credentials_form($form, &$form_state) {
     '#description' => t('Push API Secret Key'),
   ];
 
-  $form['credentials']['apple_news_ssl_verification'] = [
+  $form['advanced'] = [
+    '#type' => 'fieldset',
+    '#title' => t('Advanced'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  ];
+
+  $form['advanced']['ssl_verification'] = [
     '#type' => 'checkbox',
     '#title' => t('SSL Verification'),
     '#default_value' => $curl_opts['ssl'],
-    '#description' => t('Please make sure to enable this checkbox on production site.'),
+    '#description' => t('Disabling verification makes the communication insecure.'),
+  ];
+
+  $form['advanced']['proxy'] = [
+    '#type' => 'textfield',
+    '#title' => t('Proxy address'),
+    '#default_value' => $curl_opts['proxy'],
+    '#description' => t('Proxy server address.'),
+  ];
+
+  $form['advanced']['proxy_port'] = [
+    '#type' => 'textfield',
+    '#title' => t('Proxy port'),
+    '#default_value' => $curl_opts['proxy_port'],
+    '#size' => 10,
+    '#description' => t('Proxy server port number.'),
   ];
 
   $form['save_config'] = [
@@ -105,7 +133,9 @@ function apple_news_settings_api_credentials_form_submit($form, &$form_state) {
   // SSL Verification.
   variable_set('apple_news_variable_api_curlopt',
     [
-      'ssl' => !empty($form_state['values']['apple_news_ssl_verification']) ? TRUE : FALSE,
+      'ssl' => !empty($form_state['values']['ssl_verification']) ? TRUE : FALSE,
+      'proxy' => !empty($form_state['values']['proxy']) ? filter_xss($form_state['values']['proxy']) : '',
+      'proxy_port' => !empty($form_state['values']['proxy_port']) ? filter_xss($form_state['values']['proxy_port']) : '',
     ]
   );
   drupal_set_message(
@@ -148,6 +178,13 @@ function apple_news_settings_delete_configuration_form_submit($form, &$form_stat
   }
   // Reset channels.
   variable_set('apple_news_variable_api_channels', []);
+  variable_set('apple_news_variable_api_curlopt',
+    [
+      'ssl'        => FALSE,
+      'proxy'      => '',
+      'proxy_port' => '',
+    ]
+  );
   drupal_set_message(t('The configuration options have been deleted.'));
   drupal_goto('admin/config/content/apple-news/settings');
 }

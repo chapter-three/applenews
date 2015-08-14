@@ -20,11 +20,23 @@ function apple_news_push_api() {
   $pushapi = new ChapterThree\AppleNews\PushAPI($key, $secret, $endpoint);
 
   // Allow configuring curl for debugging.
-  $opts = variable_get('apple_news_variable_api_curlopt', ['ssl' => FALSE]);
+  $opts = variable_get('apple_news_variable_api_curlopt',
+    [
+      'ssl'        => TRUE,
+      'proxy'      => '',
+      'proxy_port' => '',
+    ]
+  );
 
   /** @var \Curl\Curl $client */
   $client = $pushapi->client;
   $client->setOpt(CURLOPT_SSL_VERIFYPEER, $opts['ssl']);
+  if (!empty($opts['proxy'])) {
+    $client->setOpt(CURLOPT_PROXY, $opts['proxy']);
+  }
+  if (!empty($opts['proxy_port'])) {
+    $client->setOpt(CURLOPT_PROXYPORT, $opts['proxy_port']);
+  }
 
   return $pushapi;
 }
