@@ -60,11 +60,13 @@ function apple_news_views_data() {
         $entity_info = entity_get_info($entity_type);
         foreach ($fields as $field_name) {
 
-          $data['apple_news_entities']['table']['join'][$entity_info['base table']] = [
-            'left_field' => ($field_name == 'entity_id') ? $entity_info['entity keys']['id'] : $entity_info['entity keys']['revision'],
-            'field' => $field_name,
-            'type' => 'LEFT'
-          ];
+          if ($field_name == 'entity_id') {
+            $data['apple_news_entities']['table']['join'][$entity_info['base table']] = [
+              'left_field' => $entity_info['entity keys']['id'],
+              'field' => $field_name,
+              'type' => 'LEFT'
+            ];
+          }
 
           $data['apple_news_entities']['reverse_' . $field_name . '_' . $entity_type]['relationship'] = [
             'handler' => 'views_handler_relationship_entity_reverse',
@@ -384,7 +386,11 @@ function apple_news_views_default_views() {
     'changed' => 'changed',
     'views_handler_field_apple_news_status' => 'views_handler_field_apple_news_status',
     'postdate' => 'postdate',
+    'share_url' => 'share_url',
+    'view_node' => 'view_node',
+    'delete_node' => 'delete_node',
     'edit_node' => 'edit_node',
+    'nothing' => 'nothing',
   );
   $handler->display->display_options['style_options']['default'] = '-1';
   $handler->display->display_options['style_options']['info'] = array(
@@ -430,7 +436,29 @@ function apple_news_views_default_views() {
       'separator' => '',
       'empty_column' => 0,
     ),
+    'share_url' => array(
+      'sortable' => 1,
+      'default_sort_order' => 'asc',
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'view_node' => array(
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'delete_node' => array(
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
     'edit_node' => array(
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'nothing' => array(
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
@@ -441,7 +469,7 @@ function apple_news_views_default_views() {
   $handler->display->display_options['empty']['area']['table'] = 'views';
   $handler->display->display_options['empty']['area']['field'] = 'area';
   $handler->display->display_options['empty']['area']['empty'] = TRUE;
-  $handler->display->display_options['empty']['area']['content'] = 'There are not Apple News published articles.';
+  $handler->display->display_options['empty']['area']['content'] = 'There are no Apple News published articles.';
   $handler->display->display_options['empty']['area']['format'] = 'filtered_html';
   /* Relationship: Apple News Article: Apple News Referencing entity_id */
   $handler->display->display_options['relationships']['reverse_entity_id_node']['id'] = 'reverse_entity_id_node';
@@ -484,17 +512,17 @@ function apple_news_views_default_views() {
   $handler->display->display_options['fields']['postdate']['id'] = 'postdate';
   $handler->display->display_options['fields']['postdate']['table'] = 'apple_news_entities';
   $handler->display->display_options['fields']['postdate']['field'] = 'postdate';
-  $handler->display->display_options['fields']['postdate']['relationship'] = 'reverse_entity_id_node';
   $handler->display->display_options['fields']['postdate']['label'] = 'Apple News post date';
   $handler->display->display_options['fields']['postdate']['date_format'] = 'short';
   $handler->display->display_options['fields']['postdate']['second_date_format'] = 'long';
-  /* Field: Content: Link */
-  $handler->display->display_options['fields']['view_node']['id'] = 'view_node';
-  $handler->display->display_options['fields']['view_node']['table'] = 'views_entity_node';
-  $handler->display->display_options['fields']['view_node']['field'] = 'view_node';
-  $handler->display->display_options['fields']['view_node']['label'] = '';
-  $handler->display->display_options['fields']['view_node']['exclude'] = TRUE;
-  $handler->display->display_options['fields']['view_node']['element_label_colon'] = FALSE;
+  /* Field: Apple News Article: Share URL */
+  $handler->display->display_options['fields']['share_url']['id'] = 'share_url';
+  $handler->display->display_options['fields']['share_url']['table'] = 'apple_news_entities';
+  $handler->display->display_options['fields']['share_url']['field'] = 'share_url';
+  $handler->display->display_options['fields']['share_url']['alter']['make_link'] = TRUE;
+  $handler->display->display_options['fields']['share_url']['alter']['path'] = '[share_url]';
+  $handler->display->display_options['fields']['share_url']['alter']['external'] = TRUE;
+  $handler->display->display_options['fields']['share_url']['alter']['target'] = '_blank';
   /* Field: Content: Delete link */
   $handler->display->display_options['fields']['delete_node']['id'] = 'delete_node';
   $handler->display->display_options['fields']['delete_node']['table'] = 'views_entity_node';
@@ -514,7 +542,7 @@ function apple_news_views_default_views() {
   $handler->display->display_options['fields']['nothing']['table'] = 'views';
   $handler->display->display_options['fields']['nothing']['field'] = 'nothing';
   $handler->display->display_options['fields']['nothing']['label'] = 'Operations';
-  $handler->display->display_options['fields']['nothing']['alter']['text'] = '[view_node] [edit_node] [delete_node]';
+  $handler->display->display_options['fields']['nothing']['alter']['text'] = '[edit_node] [delete_node]';
   /* Sort criterion: Content: Post date */
   $handler->display->display_options['sorts']['created']['id'] = 'created';
   $handler->display->display_options['sorts']['created']['table'] = 'node';
@@ -537,13 +565,6 @@ function apple_news_views_default_views() {
     1 => 0,
     3 => 0,
   );
-  /* Filter criterion: Content: Published */
-  $handler->display->display_options['filters']['status']['id'] = 'status';
-  $handler->display->display_options['filters']['status']['table'] = 'node';
-  $handler->display->display_options['filters']['status']['field'] = 'status';
-  $handler->display->display_options['filters']['status']['value'] = 1;
-  $handler->display->display_options['filters']['status']['group'] = 1;
-  $handler->display->display_options['filters']['status']['expose']['operator'] = FALSE;
   /* Filter criterion: Content: Type */
   $handler->display->display_options['filters']['type']['id'] = 'type';
   $handler->display->display_options['filters']['type']['table'] = 'node';
@@ -570,7 +591,6 @@ function apple_news_views_default_views() {
   $handler->display->display_options['filters']['status_1']['expose']['label'] = 'Published';
   $handler->display->display_options['filters']['status_1']['expose']['operator'] = 'status_1_op';
   $handler->display->display_options['filters']['status_1']['expose']['identifier'] = 'status_1';
-  $handler->display->display_options['filters']['status_1']['expose']['required'] = TRUE;
   $handler->display->display_options['filters']['status_1']['expose']['remember_roles'] = array(
     2 => '2',
     1 => 0,
@@ -580,7 +600,6 @@ function apple_news_views_default_views() {
   $handler->display->display_options['filters']['views_handler_filter_apple_news_status']['id'] = 'views_handler_filter_apple_news_status';
   $handler->display->display_options['filters']['views_handler_filter_apple_news_status']['table'] = 'apple_news_entities';
   $handler->display->display_options['filters']['views_handler_filter_apple_news_status']['field'] = 'views_handler_filter_apple_news_status';
-  $handler->display->display_options['filters']['views_handler_filter_apple_news_status']['relationship'] = 'reverse_entity_id_node';
   $handler->display->display_options['filters']['views_handler_filter_apple_news_status']['value'] = '1';
   $handler->display->display_options['filters']['views_handler_filter_apple_news_status']['group'] = 1;
   $handler->display->display_options['filters']['views_handler_filter_apple_news_status']['exposed'] = TRUE;
@@ -588,7 +607,6 @@ function apple_news_views_default_views() {
   $handler->display->display_options['filters']['views_handler_filter_apple_news_status']['expose']['label'] = 'Apple News Status';
   $handler->display->display_options['filters']['views_handler_filter_apple_news_status']['expose']['operator'] = 'views_handler_filter_apple_news_status_op';
   $handler->display->display_options['filters']['views_handler_filter_apple_news_status']['expose']['identifier'] = 'views_handler_filter_apple_news_status';
-  $handler->display->display_options['filters']['views_handler_filter_apple_news_status']['expose']['required'] = TRUE;
   $handler->display->display_options['filters']['views_handler_filter_apple_news_status']['expose']['remember_roles'] = array(
     2 => '2',
     1 => 0,
