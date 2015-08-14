@@ -138,12 +138,19 @@ function apple_news_settings_api_credentials_form_submit($form, &$form_state) {
       'proxy_port' => !empty($form_state['values']['proxy_port']) ? filter_xss($form_state['values']['proxy_port']) : '',
     ]
   );
-  drupal_set_message(
-    t('The configuration options have been saved. Please <a href="!link">add Channel ID</a> to verify connection and start posting content to Apple News.',
+  $api_channels = variable_get('apple_news_variable_api_channels', []);
+  $channel_msg = '';
+  if (empty($api_channels)) {
+    $channel_msg = t('Please <a href="!link">add Channel ID</a> to verify connection and start posting content to Apple News.',
       [
         '!link' => url('admin/config/content/apple-news/settings/channels')
       ]
-    )
+    );
+  }
+  drupal_set_message(
+    t('The configuration options have been saved.')
+    . ' '
+    . $channel_msg
   );
 }
 
@@ -166,7 +173,7 @@ function apple_news_settings_delete_configuration_form($form, &$form_state) {
 function apple_news_settings_delete_configuration_form_submit($form, &$form_state) {
   module_load_include('inc', 'apple_news');
   foreach (apple_news_settings_fields() as $key) {
-    variable_set($key, '');
+    variable_del($key);
   }
   // Remove data from custom cache table.
   db_truncate('cache_apple_news')->execute();
@@ -176,15 +183,9 @@ function apple_news_settings_delete_configuration_form_submit($form, &$form_stat
     $channel = apple_news_channel($channel_id);
     apple_news_cleanup_data($channel);
   }
-  // Reset channels.
-  variable_set('apple_news_variable_api_channels', []);
-  variable_set('apple_news_variable_api_curlopt',
-    [
-      'ssl'        => FALSE,
-      'proxy'      => '',
-      'proxy_port' => '',
-    ]
-  );
+  // Delete settings.
+  variable_del('apple_news_variable_api_channels');
+  variable_del('apple_news_variable_api_curlopt');
   drupal_set_message(t('The configuration options have been deleted.'));
   drupal_goto('admin/config/content/apple-news/settings');
 }
@@ -261,7 +262,7 @@ function apple_news_settings_channels_form() {
 function apple_news_settings_channels_form_submit($form, &$form_state) {
   module_load_include('inc', 'apple_news');
 
-  $channel_id = $form_state['values']['apple_news_channel_id'];
+  $channel_id = trim($form_state['values']['apple_news_channel_id']);
   $channels = variable_get('apple_news_variable_api_channels', []);
 
   if ($channel = apple_news_channel($channel_id)) {
