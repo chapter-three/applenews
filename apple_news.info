@@ -1,4 +1,5 @@
 name = Apple News
+package = Apple News
 description = Push content to Apple News.
 core = 7.x
 php = 5.4
