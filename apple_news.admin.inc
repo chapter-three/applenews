@@ -32,21 +32,21 @@ function apple_news_settings_api_credentials_form($form, &$form_state) {
     '#type' => 'textfield',
     '#title' => t('API Endpoint URL'),
     '#default_value' => variable_get('apple_news_variable_api_endpoint', ''),
-    '#description' => t('Push API endpoint URL'),
+    '#description' => t('Publisher API endpoint URL'),
   ];
 
   $form['credentials']['apple_news_variable_api_key'] = [
     '#type' => 'textfield',
     '#title' => t('API Key ID'),
     '#default_value' => $api_key,
-    '#description' => t('Push API Key ID'),
+    '#description' => t('Publisher API Key ID'),
   ];
 
   $form['credentials']['apple_news_variable_api_secret'] = [
     '#type' => 'password',
     '#title' => t('API Secret Key'),
     '#default_value' => $api_secret,
-    '#description' => t('Push API Secret Key'),
+    '#description' => t('Publisher API Secret Key'),
   ];
 
   $form['advanced'] = [
