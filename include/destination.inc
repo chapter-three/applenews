@@ -657,3 +657,89 @@ class ApplenewsDestinationMosaic extends ApplenewsDestination {
   }
 
 }
+
+/**
+ * Mosaic component.
+ */
+class ApplenewsDestinationAd extends ApplenewsDestination {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct() {
+    parent::__construct();
+    $this->settings += [
+      'type' => 'banner',
+      'banner_type' => 'standard',
+    ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function label() {
+    return t('Advertisement') . ' (' . $this->id . ')';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getConfigForm($form, &$form_state) {
+
+    $form = parent::getConfigForm($form, $form_state);
+
+    $form['type'] = [
+      '#title' => t('Type'),
+      '#type' => 'select',
+      '#options' => [
+        'banner' => t('Banner'),
+        'medium_rectangle' => t('Medium Rectangle'),
+      ],
+      '#default_value' => $this->settings['type'],
+    ];
+
+    $form['banner_type'] = [
+      '#title' => t('Banner Type'),
+      '#type' => 'select',
+      '#options' => [
+        'any' => t('Any'),
+        'standard' => t('Standard'),
+        'double_height' => t('Double Height'),
+        'large' => t('Large'),
+      ],
+      '#default_value' => $this->settings['banner_type'],
+      '#states' => array(
+        'visible' => array(
+          ':input[name="type"]' => array('value' => 'banner'),
+        ),
+      ),
+    ];
+
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function export($value) {
+
+    switch ($this->settings['type']) {
+
+      case 'medium_rectangle':
+        $ad = new Components\Advertisements\MediumRectangleAdvertisement();
+        break;
+
+      case 'banner':
+      default:
+        $ad = new Components\Advertisements\BannerAdvertisement();
+        $ad->setBannerType($this->settings['banner_type']);
+        break;
+
+    }
+
+
+
+    return [$ad];
+  }
+
+}

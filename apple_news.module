@@ -400,6 +400,10 @@ function apple_news_apple_news_api() {
         'class' => 'ApplenewsDestinationMosaic',
         'name' => 'Mosaic',
       ],
+      'ad' => [
+        'class' => 'ApplenewsDestinationAd',
+        'name' => 'Advertisement',
+      ],
     ],
   ];
 }
