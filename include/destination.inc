@@ -300,11 +300,11 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
    */
   public function getSourceValues(stdClass $value, $source_key) {
     $source = $this->getSource($value, $source_key);
-    if (empty($source)) {
-      return NULL;
-    }
     $key = explode('::', $source_key);
     $key = array_pop($key);
+    if (empty($source)) {
+      return [$key, []];
+    }
     $values = $source->export();
     // Handle single/multiple values similarly, as a list of values.
     if (!isset($values[0])) {
