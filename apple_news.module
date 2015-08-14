@@ -345,13 +345,6 @@ function apple_news_export_load($id) {
 }
 
 /**
- * Implements hook_cron().
- */
-function apple_news_cron() {
-  module_load_include('inc', 'apple_news');
-}
-
-/**
  * Implements hook_theme().
  */
 function apple_news_theme($existing, $type, $theme, $path) {
