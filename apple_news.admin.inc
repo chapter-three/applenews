@@ -829,34 +829,26 @@ function apple_news_settings_delete_article_form_submit($form, &$form_state) {
 /**
  * Download article.json previable file.
  */
-function apple_news_download_article_json($article_id = NULL) {
+function apple_news_download_article_json($entity_type, $entity_id, $revision_id) {
   module_load_include('inc', 'apple_news');
-  if (!empty($article_id)) {
+  if (!empty($entity_id)) {
 
-    module_load_include('inc', 'apple_news', 'include/db');
-    $post = new ChapterThree\AppleNews\Database\ApplenewsDatabase();
-    $article = $post->setArticleId($article_id);
+    $data = apple_news_entity_export($entity_type, $entity_id, $revision_id);
+    apple_news_export_to_file($entity_id, [$entity_id], NULL, TRUE, $data);
+    $archive_path = apple_news_export_file_path($entity_id);
 
-    if (!empty($article['article_id'])) {
+    $archive = $archive_path . '.zip';
+    $output = file_get_contents($archive, FILE_USE_INCLUDE_PATH);
 
-      $data = apple_news_entity_export($article['entity_type'], $article['entity_id'], $article['revision_id']);
-      apple_news_export_to_file($article['entity_id'], [$article['entity_id']], NULL, TRUE, $data);
-      $archive_path = apple_news_export_file_path($article['entity_id']);
+    // Remove individual entity archive.
+    apple_news_export_file_delete($entity_id);
+    // Remove individual entity directory
+    apple_news_export_dir_cleanup([$entity_id]);
 
-      $archive = $archive_path . '.zip';
-      $output = file_get_contents($archive, FILE_USE_INCLUDE_PATH);
+    drupal_add_http_header('Content-Type', 'application/zip');
+    drupal_add_http_header('Content-Disposition', 'attachment; filename=' . $entity_id . '.zip');
 
-      // Remove individual entity archive.
-      apple_news_export_file_delete($article['entity_id']);
-      // Remove individual entity directory
-      apple_news_export_dir_cleanup([$article['entity_id']]);
-
-      drupal_add_http_header('Content-Type', 'application/zip');
-      drupal_add_http_header('Content-Disposition', 'attachment; filename=' . $article['entity_id'] . '.zip');
-
-      echo $output;
-
-    }
+    echo $output;
 
   }
   else {

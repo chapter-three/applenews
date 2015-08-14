@@ -318,12 +318,12 @@ function apple_news_menu() {
     'weight' => 1,
   ];
 
-  // [article-id]
-  $items['admin/config/content/apple-news/%/download'] = [
+  // [entity-type]/[entity-id]/[entity-revision]
+  $items['admin/config/content/apple-news/%/%/%/download'] = [
     'title' => 'Download article.json file',
     'description' => t('Download previewable Apple News formatted document.'),
     'page callback' => 'apple_news_download_article_json',
-    'page arguments' => [4],
+    'page arguments' => [4, 5, 6],
     'access arguments' => ['administer apple news'],
     'file' => 'apple_news.admin.inc',
     'type' => MENU_CALLBACK,

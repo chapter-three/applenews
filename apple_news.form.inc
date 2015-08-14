@@ -29,25 +29,6 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
           $entity_id = isset($form['nid']['#value']) ? (int) $form['nid']['#value'] : NULL;
           $article_id = NULL;
 
-          if (!empty($entity_id)) {
-
-            $entity = entity_load_single($type, $entity_id);
-
-            $chnnels_all = apple_news_channels();
-
-            module_load_include('inc', 'apple_news', 'include/db');
-            $post = new ChapterThree\AppleNews\Database\ApplenewsDatabase();
-            if (!empty($chnnels_all)) {
-              $channel_ids = array_keys($chnnels_all);
-              $post->setChannelId($channel_ids);
-            }
-            $post->setPostId($type, $entity_id, $entity_id);
-            $article = $post->getArticle();
-
-            $article_id = !empty($article['article_id']) ? $article['article_id'] : NULL;
-
-          }
-
           // Entity form JS helper (hide/show Apple News entity form options).
           $form['#attached']['js'][] = drupal_get_path('module', 'apple_news') . '/js/form.js';
 
@@ -64,15 +45,35 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
             ]
           ];
 
-          if (empty($article_id)) {
-            $preview_message = t('You have to save this content in order to be able to preview the Apple News generated document.');
-          }
-          else {
+          // Previewable download default message.
+          $preview_message = t('You have to save this content in order to be able to preview the Apple News generated document.');
+
+          if (!empty($entity_id)) {
+
+            $entity = entity_load_single($type, $entity_id);
+
+            $revision_id = $entity_id;
+
+            $chnnels_all = apple_news_channels();
+
+            module_load_include('inc', 'apple_news', 'include/db');
+            $post = new ChapterThree\AppleNews\Database\ApplenewsDatabase();
+            if (!empty($chnnels_all)) {
+              $channel_ids = array_keys($chnnels_all);
+              $post->setChannelId($channel_ids);
+            }
+            $post->setPostId($type, $entity_id, $revision_id);
+            $article = $post->getArticle();
+
+            $article_id = !empty($article['article_id']) ? $article['article_id'] : NULL;
+
+            // Previewable download.
             $preview_message = t('<a href="!link">Download</a> the Apple News generated document and use the News Preview app to preview the article.',
               [
-                '!link' => url('admin/config/content/apple-news/' . $article_id . '/download'),
+                '!link' => url('admin/config/content/apple-news/' . $type . '/' . $entity_id . '/' . $revision_id . '/download'),
               ]
             );
+
           }
 
           $form['apple_news']['preview'] = [
