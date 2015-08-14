@@ -24,7 +24,7 @@ function apple_news_views_data() {
 
   $data['apple_news_entities']['table']['base'] = [
     'field' => 'entity_id',
-    'title' => t('Apple News Articles'),
+    'title' => t('Apple News'),
     'help' => t('A list of Apple News published articles.'),
     'weight' => 10,
   ];
@@ -32,7 +32,7 @@ function apple_news_views_data() {
   $data['apple_news_entities']['post_id'] = [
     'title' => t('Post ID'),
     'help' => t('Apple News post ID'),
-    'group' => t('Apple News Article'),
+    'group' => t('Apple News'),
     'field' => [
       'handler' => 'views_handler_field',
       'click sortable' => TRUE,
@@ -76,7 +76,7 @@ function apple_news_views_data() {
             'base' => $entity_info['base table'],
             'base field' => ($field_name == 'entity_id') ? $entity_info['entity keys']['id'] : $entity_info['entity keys']['revision'],
             'label' => t('Apple News articles referencing Drupal entities'),
-            'group' => t('Apple News Article'),
+            'group' => t('Apple News'),
             'title' => t('Apple News Referencing !field_name', ['!field_name' => $field_name]),
             'help' => t('A bridge to the @entity_type entity that is referencing Apple News article via !field_name',
               [
@@ -100,7 +100,7 @@ function apple_news_views_data() {
   $data['apple_news_entities']['article_id'] = [
     'title' => t('Article ID'),
     'help' => t('Apple News Article ID'),
-    'group' => t('Apple News Article'),
+    'group' => t('Apple News'),
     'field' => [
       'handler' => 'views_handler_field',
       'click sortable' => TRUE,
@@ -119,7 +119,7 @@ function apple_news_views_data() {
   $data['apple_news_entities']['article_revision_id'] = [
     'title' => t('Revision ID'),
     'help' => t('Apple News Article Revision ID'),
-    'group' => t('Apple News Article'),
+    'group' => t('Apple News'),
     'field' => [
       'handler' => 'views_handler_field',
       'click sortable' => TRUE,
@@ -138,7 +138,7 @@ function apple_news_views_data() {
   $data['apple_news_entities']['share_url'] = [
     'title' => t('Share URL'),
     'help' => t('Apple News Article Share URL'),
-    'group' => t('Apple News Article'),
+    'group' => t('Apple News'),
     'field' => [
       'handler' => 'views_handler_field_url',
       'click sortable' => TRUE,
@@ -157,7 +157,7 @@ function apple_news_views_data() {
   $data['apple_news_entities']['postdate'] = [
     'title' => t('Post date'),
     'help' => t('Apple News post timestamp'),
-    'group' => t('Apple News Article'),
+    'group' => t('Apple News'),
     'field' => [
       'handler' => 'views_handler_field_date',
       'click sortable' => TRUE,
@@ -170,20 +170,22 @@ function apple_news_views_data() {
     ],
   ];
 
+  // Custom filter.
   $data['apple_news_entities']['views_handler_filter_apple_news_status'] = [
-    'title' => t('Is published to Apple News'),
+    'title' => t('Entity is published to Apple News'),
     'help' => t('Apple News Article Status'),
-    'group' => t('Apple News Article'),
+    'group' => t('Apple News'),
     'real field' => 'article_id',
     'filter' => [
       'handler' => 'views_handler_filter_apple_news_status',
     ],
   ];
 
+  // Custom field.
   $data['apple_news_entities']['views_handler_field_apple_news_status'] = [
-    'title' => t('Is published to Apple News'),
+    'title' => t('Entity is published to Apple News'),
     'help' => t('Apple News Article Status'),
-    'group' => t('Apple News Article'),
+    'group' => t('Apple News'),
     'real field' => 'article_id',
     'field' => [
       'handler' => 'views_handler_field_apple_news_status',
@@ -202,7 +204,7 @@ function apple_news_views_data() {
   $data['apple_news_metadata']['post_id'] = [
     'title' => t('Post ID'),
     'help' => t('Apple News Post ID  (metadata)'),
-    'group' => t('Apple News Article'),
+    'group' => t('Apple News'),
     'field' => [
       'handler' => 'views_handler_field_serialized',
       'click sortable' => TRUE,
@@ -221,7 +223,7 @@ function apple_news_views_data() {
   $data['apple_news_metadata']['data'] = [
     'title' => t('Metadata'),
     'help' => t('Apple News metadata'),
-    'group' => t('Apple News Article'),
+    'group' => t('Apple News'),
     'field' => [
       'handler' => 'views_handler_field_serialized',
       'click sortable' => TRUE,
@@ -248,7 +250,7 @@ function apple_news_views_data() {
   $data['apple_news_channels']['post_id'] = [
     'title' => t('Post ID'),
     'help' => t('Apple News Post ID (channels)'),
-    'group' => t('Apple News Article'),
+    'group' => t('Apple News'),
     'field' => [
       'handler' => 'views_handler_field_numeric',
       'click sortable' => TRUE,
@@ -267,7 +269,7 @@ function apple_news_views_data() {
   $data['apple_news_channels']['channel_id'] = [
     'title' => t('Channel ID'),
     'help' => t('Apple News Channel ID (channels)'),
-    'group' => t('Apple News Article'),
+    'group' => t('Apple News'),
     'field' => [
       'handler' => 'views_handler_field',
       'click sortable' => TRUE,
@@ -294,7 +296,7 @@ function apple_news_views_data() {
   $data['apple_news_sections']['post_id'] = [
     'title' => t('Post ID'),
     'help' => t('Apple News Post ID'),
-    'group' => t('Apple News Article'),
+    'group' => t('Apple News'),
     'field' => [
       'handler' => 'views_handler_field_numeric',
       'click sortable' => TRUE,
@@ -313,7 +315,7 @@ function apple_news_views_data() {
   $data['apple_news_sections']['channel_id'] = [
     'title' => t('Channel ID'),
     'help' => t('Apple News Channel ID (sections)'),
-    'group' => t('Apple News Article'),
+    'group' => t('Apple News'),
     'field' => [
       'handler' => 'views_handler_field',
       'click sortable' => TRUE,
@@ -332,7 +334,7 @@ function apple_news_views_data() {
   $data['apple_news_sections']['section_id'] = [
     'title' => t('Section ID'),
     'help' => t('Apple News Channel ID (sections)'),
-    'group' => t('Apple News Article'),
+    'group' => t('Apple News'),
     'field' => [
       'handler' => 'views_handler_field',
       'click sortable' => TRUE,
@@ -465,7 +467,7 @@ function apple_news_views_default_views() {
   $handler->display->display_options['empty']['area']['empty'] = TRUE;
   $handler->display->display_options['empty']['area']['content'] = 'There are no Apple News published articles.';
   $handler->display->display_options['empty']['area']['format'] = 'filtered_html';
-  /* Relationship: Apple News Article: Apple News Referencing entity_id */
+  /* Relationship: Apple News: Apple News Referencing entity_id */
   $handler->display->display_options['relationships']['reverse_entity_id_node']['id'] = 'reverse_entity_id_node';
   $handler->display->display_options['relationships']['reverse_entity_id_node']['table'] = 'apple_news_entities';
   $handler->display->display_options['relationships']['reverse_entity_id_node']['field'] = 'reverse_entity_id_node';
@@ -493,7 +495,7 @@ function apple_news_views_default_views() {
   $handler->display->display_options['fields']['changed']['label'] = 'Created/Updated date';
   $handler->display->display_options['fields']['changed']['date_format'] = 'short';
   $handler->display->display_options['fields']['changed']['second_date_format'] = 'long';
-  /* Field: Apple News Article: Is published to Apple News */
+  /* Field: Apple News: Entity is published to Apple News */
   $handler->display->display_options['fields']['views_handler_field_apple_news_status']['id'] = 'views_handler_field_apple_news_status';
   $handler->display->display_options['fields']['views_handler_field_apple_news_status']['table'] = 'apple_news_entities';
   $handler->display->display_options['fields']['views_handler_field_apple_news_status']['field'] = 'views_handler_field_apple_news_status';
@@ -502,14 +504,14 @@ function apple_news_views_default_views() {
   $handler->display->display_options['fields']['views_handler_field_apple_news_status']['type_custom_true'] = 'Published';
   $handler->display->display_options['fields']['views_handler_field_apple_news_status']['type_custom_false'] = 'Not published';
   $handler->display->display_options['fields']['views_handler_field_apple_news_status']['not'] = 0;
-  /* Field: Apple News Article: Post date */
+  /* Field: Apple News: Post date */
   $handler->display->display_options['fields']['postdate']['id'] = 'postdate';
   $handler->display->display_options['fields']['postdate']['table'] = 'apple_news_entities';
   $handler->display->display_options['fields']['postdate']['field'] = 'postdate';
   $handler->display->display_options['fields']['postdate']['label'] = 'Apple News post date';
   $handler->display->display_options['fields']['postdate']['date_format'] = 'short';
   $handler->display->display_options['fields']['postdate']['second_date_format'] = 'long';
-  /* Field: Apple News Article: Share URL */
+  /* Field: Apple News: Share URL */
   $handler->display->display_options['fields']['share_url']['id'] = 'share_url';
   $handler->display->display_options['fields']['share_url']['table'] = 'apple_news_entities';
   $handler->display->display_options['fields']['share_url']['field'] = 'share_url';
@@ -585,7 +587,7 @@ function apple_news_views_default_views() {
     1 => 0,
     3 => 0,
   );
-  /* Filter criterion: Apple News Article: Is published to Apple News */
+  /* Filter criterion: Apple News: Entity is published to Apple News */
   $handler->display->display_options['filters']['views_handler_filter_apple_news_status']['id'] = 'views_handler_filter_apple_news_status';
   $handler->display->display_options['filters']['views_handler_filter_apple_news_status']['table'] = 'apple_news_entities';
   $handler->display->display_options['filters']['views_handler_filter_apple_news_status']['field'] = 'views_handler_filter_apple_news_status';
