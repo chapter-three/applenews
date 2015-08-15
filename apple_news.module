@@ -386,10 +386,6 @@ function apple_news_apple_news_api() {
         'class' => 'ApplenewsSourceFieldFile',
         'name' => 'File Field',
       ],
-      'link_field' => [
-        'class' => 'ApplenewsSourceFieldLink',
-        'name' => 'Link Field',
-      ],
     ],
     'destinations' => [
       'body' => [
@@ -407,10 +403,6 @@ function apple_news_apple_news_api() {
       'ad' => [
         'class' => 'ApplenewsDestinationAd',
         'name' => 'Advertisement',
-      ],
-      'instagram' => [
-        'class' => 'Applenewsstyle1DestinationInstagram',
-        'name' => 'Instagram',
       ],
     ],
   ];
