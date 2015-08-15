@@ -170,7 +170,7 @@ function apple_news_views_data() {
     ],
   ];
 
-  // Custom filter.
+  // Custom filter. Apple News article publish status.
   $data['apple_news_entities']['views_handler_filter_apple_news_status'] = [
     'title' => t('Entity is published to Apple News'),
     'help' => t('Apple News Article Status'),
@@ -181,7 +181,7 @@ function apple_news_views_data() {
     ],
   ];
 
-  // Custom field.
+  // Custom field. Apple News article publish status.
   $data['apple_news_entities']['views_handler_field_apple_news_status'] = [
     'title' => t('Entity is published to Apple News'),
     'help' => t('Apple News Article Status'),
@@ -190,6 +190,17 @@ function apple_news_views_data() {
     'field' => [
       'handler' => 'views_handler_field_apple_news_status',
       'click sortable' => TRUE,
+    ],
+  ];
+
+  // Custom field. Apple News article download previewable link.
+  $data['apple_news_entities']['views_handler_field_apple_news_previewable'] = [
+    'title' => t('Download Previewable File'),
+    'help' => t('Apple News Download Previewable Files (use News Preview app to preview article files).'),
+    'group' => t('Apple News'),
+    'real field' => 'article_id',
+    'field' => [
+      'handler' => 'views_handler_field_apple_news_previewable',
     ],
   ];
 
@@ -520,6 +531,13 @@ function apple_news_views_default_views() {
   $handler->display->display_options['fields']['share_url']['alter']['path'] = '[share_url]';
   $handler->display->display_options['fields']['share_url']['alter']['external'] = TRUE;
   $handler->display->display_options['fields']['share_url']['alter']['target'] = '_blank';
+  /* Field: Apple News: Download Previewable File */
+  $handler->display->display_options['fields']['views_handler_field_apple_news_previewable']['id'] = 'views_handler_field_apple_news_previewable';
+  $handler->display->display_options['fields']['views_handler_field_apple_news_previewable']['table'] = 'apple_news_entities';
+  $handler->display->display_options['fields']['views_handler_field_apple_news_previewable']['field'] = 'views_handler_field_apple_news_previewable';
+  $handler->display->display_options['fields']['views_handler_field_apple_news_previewable']['label'] = '';
+  $handler->display->display_options['fields']['views_handler_field_apple_news_previewable']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['views_handler_field_apple_news_previewable']['element_label_colon'] = FALSE;
   /* Field: Content: Delete link */
   $handler->display->display_options['fields']['delete_node']['id'] = 'delete_node';
   $handler->display->display_options['fields']['delete_node']['table'] = 'views_entity_node';
@@ -539,7 +557,7 @@ function apple_news_views_default_views() {
   $handler->display->display_options['fields']['nothing']['table'] = 'views';
   $handler->display->display_options['fields']['nothing']['field'] = 'nothing';
   $handler->display->display_options['fields']['nothing']['label'] = 'Operations';
-  $handler->display->display_options['fields']['nothing']['alter']['text'] = '[edit_node] [delete_node]';
+  $handler->display->display_options['fields']['nothing']['alter']['text'] = '[views_handler_field_apple_news_previewable] [edit_node] [delete_node]';
   /* Filter criterion: Content: Title */
   $handler->display->display_options['filters']['title']['id'] = 'title';
   $handler->display->display_options['filters']['title']['table'] = 'node';
