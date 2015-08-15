@@ -705,7 +705,7 @@ function apple_news_export_destination_edit_form($form, &$form_state, ApplenewsE
       '#value' => t('Save changes'),
     ],
     'cancel' => [
-      '#markup' => l(t('Cancel'), 'admin/config/content/apple-news/exports/' . apple_news_export_id($export->getModule(), $export->getMachineName())),
+      '#markup' => l(t('Back'), 'admin/config/content/apple-news/exports/' . apple_news_export_id($export->getModule(), $export->getMachineName())),
     ],
   ];
 
