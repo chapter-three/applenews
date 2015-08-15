@@ -166,7 +166,7 @@ class ApplenewsExtraDestinationEmbedWebVideo extends ApplenewsDestination {
       '#type' => 'select',
       '#options' => $this->getSourceOptions(),
       '#default_value' => $this->settings['video_url'],
-      '#description' => t('URL format <em>https://www.youtube.com/embed/r4DQKtYL62Q</em> or <em>https://player.vimeo.com/video/121450839</em>'),
+      '#description' => t('URL format <em>https://www.youtube.com/embed/r4DQKtYL62Q</em> (Youtube) or <em>https://player.vimeo.com/video/121450839</em> (Vimeo)'),
     ];
 
     $form['caption'] = [
