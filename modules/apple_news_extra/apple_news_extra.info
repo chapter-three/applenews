@@ -1,0 +1,10 @@
+name = Apple News Extra
+package = Apple News
+description = Additional Apple News destinations (Instagram, Twitter etc...).
+core = 7.x
+
+files[] = include/destination.inc
+files[] = include/source.inc
+
+dependencies[] = apple_news
+dependencies[] = link

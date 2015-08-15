@@ -1,0 +1,31 @@
+<?php
+
+/**
+ * @file
+ * Main module file.
+ */
+
+/**
+ * Implements hook_apple_news_api().
+ */
+function apple_news_extra_apple_news_api() {
+  return [
+    'api' => 1,
+    'sources' => [
+      'link_field' => [
+        'class' => 'ApplenewsExtraSourceFieldLink',
+        'name' => 'Link Field',
+      ],
+    ],
+    'destinations' => [
+      'instagram' => [
+        'class' => 'ApplenewsExtraDestinationInstagram',
+        'name' => 'Instagram',
+      ],
+      'tweet' => [
+        'class' => 'ApplenewsExtraDestinationTweet',
+        'name' => 'Tweet',
+      ],
+    ],
+  ];
+}
