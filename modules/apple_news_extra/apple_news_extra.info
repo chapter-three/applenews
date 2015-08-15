@@ -1,6 +1,6 @@
 name = Apple News Extra
 package = Apple News
-description = Additional Apple News destinations (Instagram, Twitter etc...).
+description = Additional Apple News destinations (Instagram, Twitter, Embed Web Video etc...).
 core = 7.x
 
 files[] = include/destination.inc
@@ -8,3 +8,4 @@ files[] = include/source.inc
 
 dependencies[] = apple_news
 dependencies[] = link
+dependencies[] = video_embed_field

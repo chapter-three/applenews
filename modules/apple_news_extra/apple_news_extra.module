@@ -16,6 +16,10 @@ function apple_news_extra_apple_news_api() {
         'class' => 'ApplenewsExtraSourceFieldLink',
         'name' => 'Link Field',
       ],
+      'video_embed_field' => [
+        'class' => 'ApplenewsExtraSourceFieldVideoEmbedField',
+        'name' => 'Video Embed',
+      ],
     ],
     'destinations' => [
       'instagram' => [
@@ -25,6 +29,10 @@ function apple_news_extra_apple_news_api() {
       'tweet' => [
         'class' => 'ApplenewsExtraDestinationTweet',
         'name' => 'Tweet',
+      ],
+      'EmbedWebVideo' => [
+        'class' => 'ApplenewsExtraDestinationEmbedWebVideo',
+        'name' => 'Embed Web Video',
       ],
     ],
   ];
