@@ -172,16 +172,22 @@ class ApplenewsExportTestCase extends ApplenewsWebTestCase {
    */
   public function testExportInlineImages() {
 
+    // @see ImageFieldDefaultImagesTestCase::ImageFieldDefaultImagesTestCase()
+    $file = current($this->drupalGetTestFiles('image'));
+    $file = file_save($file);
+    $file_url = file_create_url($file->uri);
+    $file_url_relative = preg_replace('#^https?://localhost#', '', $file_url);
+
     // Some node content.
     $contents = [
       [
         '_desc' => 'article',
         'type' => 'article',
         'title' => $this->randomName(32),
-        'body' => <<<'EOD'
+        'body' => <<<EOD
 <p>a well-formed paragraph.</p>
-<img src="/some/local/image.png"/>
-<p>a paragraph with a nested image: <img src="http://example.com/some/external/image.png"/></p>
+<img src="${file_url}"/>
+<p>a paragraph with a nested image: <img src="${file_url_relative}"/></p>
 EOD
         ,
       ],
@@ -214,16 +220,18 @@ EOD
       "Export object loaded.");
 
     // Enable export.
+    // @todo Should be testing module/frontend.
     $export->enabled = TRUE;
     $export->bundles = ['article'];
     $export->settings = ['layout' => 'simple'];
-    $export->destinations['components'][0] = new ApplenewsDestinationBodyPhoto();
-    $export->destinations['components'][0]->settings = [
+    $component = new ApplenewsDestinationBodyPhoto();
+    $component->settings = [
       'text' => '::::apple_news::field::node::body::value',
-      'format' => 'markdown',
     ];
-    $export->destinations['components'][0]->weight = '50';
-    $export->destinations['components'][0]->id = 1;
+    $component->weight = '50';
+    $component->id = 1;
+    $component->export = $export;
+    $export->destinations['components'][] = $component;
     $result = apple_news_export_save($export);
     $this->assert($result, 'Export enabled.');
 
@@ -266,7 +274,8 @@ EOD
       $item = $data->components[1];
       $this->assertEqual('photo', $item->role,
         'Export inline image component role.');
-      $this->assertEqual('http://localhost/some/local/image.png', $item->URL,
+      $this->assertEqual(drupal_realpath($file->uri),
+        @$export->getAssets()[$item->URL],
         'Export body fragment -> component 2 image URL.');
 
       $item = $data->components[2];
@@ -281,7 +290,8 @@ EOD
       $item = $data->components[3];
       $this->assertEqual('photo', $item->role,
         'Export inline image component role.');
-      $this->assertEqual('http://example.com/some/external/image.png', $item->URL,
+      $this->assertEqual(drupal_realpath($file->uri),
+        @$export->getAssets()[$item->URL],
         'Export body fragment -> component 4 image URL.');
 
     }

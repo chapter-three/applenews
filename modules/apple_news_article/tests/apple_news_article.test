@@ -124,7 +124,8 @@ class ApplenewsArticleExportTestCase extends ApplenewsWebTestCase {
         $item = $data->components[1];
         $this->assertEqual('photo', $item->role,
           'Export image component role.');
-        $this->assertEqual($content['image']->uri, $item->URL,
+        $this->assertEqual(drupal_realpath($content['image']->uri),
+          @$export->getAssets()[$item->URL],
           'Export image component uri -> component 2 url.');
       }
     }
@@ -226,7 +227,8 @@ class ApplenewsArticleExportTestCase extends ApplenewsWebTestCase {
         'Export header fill fillMode.');
       $this->assertEqual('center', $item->style->fill->verticalAlignment,
         'Export header fill verticalAlignment.');
-      $this->assertEqual($content['image']->uri, $item->style->fill->URL,
+      $this->assertEqual(drupal_realpath($content['image']->uri),
+        @$export->getAssets()[$item->style->fill->URL],
         'Export image uri -> header fill url.');
 
       $item = $data->components[$i++];
