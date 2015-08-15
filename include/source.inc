@@ -299,7 +299,7 @@ class ApplenewsSourceField implements ApplenewsSourceInterface {
         return $return;
       }
     }
-    if (is_a($value, 'EntityListWrapper')) {
+    if ($value instanceof EntityListWrapper) {
       /** @var EntityListWrapper $value */
       $return = array();
       foreach ($value as $v) {
@@ -307,7 +307,7 @@ class ApplenewsSourceField implements ApplenewsSourceInterface {
       }
     }
     else {
-      if (is_a($value, 'EntityValueWrapper')) {
+      if ($value instanceof EntityValueWrapper) {
         /** @var EntityValueWrapper $value */
         $return['value'] = $value->value(['decode' => FALSE]);
       }
@@ -369,7 +369,7 @@ class ApplenewsSourceFieldFile extends ApplenewsSourceField {
         return $return;
       }
     }
-    if (is_a($value, 'EntityListWrapper')) {
+    if ($value instanceof EntityListWrapper) {
       /** @var EntityListWrapper $value */
       $return = array();
       foreach ($value as $v) {

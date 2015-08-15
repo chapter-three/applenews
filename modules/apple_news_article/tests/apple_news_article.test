@@ -76,7 +76,7 @@ class ApplenewsArticleExportTestCase extends ApplenewsWebTestCase {
     // Load export object.
     /** @var ApplenewsExportArticle $export */
     $export = apple_news_get_export('apple_news_article', 'article');
-    $this->assert(is_a($export, 'ApplenewsExportArticle'),
+    $this->assert($export instanceof ApplenewsExportArticle,
       "Export object loaded.");
 
     // Enable export.
@@ -87,7 +87,7 @@ class ApplenewsArticleExportTestCase extends ApplenewsWebTestCase {
     // Run query to get source ids.
     /** @var EntityFieldQuery $query */
     $query = $export->query();
-    $this->assert(is_a($query, 'EntityFieldQuery'), 'Query object loaded.');
+    $this->assert($query instanceof EntityFieldQuery, 'Query object loaded.');
     $result = $query->execute();
     $a = array_keys($map);
     $b = array_keys($result['node']);
@@ -98,7 +98,7 @@ class ApplenewsArticleExportTestCase extends ApplenewsWebTestCase {
       $content = $contents[$map[$nid]];
 
       $document = $export->export(node_load($nid));
-      $this->assert(is_a($document, '\ChapterThree\AppleNews\Document'),
+      $this->assert($document instanceof \ChapterThree\AppleNews\Document,
         "Export document for node \"${content['_desc']}\" loaded.");
       $json = $document->json();
       $this->pass(var_export($json, TRUE));
@@ -168,7 +168,7 @@ class ApplenewsArticleExportTestCase extends ApplenewsWebTestCase {
     // Load export object.
     /** @var ApplenewsExportArticle $export */
     $export = apple_news_get_export('apple_news_article', 'article');
-    $this->assert(is_a($export, 'ApplenewsExportArticle'),
+    $this->assert($export instanceof ApplenewsExportArticle,
       "Export object loaded.");
 
     // Enable export.
@@ -180,7 +180,7 @@ class ApplenewsArticleExportTestCase extends ApplenewsWebTestCase {
     // Run query to get source ids.
     /** @var EntityFieldQuery $query */
     $query = $export->query();
-    $this->assert(is_a($query, 'EntityFieldQuery'), 'Query object loaded.');
+    $this->assert($query instanceof EntityFieldQuery, 'Query object loaded.');
     $result = $query->execute();
     $a = array_keys($map);
     $b = array_keys($result['node']);
@@ -191,7 +191,7 @@ class ApplenewsArticleExportTestCase extends ApplenewsWebTestCase {
       $content = $contents[$map[$nid]];
 
       $document = $export->export(node_load($nid));
-      $this->assert(is_a($document, '\ChapterThree\AppleNews\Document'),
+      $this->assert($document instanceof \ChapterThree\AppleNews\Document,
         "Export document for node \"${content['_desc']}\" loaded.");
       $json = $document->json();
       $this->pass(var_export($json, TRUE));
@@ -242,7 +242,7 @@ class ApplenewsArticleExportTestCase extends ApplenewsWebTestCase {
         'Export body component role.');
       $this->assertEqual('markdown', $item->format,
         'Export body component format.');
-      $expected =\ChapterThree\AppleNews\Document\Markdown::convert($content['body']);
+      $expected = \ChapterThree\AppleNews\Document\Markdown::convert($content['body']);
       $this->assertEqual(trim($expected), trim($item->text),
         $item->text, "Export body component text -> component ${i} text.");
 

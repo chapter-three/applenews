@@ -50,7 +50,7 @@ class Applenewsstyle1DestinationBody extends ApplenewsDestinationBodyPhoto {
 
     $components = parent::export($value);
     foreach ($components as $component) {
-      if (is_a($component, '\ChapterThree\AppleNews\Document\Components\Body')) {
+      if ($component instanceof Components\Body) {
         /** @var \ChapterThree\AppleNews\Document\Components\Body $component */
         if ($component->getFormat() != 'markdown') {
           $component->addInlineTextStyles($inline_text_style);
@@ -411,7 +411,7 @@ class Applenewsstyle1DestinationAnimatedPullQuote extends ApplenewsDestination {
     $quote->setTextStyle($text_style);
 
     // Parent section.
-    $section = new Components\Section('animatedPullQuote');
+    $section = new Components\Section();
     $section->setScene(new Animations\Scenes\ParallaxScaleHeader());
     $layout = new Layouts\ComponentLayout();
     $layout->setColumnStart(0)->setColumnSpan(7)
