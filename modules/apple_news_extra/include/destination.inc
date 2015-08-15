@@ -189,16 +189,13 @@ class ApplenewsExtraDestinationEmbedWebVideo extends ApplenewsDestination {
    *   A list of \ChapterThree\AppleNews\Document\Base objects.
    */
   public function export($value) {
-
     list($key, $values) = $this->getSourceValues($value,
       $this->settings['video_url']);
-    list($key2, $values2) = $this->getSourceValues($value,
-      $this->settings['caption']);
     $components = array();
     foreach ($values as $value) {
       $component = new Components\EmbedWebVideo($value[$key]);
-      if (!empty($value[$key2])) {
-        $component->setCaption($value[$key2]);
+      if (!empty($value['caption'])) {
+        $component->setCaption($value['caption']);
       }
       $components[] = $component;
     }
