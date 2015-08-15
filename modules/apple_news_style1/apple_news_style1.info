@@ -3,6 +3,7 @@ package = Apple News
 description = Apple news style 1.
 core = 7.x
 
+files[] = include/export.inc
 files[] = include/destination.inc
 
 dependencies[] = apple_news
