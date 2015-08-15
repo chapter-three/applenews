@@ -404,6 +404,10 @@ function apple_news_apple_news_api() {
         'class' => 'ApplenewsDestinationAd',
         'name' => 'Advertisement',
       ],
+      'byline' => [
+        'class' => 'ApplenewsDestinationByline',
+        'name' => 'Byline',
+      ],
     ],
   ];
 }

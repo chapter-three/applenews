@@ -743,3 +743,80 @@ class ApplenewsDestinationAd extends ApplenewsDestination {
   }
 
 }
+
+/**
+ * Byline component.
+ */
+class ApplenewsDestinationByline extends ApplenewsDestination {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct() {
+    parent::__construct();
+    $this->settings += [
+      'format' => '',
+      'source' => '',
+    ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function label() {
+    return t('Byline') . ' (' . $this->id . ')';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getConfigForm($form, &$form_state) {
+
+    $form = parent::getConfigForm($form, $form_state);
+
+    $form['format'] = [
+      '#title' => t('Format'),
+      '#type' => 'select',
+      '#options' => [
+        '' => t('None'),
+        'markdown' => t('Markdown'),
+      ],
+      '#default_value' => $this->settings['format'],
+    ];
+
+    $form['source'] = [
+      '#title' => t('Byline'),
+      '#type' => 'select',
+      '#options' => $this->getSourceOptions(),
+      '#default_value' => $this->settings['source'],
+    ];
+
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function export($value) {
+
+    list($key, $values) = $this->getSourceValues($value,
+      $this->settings['source']);
+
+    $components = array();
+    foreach ($values as $value) {
+
+      if (!empty($this->settings['format'])) {
+        $byline = new Components\Byline(Markdown::convert($value[$key]));
+        $byline->setFormat($this->settings['format']);
+      }
+      else {
+        $byline = new Components\Byline($value[$key]);
+      }
+
+      $components[] = $byline;
+
+    }
+    return $components;
+  }
+
+}
