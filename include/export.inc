@@ -61,6 +61,7 @@ abstract class ApplenewsExport {
     $this->arguments = $arguments;
     $this->settings = [
       'channels' => [],
+      'sections' => [],
     ];
   }
 
@@ -320,6 +321,10 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
     $this->destinations += [
       'components' => [],
     ];
+    $this->settings += [
+      'layout_columns' => 7,
+      'layout_width'   => 1024,
+    ];
     $this->init();
   }
 
@@ -534,6 +539,21 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
       ],
     ];
 
+    $form['layout'] = [
+      '#type'          => 'fieldset',
+      '#title'         => t('Layout'),
+      'layout_columns' => [
+        '#type'          => 'textfield',
+        '#title'         => t('Columns'),
+        '#default_value' => $this->settings['layout_columns'],
+      ],
+      'layout_width'   => [
+        '#type'          => 'textfield',
+        '#title'         => t('Width'),
+        '#default_value' => $this->settings['layout_width'],
+      ],
+    ];
+
     return $form;
   }
 
@@ -558,6 +578,15 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
       $destination->id = $id;
       $this->destinations['components'][$id] = $destination;
     }
+
+    foreach ([
+        'layout_columns',
+        'layout_width',
+      ] as $key
+    ) {
+      $this->settings[$key] = (int) $form_state['values'][$key];
+    }
+
     parent::submitConfigForm($form, $form_state);
   }
 
@@ -580,9 +609,7 @@ class ApplenewsExportNode extends ApplenewsExportConfigurable {
    */
   public function __construct($module, $machine_name, array $arguments) {
     parent::__construct($module, $machine_name, $arguments);
-    $this->settings += [
-      'layout' => 'simple',
-    ];
+    $this->settings += [];
   }
 
   /**
@@ -636,15 +663,6 @@ class ApplenewsExportNode extends ApplenewsExportConfigurable {
       '#default_value' => $this->bundles,
     ];
 
-    $form['layout'] = [
-      '#type'          => 'select',
-      '#title'         => t('Layout'),
-      '#default_value' => $this->settings['layout'],
-      '#options'       => [
-        'simple' => t('Simple'),
-      ],
-    ];
-
     return $form;
   }
 
@@ -678,22 +696,17 @@ class ApplenewsExportNode extends ApplenewsExportConfigurable {
       $language = $language->language;
     }
 
-    switch ($this->settings['layout']) {
-
-      case 'simple':
-      default:
-        $layout = new Document\Layouts\Layout(7, 1024);
-        $this->document = new Document($id, $title,
-          apple_news_language_code($language), $layout);
-        // Components.
-        /** @var ApplenewsDestination $destination */
-        foreach ($this->getComponents() as $destination) {
-          foreach ($destination->export($entity) as $component) {
-            $this->document->addComponent($component);
-          }
-        }
-        break;
-
+    $layout = new Document\Layouts\Layout(
+      $this->settings['layout_columns'],
+      $this->settings['layout_width']);
+    $this->document = new Document($id, $title,
+      apple_news_language_code($language), $layout);
+    // Components.
+    /** @var ApplenewsDestination $destination */
+    foreach ($this->getComponents() as $destination) {
+      foreach ($destination->export($entity) as $component) {
+        $this->document->addComponent($component);
+      }
     }
 
     return $this->document;

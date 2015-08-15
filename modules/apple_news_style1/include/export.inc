@@ -15,6 +15,26 @@ use \ChapterThree\AppleNews\Document\Components;
 class Applenewsstyle1ExportNode extends ApplenewsExportNode {
 
   /**
+   * {@inheritdoc}
+   */
+  public function __construct($module, $machine_name, array $arguments) {
+    parent::__construct($module, $machine_name, $arguments);
+    $this->settings['layout_columns'] = 7;
+    $this->settings['layout_width'] = 1024;
+  }
+
+  /**
+   * Provides a configuration form for this export.
+   */
+  public function getConfigForm($form, &$form_state) {
+    $form = parent::getConfigForm($form, $form_state);
+    unset($form['layout']['#type']);
+    $form['layout']['layout_columns']['#type'] = 'value';
+    $form['layout']['layout_width']['#type'] = 'value';
+    return $form;
+  }
+
+  /**
    * Set any relations between components.
    */
   protected function associateComponents() {
