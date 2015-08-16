@@ -37,7 +37,7 @@ class Applenewsstyle1ExportNode extends ApplenewsExportNode {
     $form['layout']['layout_alignment'] = [
       '#type'          => 'select',
       '#title'         => t('Alignment'),
-      '#default_vaule' => $this->settings['layout_alignment'],
+      '#default_value' => $this->settings['layout_alignment'],
       '#options'       => [
         'left'   => t('Left'),
         'center' => t('Center'),

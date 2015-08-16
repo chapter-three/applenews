@@ -59,7 +59,7 @@ class Applenewsstyle1DestinationBody extends ApplenewsDestinationBodyPhoto {
 
       case 'center':
         $body_layout->setColumnStart(1)->setColumnSpan(7);
-        $image_layout->setMargin(new Margin(25, 25));
+        $image_layout->setColumnStart(1)->setColumnSpan(7);
         break;
 
       case 'right':
@@ -429,8 +429,7 @@ class Applenewsstyle1DestinationAnimatedPullQuote extends ApplenewsDestination {
     $section = new Components\Section();
     $section->setScene(new Animations\Scenes\ParallaxScaleHeader());
     $layout = new Layouts\ComponentLayout();
-    $layout->setColumnStart(0)->setColumnSpan(7)
-      ->setIgnoreDocumentMargin()
+    $layout->setIgnoreDocumentMargin()
       ->setMinimumHeight('42vh');
     $section->setLayout($layout);
 
@@ -453,8 +452,7 @@ class Applenewsstyle1DestinationAnimatedPullQuote extends ApplenewsDestination {
     $header = new Components\Header();
     $header->setStyle($style);
     $layout = new Layouts\ComponentLayout();
-    $layout->setColumnStart(0)->setColumnSpan(7)
-      ->setIgnoreDocumentMargin()
+    $layout->setIgnoreDocumentMargin()
       ->setMinimumHeight('75vw')
       ->setMargin(new Margin(25, 25));
     $header->setLayout($layout);
@@ -471,8 +469,7 @@ class Applenewsstyle1DestinationAnimatedPullQuote extends ApplenewsDestination {
     $quote->setLayout($layout);
     $quote->setBehavior(new Behaviors\BackgroundParallax());
     $text_style = new Styles\ComponentTextStyle();
-    $text_style->setTextAlignment('center')
-      ->setTextTransform('uppercase')
+    $text_style->setTextTransform('uppercase')
       ->setFontName('AvenirNext-Bold')
       ->setFontSize(16)
       ->setLineHeight(20)
@@ -485,19 +482,42 @@ class Applenewsstyle1DestinationAnimatedPullQuote extends ApplenewsDestination {
     switch ($this->export->settings['layout_alignment']) {
 
       case 'left':
+        // Quote.
+        /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
+        $layout = $quote->getLayout();
+        $layout->setColumnStart(1);
+        /** @var \ChapterThree\AppleNews\Document\Styles\ComponentTextStyle $text_style */
+        $text_style = $quote->getTextStyle();
+        $text_style->setTextAlignment('left');
+        // Section.
         /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
         $layout = $section->getLayout();
         $layout->setColumnStart(3)->setColumnSpan(4);
         break;
 
       case 'center':
+        // Quote.
+        /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
+        $layout = $quote->getLayout();
+        $layout->setColumnStart(1)->setColumnSpan(5);
+        /** @var \ChapterThree\AppleNews\Document\Styles\ComponentTextStyle $text_style */
+        $text_style = $quote->getTextStyle();
+        $text_style->setTextAlignment('center');
+        // Section.
         /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
         $layout = $section->getLayout();
         $layout->setColumnStart(1)->setColumnSpan(7);
-        $layout->setMargin(new Margin(25, 25));
         break;
 
       case 'right':
+        // Quote.
+        /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
+        $layout = $quote->getLayout();
+        $layout->setColumnSpan(6);
+        /** @var \ChapterThree\AppleNews\Document\Styles\ComponentTextStyle $text_style */
+        $text_style = $quote->getTextStyle();
+        $text_style->setTextAlignment('left');
+        // Section.
         /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
         $layout = $section->getLayout();
         $layout->setColumnStart(0)->setColumnSpan(4);
