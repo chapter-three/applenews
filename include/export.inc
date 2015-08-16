@@ -339,6 +339,16 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
    * Implements __wakeup().
    */
   public function __wakeup() {
+    // Prevent unserialization of no-longer defined classes.
+    foreach ($this->destinations as $key => $destinations) {
+      foreach ($destinations as $index => $obj) {
+        if ($obj instanceof __PHP_Incomplete_Class ||
+            !$obj instanceof ApplenewsDestination
+        ) {
+          unset($this->destinations[$key][$index]);
+        }
+      }
+    }
     $this->init();
   }
 
