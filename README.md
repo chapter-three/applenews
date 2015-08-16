@@ -53,11 +53,10 @@ To install Apple News using drush and command line:
 
     -   [Libraries](https://www.drupal.org/project/libraries)
     -   [Entity](https://www.drupal.org/project/entity)
-    
-    The following drush command will download and enable both modules.
-    
+
     ```shell
-    $ drush en libraries entity -y
+    $ drush dl libraries entity
+    $ drush en libraries entity
     ```
 
 2. Next, in your terminal, navigate to your `sites/all/libraries` folder and run the following curl commands to download the proper library versions. If the `libraries` folder does not exist, please create it before running the following command:
