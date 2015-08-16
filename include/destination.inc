@@ -763,9 +763,9 @@ class ApplenewsDestinationAd extends ApplenewsDestination {
 }
 
 /**
- * Logo component.
+ * Image component.
  */
-class ApplenewsDestinationLogo extends ApplenewsDestination {
+class ApplenewsDestinationImage extends ApplenewsDestination {
 
   /**
    * {@inheritdoc}
@@ -773,7 +773,8 @@ class ApplenewsDestinationLogo extends ApplenewsDestination {
   public function __construct() {
     parent::__construct();
     $this->settings += [
-      'file' => '',
+      'type' => NULL,
+      'source' => NULL,
     ];
   }
 
@@ -781,7 +782,7 @@ class ApplenewsDestinationLogo extends ApplenewsDestination {
    * {@inheritdoc}
    */
   public function label() {
-    return t('Logo') . ' (' . $this->id . ')';
+    return t('Image') . ' (' . (!empty($this->settings['type']) ? $this->settings['type'] : $this->id) . ')';
   }
 
   /**
@@ -791,11 +792,20 @@ class ApplenewsDestinationLogo extends ApplenewsDestination {
 
     $form = parent::getConfigForm($form, $form_state);
 
-    $form['file'] = [
-      '#title' => t('Logo'),
+    $form['type'] = [
+      '#title' => t('Type'),
+      '#type' => 'select',
+      '#options' => [
+        'Logo' => t('Logo')
+      ],
+      '#default_value' => !empty($this->settings['type']) ? $this->settings['type'] : 'Logo',
+    ];
+
+    $form['source'] = [
+      '#title' => t('Value'),
       '#type' => 'select',
       '#options' => $this->getSourceOptions(),
-      '#default_value' => $this->settings['file'],
+      '#default_value' => $this->settings['source'],
       '#description' => t('<strong>Important:</strong> Map this field to the File field. Images should be high-resolution so they can be smoothly scaled down. Supported image types include JPEG (with .jpg or .jpeg extension), PNG, and GIF.'),
     ];
 
@@ -806,15 +816,23 @@ class ApplenewsDestinationLogo extends ApplenewsDestination {
    * {@inheritdoc}
    */
   public function export($value) {
-
     list($key, $values) = $this->getSourceValues($value,
-      $this->settings['file']);
+      $this->settings['source']);
+    $components = [];
     foreach ($values as $value) {
       $file = $value[$key];
-      $logo = new Components\Logo($this->export->addAsset($file->uri));
-      $logo->setCaption(empty($file->title) ? (empty($file->alt) ? '' : $file->alt) : $file->title);
-      return [$logo];
+      if (is_object($file)) {
+        switch ($this->settings['type']) {
+          case 'Logo' :
+          default :
+            $component = new Components\Logo($this->export->addAsset($file->uri));
+            $component->setCaption(empty($file->title) ? (empty($file->alt) ? '' : $file->alt) : $file->title);
+            $components[] = $component;
+            break;
+        }
+      }
     }
+    return $components;
   }
 
 }

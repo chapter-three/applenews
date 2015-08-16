@@ -408,9 +408,9 @@ function apple_news_apple_news_api() {
         'class' => 'ApplenewsDestinationText',
         'name' => 'Text',
       ],
-      'logo' => [
-        'class' => 'ApplenewsDestinationLogo',
-        'name' => 'Logo',
+      'image' => [
+        'class' => 'ApplenewsDestinationImage',
+        'name' => 'Image',
       ],
       'divider' => [
         'class' => 'ApplenewsDestinationDivider',
