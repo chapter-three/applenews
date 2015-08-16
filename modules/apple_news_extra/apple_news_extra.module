@@ -9,35 +9,47 @@
  * Implements hook_apple_news_api().
  */
 function apple_news_extra_apple_news_api() {
-  return [
+  $info = [
     'api' => 1,
-    'sources' => [
-      'link_field' => [
-        'class' => 'ApplenewsExtraSourceFieldLink',
-        'name' => 'Link Field',
-      ],
-      'video_embed_field' => [
-        'class' => 'ApplenewsExtraSourceFieldVideoEmbedField',
-        'name' => 'Video Embed',
-      ],
-    ],
-    'destinations' => [
-      'instagram' => [
-        'class' => 'ApplenewsExtraDestinationInstagram',
-        'name' => 'Instagram',
-      ],
-      'tweet' => [
-        'class' => 'ApplenewsExtraDestinationTweet',
-        'name' => 'Tweet',
-      ],
-      'EmbedWebVideo' => [
-        'class' => 'ApplenewsExtraDestinationEmbedWebVideo',
-        'name' => 'Embed Web Video',
-      ],
-      'Music' => [
-        'class' => 'ApplenewsExtraDestinationMusic',
-        'name' => 'Music',
-      ],
-    ],
+    'sources' => [],
+    'destinations' => [],
   ];
+  // Link field support.
+  if (module_exists('link')) {
+    $info['sources']['link_field'] = [
+      'class' => 'ApplenewsExtraSourceFieldLink',
+      'name' => 'Link Field',
+    ];
+    $info['destinations']['instagram'] = [
+      'class' => 'ApplenewsExtraDestinationInstagram',
+      'name' => 'Instagram',
+    ];
+    $info['destinations']['tweet'] = [
+      'class' => 'ApplenewsExtraDestinationTweet',
+      'name' => 'Tweet',
+    ];
+  }
+  // Video Embed field support.
+  if (module_exists('video_embed_field')) {
+    $info['sources']['video_embed_field'] = [
+      'class' => 'ApplenewsExtraSourceFieldVideoEmbedField',
+      'name' => 'Video Embed',
+    ];
+    $info['destinations']['EmbedWebVideo'] = [
+      'class' => 'ApplenewsExtraDestinationEmbedWebVideo',
+      'name' => 'Embed Web Video',
+    ];
+    $info['destinations']['tweet'] = [
+      'class' => 'ApplenewsExtraDestinationTweet',
+      'name' => 'Tweet',
+    ];
+  }
+  // Audio field support.
+  if (module_exists('audiofield')) {
+    $info['destinations']['Music'] = [
+      'class' => 'ApplenewsExtraDestinationMusic',
+      'name' => 'Music',
+    ];
+  }
+  return $info;
 }
