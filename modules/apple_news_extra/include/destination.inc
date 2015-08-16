@@ -60,7 +60,7 @@ class ApplenewsExtraDestinationInstagram extends ApplenewsDestination {
 
     list($key, $values) = $this->getSourceValues($value,
       $this->settings['source']);
-    $components = array();
+    $components = [];
     foreach ($values as $value) {
       $components[] = new Components\Instagram($value[$key]);
     }
@@ -122,7 +122,7 @@ class ApplenewsExtraDestinationTweet extends ApplenewsDestination {
 
     list($key, $values) = $this->getSourceValues($value,
       $this->settings['source']);
-    $components = array();
+    $components = [];
     foreach ($values as $value) {
       $components[] = new Components\Tweet($value[$key]);
     }
@@ -191,7 +191,7 @@ class ApplenewsExtraDestinationEmbedWebVideo extends ApplenewsDestination {
   public function export($value) {
     list($key, $values) = $this->getSourceValues($value,
       $this->settings['video_url']);
-    $components = array();
+    $components = [];
     foreach ($values as $value) {
       $component = new Components\EmbedWebVideo($value[$key]);
       if (!empty($value['caption'])) {
@@ -205,9 +205,9 @@ class ApplenewsExtraDestinationEmbedWebVideo extends ApplenewsDestination {
 }
 
 /**
- * Music component.
+ * Audio component.
  */
-class ApplenewsExtraDestinationMusic extends ApplenewsDestination {
+class ApplenewsExtraDestinationAudio extends ApplenewsDestination {
 
   /**
    * {@inheritdoc}
@@ -215,6 +215,7 @@ class ApplenewsExtraDestinationMusic extends ApplenewsDestination {
   public function __construct() {
     parent::__construct();
     $this->settings += [
+      'type' => NULL,
       'url' => NULL,
       'caption' => NULL,
       'imageURL' => NULL,
@@ -226,7 +227,7 @@ class ApplenewsExtraDestinationMusic extends ApplenewsDestination {
    * {@inheritdoc}
    */
   public function label() {
-    return t('Music') . ' (' . $this->id . ')';
+    return t('Audio') . ' (' . (!empty($this->settings['type']) ? $this->settings['type'] : $this->id) . ')';
   }
 
   /**
@@ -235,6 +236,15 @@ class ApplenewsExtraDestinationMusic extends ApplenewsDestination {
   public function getConfigForm($form, &$form_state) {
 
     $form = parent::getConfigForm($form, $form_state);
+
+    $form['type'] = [
+      '#title' => t('Type'),
+      '#type' => 'select',
+      '#options' => [
+        'Music' => t('Music'),
+      ],
+      '#default_value' => !empty($this->settings['type']) ? $this->settings['type'] : 'Music',
+    ];
 
     $form['url'] = [
       '#title' => t('Audio URL'),
@@ -291,19 +301,24 @@ class ApplenewsExtraDestinationMusic extends ApplenewsDestination {
       $this->settings['imageURL']);
     list($caption_key, $caption_value) = $this->getSourceValues($value,
       $this->settings['caption']);
-    $components = array();
+    $components = [];
     foreach ($values as $value) {
       $file = $value['file'];
       if (is_object($file)) {
-        $component = new Components\Music($value['url']);
-        if (!empty($caption_value[0]['value'])) {
-          $component->setCaption($caption_value[0]['value']);
-        }
-        if (!empty($imageURL_values[0]['file']) && is_object($imageURL_values[0]['file'])) {
-          $component->setImageURL($this->export->addAsset($imageURL_values[0]['file']->uri));
-        }
-        if (!empty($this->settings['explicitContent'])) {
-          $component->setExplicitContent(TRUE);
+        switch ($this->settings['type']) {
+          case 'Music' :
+          default :
+            $component = new Components\Music($value['url']);
+            if (!empty($caption_value[0]['value'])) {
+              $component->setCaption($caption_value[0]['value']);
+            }
+            if (!empty($imageURL_values[0]['file']) && is_object($imageURL_values[0]['file'])) {
+              $component->setImageURL($this->export->addAsset($imageURL_values[0]['file']->uri));
+            }
+            if (!empty($this->settings['explicitContent'])) {
+              $component->setExplicitContent(TRUE);
+            }
+            break;
         }
         $components[] = $component;
       }
