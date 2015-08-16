@@ -8,6 +8,7 @@
 use \ChapterThree\AppleNews\Document\Components;
 use \ChapterThree\AppleNews\Document\GalleryItem;
 use \ChapterThree\AppleNews\Document\Markdown;
+use \ChapterThree\AppleNews\Document\Styles;
 
 /**
  * Interface for an Apple News source.
@@ -872,11 +873,11 @@ class ApplenewsDestinationText extends ApplenewsDestination {
         'heading6' => t('H6'),
       ],
       '#default_value' => $this->settings['heading'],
-      '#states' => array(
-        'visible' => array(
-          ':input[name="component"]' => array('value' => 'Heading'),
-        ),
-      ),
+      '#states' => [
+        'visible' => [
+          ':input[name="component"]' => ['value' => 'Heading'],
+        ],
+      ],
     ];
 
     $form['format'] = [
@@ -1011,6 +1012,83 @@ class ApplenewsDestinationText extends ApplenewsDestination {
 
     }
     return $components;
+  }
+
+}
+
+/**
+ * Divider component.
+ */
+class ApplenewsDestinationDivider extends ApplenewsDestination {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct() {
+    parent::__construct();
+    $this->settings += [
+      'color' => '#000',
+      'width' => 1,
+      'style' => 'solid',
+    ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function label() {
+    return t('Divider') . ' (' . $this->id . ')';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getConfigForm($form, &$form_state) {
+
+    $form = parent::getConfigForm($form, $form_state);
+
+    $form['color'] = [
+      '#title' => t('Color'),
+      '#type' => 'textfield',
+      '#default_value' => !empty($this->settings['color']) ? $this->settings['color'] : '#000',
+      '#description' => t('The stroke color, defined as a 3- to 8-character RGBA hexadecimal string; e.g., #000 for black or #FF00007F for red with an alpha (opacity) of 50%. Defaults to #000 (black).'),
+    ];
+
+    $form['width'] = [
+      '#title' => t('Width'),
+      '#type' => 'textfield',
+      '#default_value' => !empty($this->settings['width']) ? $this->settings['width'] : 1,
+      '#description' => t('The width of the stroke line. Can be either an integer value in points. Defaults to 1 point.')
+    ];
+
+    $form['style'] = [
+      '#title' => t('Style'),
+      '#type' => 'select',
+      '#options' => [
+        'solid' => t('Solid'),
+        'dashed' => t('Dashed'),
+        'dotted' => t('Dotted'),
+      ],
+      '#default_value' => !empty($this->settings['style']) ? $this->settings['style'] : 'solid',
+      '#description' => t('Defines the style of the stroke. Available values: <strong>solid</strong> (Default), <strong>dashed</strong> and <strong>dotted</strong>')
+    ];
+
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function export($value) {
+    $divider = new Components\Divider();
+    if (!empty($this->settings['color'])) {
+      $stroke = new Styles\StrokeStyle();
+      $stroke->setColor($this->settings['color']);
+      $stroke->setWidth($this->settings['width']);
+      $stroke->setStyle($this->settings['style']);
+      $divider->setStroke($stroke);
+    }
+    return [$divider];
   }
 
 }

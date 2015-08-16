@@ -412,6 +412,10 @@ function apple_news_apple_news_api() {
         'class' => 'ApplenewsDestinationLogo',
         'name' => 'Logo',
       ],
+      'divider' => [
+        'class' => 'ApplenewsDestinationDivider',
+        'name' => 'Divider',
+      ],
     ],
   ];
 }
