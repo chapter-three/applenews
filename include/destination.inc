@@ -774,6 +774,13 @@ class ApplenewsDestinationByline extends ApplenewsDestination {
 
     $form = parent::getConfigForm($form, $form_state);
 
+    $form['source'] = [
+      '#title' => t('Byline'),
+      '#type' => 'select',
+      '#options' => $this->getSourceOptions(),
+      '#default_value' => $this->settings['source'],
+    ];
+
     $form['format'] = [
       '#title' => t('Format'),
       '#type' => 'select',
@@ -782,13 +789,6 @@ class ApplenewsDestinationByline extends ApplenewsDestination {
         'markdown' => t('Markdown'),
       ],
       '#default_value' => $this->settings['format'],
-    ];
-
-    $form['source'] = [
-      '#title' => t('Byline'),
-      '#type' => 'select',
-      '#options' => $this->getSourceOptions(),
-      '#default_value' => $this->settings['source'],
     ];
 
     return $form;
@@ -850,6 +850,13 @@ class ApplenewsDestinationAuthor extends ApplenewsDestination {
 
     $form = parent::getConfigForm($form, $form_state);
 
+    $form['source'] = [
+      '#title' => t('Author'),
+      '#type' => 'select',
+      '#options' => $this->getSourceOptions(),
+      '#default_value' => $this->settings['source'],
+    ];
+
     $form['format'] = [
       '#title' => t('Format'),
       '#type' => 'select',
@@ -858,13 +865,6 @@ class ApplenewsDestinationAuthor extends ApplenewsDestination {
         'markdown' => t('Markdown'),
       ],
       '#default_value' => $this->settings['format'],
-    ];
-
-    $form['source'] = [
-      '#title' => t('Author'),
-      '#type' => 'select',
-      '#options' => $this->getSourceOptions(),
-      '#default_value' => $this->settings['source'],
     ];
 
     return $form;
@@ -949,6 +949,82 @@ class ApplenewsDestinationLogo extends ApplenewsDestination {
       $logo->setCaption(empty($file->title) ? (empty($file->alt) ? '' : $file->alt) : $file->title);
       return [$logo];
     }
+  }
+
+}
+
+/**
+ * Title component.
+ */
+class ApplenewsDestinationTitle extends ApplenewsDestination {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct() {
+    parent::__construct();
+    $this->settings += [
+      'source' => '',
+      'format' => NULL,
+    ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function label() {
+    return t('Title') . ' (' . $this->id . ')';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getConfigForm($form, &$form_state) {
+
+    $form = parent::getConfigForm($form, $form_state);
+
+    $form['source'] = [
+      '#title' => t('Title'),
+      '#type' => 'select',
+      '#options' => $this->getSourceOptions(),
+      '#default_value' => $this->settings['source'],
+    ];
+
+    $form['format'] = [
+      '#title' => t('Format'),
+      '#type' => 'select',
+      '#options' => [
+        '' => t('None'),
+        'markdown' => t('Markdown'),
+      ],
+      '#default_value' => $this->settings['format'],
+    ];
+
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function export($value) {
+
+    list($key, $values) = $this->getSourceValues($value,
+      $this->settings['source']);
+
+    $components = array();
+    foreach ($values as $value) {
+      if (!empty($this->settings['format'])) {
+        $title = new Components\Title(Markdown::convert($value[$key]));
+        $title->setFormat($this->settings['format']);
+      }
+      else {
+        $title = new Components\Title($value[$key]);
+      }
+
+      $components[] = $title;
+
+    }
+    return $components;
   }
 
 }
