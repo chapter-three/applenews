@@ -504,6 +504,7 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
         '#title' => t('Add new component'),
         '#type' => 'select',
         '#options' => $options,
+        '#description' => t('To add a new component please select component from the list and hit <em>Save changes</em> button.'),
       ],
       'edit' => [
         '#markup' => '',
