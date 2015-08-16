@@ -371,7 +371,7 @@ class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination
 /**
  * Animated pullquote component.
  */
-class Applenewsstyle1DestinationAnimatedPullQuote extends ApplenewsDestination {
+class Applenewsstyle1DestinationPullQuote extends ApplenewsDestination {
 
   /**
    * {@inheritdoc}
