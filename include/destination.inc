@@ -589,9 +589,9 @@ class ApplenewsDestinationBodyPhoto extends ApplenewsDestinationBody {
 }
 
 /**
- * Mosaic component.
+ * Mosaic or Gallery component.
  */
-class ApplenewsDestinationMosaic extends ApplenewsDestination {
+class ApplenewsDestinationImages extends ApplenewsDestination {
 
   /**
    * {@inheritdoc}
@@ -599,6 +599,7 @@ class ApplenewsDestinationMosaic extends ApplenewsDestination {
   public function __construct() {
     parent::__construct();
     $this->settings += [
+      'type' => 'gallery',
       'items' => NULL,
     ];
   }
@@ -607,7 +608,7 @@ class ApplenewsDestinationMosaic extends ApplenewsDestination {
    * {@inheritdoc}
    */
   public function label() {
-    return t('Mosaic') . ' (' . $this->id . ')';
+    return t('Image Series (Gallery or Mosaic)') . ' (' . $this->id . ')';
   }
 
   /**
@@ -616,6 +617,16 @@ class ApplenewsDestinationMosaic extends ApplenewsDestination {
   public function getConfigForm($form, &$form_state) {
 
     $form = parent::getConfigForm($form, $form_state);
+
+    $form['type'] = [
+      '#title' => t('Type'),
+      '#type' => 'select',
+      '#options' => [
+        'gallery' => t('Gallery'),
+        'mosaic' => t('Mosaic'),
+      ],
+      '#default_value' => $this->settings['type'],
+    ];
 
     $form['items'] = [
       '#title' => t('Items'),
@@ -651,9 +662,17 @@ class ApplenewsDestinationMosaic extends ApplenewsDestination {
     }
 
     if (count($items)) {
-      $mosaic = new Components\Mosaic($items);
-      return [$mosaic];
+      switch ($this->settings['type']) {
+
+        case 'gallery':
+          return [new Components\Gallery($items)];
+
+        case 'mosaic':
+          return [new Components\Mosaic($items)];
+
+      }
     }
+
     return [];
   }
 

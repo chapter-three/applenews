@@ -531,9 +531,9 @@ class Applenewsstyle1DestinationPullQuote extends ApplenewsDestination {
 }
 
 /**
- * Mosaic component.
+ * Mosaic or Gallery component.
  */
-class Applenewsstyle1DestinationMosaic extends ApplenewsDestinationMosaic {
+class Applenewsstyle1DestinationImages extends ApplenewsDestinationImages {
 
   /**
    * Exports to an Apple News Document container object.
@@ -549,18 +549,31 @@ class Applenewsstyle1DestinationMosaic extends ApplenewsDestinationMosaic {
     if (empty($components)) {
       return [];
     }
-    /** @var \ChapterThree\AppleNews\Document\Components\Mosaic $mosaic */
-    list($mosaic) = $components;
-    // $mosaic->setLayout('galleryLayout');
+    /** @var \ChapterThree\AppleNews\Document\Components\Mosaic|\ChapterThree\AppleNews\Document\Components\Gallery $images */
+    list($images) = $components;
     $animation = new Animations\ComponentAnimations\ScaleFadeAnimation();
     $animation->setInitialAlpha(0.5)->setInitialScale(0.75);
-    $mosaic->setAnimation($animation);
+    $images->setAnimation($animation);
     $layout = new Layouts\ComponentLayout();
-    $layout->setColumnStart(0)->setColumnSpan(7)
+    $layout
       ->setIgnoreDocumentMargin()
       ->setMargin(new Margin(25, 25));
-    $mosaic->setLayout($layout);
-    return [$mosaic];
+    $images->setLayout($layout);
+
+    switch ($this->export->settings['layout_alignment']) {
+
+      case 'left':
+      case 'right':
+        $layout->setColumnStart(0)->setColumnSpan(7);
+        break;
+
+      case 'center':
+        $layout->setColumnStart(0)->setColumnSpan(9);
+        break;
+
+    }
+
+    return [$images];
   }
 
 }

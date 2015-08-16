@@ -45,9 +45,9 @@ function apple_news_style1_apple_news_api() {
         'class' => 'Applenewsstyle1DestinationPullQuote',
         'name' => 'Pull Quote',
       ],
-      'mosaic' => [
-        'class' => 'Applenewsstyle1DestinationMosaic',
-        'name' => 'Mosaic',
+      'images' => [
+        'class' => 'Applenewsstyle1DestinationImages',
+        'name' => 'Mosaic/Gallery',
       ],
     ],
   ];
