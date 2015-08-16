@@ -838,6 +838,119 @@ class ApplenewsDestinationImage extends ApplenewsDestination {
 }
 
 /**
+ * Scalable Image component.
+ */
+class ApplenewsDestinationScalableImage extends ApplenewsDestination {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct() {
+    parent::__construct();
+    $this->settings += [
+      'type' => NULL,
+      'file' => NULL,
+      'accessibilityCaption' => NULL,
+      'explicitContent' => NULL,
+    ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function label() {
+    return t('Scalable Image') . ' (' . (!empty($this->settings['type']) ? $this->settings['type'] : $this->id) . ')';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getConfigForm($form, &$form_state) {
+
+    $form = parent::getConfigForm($form, $form_state);
+
+    $form['type'] = [
+      '#title' => t('Type'),
+      '#type' => 'select',
+      '#options' => [
+        'Figure' => t('Figure'),
+        'Photo' => t('Photo'),
+        'Portrait' => t('Portrait'),
+      ],
+      '#default_value' => !empty($this->settings['type']) ? $this->settings['type'] : 'Figure',
+    ];
+
+    $form['file'] = [
+      '#title' => t('Value'),
+      '#type' => 'select',
+      '#options' => $this->getSourceOptions(),
+      '#default_value' => $this->settings['file'],
+      '#description' => t('<strong>Important:</strong> Map this field to the File field. Images should be high-resolution so they can be smoothly scaled down. Supported image types include JPEG (with .jpg or .jpeg extension), PNG, and GIF.'),
+    ];
+
+    $form['accessibilityCaption'] = [
+      '#title' => t('Accessibility Caption'),
+      '#type' => 'select',
+      '#options' => $this->getSourceOptions(),
+      '#default_value' => $this->settings['accessibilityCaption'],
+      '#description' => t('Optional caption text describing the contents of the image. Note that this property differs from caption although the caption may be displayed to readers, the accessiblity caption is used for VoiceOver only.'),
+    ];
+
+    $form['explicitContent'] = [
+      '#title' => t('Explicit Content'),
+      '#type' => 'select',
+      '#options' => $this->getSourceOptions(),
+      '#default_value' => $this->settings['explicitContent'],
+      '#description' => t('This property indicates that the audio track may contain explicit/graphic content. Default value is False'),
+    ];
+
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function export($value) {
+    list($key, $values) = $this->getSourceValues($value,
+      $this->settings['file']);
+    list($accessibilityCaption_key, $accessibilityCaption_value) = $this->getSourceValues($value,
+      $this->settings['accessibilityCaption']);
+    list($explicitContent_key, $explicitContent_value) = $this->getSourceValues($value,
+      $this->settings['explicitContent']);
+    $components = [];
+    foreach ($values as $value) {
+      $file = $value[$key];
+      if (is_object($file)) {
+        switch ($this->settings['type']) {
+          case 'Photo' :
+            $component = new Components\Photo($this->export->addAsset($file->uri));
+            break;
+
+          case 'Portrait' :
+            $component = new Components\Portrait($this->export->addAsset($file->uri));
+            break;
+
+          case 'Figure' :
+          default :
+            $component = new Components\Figure($this->export->addAsset($file->uri));
+            break;
+        }
+        if (!empty($accessibilityCaption_value[0]['value']) && is_object($accessibilityCaption_value[0]['value'])) {
+          $component->setAccessibilityCaption($this->export->addAsset($accessibilityCaption_value[0]['value']));
+        }
+        if (!empty($explicitContent_value[0]['value'])) {
+          $component->setExplicitContent(TRUE);
+        }
+        $component->setCaption(empty($file->title) ? (empty($file->alt) ? '' : $file->alt) : $file->title);
+        $components[] = $component;
+      }
+    }
+    return $components;
+  }
+
+}
+
+/**
  * Text component.
  */
 class ApplenewsDestinationText extends ApplenewsDestination {

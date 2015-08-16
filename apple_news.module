@@ -412,6 +412,10 @@ function apple_news_apple_news_api() {
         'class' => 'ApplenewsDestinationImage',
         'name' => 'Image',
       ],
+      'scalable_image' => [
+        'class' => 'ApplenewsDestinationScalableImage',
+        'name' => 'Scalable Image',
+      ],
       'divider' => [
         'class' => 'ApplenewsDestinationDivider',
         'name' => 'Divider',
