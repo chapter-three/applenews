@@ -408,6 +408,10 @@ function apple_news_apple_news_api() {
         'class' => 'ApplenewsDestinationByline',
         'name' => 'Byline',
       ],
+      'author' => [
+        'class' => 'ApplenewsDestinationAuthor',
+        'name' => 'Author',
+      ],
       'logo' => [
         'class' => 'ApplenewsDestinationLogo',
         'name' => 'Logo',

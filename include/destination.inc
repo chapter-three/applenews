@@ -804,7 +804,6 @@ class ApplenewsDestinationByline extends ApplenewsDestination {
 
     $components = array();
     foreach ($values as $value) {
-
       if (!empty($this->settings['format'])) {
         $byline = new Components\Byline(Markdown::convert($value[$key]));
         $byline->setFormat($this->settings['format']);
@@ -814,6 +813,82 @@ class ApplenewsDestinationByline extends ApplenewsDestination {
       }
 
       $components[] = $byline;
+
+    }
+    return $components;
+  }
+
+}
+
+/**
+ * Author component.
+ */
+class ApplenewsDestinationAuthor extends ApplenewsDestination {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct() {
+    parent::__construct();
+    $this->settings += [
+      'format' => '',
+      'source' => '',
+    ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function label() {
+    return t('Author') . ' (' . $this->id . ')';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getConfigForm($form, &$form_state) {
+
+    $form = parent::getConfigForm($form, $form_state);
+
+    $form['format'] = [
+      '#title' => t('Format'),
+      '#type' => 'select',
+      '#options' => [
+        '' => t('None'),
+        'markdown' => t('Markdown'),
+      ],
+      '#default_value' => $this->settings['format'],
+    ];
+
+    $form['source'] = [
+      '#title' => t('Author'),
+      '#type' => 'select',
+      '#options' => $this->getSourceOptions(),
+      '#default_value' => $this->settings['source'],
+    ];
+
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function export($value) {
+
+    list($key, $values) = $this->getSourceValues($value,
+      $this->settings['source']);
+
+    $components = array();
+    foreach ($values as $value) {
+      if (!empty($this->settings['format'])) {
+        $author = new Components\Author(Markdown::convert($value[$key]));
+        $author->setFormat($this->settings['format']);
+      }
+      else {
+        $author = new Components\Author($value[$key]);
+      }
+
+      $components[] = $author;
 
     }
     return $components;
