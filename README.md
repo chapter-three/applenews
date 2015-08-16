@@ -63,6 +63,7 @@ To install Apple News using drush and command line:
 
     ```shell
     $ curl -L https://github.com/php-curl-class/php-curl-class/archive/4.6.8.tar.gz | tar xz
+    $ mv php-curl-class-4.6.8 php-curl-class
     ```
 
      **NOTE: The AppleNews library is currently gated in a private repo. the curl command won't work until publicly released. To get around this, if you have access to the repo, you can download from [the github page](https://github.com/chapter-three/AppleNews/tree/0.2.4)**
@@ -70,7 +71,8 @@ To install Apple News using drush and command line:
 3. Next, still inside the libraries folder, run the following curl command:
 
     ```shell
-    $ curl -L https://github.com/chapter-three/AppleNews/archive/0.2.4.zip | tar xz
+    $ curl -L https://github.com/chapter-three/AppleNews/archive/0.2.4.tar.gz | tar xz
+    $ mv AppleNews-0.2.4 AppleNews
     ```
 
 4. After the libraries are downloaded, your should see directories matching the following setups (You may need to rename the folders you just downloaded to match):
