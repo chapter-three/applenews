@@ -390,7 +390,7 @@ class ApplenewsDestinationBody extends ApplenewsDestination {
   public function export($value) {
     list($key, $values) = $this->getSourceValues($value,
       $this->settings['text']);
-    $components = array();
+    $components = [];
     foreach ($values as $value) {
       $body = new Components\Body(Markdown::convert($value[$key]));
       $body->setFormat('markdown');
@@ -578,7 +578,7 @@ class ApplenewsDestinationBodyPhoto extends ApplenewsDestinationBody {
     list($key, $values) = $this->getSourceValues($value,
       $this->settings['text']);
 
-    $components = array();
+    $components = [];
     foreach ($values as $value) {
       $components = array_merge($components,
         $this->exportConvertHTML($value[$key]));
@@ -936,7 +936,7 @@ class ApplenewsDestinationText extends ApplenewsDestination {
     list($key, $values) = $this->getSourceValues($value,
       $this->settings['source']);
 
-    $components = array();
+    $components = [];
     foreach ($values as $value) {
       switch ($this->settings['component']) {
 
