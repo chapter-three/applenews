@@ -745,158 +745,6 @@ class ApplenewsDestinationAd extends ApplenewsDestination {
 }
 
 /**
- * Byline component.
- */
-class ApplenewsDestinationByline extends ApplenewsDestination {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct() {
-    parent::__construct();
-    $this->settings += [
-      'format' => '',
-      'source' => '',
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function label() {
-    return t('Byline') . ' (' . $this->id . ')';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getConfigForm($form, &$form_state) {
-
-    $form = parent::getConfigForm($form, $form_state);
-
-    $form['source'] = [
-      '#title' => t('Byline'),
-      '#type' => 'select',
-      '#options' => $this->getSourceOptions(),
-      '#default_value' => $this->settings['source'],
-    ];
-
-    $form['format'] = [
-      '#title' => t('Format'),
-      '#type' => 'select',
-      '#options' => [
-        '' => t('None'),
-        'markdown' => t('Markdown'),
-      ],
-      '#default_value' => $this->settings['format'],
-    ];
-
-    return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function export($value) {
-
-    list($key, $values) = $this->getSourceValues($value,
-      $this->settings['source']);
-
-    $components = array();
-    foreach ($values as $value) {
-      if (!empty($this->settings['format'])) {
-        $byline = new Components\Byline(Markdown::convert($value[$key]));
-        $byline->setFormat($this->settings['format']);
-      }
-      else {
-        $byline = new Components\Byline($value[$key]);
-      }
-
-      $components[] = $byline;
-
-    }
-    return $components;
-  }
-
-}
-
-/**
- * Author component.
- */
-class ApplenewsDestinationAuthor extends ApplenewsDestination {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct() {
-    parent::__construct();
-    $this->settings += [
-      'format' => '',
-      'source' => '',
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function label() {
-    return t('Author') . ' (' . $this->id . ')';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getConfigForm($form, &$form_state) {
-
-    $form = parent::getConfigForm($form, $form_state);
-
-    $form['source'] = [
-      '#title' => t('Author'),
-      '#type' => 'select',
-      '#options' => $this->getSourceOptions(),
-      '#default_value' => $this->settings['source'],
-    ];
-
-    $form['format'] = [
-      '#title' => t('Format'),
-      '#type' => 'select',
-      '#options' => [
-        '' => t('None'),
-        'markdown' => t('Markdown'),
-      ],
-      '#default_value' => $this->settings['format'],
-    ];
-
-    return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function export($value) {
-
-    list($key, $values) = $this->getSourceValues($value,
-      $this->settings['source']);
-
-    $components = array();
-    foreach ($values as $value) {
-      if (!empty($this->settings['format'])) {
-        $author = new Components\Author(Markdown::convert($value[$key]));
-        $author->setFormat($this->settings['format']);
-      }
-      else {
-        $author = new Components\Author($value[$key]);
-      }
-
-      $components[] = $author;
-
-    }
-    return $components;
-  }
-
-}
-
-/**
  * Logo component.
  */
 class ApplenewsDestinationLogo extends ApplenewsDestination {
@@ -954,9 +802,9 @@ class ApplenewsDestinationLogo extends ApplenewsDestination {
 }
 
 /**
- * Title component.
+ * Text component.
  */
-class ApplenewsDestinationTitle extends ApplenewsDestination {
+class ApplenewsDestinationText extends ApplenewsDestination {
 
   /**
    * {@inheritdoc}
@@ -966,6 +814,8 @@ class ApplenewsDestinationTitle extends ApplenewsDestination {
     $this->settings += [
       'source' => '',
       'format' => NULL,
+      'heading' => NULL,
+      'component' => NULL,
     ];
   }
 
@@ -973,7 +823,7 @@ class ApplenewsDestinationTitle extends ApplenewsDestination {
    * {@inheritdoc}
    */
   public function label() {
-    return t('Title') . ' (' . $this->id . ')';
+    return t('Text') . ' (' . (!empty($this->settings['component']) ? $this->settings['component'] : $this->id) . ')';
   }
 
   /**
@@ -984,10 +834,49 @@ class ApplenewsDestinationTitle extends ApplenewsDestination {
     $form = parent::getConfigForm($form, $form_state);
 
     $form['source'] = [
-      '#title' => t('Title'),
+      '#title' => t('Value'),
       '#type' => 'select',
       '#options' => $this->getSourceOptions(),
       '#default_value' => $this->settings['source'],
+    ];
+
+    $form['component'] = [
+      '#title' => t('Component'),
+      '#type' => 'select',
+      '#options' => [
+        'Author' => t('Author'),
+        'Body' => t('Body'),
+        'Byline' => t('Byline'),
+        'Caption' => t('Caption'),
+        'Heading' => t('Heading'),
+        'Illustrator' => t('Illustrator'),
+        'Intro' => t('Intro'),
+        'Photographer' => t('Photographer'),
+        'Pullquote' => t('Pullquote'),
+        'Quote' => t('Quote'),
+        'Title' => t('Title'),
+      ],
+      '#default_value' => !empty($this->settings['component']) ? $this->settings['component'] : 'Title',
+    ];
+
+    $form['heading'] = [
+      '#title' => t('Heading'),
+      '#type' => 'select',
+      '#options' => [
+        'heading' => t('Heading'),
+        'heading1' => t('H1'),
+        'heading2' => t('H2'),
+        'heading3' => t('H3'),
+        'heading4' => t('H4'),
+        'heading5' => t('H5'),
+        'heading6' => t('H6'),
+      ],
+      '#default_value' => $this->settings['heading'],
+      '#states' => array(
+        'visible' => array(
+          ':input[name="component"]' => array('value' => 'Heading'),
+        ),
+      ),
     ];
 
     $form['format'] = [
@@ -1013,15 +902,112 @@ class ApplenewsDestinationTitle extends ApplenewsDestination {
 
     $components = array();
     foreach ($values as $value) {
-      if (!empty($this->settings['format'])) {
-        $title = new Components\Title(Markdown::convert($value[$key]));
-        $title->setFormat($this->settings['format']);
-      }
-      else {
-        $title = new Components\Title($value[$key]);
-      }
+      switch ($this->settings['component']) {
 
-      $components[] = $title;
+        case 'Author' :
+          if (!empty($this->settings['format'])) {
+            $component = new Components\Author(Markdown::convert($value[$key]));
+            $component->setFormat($this->settings['format']);
+          }
+          else {
+            $component = new Components\Author($value[$key]);
+          }
+          $components[] = $component;
+          break;
+        case 'Body' :
+          if (!empty($this->settings['format'])) {
+            $component = new Components\Body(Markdown::convert($value[$key]));
+            $component->setFormat($this->settings['format']);
+          }
+          else {
+            $component = new Components\Body($value[$key]);
+          }
+          break;
+        case 'Byline' :
+          if (!empty($this->settings['format'])) {
+            $component = new Components\Byline(Markdown::convert($value[$key]));
+            $component->setFormat($this->settings['format']);
+          }
+          else {
+            $component = new Components\Byline($value[$key]);
+          }
+          break;
+        case 'Caption' :
+          if (!empty($this->settings['format'])) {
+            $component = new Components\Caption(Markdown::convert($value[$key]));
+            $component->setFormat($this->settings['format']);
+          }
+          else {
+            $component = new Components\Caption($value[$key]);
+          }
+          break;
+        case 'Heading' :
+          if (!empty($this->settings['format'])) {
+            $component = new Components\Heading(Markdown::convert($value[$key]));
+            $component->setFormat($this->settings['format']);
+          }
+          else {
+            $component = new Components\Heading($value[$key]);
+          }
+          $component->setRole($this->settings['heading']);
+          break;
+        case 'Illustrator' :
+          if (!empty($this->settings['format'])) {
+            $component = new Components\Illustrator(Markdown::convert($value[$key]));
+            $component->setFormat($this->settings['format']);
+          }
+          else {
+            $component = new Components\Illustrator($value[$key]);
+          }
+          break;
+        case 'Intro' :
+          if (!empty($this->settings['format'])) {
+            $component = new Components\Intro(Markdown::convert($value[$key]));
+            $component->setFormat($this->settings['format']);
+          }
+          else {
+            $component = new Components\Intro($value[$key]);
+          }
+          break;
+        case 'Photographer' :
+          if (!empty($this->settings['format'])) {
+            $component = new Components\Photographer(Markdown::convert($value[$key]));
+            $component->setFormat($this->settings['format']);
+          }
+          else {
+            $component = new Components\Photographer($value[$key]);
+          }
+          break;
+        case 'Pullquote' :
+          if (!empty($this->settings['format'])) {
+            $component = new Components\Pullquote(Markdown::convert($value[$key]));
+            $component->setFormat($this->settings['format']);
+          }
+          else {
+            $component = new Components\Pullquote($value[$key]);
+          }
+          break;
+        case 'Quote' :
+          if (!empty($this->settings['format'])) {
+            $component = new Components\Quote(Markdown::convert($value[$key]));
+            $component->setFormat($this->settings['format']);
+          }
+          else {
+            $component = new Components\Quote($value[$key]);
+          }
+          break;
+        case 'Title' :
+        default :
+          if (!empty($this->settings['format'])) {
+            $component = new Components\Title(Markdown::convert($value[$key]));
+            $component->setFormat($this->settings['format']);
+          }
+          else {
+            $component = new Components\Title($value[$key]);
+          }
+          break;
+      }
+      $components[] = $component;
 
     }
     return $components;
