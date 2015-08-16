@@ -28,35 +28,61 @@ class Applenewsstyle1DestinationBody extends ApplenewsDestinationBodyPhoto {
    * {@inheritdoc}
    */
   public function export($value) {
+
     $dc_style = new Styles\DropCapStyle(5);
     $dc_style->setNumberOfCharacters(1)
       ->setFontName('AvenirNext-UltraLight')
       ->setTextColor('#222E33')
       ->setPadding(5);
-    $text_style = new Styles\ComponentTextStyle();
-    $text_style->setTextAlignment('left')
+    $body_text_style = new Styles\ComponentTextStyle();
+    $body_text_style->setTextAlignment('left')
       ->setFontName('AvenirNext-Regular')
-      ->setFontSize(10)
+      ->setFontSize(16)
       ->setLineHeight(26)
       ->setTextColor('#000')
       ->setDropCapStyle($dc_style);
-    $inline_text_style = new Styles\InlineTextStyle(1, 19, $text_style);
-    $animation = new Animations\ComponentAnimations\FadeInAnimation();
-    $animation->setInitialAlpha(0.0)
+    $body_inline_text_style = new Styles\InlineTextStyle(1, 19, $body_text_style);
+    $body_animation = new Animations\ComponentAnimations\FadeInAnimation();
+    $body_animation->setInitialAlpha(0.0)
       ->setUserControllable(TRUE);
-    $layout = new Layouts\ComponentLayout();
-    $layout->setColumnStart(0)->setColumnSpan(7)
-      ->setMargin(new Margin(15, 15));
+    $body_layout = new Layouts\ComponentLayout();
+    $body_layout->setMargin(new Margin(25, 25));
+
+    $image_layout = new Layouts\ComponentLayout();
+
+    switch ($this->export->settings['layout_alignment']) {
+
+      case 'left':
+        $body_layout->setColumnStart(0)->setColumnSpan(5);
+        $image_layout->setColumnStart(3)->setColumnSpan(4);
+        break;
+
+      case 'center':
+        $body_layout->setColumnStart(1)->setColumnSpan(7);
+        $image_layout->setMargin(new Margin(25, 25));
+        break;
+
+      case 'right':
+        $body_layout->setColumnStart(2)->setColumnSpan(5);
+        $image_layout->setColumnStart(0)->setColumnSpan(4);
+        break;
+
+    }
 
     $components = parent::export($value);
-    foreach ($components as $component) {
-      if ($component instanceof Components\Body) {
-        /** @var \ChapterThree\AppleNews\Document\Components\Body $component */
-        if ($component->getFormat() != 'markdown') {
-          $component->addInlineTextStyles($inline_text_style);
+    foreach ($components as $comp) {
+      if ($comp instanceof Components\Body) {
+        /** @var \ChapterThree\AppleNews\Document\Components\Body $comp */
+        if ($comp->getFormat() != 'markdown') {
+          $comp->addInlineTextStyles($body_inline_text_style);
         }
-        $component->setTextStyle($text_style)
-          ->setAnimation($animation);
+        $comp->setLayout($body_layout)
+          ->setTextStyle($body_text_style)
+          ->setAnimation($body_animation);
+      }
+      elseif ($comp instanceof Components\ScalableImage) {
+        /** @var \ChapterThree\AppleNews\Document\Components\ScalableImage $comp */
+        $comp->setLayout($image_layout);
       }
     }
 
@@ -126,10 +152,23 @@ class Applenewsstyle1DestinationHeaderImage extends ApplenewsDestination {
     $header = new Components\Header();
     $header->setStyle($style);
     $layout = new Layouts\ComponentLayout();
-    $layout->setColumnStart(0)->setColumnSpan(7)
-      ->setIgnoreDocumentMargin()
+    $layout->setIgnoreDocumentMargin()
       ->setMinimumHeight('42vh');
     $header->setLayout($layout);
+
+    switch ($this->export->settings['layout_alignment']) {
+
+      case 'left':
+      case 'right':
+        $layout->setColumnStart(0)->setColumnSpan(7);
+        break;
+
+      case 'center':
+        $layout->setColumnStart(0)->setColumnSpan(9);
+        break;
+
+    }
+
     return [$header];
   }
 
@@ -213,9 +252,7 @@ class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination
     $layout = new Layouts\ComponentLayout();
     $layout->setColumnStart(0)->setColumnSpan(7);
     $container->setLayout($layout);
-    $behavior = new Behaviors\Parallax();
-    $behavior->setFactor(0.7);
-    $container->setBehavior($behavior);
+    $container->setBehavior(new Behaviors\BackgroundParallax());
 
     // Divider.
     $divider = new Components\Divider();
@@ -224,7 +261,7 @@ class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination
       ->setMargin(new Margin(NULL, 15));
     $divider->setLayout($layout);
     $stroke = new Styles\StrokeStyle();
-    $stroke->setColor('#FFF')->setWidth(1);
+    $stroke->setColor('#E6E6E6')->setWidth(1);
     $divider->setStroke($stroke);
     $container->addComponent($divider);
 
@@ -255,7 +292,7 @@ class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination
       ->setMargin(new Margin(15, 15));
     $divider->setLayout($layout);
     $stroke = new Styles\StrokeStyle();
-    $stroke->setColor('#FFF')->setWidth(1);
+    $stroke->setColor('#E6E6E6')->setWidth(1);
     $divider->setStroke($stroke);
     $container->addComponent($divider);
 
@@ -351,7 +388,7 @@ class Applenewsstyle1DestinationAnimatedPullQuote extends ApplenewsDestination {
    * {@inheritdoc}
    */
   public function label() {
-    return t('Animated Pull Quote') . ' (' . $this->id . ')';
+    return t('Pull Quote') . ' (' . $this->id . ')';
   }
 
   /**
@@ -388,28 +425,6 @@ class Applenewsstyle1DestinationAnimatedPullQuote extends ApplenewsDestination {
    *   A list of \ChapterThree\AppleNews\Document\Base objects.
    */
   public function export($value) {
-    // Pullquote.
-    list($key, $quote) = $this->getSourceValues($value,
-      $this->settings['quote']);
-    if (empty($quote[0][$key])) {
-      return [];
-    }
-    $quote = new Components\Pullquote($quote[0][$key]);
-    $layout = new Layouts\ComponentLayout();
-    $layout->setColumnStart(0)->setColumnSpan(7)->setMargin(new Margin(70));
-    $quote->setLayout($layout);
-    $behavior = new Behaviors\Parallax();
-    $behavior->setFactor(1.1);
-    $quote->setBehavior($behavior);
-    $text_style = new Styles\ComponentTextStyle();
-    $text_style->setTextAlignment('center')
-      ->setTextTransform('uppercase')
-      ->setFontName('AvenirNext-Regular')
-      ->setFontSize(36)
-      ->setLineHeight(45)
-      ->setTextColor('#FFF');
-    $quote->setTextStyle($text_style);
-
     // Parent section.
     $section = new Components\Section();
     $section->setScene(new Animations\Scenes\ParallaxScaleHeader());
@@ -444,8 +459,51 @@ class Applenewsstyle1DestinationAnimatedPullQuote extends ApplenewsDestination {
       ->setMargin(new Margin(25, 25));
     $header->setLayout($layout);
 
+    // Pullquote.
+    list($key, $quote) = $this->getSourceValues($value,
+      $this->settings['quote']);
+    if (empty($quote[0][$key])) {
+      return [];
+    }
+    $quote = new Components\Pullquote($quote[0][$key]);
+    $layout = new Layouts\ComponentLayout();
+    $layout->setColumnStart(0)->setColumnSpan(7)->setMargin(new Margin(70));
+    $quote->setLayout($layout);
+    $quote->setBehavior(new Behaviors\BackgroundParallax());
+    $text_style = new Styles\ComponentTextStyle();
+    $text_style->setTextAlignment('center')
+      ->setTextTransform('uppercase')
+      ->setFontName('AvenirNext-Bold')
+      ->setFontSize(16)
+      ->setLineHeight(20)
+      ->setTextColor('#FFF');
+    $quote->setTextStyle($text_style);
+
     $header->addComponent($quote);
     $section->addComponent($header);
+
+    switch ($this->export->settings['layout_alignment']) {
+
+      case 'left':
+        /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
+        $layout = $section->getLayout();
+        $layout->setColumnStart(3)->setColumnSpan(4);
+        break;
+
+      case 'center':
+        /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
+        $layout = $section->getLayout();
+        $layout->setColumnStart(1)->setColumnSpan(7);
+        $layout->setMargin(new Margin(25, 25));
+        break;
+
+      case 'right':
+        /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
+        $layout = $section->getLayout();
+        $layout->setColumnStart(0)->setColumnSpan(4);
+        break;
+
+    }
 
     return [$section];
   }

@@ -21,6 +21,7 @@ class Applenewsstyle1ExportNode extends ApplenewsExportNode {
     parent::__construct($module, $machine_name, $arguments);
     $this->settings['layout_columns'] = 7;
     $this->settings['layout_width'] = 1024;
+    $this->settings['layout_alignment'] = 'left';
   }
 
   /**
@@ -28,10 +29,45 @@ class Applenewsstyle1ExportNode extends ApplenewsExportNode {
    */
   public function getConfigForm($form, &$form_state) {
     $form = parent::getConfigForm($form, $form_state);
-    unset($form['layout']['#type']);
+
+    // Remove parent layout elements.
     $form['layout']['layout_columns']['#type'] = 'value';
     $form['layout']['layout_width']['#type'] = 'value';
+
+    $form['layout']['layout_alignment'] = [
+      '#type'          => 'select',
+      '#title'         => t('Alignment'),
+      '#default_vaule' => $this->settings['layout_alignment'],
+      '#options'       => [
+        'left'   => t('Left'),
+        'center' => t('Center'),
+        'right'  => t('Right'),
+      ],
+    ];
+
     return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function submitConfigForm($form, &$form_state) {
+    $this->settings['layout_alignment'] = $form_state['values']['layout_alignment'];
+    switch ($this->settings['layout_alignment']) {
+
+      case 'left':
+      case 'right':
+        $this->settings['layout_width'] = 1024;
+        $this->settings['layout_columns'] = 7;
+        break;
+
+      case 'center':
+        $this->settings['layout_width'] = 768;
+        $this->settings['layout_columns'] = 9;
+        break;
+
+    }
+    parent::submitConfigForm($form, $form_state);
   }
 
   /**
@@ -87,6 +123,9 @@ class Applenewsstyle1ExportNode extends ApplenewsExportNode {
    */
   public function export($entity) {
     parent::export($entity);
+    $this->document->getLayout()
+      ->setMargin(75)
+      ->setGutter(20);
     $this->associateComponents();
     return $this->document;
   }

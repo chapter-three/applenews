@@ -43,7 +43,7 @@ function apple_news_style1_apple_news_api() {
       ],
       'pullquote' => [
         'class' => 'Applenewsstyle1DestinationAnimatedPullQuote',
-        'name' => 'Animated Pull Quote',
+        'name' => 'Pull Quote',
       ],
       'mosiac' => [
         'class' => 'Applenewsstyle1DestinationMosaic',
