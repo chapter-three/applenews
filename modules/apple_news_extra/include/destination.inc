@@ -203,3 +203,114 @@ class ApplenewsExtraDestinationEmbedWebVideo extends ApplenewsDestination {
   }
 
 }
+
+/**
+ * Music component.
+ */
+class ApplenewsExtraDestinationMusic extends ApplenewsDestination {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct() {
+    parent::__construct();
+    $this->settings += [
+      'url' => NULL,
+      'caption' => NULL,
+      'imageURL' => NULL,
+      'explicitContent' => FALSE,
+    ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function label() {
+    return t('Music') . ' (' . $this->id . ')';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getConfigForm($form, &$form_state) {
+
+    $form = parent::getConfigForm($form, $form_state);
+
+    $form['url'] = [
+      '#title' => t('Audio URL'),
+      '#type' => 'select',
+      '#options' => $this->getSourceOptions(),
+      '#default_value' => $this->settings['url'],
+      '#description' => t('The URL of an audio file beginning with http:// or https://. This component supports all audio formats that are supported by AVPlayer on iOS devices. Supported audio file types include: MP3, AAC, ALAC, HE-AAC. See Supported Audio Formats developer documentation.'),
+    ];
+
+    $form['imageURL'] = [
+      '#title' => t('Image URL'),
+      '#type' => 'select',
+      '#options' => $this->getSourceOptions(),
+      '#default_value' => $this->settings['imageURL'],
+      '#description' => t('An optional URL to an image that should accompany the audio file, such as a still or a cover image. Supported image types include JPEG (with .jpg or .jpeg extension), PNG, and GIF. <strong>Important:</strong> This field sould be a <em>File</em> field.'),
+    ];
+
+    $form['caption'] = [
+      '#title' => t('Caption'),
+      '#type' => 'select',
+      '#options' => $this->getSourceOptions(),
+      '#default_value' => $this->settings['caption'],
+      '#description' => t('A caption that describes the content of the audio file. This text can be used by VoiceOver, or it can be shown when the audio cannot be played.'),
+    ];
+
+    $form['explicitContent'] = [
+      '#title' => t('Explicit Content'),
+      '#type' => 'select',
+      '#options' => $this->getSourceOptions(),
+      '#default_value' => $this->settings['explicitContent'],
+      '#description' => t('This property indicates that the audio track may contain explicit/graphic content. Default value is False'),
+    ];
+
+    return $form;
+  }
+
+  /**
+   * Exports to an Apple News Document container object.
+   *
+   * NOTE: This is a simple Audio field integration example.
+   *       This example doesn't include cases with multiple audio files
+   *       with multiple ExplicitContent and accessibilityCaption options
+   *
+   * @param mixed $value
+   *   An array of children component objects.
+   *
+   * @return array
+   *   A list of \ChapterThree\AppleNews\Document\Base objects.
+   */
+  public function export($value) {
+    list($key, $values) = $this->getSourceValues($value,
+      $this->settings['url']);
+    list($imageURL_key, $imageURL_values) = $this->getSourceValues($value,
+      $this->settings['imageURL']);
+    list($caption_key, $caption_value) = $this->getSourceValues($value,
+      $this->settings['caption']);
+    list($explicitContent_key, $explicitContent_values) = $this->getSourceValues($value,
+      $this->settings['explicitContent']);
+    $components = array();
+    foreach ($values as $value) {
+      $file = $value['file'];
+      if (is_object($file)) {
+        $component = new Components\Music($value['url']);
+        if (!empty($caption_value[0]['value'])) {
+          $component->setCaption($caption_value[0]['value']);
+        }
+        if (!empty($imageURL_values[0]['file']) && is_object($imageURL_values[0]['file'])) {
+          $component->setImageURL($this->export->addAsset($imageURL_values[0]['file']->uri));
+        }
+        if (!empty($explicitContent_values[0]['value'])) {
+          $component->setExplicitContent(TRUE);
+        }
+        $components[] = $component;
+      }
+    }
+    return $components;
+  }
+
+}

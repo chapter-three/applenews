@@ -34,6 +34,10 @@ function apple_news_extra_apple_news_api() {
         'class' => 'ApplenewsExtraDestinationEmbedWebVideo',
         'name' => 'Embed Web Video',
       ],
+      'Music' => [
+        'class' => 'ApplenewsExtraDestinationMusic',
+        'name' => 'Music',
+      ],
     ],
   ];
 }

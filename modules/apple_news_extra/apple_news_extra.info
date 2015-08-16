@@ -9,3 +9,4 @@ files[] = include/source.inc
 dependencies[] = apple_news
 dependencies[] = link
 dependencies[] = video_embed_field
+dependencies[] = audiofield
