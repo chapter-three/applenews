@@ -820,3 +820,60 @@ class ApplenewsDestinationByline extends ApplenewsDestination {
   }
 
 }
+
+/**
+ * Logo component.
+ */
+class ApplenewsDestinationLogo extends ApplenewsDestination {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct() {
+    parent::__construct();
+    $this->settings += [
+      'file' => '',
+    ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function label() {
+    return t('Logo') . ' (' . $this->id . ')';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getConfigForm($form, &$form_state) {
+
+    $form = parent::getConfigForm($form, $form_state);
+
+    $form['file'] = [
+      '#title' => t('Logo'),
+      '#type' => 'select',
+      '#options' => $this->getSourceOptions(),
+      '#default_value' => $this->settings['file'],
+      '#description' => t('<strong>Important:</strong> Map this field to the File field. Images should be high-resolution so they can be smoothly scaled down. Supported image types include JPEG (with .jpg or .jpeg extension), PNG, and GIF.'),
+    ];
+
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function export($value) {
+
+    list($key, $values) = $this->getSourceValues($value,
+      $this->settings['file']);
+    foreach ($values as $value) {
+      $file = $value[$key];
+      $logo = new Components\Logo($this->export->addAsset($file->uri));
+      $logo->setCaption(empty($file->title) ? (empty($file->alt) ? '' : $file->alt) : $file->title);
+      return [$logo];
+    }
+  }
+
+}
