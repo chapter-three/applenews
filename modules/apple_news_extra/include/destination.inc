@@ -291,8 +291,6 @@ class ApplenewsExtraDestinationMusic extends ApplenewsDestination {
       $this->settings['imageURL']);
     list($caption_key, $caption_value) = $this->getSourceValues($value,
       $this->settings['caption']);
-    list($explicitContent_key, $explicitContent_values) = $this->getSourceValues($value,
-      $this->settings['explicitContent']);
     $components = array();
     foreach ($values as $value) {
       $file = $value['file'];
@@ -304,7 +302,7 @@ class ApplenewsExtraDestinationMusic extends ApplenewsDestination {
         if (!empty($imageURL_values[0]['file']) && is_object($imageURL_values[0]['file'])) {
           $component->setImageURL($this->export->addAsset($imageURL_values[0]['file']->uri));
         }
-        if (!empty($explicitContent_values[0]['value'])) {
+        if (!empty($this->settings['explicitContent'])) {
           $component->setExplicitContent(TRUE);
         }
         $components[] = $component;
