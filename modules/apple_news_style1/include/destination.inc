@@ -577,3 +577,66 @@ class Applenewsstyle1DestinationImages extends ApplenewsDestinationImages {
   }
 
 }
+
+/**
+ * Banner Ad.
+ */
+class Applenewsstyle1DestinationAd extends ApplenewsDestinationAd {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct() {
+    parent::__construct();
+    $this->settings['type'] = 'banner';
+    $this->settings['banner_type'] = 'standard';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function label() {
+    return t('Banner Ad') . ' (' . $this->id . ')';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getConfigForm($form, &$form_state) {
+    $form = parent::getConfigForm($form, $form_state);
+    $form['type']['#type'] = 'value';
+    $form['banner_type']['#type'] = 'value';
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function export($value) {
+    $ad = parent::export($value);
+    if (empty($ad)) {
+      return [];
+    }
+    /** @var \ChapterThree\AppleNews\Document\Components\Advertisements\BannerAdvertisement $ad */
+    $ad = $ad[0];
+
+    $layout = new Layouts\ComponentLayout();
+    $ad->setLayout($layout);
+
+    switch ($this->export->settings['layout_alignment']) {
+
+      case 'left':
+      case 'right':
+        $layout->setColumnStart(0)->setColumnSpan(7);
+        break;
+
+      case 'center':
+        $layout->setColumnStart(1)->setColumnSpan(7);
+        break;
+
+    }
+
+    return [$ad];
+  }
+
+}
