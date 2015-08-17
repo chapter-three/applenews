@@ -390,6 +390,21 @@ function apple_news_settings_exports_form($form, &$form_state) {
   $rows = [];
   foreach (apple_news_exports() as $key => $info) {
 
+    $export_id = apple_news_export_id($info['module'], $info['machine_name']);
+    $status = apple_news_batch_export_get_status($export_id);
+    $export_status = '';
+    if (!empty($status['status'])) {
+      if ($status['status'] == 'complete') {
+        $export_status = t('complete');
+      }
+      elseif ($status['status'] == 'progress') {
+        $export_status = t('in progress');
+      }
+      elseif ($status['status'] == 'error') {
+        $export_status = t('error');
+      }
+    }
+
     $query = db_select('apple_news_log', 'l')
       ->fields('l', ['starttime', 'endtime'])
       ->condition('l.module', $info['module'])
@@ -402,7 +417,6 @@ function apple_news_settings_exports_form($form, &$form_state) {
     $module = system_get_info('module', $info['module']);
     $module = $module['name'];
     $enabled = empty($info['#enabled']) ? t('no') : t('yes');
-    $status = empty($log['endtime']) ? (empty($log['starttime']) ? '' : t('incomplete')) : t('complete');
     $lastexport = empty($log['starttime']) ? t('never') : format_date($log['starttime'], 'short');
     $edit = l(t('edit'), 'admin/config/content/apple-news/exports/' . $key . '/edit');
     $rows[$key] = [
@@ -410,7 +424,7 @@ function apple_news_settings_exports_form($form, &$form_state) {
       'description' => $info['description'],
       'module' => $module,
       'enabled' => $enabled,
-      'status' => $status,
+      'status' => $export_status,
       'lastexport' => $lastexport,
       'edit' => $edit,
     ];

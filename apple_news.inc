@@ -411,6 +411,30 @@ function apple_news_entity_export($entity_type, $entity_id, $revision_id) {
 }
 
 /**
+ * Set export status.
+ */
+function apple_news_batch_export_set_status($name, $info) {
+  $status = variable_set('apple_news_batch_export_status', []);
+  $status[$name] = $info;
+  variable_set('apple_news_batch_export_status', $status);
+}
+
+/**
+ * Get export status
+ */
+function apple_news_batch_export_get_status($batch_name) {
+  $status = variable_get('apple_news_batch_export_status', []);
+  if (!empty($status)) {
+    foreach ($status as $name => $info) {
+      if ($name == $batch_name) {
+        return $info;
+      }
+    }
+  }
+  return [];
+}
+
+/**
  * Post Article to Apple News.
  *
  * @todo Add Revision support.

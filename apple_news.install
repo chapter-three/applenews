@@ -298,4 +298,5 @@ function apple_news_uninstall() {
   variable_del('apple_news_variable_node');
   variable_del('apple_news_export_directory');
   variable_del('apple_news_help_format');
+  variable_del('apple_news_batch_export_status');
 }
