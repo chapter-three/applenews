@@ -383,7 +383,7 @@ function apple_news_settings_exports_form($form, &$form_state) {
     'module' => ['data' => t('Module')],
     'enabled' => ['data' => t('Enabled')],
     'status' => ['data' => t('Status')],
-    'lastexport' => ['data' => t('Last Export')],
+    'lastexport' => ['data' => t('Last Bulk Export')],
     'edit' => ['data' => ''],
   ];
 
