@@ -961,7 +961,7 @@ class ApplenewsDestinationText extends ApplenewsDestination {
   public function __construct() {
     parent::__construct();
     $this->settings += [
-      'source' => '',
+      'text' => '',
       'format' => NULL,
       'heading' => NULL,
       'component' => NULL,
@@ -982,11 +982,11 @@ class ApplenewsDestinationText extends ApplenewsDestination {
 
     $form = parent::getConfigForm($form, $form_state);
 
-    $form['source'] = [
-      '#title' => t('Value'),
+    $form['text'] = [
+      '#title' => t('Text'),
       '#type' => 'select',
       '#options' => $this->getSourceOptions(),
-      '#default_value' => $this->settings['source'],
+      '#default_value' => $this->settings['text'],
     ];
 
     $form['component'] = [
@@ -1047,7 +1047,7 @@ class ApplenewsDestinationText extends ApplenewsDestination {
   public function export($value) {
 
     list($key, $values) = $this->getSourceValues($value,
-      $this->settings['source']);
+      $this->settings['text']);
 
     $components = [];
     foreach ($values as $value) {
