@@ -117,7 +117,6 @@ class ApplenewsExportTestCase extends ApplenewsWebTestCase {
     // Enable export.
     $export->enabled = TRUE;
     $export->bundles = ['article', 'page'];
-    $export->settings = ['layout' => 'simple'];
     $export->destinations['components'][0] = new ApplenewsDestinationBody();
     $export->destinations['components'][0]->settings = [
       'text' => '::::apple_news::field::node::body::value',
@@ -223,7 +222,6 @@ EOD
     // @todo Should be testing module/frontend.
     $export->enabled = TRUE;
     $export->bundles = ['article'];
-    $export->settings = ['layout' => 'simple'];
     $component = new ApplenewsDestinationBodyPhoto();
     $component->settings = [
       'text' => '::::apple_news::field::node::body::value',
