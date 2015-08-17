@@ -14,7 +14,8 @@
     4. [Preview post](#preview)
     5. [Delete from channel](#delete)
 4. [Troubleshoot](#troubleshoot)
-5. [Run Tests](#run-tests)
+5. [Developer API](#developer-api)
+6. [Contribute](#contribute)
 
 ## <a name="before"></a>Before you start
 
@@ -30,7 +31,7 @@ Please make sure that your Drupal site matches these minimum requirements, in or
 
 * **PHP version 5.4 and above.** Version 5.3, and below, will cause fatal error.
 * **Drupal 7.** Latest version of Drupal always recommended.
-* **Curl enabled for php**. One way to check is to install your drupal site and then visit (`admin/reports/status/php`), and check for 'curl'. If not enabled, a quick google search with 'enable curl php [your server type]' will help.
+* **PHP compiled with cURL support**. One way to check is to install your drupal site and then visit (`admin/reports/status/php`), and check for 'curl'. If not enabled, a quick google search with 'enable curl php [your server type]' will help.
 * **(Optional) Drush 5.9 and above**. You will need Drush installed to follow the [Drush based installation](#drush-install) guide, Otherwise, you will have to follow the [Manually based installation](#manual-install) guide
 
 ## <a name="installation"></a>Installation
@@ -126,19 +127,22 @@ Congrats on installing the Apple News module. Please follow these configuration 
 2. In your Drupal site, navigate to the "Apple news credentials page" (`admin/config/content/apple-news/settings`) and add your Apple News credentials.
 3. In your Drupal site, navigate to the "Apple news channels page" (`admin/config/content/apple-news/settings/channels`) and add a channel ID from your apple account. Please add one ID at a time. The channels are validated by the apple credentials you added to your Drupal site, and if valid, will fetch the channel information and add them to your sites list of channels.
 
-### <a name="channel"></a>Default Channel/Export configuration
+### <a name="channel"></a>Export configuration
+
+An *export* is code that defines how to transform data in a Drupal site so it can be pushed to Apple News. The `apple_news` module defines a simple export, while the `apple_news_style1` module defines a more usable style.
+
+To get started, we suggest enabling the `apple_news_style1` module and using that as a starting point.
 
 1. In your Drupal site, navigate to the "Apple news export manager page" (`admin/config/content/apple-news`).
-2. Click on the **'edit'** link of the channel you would like to connect to an apple news channel. The default export that comes with the Apple News module is "Nodes", but other exports can be created in code, using custom modules. For an example module, check out the "apple_news_article" module that comes with the Apple News module.
+2. Click on the **'edit'** link of the export you would like to connect to an apple news channel.
 3. In this "Edit page", the minimum requirements to properly configure a channel to an apple news channel are:
-    1. Under "Add new component", select "Body(apple_news)".
+    1. Under "Add new component", select a component.
     2. Under "Channels", select the channel (Apple News Channel) that this export will be tied to. (in other words, this export channel will get nodes, process them, and send them to this selected channel for display in the Apple News app.)
     3. Under "Content types", select the content types that should be processed with this channel.
-    4. Under "Layout", the default value is "Simple", but it is possible to create new layouts using a custom module.
-    5. Click **Save Changes**
-    6. After saving, you will see some options to the right of the new components we just added. These are "edit" and "delete". Click on **"edit"**
-    7. Select the source field for this component. This is where we tell apple news that this apple news component will be getting it's data from this Drupal field.
-    8. Click **Save Changes**
+    4. Click **Save Changes**
+    5. After saving, you will see some options to the right of the new components we just added. These are "edit" and "delete". Click on **"edit"**
+    6. Configure the component. Most components will require that you specify source fields -- the component will use the data in those fields as content in the component.
+    7. Click **Save Changes**
 
 ### <a name="node"></a>Node configuration
 
@@ -162,7 +166,7 @@ If you want to preview a post before sending it to apple, You will need to first
 If you want to delete a post from a channel, but not delete the post itself, There is a **delete** link in the "Apple News" tab.
 
 
-##Congrats!
+## Congrats!
 
 You are now ready to start sharing your posts and articles with the Apple News Service and with the world. Happy Posting!
 
@@ -213,15 +217,35 @@ Please download AppleNews (version 0.2.4) library to sites/all/libraries/AppleNe
 
 Please consult drupal.org for any issues outside of this scope.
 
-## <a name="run-tests"></a>Run Tests
+## <a name="developer-api"></a>Developer API
 
-To run Drupal testing, Enable the core "Testing" module, from the Modules admin page or with command line.
+The `apple_news` module defines an API and class structure to make it easy to write code to export Drupal data into arbitrarily structured Apple News documents.
+
+The module defines hooks to register custom export classes, modify existing export classes, and alter insert/update/delete operations on the Apple News Push API. See `apple_news_api.php` for details.
+
+### Writing Custom Exports
+
+There are 3 base class/interfaces:
+
+-   `ApplenewsExport` -- Defines an export and its configuration.
+-   `ApplenewsSourceInterface` -- Defines a source of Drupal data.
+-   `ApplenewsDestinationInterface` -- Defines the transformation of drupal data into Apple News Components.
+
+The main module and sub-modules contain many usage examples.
+
+## <a name="contribute"></a>Contribute
+
+@todo issue queue, module page, repository, etc.
+
+### Run Tests
+
+To run module tests, enable the core "Testing" module, from the Modules admin page or with command line.
 
 To enable and run tests from the UI:
 
-1. Navigate to the Testing admin page (`admin/config/development/testing`).
-2. Select "Apple News" from the list of tests
-3. Click **Run Tests**
+1.  Navigate to the Testing admin page (`admin/config/development/testing`).
+2.  Select "Apple News" from the list of tests
+3.  Click **Run Tests**
 
 To run test from command line, enter the following commands one at a time:
 
