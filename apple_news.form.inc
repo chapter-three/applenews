@@ -146,7 +146,7 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
                 '#type' => 'checkbox',
                 '#title' => $label,
                 '#prefix' => '<div><strong>' . $description . '</strong></div>',
-                '#default_value' => FALSE,
+                '#default_value' => !empty($article['postdate']) ? TRUE : FALSE,
                 '#description' => t('Check this option if you would like to post this content to Apple News.'),
                 '#weight' => -14,
               ];
