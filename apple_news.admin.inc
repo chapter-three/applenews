@@ -133,8 +133,8 @@ function apple_news_settings_api_credentials_form_submit($form, &$form_state) {
   // SSL Verification.
   variable_set('apple_news_variable_api_curlopt',
     [
-      'ssl' => !empty($form_state['values']['ssl_verification']) ? TRUE : FALSE,
-      'proxy' => !empty($form_state['values']['proxy']) ? filter_xss($form_state['values']['proxy']) : '',
+      'ssl'        => !empty($form_state['values']['ssl_verification']) ? TRUE : FALSE,
+      'proxy'      => !empty($form_state['values']['proxy']) ? filter_xss($form_state['values']['proxy']) : '',
       'proxy_port' => !empty($form_state['values']['proxy_port']) ? filter_xss($form_state['values']['proxy_port']) : '',
     ]
   );
@@ -305,7 +305,7 @@ function apple_news_settings_channel_sections_form($form, &$form_state, $channel
       $default = ($section->isDefault) ? ' ' . t('<em>(default)</em>') : '';
       $sections[] = [
         'name' => filter_xss($section->name) . $default,
-        'id' => $section->id,
+        'id'   => $section->id,
       ];
     }
   }
@@ -378,13 +378,13 @@ function apple_news_settings_exports_form($form, &$form_state) {
   module_load_include('inc', 'apple_news');
 
   $header = [
-    'name' => ['data' => t('Name')],
+    'name'        => ['data' => t('Name')],
     'description' => ['data' => t('Description')],
-    'module' => ['data' => t('Module')],
-    'enabled' => ['data' => t('Enabled')],
-    'status' => ['data' => t('Status')],
-    'lastexport' => ['data' => t('Last Bulk Export')],
-    'edit' => ['data' => ''],
+    'module'      => ['data' => t('Module')],
+    'enabled'     => ['data' => t('Enabled')],
+    'status'      => ['data' => t('Status')],
+    'lastexport'  => ['data' => t('Last Bulk Export')],
+    'edit'        => ['data' => ''],
   ];
 
   $rows = [];
@@ -422,13 +422,13 @@ function apple_news_settings_exports_form($form, &$form_state) {
     $lastexport = empty($log['starttime']) ? t('never') : format_date($log['starttime'], 'short');
     $edit = l(t('edit'), 'admin/config/content/apple-news/exports/' . $key . '/edit');
     $rows[$key] = [
-      'name' => $name,
+      'name'        => $name,
       'description' => $info['description'],
-      'module' => $module,
-      'enabled' => $enabled,
-      'status' => $export_status,
-      'lastexport' => $lastexport,
-      'edit' => $edit,
+      'module'      => $module,
+      'enabled'     => $enabled,
+      'status'      => $export_status,
+      'lastexport'  => $lastexport,
+      'edit'        => $edit,
     ];
   }
 
@@ -448,9 +448,9 @@ function apple_news_settings_exports_form($form, &$form_state) {
       '#title' => t('Action'),
       '#options' =>
       [
-        'enable' => t('Enable'),
+        'enable'  => t('Enable'),
         'disable' => t('Disable'),
-        'export' => t('Export'),
+        'export'  => t('Export'),
         'export-to-file' => t('Export to File'),
       ],
     ],
@@ -787,20 +787,20 @@ function apple_news_settings_delete_article_form($form, &$form_state, $entity_ty
   $title = $wrapper->label();
 
   $form_state['storage'] = [
-    'entity_type' => $entity_type,
-    'entity_id' => $entity_id,
-    'article_id' => $article_id,
-    'channel_id' => $channel_id,
+    'entity_type'  => $entity_type,
+    'entity_id'    => $entity_id,
+    'article_id'   => $article_id,
+    'channel_id'   => $channel_id,
     'channel_name' => $channel->name,
-    'return_path' => $path,
-    'title' => $title
+    'return_path'  => $path,
+    'title'        => $title
   ];
 
   return confirm_form(
     $form,
     t("Do you really want to delete <em>@title</em> article from <em>@channel</em>?",
       [
-        '@title' => $title,
+        '@title'   => $title,
         '@channel' => $channel->name
       ]
     ),
@@ -824,7 +824,7 @@ function apple_news_settings_delete_article_form_submit($form, &$form_state) {
     drupal_set_message(
       t('<em>@title</em> successfully removed from <em>@channel</em>',
         [
-          '@title' => $form_state['storage']['title'],
+          '@title'   => $form_state['storage']['title'],
           '@channel' => $form_state['storage']['channel_name'],
         ]));
   }
@@ -832,7 +832,7 @@ function apple_news_settings_delete_article_form_submit($form, &$form_state) {
     drupal_set_message(
       t('Unable to delete <em>@title</em> from <em>@channel</em>',
         [
-          '@title' => $form_state['storage']['title'],
+          '@title'   => $form_state['storage']['title'],
           '@channel' => $form_state['storage']['channel_name']
         ]
       ),
