@@ -499,9 +499,7 @@ class ApplenewsDestinationBodyPhoto extends ApplenewsDestinationBody {
             case 'a':
               array_push($stack, $reader->localName);
               $reader->moveToAttribute('href');
-              if ($reader->value) {
-                $body .= '<a href="' . $reader->value . '">';
-              }
+              $body .= '<a href="' . htmlentities($reader->value) . '">';
               break;
 
             case 'hr':
@@ -556,7 +554,7 @@ class ApplenewsDestinationBodyPhoto extends ApplenewsDestinationBody {
           break;
 
         case \XMLReader::TEXT:
-          $body .= $reader->value;
+          $body .= htmlentities($reader->value);
           break;
 
       }
