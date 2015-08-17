@@ -213,7 +213,7 @@ function apple_news_get_export($module, $machine_name) {
   catch (Exception $e) {
     $msg = t('Export class %class could not be constructed: %message');
     $var = [
-      '%class' => $info['class'],
+      '%class'   => $info['class'],
       '%message' => $e->getMessage(),
     ];
     watchdog('apple_news', $msg, $var, WATCHDOG_ERROR);
@@ -400,7 +400,7 @@ function apple_news_entity_export($entity_type, $entity_id, $revision_id) {
       if (in_array($entity_type, $export->entityTypes()) && in_array($entity_wrapper->getBundle(), $export->bundles())) {
         $document = $export->export($entity);
         $data = [
-          'json' => $document->json(),
+          'json'  => $document->json(),
           'files' => $export->getAssets(),
         ];
         return $data;
@@ -620,8 +620,8 @@ function apple_news_op($op, $channel_id, $entity, $entity_type, $export = NULL, 
       $export->settings = array_merge($export->settings, $settings);
     }
     $data = [
-      'json' => $document->json(),
-      'files' => $export->getAssets(),
+      'json'     => $document->json(),
+      'files'    => $export->getAssets(),
       'metadata' => !empty($settings['metadata']) ? json_encode($settings['metadata']) : '',
     ];
   }
