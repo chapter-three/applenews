@@ -221,7 +221,7 @@ Please consult drupal.org for any issues outside of this scope.
 
 The `apple_news` module defines an API and class structure to make it easy to write code to export Drupal data into arbitrarily structured Apple News documents.
 
-The module defines hooks to register custom export classes, modify existing export classes, and alter insert/update/delete operations on the Apple News Push API. See `apple_news_api.php` for details.
+The module defines hooks to register custom export classes, modify existing export classes, and alter insert/update/delete operations on the Apple News Push API. See `apple_news.api.php` for details.
 
 ### Writing Custom Exports
 
