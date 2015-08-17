@@ -467,7 +467,7 @@ function apple_news_settings_exports_form_validate($form, &$form_state) {
  */
 function apple_news_settings_exports_form_submit($form, &$form_state) {
 
-  module_load_include('inc', 'apple_news', 'push_api');
+  module_load_include('inc', 'apple_news', 'apple_news.publisher_api');
   module_load_include('inc', 'apple_news');
 
   $exports = apple_news_exports();
@@ -798,7 +798,7 @@ function apple_news_settings_delete_article_form($form, &$form_state, $entity_ty
  * Form submit handler.
  */
 function apple_news_settings_delete_article_form_submit($form, &$form_state) {
-  module_load_include('inc', 'apple_news', 'push_api');
+  module_load_include('inc', 'apple_news', 'apple_news.publisher_api');
 
   // Delete an Apple News article.
   $entity = entity_load_single($form_state['storage']['entity_type'], $form_state['storage']['entity_id']);

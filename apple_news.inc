@@ -416,8 +416,8 @@ function apple_news_entity_export($entity_type, $entity_id, $revision_id) {
  * @todo Add Revision support.
  */
 function apple_news_post($channel_id, $entity_type, $entity_wrapper, $data) {
-  module_load_include('inc', 'apple_news', 'push_api');
-  // Make POST request to Apple News via PushAPI.
+  module_load_include('inc', 'apple_news', 'apple_news.publisher_api');
+  // Make POST request to Apple News via PublisherAPI.
   $response = apple_news_post_article($channel_id, $data);
   // If successful request.
   if (!isset($response->errors)) {
@@ -471,7 +471,7 @@ function apple_news_post($channel_id, $entity_type, $entity_wrapper, $data) {
  * @todo Add Revision support.
  */
 function apple_news_update($channel_id, $entity_type, $entity_wrapper, $data) {
-  module_load_include('inc', 'apple_news', 'push_api');
+  module_load_include('inc', 'apple_news', 'apple_news.publisher_api');
 
   $query = db_select('apple_news_entities', 'e');
   $query->join('apple_news_channels', 'c', 'c.post_id = e.post_id');
@@ -490,7 +490,7 @@ function apple_news_update($channel_id, $entity_type, $entity_wrapper, $data) {
     }
     $data['metadata']['data']['revision'] = $article->article_revision_id;
     $data['metadata'] = json_encode($data['metadata']);
-    // Make POST request to Apple News via PushAPI.
+    // Make POST request to Apple News via PublisherAPI.
     $response = apple_news_update_article($article->article_id, $data);
     // If successful request.
     if (!isset($response->errors)) {
@@ -545,14 +545,14 @@ function apple_news_update($channel_id, $entity_type, $entity_wrapper, $data) {
  * Delete Article from Apple News.
  */
 function apple_news_delete($channel_id, $entity_type, $entity_wrapper) {
-  module_load_include('inc', 'apple_news', 'push_api');
+  module_load_include('inc', 'apple_news', 'apple_news.publisher_api');
   $article_id = db_select('apple_news_entities', 'e')
     ->fields('e', ['article_id'])
     ->condition('entity_type', $entity_type)
     ->condition('entity_id', $entity_wrapper->getIdentifier())
     ->execute()
     ->fetchField();
-  // Make DELETE request to Apple News via PushAPI.
+  // Make DELETE request to Apple News via PublisherAPI.
   $response = apple_news_delete_article($article_id);
   // If successful request.
   if (empty($response)) {
@@ -763,7 +763,7 @@ function apple_news_sections($channel_id) {
       $sections = $cache->data;
     }
     else {
-      module_load_include('inc', 'apple_news', 'push_api');
+      module_load_include('inc', 'apple_news', 'apple_news.publisher_api');
       $response = apple_news_get_sections($channel_id);
       if (!empty($response->data)) {
         foreach ($response->data as $section) {
@@ -801,7 +801,7 @@ function apple_news_channel($channel_id) {
       $channel = $cache->data;
     }
     else {
-      module_load_include('inc', 'apple_news', 'push_api');
+      module_load_include('inc', 'apple_news', 'apple_news.publisher_api');
       $response = apple_news_get_channel($channel_id);
       if (!isset($response->errors)) {
         if (!empty($response->data)) {
