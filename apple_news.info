@@ -10,6 +10,7 @@ files[] = include/handlers/views_handler_filter_apple_news_status.inc
 files[] = include/handlers/views_handler_field_apple_news_status.inc
 files[] = include/handlers/views_handler_field_apple_news_previewable.inc
 files[] = include/destination.inc
+files[] = include/destination_component.inc
 files[] = include/export.inc
 files[] = include/source.inc
 files[] = include/preview.inc
