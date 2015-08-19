@@ -11,6 +11,7 @@ use \ChapterThree\AppleNews\Document\Styles;
 use \ChapterThree\AppleNews\Document\Layouts;
 use \ChapterThree\AppleNews\Document\Behaviors;
 use \ChapterThree\AppleNews\Document\Animations;
+use \ChapterThree\AppleNews\Document\Markdown;
 
 /**
  * Body component.
@@ -463,7 +464,8 @@ class Applenewsstyle1DestinationPullQuote extends ApplenewsDestination {
     if (empty($quote[0][$key])) {
       return [];
     }
-    $quote = new Components\Pullquote($quote[0][$key]);
+    $quote = new Components\Pullquote(Markdown::convert($quote[0][$key]));
+    $quote->setFormat('markdown');
     $layout = new Layouts\ComponentLayout();
     $layout->setColumnStart(0)->setColumnSpan(7)->setMargin(new Margin(70));
     $quote->setLayout($layout);
