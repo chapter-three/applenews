@@ -223,7 +223,9 @@ class ApplenewsSourceField implements ApplenewsSourceInterface {
    */
   static public function attributes() {
     return [
-      'value' => 'Value',
+      'value' => 'Raw Value',
+      'value_sanitized' => 'Sanitized Value',
+      'value_decoded' => 'Decoded Value',
     ];
   }
 
@@ -290,6 +292,8 @@ class ApplenewsSourceField implements ApplenewsSourceInterface {
   public function export($value = NULL) {
     $return = [
       'value' => '',
+      'value_sanitized' => '',
+      'value_decoded' => '',
     ];
     if (!isset($value)) {
       try {
@@ -309,11 +313,15 @@ class ApplenewsSourceField implements ApplenewsSourceInterface {
     else {
       if ($value instanceof EntityValueWrapper) {
         /** @var EntityValueWrapper $value */
-        $return['value'] = $value->value(['decode' => FALSE]);
+        $return['value'] = $value->raw();
+        $return['value_sanitized'] = $value->value(array('sanitize' => TRUE));
+        $return['value_decoded'] = $value->value(array('decode' => TRUE));
       }
       else {
         /** @var EntityStructureWrapper $value */
-        $return['value'] = $value->value->value(['decode' => FALSE]);
+        $return['value'] = $value->value->raw();
+        $return['value_sanitized'] = $value->value->value(array('sanitize' => TRUE));
+        $return['value_decoded'] = $value->value->value(array('decode' => TRUE));
       }
     }
     return $return;
