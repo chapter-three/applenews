@@ -25,7 +25,7 @@ abstract class ApplenewsExport {
   public $enabled = FALSE;
 
   /**
-   * User-configurable settings, defined in $this->getConfigForm().
+   * User-configurable settings.
    *
    * @var array
    */
@@ -59,10 +59,6 @@ abstract class ApplenewsExport {
     $this->module = $module;
     $this->machineName = $machine_name;
     $this->arguments = $arguments;
-    $this->settings = [
-      'channels' => [],
-      'sections' => [],
-    ];
   }
 
   /**
@@ -127,6 +123,44 @@ abstract class ApplenewsExport {
   }
 
   /**
+   * Get a user-configured setting, or default value.
+   *
+   * @param string $key
+   *   Setting key.
+   *
+   * @return mixed
+   *   Set value, default, or NULL if undefined.
+   */
+  public function getSetting($key) {
+    if (isset($this->settings[$key])) {
+      return $this->settings[$key];
+    }
+    switch ($key) {
+
+      case 'channels':
+      case 'sections':
+        return [];
+
+    }
+    return NULL;
+  }
+
+  /**
+   * Set a user-configured setting.
+   *
+   * @param string $key
+   *   Setting key.
+   * @param mixed $value
+   *   Setting value.
+   *
+   * @return $this
+   */
+  public function setSetting($key, $value) {
+    $this->settings[$key] = $value;
+    return $this;
+  }
+
+  /**
    * Provides a configuration form for this export.
    */
   public function getConfigForm($form, &$form_state) {
@@ -137,8 +171,8 @@ abstract class ApplenewsExport {
       '#weight' => 9,
     ];
 
-    $saved_channels = !empty($this->settings['channels']) ? $this->settings['channels'] : [];
-    $saved_sections = !empty($this->settings['sections']) ? $this->settings['sections'] : [];
+    $saved_channels = $this->getSetting('channels');
+    $saved_sections = $this->getSetting('sections');
 
     // Entity form JS helper (hide/show Apple News entity form options).
     drupal_add_js(drupal_get_path('module', 'apple_news') . '/js/form.js');
@@ -216,8 +250,8 @@ abstract class ApplenewsExport {
       }
     }
     // Save in two different arrays for now.
-    $this->settings['channels'] = $channels;
-    $this->settings['sections'] = $sections;
+    $this->setSetting('channels', $channels)
+      ->setSetting('sections', $sections);
   }
 
   /**
@@ -311,20 +345,13 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
    *
    * @var array
    */
-  public $destinations = [];
+  public $destinations = ['components' => []];
 
   /**
    * {@inheritdoc}
    */
   public function __construct($module, $machine_name, array $arguments) {
     parent::__construct($module, $machine_name, $arguments);
-    $this->destinations += [
-      'components' => [],
-    ];
-    $this->settings += [
-      'layout_columns' => 7,
-      'layout_width'   => 1024,
-    ];
     $this->init();
   }
 
@@ -465,6 +492,25 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
   /**
    * {@inheritdoc}
    */
+  public function getSetting($key) {
+    if (isset($this->settings[$key])) {
+      return $this->settings[$key];
+    }
+    switch ($key) {
+
+      case 'layout_columns':
+        return 7;
+
+      case 'layout_width':
+        return 1024;
+
+    }
+    return parent::getSetting($key);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getConfigForm($form, &$form_state) {
     $form = parent::getConfigForm($form, $form_state);
 
@@ -566,12 +612,12 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
       'layout_columns' => [
         '#type'          => 'textfield',
         '#title'         => t('Columns'),
-        '#default_value' => $this->settings['layout_columns'],
+        '#default_value' => $this->getSetting('layout_columns'),
       ],
       'layout_width'   => [
         '#type'          => 'textfield',
         '#title'         => t('Width'),
-        '#default_value' => $this->settings['layout_width'],
+        '#default_value' => $this->getSetting('layout_width'),
       ],
     ];
 
@@ -586,8 +632,7 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
     /** @var ApplenewsDestination $component */
     foreach ($this->destinations['components'] as $id => $component) {
       $component->weight = (int) $components[$component->id]['weight'];
-      $component->pid = $components[$component->id]['pid'] == '' ? NULL : (int)
-$components[$component->id]['pid'];
+      $component->pid = $components[$component->id]['pid'] == '' ? NULL : (int) $components[$component->id]['pid'];
     }
     if ($components['_new']['destination']) {
       $destinations = apple_news_get_module_apis()['destinations'];
@@ -604,7 +649,7 @@ $components[$component->id]['pid'];
         'layout_width',
       ] as $key
     ) {
-      $this->settings[$key] = (int) $form_state['values'][$key];
+      $this->setSetting($key, (int) $form_state['values'][$key]);
     }
 
     parent::submitConfigForm($form, $form_state);
@@ -623,14 +668,6 @@ class ApplenewsExportNode extends ApplenewsExportConfigurable {
    * @var array
    */
   public $bundles;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct($module, $machine_name, array $arguments) {
-    parent::__construct($module, $machine_name, $arguments);
-    $this->settings += [];
-  }
 
   /**
    * Implements __sleep().
@@ -717,8 +754,8 @@ class ApplenewsExportNode extends ApplenewsExportConfigurable {
     }
 
     $layout = new Document\Layouts\Layout(
-      $this->settings['layout_columns'],
-      $this->settings['layout_width']);
+      $this->getSetting('layout_columns'),
+      $this->getSetting('layout_width'));
     $this->document = new Document($id, $title,
       apple_news_language_code($language), $layout);
     // Components.
