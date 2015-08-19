@@ -6,8 +6,6 @@
  */
 
 use \ChapterThree\AppleNews\Document\Components;
-use \ChapterThree\AppleNews\Document\GalleryItem;
-use \ChapterThree\AppleNews\Document\Markdown;
 use \ChapterThree\AppleNews\Document\Styles;
 
 /**
