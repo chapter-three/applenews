@@ -419,28 +419,38 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
     // Sort by hierarchy and weight.
     usort($destinations, function($a, $b) use($key) {
       // Account for hierarchy.
+      if ($a->depth != $b->depth) {
+        // Walk deeper item up the tree until at same depth.
+        if ($a->depth < $b->depth) {
+          $deeper = $b;
+          while ($deeper->depth != $a->depth) {
+            $deeper = $this->destinations[$key][$deeper->pid];
+          }
+          // $a is ancestor of $b -- parent before child.
+          if ($deeper->id == $a->id) {
+            return -1;
+          }
+          // Sort by parent.
+          $b = $deeper;
+        }
+        else {
+          $deeper = $a;
+          while ($deeper->depth != $b->depth) {
+            $deeper = $this->destinations[$key][$deeper->pid];
+          }
+          // $b is ancestor of $a -- parent before child.
+          if ($deeper->id == $b->id) {
+            return 1;
+          }
+          // Sort by parent.
+          $a = $deeper;
+        }
+        // $a and $b now at same depth.
+      }
       if ($a->pid !== $b->pid) {
-        // Reassign $a or $b until both at same depth.
-        if ($a->depth != $b->depth) {
-          if ($a->depth > $b->depth) {
-            $deeper =& $a;
-            $target_depth = $b->depth;
-          }
-          else {
-            $deeper =& $b;
-            $target_depth = $a->depth;
-          }
-          while ($deeper->depth != $target_depth) {
-            $deeper = $this->getDestination($key, $deeper->pid);
-          }
-        }
-        // One is parent of the other -- parent before child.
-        if ($a == $b) {
-          return $deeper == $a ? -1 : 1;
-        }
         // Sort by parents.
-        $a = $this->getDestination($key, $a->pid);
-        $b = $this->getDestination($key, $b->pid);
+        $a = $this->destinations[$key][$a->pid];
+        $b = $this->destinations[$key][$b->pid];
       }
       // Sort by weight.
       if ($a->weight == $b->weight) {
@@ -572,22 +582,21 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
    * Submit handler for the configuration form for this export.
    */
   public function submitConfigForm($form, &$form_state) {
-    $id = 0;
     $components = &$form_state['values']['components'];
     /** @var ApplenewsDestination $component */
     foreach ($this->destinations['components'] as $id => $component) {
-      $component->weight = $components[$component->id]['weight'];
-      $component->pid = $components[$component->id]['pid'] == '' ? NULL : $components[$component->id]['pid'];
+      $component->weight = (int) $components[$component->id]['weight'];
+      $component->pid = $components[$component->id]['pid'] == '' ? NULL : (int)
+$components[$component->id]['pid'];
     }
-    $id++;
     if ($components['_new']['destination']) {
       $destinations = apple_news_get_module_apis()['destinations'];
       $info = $destinations[$components['_new']['destination']];
       $destination = apple_news_get_destination($info['module'], $info['machine_name']);
-      $destination->weight = $components['_new']['weight'];
-      $destination->pid = $components['_new']['pid'] == '' ? NULL : $components['_new']['pid'];
-      $destination->id = $id;
-      $this->destinations['components'][$id] = $destination;
+      $destination->weight = (int) $components['_new']['weight'];
+      $destination->pid = $components['_new']['pid'] == '' ? NULL : (int) $components['_new']['pid'];
+      $destination->id = max(array_keys($this->destinations['components'])) + 1;
+      $this->destinations['components'][$destination->id] = $destination;
     }
 
     foreach ([
