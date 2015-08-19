@@ -512,6 +512,7 @@ function apple_news_update($channel_id, $entity_type, $entity_wrapper, $data) {
     if (!empty($data['metadata'])) {
       $data['metadata'] = json_decode($data['metadata'], true);
     }
+    // Apple News Revision ID. Required in order to be able to update articles.
     $data['metadata']['data']['revision'] = $article->article_revision_id;
     $data['metadata'] = json_encode($data['metadata']);
     // Make POST request to Apple News via PublisherAPI.
