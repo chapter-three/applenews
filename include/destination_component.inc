@@ -10,6 +10,41 @@ use \ChapterThree\AppleNews\Document\GalleryItem;
 use \ChapterThree\AppleNews\Document\Markdown;
 use \ChapterThree\AppleNews\Document\Styles;
 
+class ApplenewsDestinationContainer extends ApplenewsDestination {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function label() {
+    return t('Container') . ' ' . parent::label();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isLeaf() {
+    return FALSE;
+  }
+
+  /**
+   * Exports to an Apple News Document container object.
+   *
+   * @param array $value
+   *   An array of children component objects.
+   *
+   * @return array
+   *   A list of \ChapterThree\AppleNews\Document\Base objects.
+   */
+  public function export($value) {
+    $container = new Components\Container();
+    foreach ($this->children as $component) {
+      $container->addComponent($component);
+    }
+    return $container;
+  }
+
+}
+
 /**
  * Body component.
  */

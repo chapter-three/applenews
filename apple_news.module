@@ -388,6 +388,10 @@ function apple_news_apple_news_api() {
       ],
     ],
     'destinations' => [
+      'container' => [
+        'class' => 'ApplenewsDestinationContainer',
+        'name' => 'Container',
+      ],
       'body' => [
         'class' => 'ApplenewsDestinationBody',
         'name' => 'Body',
