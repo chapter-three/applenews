@@ -54,7 +54,7 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
   /**
    * ID of parent destination among a set of destinations.
    *
-   * @var ApplenewsDestination
+   * @var int
    */
   public $pid;
 
