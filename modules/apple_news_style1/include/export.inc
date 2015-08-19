@@ -17,11 +17,28 @@ class Applenewsstyle1ExportNode extends ApplenewsExportNode {
   /**
    * {@inheritdoc}
    */
-  public function __construct($module, $machine_name, array $arguments) {
-    parent::__construct($module, $machine_name, $arguments);
-    $this->settings['layout_columns'] = 7;
-    $this->settings['layout_width'] = 1024;
-    $this->settings['layout_alignment'] = 'left';
+  public function getSetting($key) {
+    // Hard-coded inherited settings.
+    switch ($key) {
+
+      case 'layout_columns':
+        return 7;
+
+      case 'layout_width':
+        return 1024;
+
+    }
+    if (isset($this->settings[$key])) {
+      return $this->settings[$key];
+    }
+    // Defaults.
+    switch ($key) {
+
+      case 'layout_alignment':
+        return 'left';
+
+    }
+    return parent::getSetting($key);
   }
 
   /**
@@ -37,7 +54,7 @@ class Applenewsstyle1ExportNode extends ApplenewsExportNode {
     $form['layout']['layout_alignment'] = [
       '#type'          => 'select',
       '#title'         => t('Alignment'),
-      '#default_value' => $this->settings['layout_alignment'],
+      '#default_value' => $this->getSetting('layout_alignment'),
       '#options'       => [
         'left'   => t('Left'),
         'center' => t('Center'),
@@ -52,18 +69,19 @@ class Applenewsstyle1ExportNode extends ApplenewsExportNode {
    * {@inheritdoc}
    */
   public function submitConfigForm($form, &$form_state) {
-    $this->settings['layout_alignment'] = $form_state['values']['layout_alignment'];
-    switch ($this->settings['layout_alignment']) {
+    $this->setSetting('layout_alignment',
+      $form_state['values']['layout_alignment']);
+    switch ($this->getSetting('layout_alignment')) {
 
       case 'left':
       case 'right':
-        $this->settings['layout_width'] = 1024;
-        $this->settings['layout_columns'] = 7;
+        $this->setSetting('layout_width', 1024);
+        $this->setSetting('layout_columns', 7);
         break;
 
       case 'center':
-        $this->settings['layout_width'] = 768;
-        $this->settings['layout_columns'] = 9;
+        $this->setSetting('layout_width', 768);
+        $this->setSetting('layout_columns', 9);
         break;
 
     }

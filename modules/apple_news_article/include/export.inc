@@ -15,16 +15,6 @@ class ApplenewsExportArticle extends ApplenewsExport {
   /**
    * {@inheritdoc}
    */
-  public function __construct($module, $machine_name, array $arguments) {
-    parent::__construct($module, $machine_name, $arguments);
-    $this->settings += [
-      'layout' => 'simple',
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function query() {
     return parent::query()
       ->entityCondition('entity_type', 'node')
@@ -50,13 +40,29 @@ class ApplenewsExportArticle extends ApplenewsExport {
   /**
    * {@inheritdoc}
    */
+  public function getSetting($key) {
+    if (isset($this->settings[$key])) {
+      return $this->settings[$key];
+    }
+    switch ($key) {
+
+      case 'layout':
+        return 'simple';
+
+    }
+    return parent::getSetting($key);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getConfigForm($form, &$form_state) {
     $form = parent::getConfigForm($form, $form_state);
 
     $form['layout'] = [
       '#type'          => 'select',
       '#title'         => t('Layout'),
-      '#default_value' => $this->settings['layout'],
+      '#default_value' => $this->getSetting('layout'),
       '#options'       => [
         'simple'              => t('Simple'),
         'simple_header_image' => t('Simple with Headline above Header Image'),
@@ -78,7 +84,7 @@ class ApplenewsExportArticle extends ApplenewsExport {
    */
   public function submitConfigForm($form, &$form_state) {
     parent::submitConfigForm($form, $form_state);
-    $this->settings['layout'] = $form_state['values']['layout'];
+    $this->setSetting('layout', $form_state['values']['layout']);
   }
 
   /**
@@ -124,7 +130,7 @@ class ApplenewsExportArticle extends ApplenewsExport {
       ]
     );
 
-    switch ($this->settings['layout']) {
+    switch ($this->getSetting('layout')) {
 
       case 'simple':
         $layout = new Document\Layouts\Layout(7, 1024);

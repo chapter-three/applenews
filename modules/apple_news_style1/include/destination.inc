@@ -50,7 +50,7 @@ class Applenewsstyle1DestinationBody extends ApplenewsDestinationBodyPhoto {
 
     $image_layout = new Layouts\ComponentLayout();
 
-    switch ($this->export->settings['layout_alignment']) {
+    switch ($this->export->getSetting('layout_alignment')) {
 
       case 'left':
         $body_layout->setColumnStart(0)->setColumnSpan(5);
@@ -156,7 +156,7 @@ class Applenewsstyle1DestinationHeaderImage extends ApplenewsDestination {
       ->setMinimumHeight('42vh');
     $header->setLayout($layout);
 
-    switch ($this->export->settings['layout_alignment']) {
+    switch ($this->export->getSetting('layout_alignment')) {
 
       case 'left':
       case 'right':
@@ -479,7 +479,7 @@ class Applenewsstyle1DestinationPullQuote extends ApplenewsDestination {
     $header->addComponent($quote);
     $section->addComponent($header);
 
-    switch ($this->export->settings['layout_alignment']) {
+    switch ($this->export->getSetting('layout_alignment')) {
 
       case 'left':
         // Quote.
@@ -560,7 +560,7 @@ class Applenewsstyle1DestinationImages extends ApplenewsDestinationImages {
       ->setMargin(new Margin(25, 25));
     $images->setLayout($layout);
 
-    switch ($this->export->settings['layout_alignment']) {
+    switch ($this->export->getSetting('layout_alignment')) {
 
       case 'left':
       case 'right':
@@ -623,7 +623,7 @@ class Applenewsstyle1DestinationAd extends ApplenewsDestinationAd {
     $layout = new Layouts\ComponentLayout();
     $ad->setLayout($layout);
 
-    switch ($this->export->settings['layout_alignment']) {
+    switch ($this->export->getSetting('layout_alignment')) {
 
       case 'left':
       case 'right':
