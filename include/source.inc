@@ -319,7 +319,12 @@ class ApplenewsSourceField implements ApplenewsSourceInterface {
       }
       else {
         /** @var EntityStructureWrapper $value */
-        $return['value'] = $value->value->raw();
+        try {
+          $return['value'] = $value->value->raw();
+        }
+        catch (EntityMetadataWrapperException $e) {
+          return $return;
+        }
         $return['value_sanitized'] = $value->value->value(array('sanitize' => TRUE));
         $return['value_decoded'] = $value->value->value(array('decode' => TRUE));
       }
