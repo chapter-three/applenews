@@ -439,7 +439,10 @@ class Applenewsstyle1DestinationPullQuote extends ApplenewsDestination {
 
     list($key, $file) = $this->getSourceValues($value,
       $this->settings['image']);
-    if (!empty($file[0][$key])) {
+    if (empty($file[0][$key])) {
+      $file = NULL;
+    }
+    else {
       $file = $file[0][$key];
     }
 
