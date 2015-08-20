@@ -7,7 +7,7 @@
 
 define('APPLE_NEWS_API_VERSION', 1);
 define('CURL_SUPPORTED_VERSION', '4.6.8');
-define('APPLE_NEWS_SUPPORTED_VERSION', '0.2.9');
+define('APPLE_NEWS_SUPPORTED_VERSION', '0.3.0');
 
 // Load Batch API helper functions.
 module_load_include('inc', 'apple_news', 'apple_news.batch');

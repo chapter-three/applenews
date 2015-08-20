@@ -159,7 +159,8 @@ class ApplenewsExportTestCase extends ApplenewsWebTestCase {
         'Export body component role.');
       $this->assertEqual('markdown', $item->format,
         'Export body component format.');
-      $expected = \ChapterThree\AppleNews\Document\Markdown::convert($content['body']);
+      $markdown = new \ChapterThree\AppleNews\Document\Markdown();
+      $expected = $markdown->convert($content['body']);
       $this->assertEqual(trim($expected), trim($item->text),
         'Export body component text -> component 1 text.');
 
@@ -242,6 +243,8 @@ EOD
     $b = array_keys($result['node']);
     $this->assert(!array_diff($a, $b) && !array_diff($b, $a), 'Query result.');
 
+    $markdown = new \ChapterThree\AppleNews\Document\Markdown();
+
     // Export each.
     foreach (array_keys($result['node']) as $nid) {
       $content = $contents[$map[$nid]];
@@ -265,7 +268,7 @@ EOD
         'Export body component role.');
       $this->assertEqual('markdown', $item->format,
         'Export body component format.');
-      $expected = \ChapterThree\AppleNews\Document\Markdown::convert('<p>a well-formed paragraph.</p>');
+      $expected = $markdown->convert('<p>a well-formed paragraph.</p>');
       $this->assertEqual($expected, $item->text,
         'Export body fragment -> component 1 body text.');
 
@@ -281,7 +284,7 @@ EOD
         'Export body component role.');
       $this->assertEqual('markdown', $item->format,
         'Export body component format.');
-      $expected = \ChapterThree\AppleNews\Document\Markdown::convert('<p>a paragraph with a nested image: </p>');
+      $expected = $markdown->convert('<p>a paragraph with a nested image: </p>');
       $this->assertEqual($expected, $item->text,
         'Export body fragment -> component 3 body text.');
 

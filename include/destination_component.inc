@@ -57,7 +57,8 @@ class ApplenewsDestinationBody extends ApplenewsDestination {
       $this->settings['text']);
     $components = [];
     foreach ($values as $value) {
-      $body = new Components\Body(Markdown::convert($value[$key]));
+      $markdown = new Markdown();
+      $body = new Components\Body($markdown->convert($value[$key]));
       $body->setFormat('markdown');
       $components[] = $body;
     }
@@ -712,13 +713,15 @@ class ApplenewsDestinationText extends ApplenewsDestination {
     list($key, $values) = $this->getSourceValues($value,
       $this->settings['text']);
 
+    $markdown = new Markdown();
+
     $components = [];
     foreach ($values as $value) {
       switch ($this->settings['component']) {
 
         case 'Author':
           if (!empty($this->settings['format'])) {
-            $component = new Components\Author(Markdown::convert($value[$key]));
+            $component = new Components\Author($markdown->convert($value[$key]));
             $component->setFormat($this->settings['format']);
           }
           else {
@@ -729,7 +732,7 @@ class ApplenewsDestinationText extends ApplenewsDestination {
 
         case 'Body':
           if (!empty($this->settings['format'])) {
-            $component = new Components\Body(Markdown::convert($value[$key]));
+            $component = new Components\Body($markdown->convert($value[$key]));
             $component->setFormat($this->settings['format']);
           }
           else {
@@ -739,7 +742,7 @@ class ApplenewsDestinationText extends ApplenewsDestination {
 
         case 'Byline':
           if (!empty($this->settings['format'])) {
-            $component = new Components\Byline(Markdown::convert($value[$key]));
+            $component = new Components\Byline($markdown->convert($value[$key]));
             $component->setFormat($this->settings['format']);
           }
           else {
@@ -749,7 +752,7 @@ class ApplenewsDestinationText extends ApplenewsDestination {
 
         case 'Caption':
           if (!empty($this->settings['format'])) {
-            $component = new Components\Caption(Markdown::convert($value[$key]));
+            $component = new Components\Caption($markdown->convert($value[$key]));
             $component->setFormat($this->settings['format']);
           }
           else {
@@ -759,7 +762,7 @@ class ApplenewsDestinationText extends ApplenewsDestination {
 
         case 'Heading':
           if (!empty($this->settings['format'])) {
-            $component = new Components\Heading(Markdown::convert($value[$key]));
+            $component = new Components\Heading($markdown->convert($value[$key]));
             $component->setFormat($this->settings['format']);
           }
           else {
@@ -770,7 +773,7 @@ class ApplenewsDestinationText extends ApplenewsDestination {
 
         case 'Illustrator':
           if (!empty($this->settings['format'])) {
-            $component = new Components\Illustrator(Markdown::convert($value[$key]));
+            $component = new Components\Illustrator($markdown->convert($value[$key]));
             $component->setFormat($this->settings['format']);
           }
           else {
@@ -780,7 +783,7 @@ class ApplenewsDestinationText extends ApplenewsDestination {
 
         case 'Intro':
           if (!empty($this->settings['format'])) {
-            $component = new Components\Intro(Markdown::convert($value[$key]));
+            $component = new Components\Intro($markdown->convert($value[$key]));
             $component->setFormat($this->settings['format']);
           }
           else {
@@ -790,7 +793,7 @@ class ApplenewsDestinationText extends ApplenewsDestination {
 
         case 'Photographer':
           if (!empty($this->settings['format'])) {
-            $component = new Components\Photographer(Markdown::convert($value[$key]));
+            $component = new Components\Photographer($markdown->convert($value[$key]));
             $component->setFormat($this->settings['format']);
           }
           else {
@@ -800,7 +803,7 @@ class ApplenewsDestinationText extends ApplenewsDestination {
 
         case 'Pullquote':
           if (!empty($this->settings['format'])) {
-            $component = new Components\Pullquote(Markdown::convert($value[$key]));
+            $component = new Components\Pullquote($markdown->convert($value[$key]));
             $component->setFormat($this->settings['format']);
           }
           else {
@@ -810,7 +813,7 @@ class ApplenewsDestinationText extends ApplenewsDestination {
 
         case 'Quote':
           if (!empty($this->settings['format'])) {
-            $component = new Components\Quote(Markdown::convert($value[$key]));
+            $component = new Components\Quote($markdown->convert($value[$key]));
             $component->setFormat($this->settings['format']);
           }
           else {
@@ -821,7 +824,7 @@ class ApplenewsDestinationText extends ApplenewsDestination {
         case 'Title':
         default:
           if (!empty($this->settings['format'])) {
-            $component = new Components\Title(Markdown::convert($value[$key]));
+            $component = new Components\Title($markdown->convert($value[$key]));
             $component->setFormat($this->settings['format']);
           }
           else {

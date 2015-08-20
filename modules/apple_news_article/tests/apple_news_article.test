@@ -116,7 +116,8 @@ class ApplenewsArticleExportTestCase extends ApplenewsWebTestCase {
         'Export body component role.');
       $this->assertEqual('markdown', $item->format,
         'Export body component format.');
-      $expected = \ChapterThree\AppleNews\Document\Markdown::convert($content['body']);
+      $markdown = new \ChapterThree\AppleNews\Document\Markdown();
+      $expected = $markdown->convert($content['body']);
       $this->assertEqual(trim($expected), trim($item->text),
         'Export body component text -> component 1 text.');
 
@@ -244,7 +245,8 @@ class ApplenewsArticleExportTestCase extends ApplenewsWebTestCase {
         'Export body component role.');
       $this->assertEqual('markdown', $item->format,
         'Export body component format.');
-      $expected = \ChapterThree\AppleNews\Document\Markdown::convert($content['body']);
+      $markdown = new \ChapterThree\AppleNews\Document\Markdown();
+      $expected = $markdown->convert($content['body']);
       $this->assertEqual(trim($expected), trim($item->text),
         $item->text, "Export body component text -> component ${i} text.");
 

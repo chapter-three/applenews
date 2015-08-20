@@ -112,7 +112,8 @@ class ApplenewsExportArticle extends ApplenewsExport {
     // Body.
     $value = $wrapper->body->raw();
     $value = $value['value'];
-    $body = new Document\Components\Body(Document\Markdown::convert($value));
+    $markdown = new Document\Markdown();
+    $body = new Document\Components\Body($markdown->convert($value));
     $body->setFormat('markdown');
 
     // Image field.
