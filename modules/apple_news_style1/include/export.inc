@@ -99,37 +99,38 @@ class Applenewsstyle1ExportNode extends ApplenewsExportNode {
       /** @var \ChapterThree\AppleNews\Document\Components\Component $comp */
       $comp = $components[$i];
 
-      // Associate with previous component.
+      // Associate with previous body component.
       if ($i) {
-        /** @var \ChapterThree\AppleNews\Document\Components\Component $prev */
+        /** @var \ChapterThree\AppleNews\Document\Components\Body $prev */
         $prev = $components[$i - 1];
+        if (!$prev instanceof Components\Body) {
+          continue;
+        }
 
         // Anchor to previous component.
-        $anchor = FALSE;
-        if ($comp instanceof Components\ScalableImage) {
-          if ($prev instanceof Components\Body) {
-            $anchor = TRUE;
-          }
-        }
-        elseif ($comp instanceof Components\Pullquote) {
-          $anchor = TRUE;
+        $anchor_range_length = FALSE;
+        if ($comp instanceof Components\ScalableImage ||
+            $comp instanceof Components\Pullquote
+        ) {
+          $anchor_range_length = strlen($prev->getText());
         }
         elseif ($comp instanceof Components\ComponentNested) {
           /** @var \ChapterThree\AppleNews\Document\Components\ComponentNested $comp */
           $class_name = '\ChapterThree\AppleNews\Document\Components\Pullquote';
           if ($comp->hasComponentType($class_name)) {
-            $anchor = TRUE;
+            $anchor_range_length = strlen($prev->getText());
           }
         }
-        if ($anchor) {
+        if ($anchor_range_length) {
           if (!$id = $prev->getIdentifier()) {
             $id = $this->document->generateIdentifier();
             $prev->setIdentifier($id);
           }
           $anchor = new Anchor('bottom');
-          $anchor->setTargetComponentIdentifier($id)
-            ->setRangeStart(500)
-            ->setRangeLength(1);
+          $anchor->setOriginAnchorPosition('bottom')
+            ->setTargetComponentIdentifier($id)
+            ->setRangeStart(0)
+            ->setRangeLength($anchor_range_length);
           $comp->setAnchor($anchor);
         }
       }
