@@ -96,6 +96,9 @@ class ApplenewsDestinationBodyPhoto extends ApplenewsDestinationBody {
     $markdown = new Markdown(['img']);
     $markdown = $markdown->convert($value);
 
+    // Concatenate blocks into body component(s), inserting image components
+    // after the image-containing block.
+    $blocks = [];
     // Each markdown block.
     foreach (explode(Markdown::BLOCK_DELIMITER, $markdown) as $block) {
       // Find img tags.
@@ -105,7 +108,6 @@ class ApplenewsDestinationBodyPhoto extends ApplenewsDestinationBody {
         foreach ($matches as $match) {
           // Get src attribute.
           if (preg_match("/(?<=\ssrc=\")[^\"]+/", $match[0], $src)) {
-            // Create image component.
             $images[] = $src[0];
           }
           // Remove tag.
@@ -113,14 +115,34 @@ class ApplenewsDestinationBodyPhoto extends ApplenewsDestinationBody {
             strpos($block, $match[0]), strlen($match[0]));
         }
       }
-      // Insert images after current block.
-      if (preg_match("/\S/", $block)) {
-        $body = new Components\Body(trim($block));
+      // Create body component if necessary, then append image components.
+      if (count($images)) {
+        $body = '';
+        if (count($blocks)) {
+          $body = implode(Markdown::BLOCK_DELIMITER, $blocks);
+          $blocks = [];
+        }
+        $body .= Markdown::BLOCK_DELIMITER . $block;
+        if (preg_match("/\S/", $body)) {
+          $body = new Components\Body(trim($body));
+          $body->setFormat('markdown');
+          $components[] = $body;
+        }
+        foreach ($images as $src) {
+          $components[] = $this->exportCreateImage($src);
+        }
+      }
+      else {
+        $blocks[] = $block;
+      }
+    }
+    // Last body component.
+    if (count($blocks)) {
+      $body = implode(Markdown::BLOCK_DELIMITER, $blocks);
+      if (preg_match("/\S/", $body)) {
+        $body = new Components\Body(trim($body));
         $body->setFormat('markdown');
         $components[] = $body;
-      }
-      foreach ($images as $src) {
-        $components[] = $this->exportCreateImage($src);
       }
     }
 

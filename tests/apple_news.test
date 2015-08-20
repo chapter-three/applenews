@@ -186,8 +186,12 @@ class ApplenewsExportTestCase extends ApplenewsWebTestCase {
         'title' => $this->randomName(32),
         'body' => <<<EOD
 <p>a well-formed paragraph.</p>
+<p>a well-formed paragraph.</p>
+<p>a well-formed paragraph.</p>
 <img src="${file_url}"/>
+<p>a well-formed paragraph.</p>
 <p>a paragraph with a nested image: <img src="${file_url_relative}"/></p>
+<p>a well-formed paragraph.</p>
 EOD
         ,
       ],
@@ -268,7 +272,12 @@ EOD
         'Export body component role.');
       $this->assertEqual('markdown', $item->format,
         'Export body component format.');
-      $expected = $markdown->convert('<p>a well-formed paragraph.</p>');
+      $expected = <<<'EOD'
+<p>a well-formed paragraph.</p>
+<p>a well-formed paragraph.</p>
+<p>a well-formed paragraph.</p>
+EOD;
+      $expected = $markdown->convert($expected);
       $this->assertEqual($expected, $item->text,
         'Export body fragment -> component 1 body text.');
 
@@ -284,7 +293,11 @@ EOD
         'Export body component role.');
       $this->assertEqual('markdown', $item->format,
         'Export body component format.');
-      $expected = $markdown->convert('<p>a paragraph with a nested image: </p>');
+      $expected = <<<'EOD'
+<p>a well-formed paragraph.</p>
+<p>a paragraph with a nested image: </p>
+EOD;
+      $expected = $markdown->convert($expected);
       $this->assertEqual($expected, $item->text,
         'Export body fragment -> component 3 body text.');
 
@@ -294,6 +307,18 @@ EOD
       $this->assertEqual(drupal_realpath($file->uri),
         @$export->getAssets()[$item->URL],
         'Export body fragment -> component 4 image URL.');
+
+      $item = $data->components[4];
+      $this->assertEqual('body', $item->role,
+        'Export body component role.');
+      $this->assertEqual('markdown', $item->format,
+        'Export body component format.');
+      $expected = <<<'EOD'
+<p>a well-formed paragraph.</p>
+EOD;
+      $expected = $markdown->convert($expected);
+      $this->assertEqual($expected, $item->text,
+        'Export body fragment -> component 5 body text.');
 
     }
   }
