@@ -18,18 +18,17 @@ class ApplenewsDestinationBody extends ApplenewsDestination {
   /**
    * {@inheritdoc}
    */
-  public function __construct() {
-    parent::__construct();
-    $this->settings += [
-      'text' => NULL,
-    ];
+  public function label() {
+    return t('Body') . ' ' . parent::label();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function label() {
-    return t('Body') . ' ' . parent::label();
+  public function settings() {
+    return [
+      'text' => NULL,
+    ] + parent::settings();
   }
 
   /**
@@ -40,10 +39,11 @@ class ApplenewsDestinationBody extends ApplenewsDestination {
     $form = parent::getConfigForm($form, $form_state);
 
     $form['text'] = [
-      '#title' => t('Text'),
-      '#type' => 'select',
-      '#options' => $this->getSourceOptions(),
-      '#default_value' => $this->settings['text'],
+      '#title'         => t('Text'),
+      '#type'          => 'select',
+      '#required'      => TRUE,
+      '#options'       => $this->getSourceOptions(),
+      '#default_value' => $this->getSetting('text'),
     ];
 
     return $form;
@@ -54,7 +54,7 @@ class ApplenewsDestinationBody extends ApplenewsDestination {
    */
   public function export($value) {
     list($key, $values) = $this->getSourceValues($value,
-      $this->settings['text']);
+      $this->getSetting('text'));
     $components = [];
     foreach ($values as $value) {
       $markdown = new Markdown();
@@ -154,7 +154,7 @@ class ApplenewsDestinationBodyPhoto extends ApplenewsDestinationBody {
    */
   public function export($value) {
     list($key, $values) = $this->getSourceValues($value,
-      $this->settings['text']);
+      $this->getSetting('text'));
 
     $components = [];
     foreach ($values as $value) {
@@ -174,19 +174,18 @@ class ApplenewsDestinationImages extends ApplenewsDestination {
   /**
    * {@inheritdoc}
    */
-  public function __construct() {
-    parent::__construct();
-    $this->settings += [
-      'type' => 'gallery',
-      'items' => NULL,
-    ];
+  public function label() {
+    return t('Image Series (Gallery or Mosaic)') . ' (' . $this->id . ')';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function label() {
-    return t('Image Series (Gallery or Mosaic)') . ' (' . $this->id . ')';
+  public function settings() {
+    return [
+      'type'  => 'gallery',
+      'items' => NULL,
+    ] + parent::settings();
   }
 
   /**
@@ -197,20 +196,22 @@ class ApplenewsDestinationImages extends ApplenewsDestination {
     $form = parent::getConfigForm($form, $form_state);
 
     $form['type'] = [
-      '#title' => t('Type'),
-      '#type' => 'select',
-      '#options' => [
+      '#title'         => t('Type'),
+      '#required'      => TRUE,
+      '#type'          => 'select',
+      '#options'       => [
         'gallery' => t('Gallery'),
-        'mosaic' => t('Mosaic'),
+        'mosaic'  => t('Mosaic'),
       ],
-      '#default_value' => $this->settings['type'],
+      '#default_value' => $this->getSetting('type'),
     ];
 
     $form['items'] = [
-      '#title' => t('Items'),
-      '#type' => 'select',
-      '#options' => $this->getSourceOptions(),
-      '#default_value' => $this->settings['items'],
+      '#title'         => t('Items'),
+      '#required'      => TRUE,
+      '#type'          => 'select',
+      '#options'       => $this->getSourceOptions(),
+      '#default_value' => $this->getSetting('items'),
     ];
 
     return $form;
@@ -221,7 +222,7 @@ class ApplenewsDestinationImages extends ApplenewsDestination {
    */
   public function export($value) {
     list($key, $values) = $this->getSourceValues($value,
-      $this->settings['items']);
+      $this->getSetting('items'));
 
     $items = [];
     foreach ($values as $i => $value) {
@@ -240,7 +241,7 @@ class ApplenewsDestinationImages extends ApplenewsDestination {
     }
 
     if (count($items)) {
-      switch ($this->settings['type']) {
+      switch ($this->getSetting('type')) {
 
         case 'gallery':
           return [new Components\Gallery($items)];
@@ -264,19 +265,18 @@ class ApplenewsDestinationAd extends ApplenewsDestination {
   /**
    * {@inheritdoc}
    */
-  public function __construct() {
-    parent::__construct();
-    $this->settings += [
-      'type' => 'banner',
-      'banner_type' => 'standard',
-    ];
+  public function label() {
+    return t('Advertisement') . ' (' . $this->id . ')';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function label() {
-    return t('Advertisement') . ' (' . $this->id . ')';
+  public function settings() {
+    return [
+      'type'        => 'banner',
+      'banner_type' => 'standard',
+    ] + parent::settings();
   }
 
   /**
@@ -287,26 +287,27 @@ class ApplenewsDestinationAd extends ApplenewsDestination {
     $form = parent::getConfigForm($form, $form_state);
 
     $form['type'] = [
-      '#title' => t('Type'),
-      '#type' => 'select',
-      '#options' => [
-        'banner' => t('Banner'),
+      '#title'         => t('Type'),
+      '#required'      => TRUE,
+      '#type'          => 'select',
+      '#options'       => [
+        'banner'           => t('Banner'),
         'medium_rectangle' => t('Medium Rectangle'),
       ],
-      '#default_value' => $this->settings['type'],
+      '#default_value' => $this->getSetting('type'),
     ];
 
     $form['banner_type'] = [
-      '#title' => t('Banner Type'),
-      '#type' => 'select',
-      '#options' => [
-        'any' => t('Any'),
-        'standard' => t('Standard'),
+      '#title'         => t('Banner Type'),
+      '#type'          => 'select',
+      '#options'       => [
+        'any'           => t('Any'),
+        'standard'      => t('Standard'),
         'double_height' => t('Double Height'),
-        'large' => t('Large'),
+        'large'         => t('Large'),
       ],
-      '#default_value' => $this->settings['banner_type'],
-      '#states' => array(
+      '#default_value' => $this->getSetting('banner_type'),
+      '#states'        => array(
         'visible' => array(
           ':input[name="type"]' => array('value' => 'banner'),
         ),
@@ -321,16 +322,15 @@ class ApplenewsDestinationAd extends ApplenewsDestination {
    */
   public function export($value) {
 
-    switch ($this->settings['type']) {
+    switch ($this->getSetting('type')) {
 
       case 'medium_rectangle':
         $ad = new Components\Advertisements\MediumRectangleAdvertisement();
         break;
 
       case 'banner':
-      default:
         $ad = new Components\Advertisements\BannerAdvertisement();
-        $ad->setBannerType($this->settings['banner_type']);
+        $ad->setBannerType($this->getSetting('banner_type'));
         break;
 
     }
@@ -348,19 +348,19 @@ class ApplenewsDestinationImage extends ApplenewsDestination {
   /**
    * {@inheritdoc}
    */
-  public function __construct() {
-    parent::__construct();
-    $this->settings += [
-      'type' => NULL,
-      'source' => NULL,
-    ];
+  public function label() {
+    return t('Image') . ' ' . $this->getSetting('type') .
+      ' (' . $this->id . ')';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function label() {
-    return t('Image') . ' (' . (!empty($this->settings['type']) ? $this->settings['type'] : $this->id) . ')';
+  public function settings() {
+    return [
+      'type'   => 'logo',
+      'source' => NULL,
+    ] + parent::settings();
   }
 
   /**
@@ -371,20 +371,20 @@ class ApplenewsDestinationImage extends ApplenewsDestination {
     $form = parent::getConfigForm($form, $form_state);
 
     $form['type'] = [
-      '#title' => t('Type'),
-      '#type' => 'select',
-      '#options' => [
-        'Logo' => t('Logo')
+      '#title'         => t('Type'),
+      '#type'          => 'select',
+      '#options'       => [
+        'logo' => t('Logo')
       ],
-      '#default_value' => !empty($this->settings['type']) ? $this->settings['type'] : 'Logo',
+      '#default_value' => $this->getSetting('type'),
     ];
 
     $form['source'] = [
-      '#title' => t('Value'),
-      '#type' => 'select',
-      '#options' => $this->getSourceOptions(),
-      '#default_value' => $this->settings['source'],
-      '#description' => t('<strong>Important:</strong> Map this field to the File field. Images should be high-resolution so they can be smoothly scaled down. Supported image types include JPEG (with .jpg or .jpeg extension), PNG, and GIF.'),
+      '#title'         => t('Value'),
+      '#required'      => TRUE,
+      '#type'          => 'select',
+      '#options'       => $this->getSourceOptions(),
+      '#default_value' => $this->getSetting('source'),
     ];
 
     return $form;
@@ -395,14 +395,13 @@ class ApplenewsDestinationImage extends ApplenewsDestination {
    */
   public function export($value) {
     list($key, $values) = $this->getSourceValues($value,
-      $this->settings['source']);
+      $this->getSetting('source'));
     $components = [];
     foreach ($values as $value) {
       $file = $value[$key];
       if (is_object($file)) {
-        switch ($this->settings['type']) {
-          case 'Logo':
-          default:
+        switch ($this->getSetting('type')) {
+          case 'logo':
             $component = new Components\Logo($this->export->addAsset($file->uri));
             $component->setCaption(empty($file->title) ? (empty($file->alt) ? '' : $file->alt) : $file->title);
             $components[] = $component;
@@ -423,21 +422,21 @@ class ApplenewsDestinationScalableImage extends ApplenewsDestination {
   /**
    * {@inheritdoc}
    */
-  public function __construct() {
-    parent::__construct();
-    $this->settings += [
-      'type' => NULL,
-      'file' => NULL,
-      'accessibilityCaption' => NULL,
-      'explicitContent' => NULL,
-    ];
+  public function label() {
+    return t('Scalable Image') . ' ' . $this->getSetting('type') .
+      ' (' . $this->id . ')';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function label() {
-    return t('Scalable Image') . ' (' . (!empty($this->settings['type']) ? $this->settings['type'] : $this->id) . ')';
+  public function settings() {
+    return [
+      'type'                 => 'figure',
+      'file'                 => NULL,
+      'accessibilityCaption' => NULL,
+      'explicitContent'      => NULL,
+    ] + parent::settings();
   }
 
   /**
@@ -448,38 +447,35 @@ class ApplenewsDestinationScalableImage extends ApplenewsDestination {
     $form = parent::getConfigForm($form, $form_state);
 
     $form['type'] = [
-      '#title' => t('Type'),
-      '#type' => 'select',
-      '#options' => [
-        'Figure' => t('Figure'),
-        'Photo' => t('Photo'),
-        'Portrait' => t('Portrait'),
+      '#title'         => t('Type'),
+      '#type'          => 'select',
+      '#options'       => [
+        'figure'   => t('Figure'),
+        'photo'    => t('Photo'),
+        'portrait' => t('Portrait'),
       ],
-      '#default_value' => !empty($this->settings['type']) ? $this->settings['type'] : 'Figure',
+      '#default_value' => $this->getSetting('type'),
     ];
 
     $form['file'] = [
-      '#title' => t('Value'),
-      '#type' => 'select',
-      '#options' => $this->getSourceOptions(),
-      '#default_value' => $this->settings['file'],
-      '#description' => t('<strong>Important:</strong> Map this field to the File field. Images should be high-resolution so they can be smoothly scaled down. Supported image types include JPEG (with .jpg or .jpeg extension), PNG, and GIF.'),
+      '#title'         => t('Value'),
+      '#type'          => 'select',
+      '#options'       => $this->getSourceOptions(),
+      '#default_value' => $this->getSetting('file'),
     ];
 
     $form['accessibilityCaption'] = [
-      '#title' => t('Accessibility Caption'),
-      '#type' => 'select',
-      '#options' => $this->getSourceOptions(),
-      '#default_value' => $this->settings['accessibilityCaption'],
-      '#description' => t('Optional caption text describing the contents of the image. Note that this property differs from caption although the caption may be displayed to readers, the accessiblity caption is used for VoiceOver only.'),
+      '#title'         => t('Accessibility Caption'),
+      '#type'          => 'select',
+      '#options'       => $this->getSourceOptions(),
+      '#default_value' => $this->getSetting('accessibilityCaption'),
     ];
 
     $form['explicitContent'] = [
-      '#title' => t('Explicit Content'),
-      '#type' => 'select',
-      '#options' => $this->getSourceOptions(),
-      '#default_value' => $this->settings['explicitContent'],
-      '#description' => t('This property indicates that the audio track may contain explicit/graphic content. Default value is False'),
+      '#title'         => t('Explicit Content'),
+      '#type'          => 'select',
+      '#options'       => $this->getSourceOptions(),
+      '#default_value' => $this->getSetting('explicitContent'),
     ];
 
     return $form;
@@ -490,28 +486,31 @@ class ApplenewsDestinationScalableImage extends ApplenewsDestination {
    */
   public function export($value) {
     list($key, $values) = $this->getSourceValues($value,
-      $this->settings['file']);
-    list($accessibility_caption_key, $accessibility_caption_value) = $this->getSourceValues($value,
-      $this->settings['accessibilityCaption']);
-    list($explicit_content_key, $explicit_content_value) = $this->getSourceValues($value,
-      $this->settings['explicitContent']);
+      $this->getSetting('file'));
+    list($accessibility_caption_key, $accessibility_caption_value)
+      = $this->getSourceValues($value,
+          $this->getSetting('accessibilityCaption'));
+    list($explicit_content_key, $explicit_content_value)
+      = $this->getSourceValues($value,
+          $this->getSetting('explicitContent'));
     $components = [];
     foreach ($values as $value) {
       $file = $value[$key];
       if (is_object($file)) {
-        switch ($this->settings['type']) {
-          case 'Photo':
+        switch ($this->getSetting('type')) {
+
+          case 'photo':
             $component = new Components\Photo($this->export->addAsset($file->uri));
             break;
 
-          case 'Portrait':
+          case 'portrait':
             $component = new Components\Portrait($this->export->addAsset($file->uri));
             break;
 
-          case 'Figure':
-          default:
+          case 'figure':
             $component = new Components\Figure($this->export->addAsset($file->uri));
             break;
+
         }
         if (!empty($accessibility_caption_value[0]['value']) && is_object($accessibility_caption_value[0]['value'])) {
           $component->setAccessibilityCaption($this->export->addAsset($accessibility_caption_value[0]['value']));
@@ -536,21 +535,21 @@ class ApplenewsDestinationText extends ApplenewsDestination {
   /**
    * {@inheritdoc}
    */
-  public function __construct() {
-    parent::__construct();
-    $this->settings += [
-      'text' => '',
-      'format' => NULL,
-      'heading' => NULL,
-      'component' => NULL,
-    ];
+  public function label() {
+    return t('Text') . ' ' . $this->getSetting('component') .
+      ' (' . $this->id . ')';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function label() {
-    return t('Text') . ' (' . (!empty($this->settings['component']) ? $this->settings['component'] : $this->id) . ')';
+  public function settings() {
+    return [
+      'text'      => NULL,
+      'component' => 'author',
+      'heading'   => 'heading',
+      'format'    => 'markdown',
+    ] + parent::settings();
   }
 
   /**
@@ -561,36 +560,38 @@ class ApplenewsDestinationText extends ApplenewsDestination {
     $form = parent::getConfigForm($form, $form_state);
 
     $form['text'] = [
-      '#title' => t('Text'),
-      '#type' => 'select',
-      '#options' => $this->getSourceOptions(),
-      '#default_value' => $this->settings['text'],
+      '#title'         => t('Text'),
+      '#required'      => TRUE,
+      '#type'          => 'select',
+      '#options'       => $this->getSourceOptions(),
+      '#default_value' => $this->getSetting('text'),
     ];
 
     $form['component'] = [
-      '#title' => t('Component'),
-      '#type' => 'select',
-      '#options' => [
-        'Author' => t('Author'),
-        'Body' => t('Body'),
-        'Byline' => t('Byline'),
-        'Caption' => t('Caption'),
-        'Heading' => t('Heading'),
-        'Illustrator' => t('Illustrator'),
-        'Intro' => t('Intro'),
-        'Photographer' => t('Photographer'),
-        'Pullquote' => t('Pullquote'),
-        'Quote' => t('Quote'),
-        'Title' => t('Title'),
+      '#title'         => t('Component'),
+      '#required'      => TRUE,
+      '#type'          => 'select',
+      '#options'       => [
+        'author'       => t('Author'),
+        'body'         => t('Body'),
+        'byline'       => t('Byline'),
+        'caption'      => t('Caption'),
+        'heading'      => t('Heading'),
+        'illustrator'  => t('Illustrator'),
+        'intro'        => t('Intro'),
+        'photographer' => t('Photographer'),
+        'pullquote'    => t('Pullquote'),
+        'quote'        => t('Quote'),
+        'title'        => t('Title'),
       ],
-      '#default_value' => !empty($this->settings['component']) ? $this->settings['component'] : 'Title',
+      '#default_value' => $this->getSetting('component'),
     ];
 
     $form['heading'] = [
-      '#title' => t('Heading'),
-      '#type' => 'select',
-      '#options' => [
-        'heading' => t('Heading'),
+      '#title'         => t('Heading'),
+      '#type'          => 'select',
+      '#options'       => [
+        'heading'  => t('Heading'),
         'heading1' => t('H1'),
         'heading2' => t('H2'),
         'heading3' => t('H3'),
@@ -598,8 +599,8 @@ class ApplenewsDestinationText extends ApplenewsDestination {
         'heading5' => t('H5'),
         'heading6' => t('H6'),
       ],
-      '#default_value' => $this->settings['heading'],
-      '#states' => [
+      '#default_value' => $this->getSetting('heading'),
+      '#states'        => [
         'visible' => [
           ':input[name="component"]' => ['value' => 'Heading'],
         ],
@@ -607,13 +608,13 @@ class ApplenewsDestinationText extends ApplenewsDestination {
     ];
 
     $form['format'] = [
-      '#title' => t('Format'),
-      '#type' => 'select',
-      '#options' => [
-        '' => t('None'),
+      '#title'         => t('Format'),
+      '#type'          => 'select',
+      '#options'       => [
+        ''         => t('None'),
         'markdown' => t('Markdown'),
       ],
-      '#default_value' => $this->settings['format'],
+      '#default_value' => $this->getSetting('format'),
     ];
 
     return $form;
@@ -625,18 +626,18 @@ class ApplenewsDestinationText extends ApplenewsDestination {
   public function export($value) {
 
     list($key, $values) = $this->getSourceValues($value,
-      $this->settings['text']);
+      $this->getSetting('text'));
 
     $markdown = new Markdown();
 
     $components = [];
     foreach ($values as $value) {
-      switch ($this->settings['component']) {
+      switch ($this->getSetting('component')) {
 
-        case 'Author':
-          if (!empty($this->settings['format'])) {
+        case 'author':
+          if ($this->getSetting('format')) {
             $component = new Components\Author($markdown->convert($value[$key]));
-            $component->setFormat($this->settings['format']);
+            $component->setFormat($this->getSetting('format'));
           }
           else {
             $component = new Components\Author($value[$key]);
@@ -644,102 +645,102 @@ class ApplenewsDestinationText extends ApplenewsDestination {
           $components[] = $component;
           break;
 
-        case 'Body':
-          if (!empty($this->settings['format'])) {
+        case 'body':
+          if ($this->getSetting('format')) {
             $component = new Components\Body($markdown->convert($value[$key]));
-            $component->setFormat($this->settings['format']);
+            $component->setFormat($this->getSetting('format'));
           }
           else {
             $component = new Components\Body($value[$key]);
           }
           break;
 
-        case 'Byline':
-          if (!empty($this->settings['format'])) {
+        case 'byline':
+          if ($this->getSetting('format')) {
             $component = new Components\Byline($markdown->convert($value[$key]));
-            $component->setFormat($this->settings['format']);
+            $component->setFormat($this->getSetting('format'));
           }
           else {
             $component = new Components\Byline($value[$key]);
           }
           break;
 
-        case 'Caption':
-          if (!empty($this->settings['format'])) {
+        case 'caption':
+          if ($this->getSetting('format')) {
             $component = new Components\Caption($markdown->convert($value[$key]));
-            $component->setFormat($this->settings['format']);
+            $component->setFormat($this->getSetting('format'));
           }
           else {
             $component = new Components\Caption($value[$key]);
           }
           break;
 
-        case 'Heading':
-          if (!empty($this->settings['format'])) {
+        case 'heading':
+          if ($this->getSetting('format')) {
             $component = new Components\Heading($markdown->convert($value[$key]));
-            $component->setFormat($this->settings['format']);
+            $component->setFormat($this->getSetting('format'));
           }
           else {
             $component = new Components\Heading($value[$key]);
           }
-          $component->setRole($this->settings['heading']);
+          $component->setRole($this->getSetting('heading'));
           break;
 
-        case 'Illustrator':
-          if (!empty($this->settings['format'])) {
+        case 'illustrator':
+          if ($this->getSetting('format')) {
             $component = new Components\Illustrator($markdown->convert($value[$key]));
-            $component->setFormat($this->settings['format']);
+            $component->setFormat($this->getSetting('format'));
           }
           else {
             $component = new Components\Illustrator($value[$key]);
           }
           break;
 
-        case 'Intro':
-          if (!empty($this->settings['format'])) {
+        case 'intro':
+          if ($this->getSetting('format')) {
             $component = new Components\Intro($markdown->convert($value[$key]));
-            $component->setFormat($this->settings['format']);
+            $component->setFormat($this->getSetting('format'));
           }
           else {
             $component = new Components\Intro($value[$key]);
           }
           break;
 
-        case 'Photographer':
-          if (!empty($this->settings['format'])) {
+        case 'photographer':
+          if ($this->getSetting('format')) {
             $component = new Components\Photographer($markdown->convert($value[$key]));
-            $component->setFormat($this->settings['format']);
+            $component->setFormat($this->getSetting('format'));
           }
           else {
             $component = new Components\Photographer($value[$key]);
           }
           break;
 
-        case 'Pullquote':
-          if (!empty($this->settings['format'])) {
+        case 'pullquote':
+          if ($this->getSetting('format')) {
             $component = new Components\Pullquote($markdown->convert($value[$key]));
-            $component->setFormat($this->settings['format']);
+            $component->setFormat($this->getSetting('format'));
           }
           else {
             $component = new Components\Pullquote($value[$key]);
           }
           break;
 
-        case 'Quote':
-          if (!empty($this->settings['format'])) {
+        case 'quote':
+          if ($this->getSetting('format')) {
             $component = new Components\Quote($markdown->convert($value[$key]));
-            $component->setFormat($this->settings['format']);
+            $component->setFormat($this->getSetting('format'));
           }
           else {
             $component = new Components\Quote($value[$key]);
           }
           break;
 
-        case 'Title':
+        case 'title':
         default:
-          if (!empty($this->settings['format'])) {
+          if ($this->getSetting('format')) {
             $component = new Components\Title($markdown->convert($value[$key]));
-            $component->setFormat($this->settings['format']);
+            $component->setFormat($this->getSetting('format'));
           }
           else {
             $component = new Components\Title($value[$key]);
@@ -763,20 +764,19 @@ class ApplenewsDestinationDivider extends ApplenewsDestination {
   /**
    * {@inheritdoc}
    */
-  public function __construct() {
-    parent::__construct();
-    $this->settings += [
-      'color' => '#000',
-      'width' => 1,
-      'style' => 'solid',
-    ];
+  public function label() {
+    return t('Divider') . ' (' . $this->id . ')';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function label() {
-    return t('Divider') . ' (' . $this->id . ')';
+  public function settings() {
+    return [
+      'color' => '#000',
+      'width' => 1,
+      'style' => 'solid',
+    ] + parent::settings();
   }
 
   /**
@@ -789,15 +789,13 @@ class ApplenewsDestinationDivider extends ApplenewsDestination {
     $form['color'] = [
       '#title' => t('Color'),
       '#type' => 'textfield',
-      '#default_value' => !empty($this->settings['color']) ? $this->settings['color'] : '#000',
-      '#description' => t('The stroke color, defined as a 3- to 8-character RGBA hexadecimal string; e.g., #000 for black or #FF00007F for red with an alpha (opacity) of 50%. Defaults to #000 (black).'),
+      '#default_value' => $this->getSetting('color'),
     ];
 
     $form['width'] = [
       '#title' => t('Width'),
       '#type' => 'textfield',
-      '#default_value' => !empty($this->settings['width']) ? $this->settings['width'] : 1,
-      '#description' => t('The width of the stroke line. Can be either an integer value in points. Defaults to 1 point.')
+      '#default_value' => $this->getSetting('width'),
     ];
 
     $form['style'] = [
@@ -808,8 +806,7 @@ class ApplenewsDestinationDivider extends ApplenewsDestination {
         'dashed' => t('Dashed'),
         'dotted' => t('Dotted'),
       ],
-      '#default_value' => !empty($this->settings['style']) ? $this->settings['style'] : 'solid',
-      '#description' => t('Defines the style of the stroke. Available values: <strong>solid</strong> (Default), <strong>dashed</strong> and <strong>dotted</strong>')
+      '#default_value' => $this->getSetting('style'),
     ];
 
     return $form;
@@ -820,11 +817,11 @@ class ApplenewsDestinationDivider extends ApplenewsDestination {
    */
   public function export($value) {
     $divider = new Components\Divider();
-    if (!empty($this->settings['color'])) {
+    if ($this->getSetting('color')) {
       $stroke = new Styles\StrokeStyle();
-      $stroke->setColor($this->settings['color']);
-      $stroke->setWidth($this->settings['width']);
-      $stroke->setStyle($this->settings['style']);
+      $stroke->setColor($this->getSetting('color'));
+      $stroke->setWidth((int) $this->getSetting('width'));
+      $stroke->setStyle($this->getSetting('style'));
       $divider->setStroke($stroke);
     }
     return [$divider];

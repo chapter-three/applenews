@@ -228,9 +228,7 @@ EOD
     $export->enabled = TRUE;
     $export->bundles = ['article'];
     $component = new ApplenewsDestinationBodyPhoto();
-    $component->settings = [
-      'text' => '::::apple_news::field::node::body::value',
-    ];
+    $component->setSetting('text', '::::apple_news::field::node::body::value');
     $component->weight = '50';
     $component->id = 1;
     $component->export = $export;

@@ -17,8 +17,17 @@ class Applenewsstyle1ExportNode extends ApplenewsExportNode {
   /**
    * {@inheritdoc}
    */
+  public function settings() {
+    return [
+      'layout_alignment' => 'left',
+    ] + parent::settings();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getSetting($key) {
-    // Hard-coded inherited settings.
+    // Override parent settings.
     switch ($key) {
 
       case 'layout_columns':
@@ -26,16 +35,6 @@ class Applenewsstyle1ExportNode extends ApplenewsExportNode {
 
       case 'layout_width':
         return 1024;
-
-    }
-    if (isset($this->settings[$key])) {
-      return $this->settings[$key];
-    }
-    // Defaults.
-    switch ($key) {
-
-      case 'layout_alignment':
-        return 'left';
 
     }
     return parent::getSetting($key);
@@ -54,6 +53,7 @@ class Applenewsstyle1ExportNode extends ApplenewsExportNode {
     $form['layout']['layout_alignment'] = [
       '#type'          => 'select',
       '#title'         => t('Alignment'),
+      '#required'      => TRUE,
       '#default_value' => $this->getSetting('layout_alignment'),
       '#options'       => [
         'left'   => t('Left'),

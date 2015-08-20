@@ -109,18 +109,17 @@ class Applenewsstyle1DestinationHeaderImage extends ApplenewsDestination {
   /**
    * {@inheritdoc}
    */
-  public function __construct() {
-    parent::__construct();
-    $this->settings += [
-      'file' => NULL,
-    ];
+  public function label() {
+    return t('Header Image') . ' (' . $this->id . ')';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function label() {
-    return t('Header Image') . ' (' . $this->id . ')';
+  public function settings() {
+    return [
+      'file' => NULL,
+    ] + parent::settings();
   }
 
   /**
@@ -131,10 +130,11 @@ class Applenewsstyle1DestinationHeaderImage extends ApplenewsDestination {
     $form = parent::getConfigForm($form, $form_state);
 
     $form['file'] = [
-      '#title' => t('File'),
-      '#type' => 'select',
-      '#options' => $this->getSourceOptions(),
-      '#default_value' => $this->settings['file'],
+      '#title'         => t('File'),
+      '#required'      => TRUE,
+      '#type'          => 'select',
+      '#options'       => $this->getSourceOptions(),
+      '#default_value' => $this->getSetting('file'),
     ];
 
     return $form;
@@ -145,7 +145,7 @@ class Applenewsstyle1DestinationHeaderImage extends ApplenewsDestination {
    */
   public function export($value) {
     list($key, $values) = $this->getSourceValues($value,
-      $this->settings['file']);
+      $this->getSetting('file'));
     if (empty($values[0][$key])) {
       return [];
     }
@@ -192,21 +192,20 @@ class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination
   /**
    * {@inheritdoc}
    */
-  public function __construct() {
-    parent::__construct();
-    $this->settings += [
-      'title' => NULL,
-      'intro' => NULL,
-      'author' => NULL,
-      'photographer' => NULL,
-    ];
+  public function label() {
+    return t('Header Gradient Container') . ' (' . $this->id . ')';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function label() {
-    return t('Header Gradient Container') . ' (' . $this->id . ')';
+  public function settings() {
+    return [
+      'title'        => NULL,
+      'intro'        => NULL,
+      'author'       => NULL,
+      'photographer' => NULL,
+    ] + parent::settings();
   }
 
   /**
@@ -217,31 +216,32 @@ class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination
     $form = parent::getConfigForm($form, $form_state);
 
     $form['title'] = [
-      '#title' => t('Title'),
-      '#type' => 'select',
-      '#options' => $this->getSourceOptions(),
-      '#default_value' => $this->settings['title'],
+      '#title'         => t('Title'),
+      '#required'      => TRUE,
+      '#type'          => 'select',
+      '#options'       => $this->getSourceOptions(),
+      '#default_value' => $this->getSetting('title'),
     ];
 
     $form['intro'] = [
-      '#title' => t('Intro'),
-      '#type' => 'select',
-      '#options' => $this->getSourceOptions(),
-      '#default_value' => $this->settings['intro'],
+      '#title'         => t('Intro'),
+      '#type'          => 'select',
+      '#options'       => $this->getSourceOptions(),
+      '#default_value' => $this->getSetting('intro'),
     ];
 
     $form['author'] = [
-      '#title' => t('Author'),
-      '#type' => 'select',
-      '#options' => $this->getSourceOptions(),
-      '#default_value' => $this->settings['author'],
+      '#title'         => t('Author'),
+      '#type'          => 'select',
+      '#options'       => $this->getSourceOptions(),
+      '#default_value' => $this->getSetting('author'),
     ];
 
     $form['photographer'] = [
-      '#title' => t('Photographer'),
-      '#type' => 'select',
-      '#options' => $this->getSourceOptions(),
-      '#default_value' => $this->settings['photographer'],
+      '#title'         => t('Photographer'),
+      '#type'          => 'select',
+      '#options'       => $this->getSourceOptions(),
+      '#default_value' => $this->getSetting('photographer'),
     ];
 
     return $form;
@@ -277,7 +277,7 @@ class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination
 
     // Title.
     list($key, $values) = $this->getSourceValues($value,
-      $this->settings['title']);
+      $this->getSetting('title'));
     if (empty($values[0][$key])) {
       return [];
     }
@@ -308,7 +308,7 @@ class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination
 
     // Intro.
     list($key, $values) = $this->getSourceValues($value,
-      $this->settings['intro']);
+      $this->getSetting('intro'));
     if (!empty($values[0][$key])) {
       $intro = new Components\Intro($values[0][$key]);
       $layout = new Layouts\ComponentLayout();
@@ -332,7 +332,7 @@ class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination
       ->setFontSize(13)
       ->setTextColor('#FFF');
     list($key, $values) = $this->getSourceValues($value,
-      $this->settings['author']);
+      $this->getSetting('author'));
     if (!empty($values[0][$key])) {
       $author = new Components\Author($values[0][$key]);
       $layout = new Layouts\ComponentLayout();
@@ -343,7 +343,7 @@ class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination
       $container->addComponent($author);
     }
     list($key, $values) = $this->getSourceValues($value,
-      $this->settings['photographer']);
+      $this->getSetting('photographer'));
     if (!empty($values[0][$key])) {
       $photog = new Components\Photographer($values[0][$key]);
       $layout = new Layouts\ComponentLayout();
@@ -386,19 +386,18 @@ class Applenewsstyle1DestinationPullQuote extends ApplenewsDestination {
   /**
    * {@inheritdoc}
    */
-  public function __construct() {
-    parent::__construct();
-    $this->settings += [
-      'image' => NULL,
-      'quote' => NULL,
-    ];
+  public function label() {
+    return t('Pull Quote') . ' (' . $this->id . ')';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function label() {
-    return t('Pull Quote') . ' (' . $this->id . ')';
+  public function settings() {
+    return [
+      'image' => NULL,
+      'quote' => NULL,
+    ] + parent::settings();
   }
 
   /**
@@ -409,18 +408,18 @@ class Applenewsstyle1DestinationPullQuote extends ApplenewsDestination {
     $form = parent::getConfigForm($form, $form_state);
 
     $form['image'] = [
-      '#title' => t('Image'),
-      '#type' => 'select',
-      '#options' => $this->getSourceOptions(),
-      '#default_value' => $this->settings['image'],
+      '#title'         => t('Image'),
+      '#type'          => 'select',
+      '#options'       => $this->getSourceOptions(),
+      '#default_value' => $this->getSetting('image'),
     ];
 
     $form['quote'] = [
-      '#title' => t('Quote'),
-      '#required' => TRUE,
-      '#type' => 'select',
-      '#options' => $this->getSourceOptions(),
-      '#default_value' => $this->settings['quote'],
+      '#title'         => t('Quote'),
+      '#required'      => TRUE,
+      '#type'          => 'select',
+      '#options'       => $this->getSourceOptions(),
+      '#default_value' => $this->getSetting('quote'),
     ];
 
     return $form;
@@ -438,7 +437,7 @@ class Applenewsstyle1DestinationPullQuote extends ApplenewsDestination {
   public function export($value) {
 
     list($key, $file) = $this->getSourceValues($value,
-      $this->settings['image']);
+      $this->getSetting('image'));
     if (empty($file[0][$key])) {
       $file = NULL;
     }
@@ -451,7 +450,7 @@ class Applenewsstyle1DestinationPullQuote extends ApplenewsDestination {
 
       // Pullquote.
       list($key, $quote) = $this->getSourceValues($value,
-        $this->settings['quote']);
+        $this->getSetting('quote'));
       if (empty($quote[0][$key])) {
         return [];
       }
@@ -537,7 +536,7 @@ class Applenewsstyle1DestinationPullQuote extends ApplenewsDestination {
 
       // Pullquote.
       list($key, $quote) = $this->getSourceValues($value,
-        $this->settings['quote']);
+        $this->getSetting('quote'));
       if (empty($quote[0][$key])) {
         return [];
       }
@@ -669,17 +668,25 @@ class Applenewsstyle1DestinationAd extends ApplenewsDestinationAd {
   /**
    * {@inheritdoc}
    */
-  public function __construct() {
-    parent::__construct();
-    $this->settings['type'] = 'banner';
-    $this->settings['banner_type'] = 'standard';
+  public function label() {
+    return t('Banner Ad') . ' (' . $this->id . ')';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function label() {
-    return t('Banner Ad') . ' (' . $this->id . ')';
+  public function getSetting($key) {
+    // Override parent settings.
+    switch ($key) {
+
+      case 'type':
+        return 'banner';
+
+      case 'banner_type':
+        return 'standard';
+
+    }
+    return parent::getSetting($key);
   }
 
   /**

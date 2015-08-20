@@ -42,7 +42,7 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
    * @var array
    *   Associative array keyed on setting key.
    */
-  public $settings;
+  public $settings = [];
 
   /**
    * Weight among a set of destinations.
@@ -103,7 +103,6 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
    * Implements __construct().
    */
   public function __construct() {
-    $this->settings = [];
   }
 
   /**
@@ -313,6 +312,59 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
   }
 
   /**
+   * Declare settins and defaults.
+   *
+   * @return array
+   *   Hash of valid keys for getSetting() and setSetting() to their default
+   *   value.
+   */
+  public function settings() {
+    return [];
+  }
+
+  /**
+   * Get a user-configured setting, or default value.
+   *
+   * @param string $key
+   *   Setting key.
+   *
+   * @return mixed
+   *   The set value, a default, or NULL if undefined.
+   */
+  public function getSetting($key) {
+    $defaults = $this->settings();
+    if (array_key_exists($key, $defaults)) {
+      if (array_key_exists($key, $this->settings)) {
+        return $this->settings[$key];
+      }
+      return $defaults[$key];
+    }
+    return NULL;
+  }
+
+  /**
+   * Set a user-configured setting.
+   *
+   * @param string $key
+   *   Setting key.
+   * @param mixed $value
+   *   Setting value.
+   *
+   * @return ApplenewsDestination|bool
+   *   $this for chaining, or FALSE if $key undefined.
+   */
+  public function setSetting($key, $value) {
+    $defaults = $this->settings();
+    if (array_key_exists($key, $defaults)) {
+      $this->settings[$key] = $value;
+    }
+    else {
+      return FALSE;
+    }
+    return $this;
+  }
+
+  /**
    * Provides a configuration form for this destination.
    */
   public function getConfigForm($form, &$form_state) {
@@ -336,8 +388,10 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
    * Submit handler for the configuration form for this export.
    */
   public function submitConfigForm($form, &$form_state) {
-    foreach ($this->settings as $key => &$value) {
-      $this->settings[$key] = $form_state['values'][$key];
+    foreach (array_keys($this->settings()) as $key) {
+      if (isset($form_state['values'][$key])) {
+        $this->setSetting($key, $form_state['values'][$key]);
+      }
     }
   }
 

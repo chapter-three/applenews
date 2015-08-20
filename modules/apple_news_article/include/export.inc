@@ -40,17 +40,10 @@ class ApplenewsExportArticle extends ApplenewsExport {
   /**
    * {@inheritdoc}
    */
-  public function getSetting($key) {
-    if (isset($this->settings[$key])) {
-      return $this->settings[$key];
-    }
-    switch ($key) {
-
-      case 'layout':
-        return 'simple';
-
-    }
-    return parent::getSetting($key);
+  public function settings() {
+    return [
+      'layout' => 'simple',
+    ] + parent::settings();
   }
 
   /**
@@ -62,6 +55,7 @@ class ApplenewsExportArticle extends ApplenewsExport {
     $form['layout'] = [
       '#type'          => 'select',
       '#title'         => t('Layout'),
+      '#required'      => TRUE,
       '#default_value' => $this->getSetting('layout'),
       '#options'       => [
         'simple'              => t('Simple'),
@@ -77,14 +71,6 @@ class ApplenewsExportArticle extends ApplenewsExport {
    */
   public function validateConfigForm($form, &$form_state) {
     parent::validateConfigForm($form, $form_state);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitConfigForm($form, &$form_state) {
-    parent::submitConfigForm($form, $form_state);
-    $this->setSetting('layout', $form_state['values']['layout']);
   }
 
   /**
