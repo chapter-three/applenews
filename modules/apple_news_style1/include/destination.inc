@@ -30,18 +30,21 @@ class Applenewsstyle1DestinationBody extends ApplenewsDestinationBodyPhoto {
    */
   public function export($value) {
 
-    $dc_style = new Styles\DropCapStyle(5);
-    $dc_style->setNumberOfCharacters(1)
-      ->setFontName('AvenirNext-UltraLight')
-      ->setTextColor('#222E33')
-      ->setPadding(5);
     $body_text_style = new Styles\ComponentTextStyle();
     $body_text_style->setTextAlignment('left')
       ->setFontName('AvenirNext-Regular')
       ->setFontSize(16)
       ->setLineHeight(26)
-      ->setTextColor('#000')
-      ->setDropCapStyle($dc_style);
+      ->setTextColor('#000');
+
+    $dc_style = new Styles\DropCapStyle(5);
+    $dc_style->setNumberOfCharacters(1)
+      ->setFontName('AvenirNext-UltraLight')
+      ->setTextColor('#222E33')
+      ->setPadding(5);
+    $initial_body_text_style = clone($body_text_style);
+    $initial_body_text_style->setDropCapStyle($dc_style);
+
     $body_inline_text_style = new Styles\InlineTextStyle(1, 19, $body_text_style);
     $body_animation = new Animations\ComponentAnimations\FadeInAnimation();
     $body_animation->setInitialAlpha(0.0)
@@ -71,15 +74,21 @@ class Applenewsstyle1DestinationBody extends ApplenewsDestinationBodyPhoto {
     }
 
     $components = parent::export($value);
-    foreach ($components as $comp) {
+    for ($i = 0; $i < count($components); $i++) {
+      $comp = $components[$i];
       if ($comp instanceof Components\Body) {
         /** @var \ChapterThree\AppleNews\Document\Components\Body $comp */
         if ($comp->getFormat() != 'markdown') {
           $comp->addInlineTextStyles($body_inline_text_style);
         }
         $comp->setLayout($body_layout)
-          ->setTextStyle($body_text_style)
           ->setAnimation($body_animation);
+        if ($i) {
+          $comp->setTextStyle($body_text_style);
+        }
+        else {
+          $comp->setTextStyle($initial_body_text_style);
+        }
       }
       elseif ($comp instanceof Components\ScalableImage) {
         /** @var \ChapterThree\AppleNews\Document\Components\ScalableImage $comp */
@@ -408,6 +417,7 @@ class Applenewsstyle1DestinationPullQuote extends ApplenewsDestination {
 
     $form['quote'] = [
       '#title' => t('Quote'),
+      '#required' => TRUE,
       '#type' => 'select',
       '#options' => $this->getSourceOptions(),
       '#default_value' => $this->settings['quote'],
@@ -426,109 +436,176 @@ class Applenewsstyle1DestinationPullQuote extends ApplenewsDestination {
    *   A list of \ChapterThree\AppleNews\Document\Base objects.
    */
   public function export($value) {
-    // Parent section.
-    $section = new Components\Section();
-    $section->setScene(new Animations\Scenes\ParallaxScaleHeader());
-    $layout = new Layouts\ComponentLayout();
-    $layout->setIgnoreDocumentMargin()
-      ->setMinimumHeight('42vh');
-    $section->setLayout($layout);
 
-    // Header.
     list($key, $file) = $this->getSourceValues($value,
       $this->settings['image']);
-    if (empty($file[0][$key])) {
-      return [];
+    if (!empty($file[0][$key])) {
+      $file = $file[0][$key];
     }
-    $file = $file[0][$key];
-    if (is_object($file)) {
-      $fill = new Styles\Fills\ImageFill($this->export->addAsset($file->uri));
+
+    // Pullquote without background.
+    if (empty($file)) {
+
+      // Pullquote.
+      list($key, $quote) = $this->getSourceValues($value,
+        $this->settings['quote']);
+      if (empty($quote[0][$key])) {
+        return [];
+      }
+      $markdown = new Markdown();
+      $quote = new Components\Pullquote($markdown->convert($quote[0][$key]));
+      $quote->setFormat('markdown');
+      $layout = new Layouts\ComponentLayout();
+      $layout->setIgnoreDocumentMargin()
+        ->setMinimumHeight('42vh');
+      $quote->setLayout($layout);
+      $text_style = new Styles\ComponentTextStyle();
+      $text_style->setTextTransform('uppercase')
+        ->setFontName('AvenirNext-Bold')
+        ->setFontSize(48)
+        ->setLineHeight(60);
+      $quote->setTextStyle($text_style);
+
+      switch ($this->export->getSetting('layout_alignment')) {
+
+        case 'left':
+          // Quote.
+          /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
+          $layout = $quote->getLayout();
+          $layout->setColumnStart(3)->setColumnSpan(4);
+          /** @var \ChapterThree\AppleNews\Document\Styles\ComponentTextStyle $text_style */
+          $text_style = $quote->getTextStyle();
+          $text_style->setTextAlignment('left');
+          break;
+
+        case 'center':
+          // Quote.
+          /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
+          $layout = $quote->getLayout();
+          $layout->setColumnStart(1)->setColumnSpan(7);
+          /** @var \ChapterThree\AppleNews\Document\Styles\ComponentTextStyle $text_style */
+          $text_style = $quote->getTextStyle();
+          $text_style->setTextAlignment('center');
+          break;
+
+        case 'right':
+          // Quote.
+          /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
+          $layout = $quote->getLayout();
+          $layout->setColumnStart(0)->setColumnSpan(4);
+          /** @var \ChapterThree\AppleNews\Document\Styles\ComponentTextStyle $text_style */
+          $text_style = $quote->getTextStyle();
+          $text_style->setTextAlignment('left');
+          break;
+
+      }
+
+      return [$quote];
+
     }
+    // Pullquote with background.
     else {
-      $fill = new Styles\Fills\ImageFill($this->export->addAsset($file));
+
+      // Parent section.
+      $section = new Components\Section();
+      $section->setScene(new Animations\Scenes\ParallaxScaleHeader());
+      $layout = new Layouts\ComponentLayout();
+      $layout->setIgnoreDocumentMargin()
+        ->setMinimumHeight('42vh');
+      $section->setLayout($layout);
+
+      // Header.
+      if (is_object($file)) {
+        $fill = new Styles\Fills\ImageFill($this->export->addAsset($file->uri));
+      }
+      else {
+        $fill = new Styles\Fills\ImageFill($this->export->addAsset($file));
+      }
+      $fill->setFillMode('cover')->setVerticalAlignment('top');
+      $style = new Styles\ComponentStyle();
+      $style->setFill($fill);
+      $header = new Components\Header();
+      $header->setStyle($style);
+      $layout = new Layouts\ComponentLayout();
+      $layout->setIgnoreDocumentMargin()
+        ->setMinimumHeight('75vw')
+        ->setMargin(new Margin(25, 25));
+      $header->setLayout($layout);
+
+      // Pullquote.
+      list($key, $quote) = $this->getSourceValues($value,
+        $this->settings['quote']);
+      if (empty($quote[0][$key])) {
+        return [];
+      }
+      $markdown = new Markdown();
+      $quote = new Components\Pullquote($markdown->convert($quote[0][$key]));
+      $quote->setFormat('markdown');
+      $layout = new Layouts\ComponentLayout();
+      $layout->setColumnStart(0)->setColumnSpan(7)->setMargin(new Margin(70));
+      $quote->setLayout($layout);
+      $quote->setBehavior(new Behaviors\BackgroundParallax());
+      $text_style = new Styles\ComponentTextStyle();
+      $text_style->setTextTransform('uppercase')
+        ->setFontName('AvenirNext-Bold')
+        ->setFontSize(16)
+        ->setLineHeight(20)
+        ->setTextColor('#FFF');
+      $quote->setTextStyle($text_style);
+
+      $header->addComponent($quote);
+      $section->addComponent($header);
+
+      switch ($this->export->getSetting('layout_alignment')) {
+
+        case 'left':
+          // Quote.
+          /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
+          $layout = $quote->getLayout();
+          $layout->setColumnStart(1);
+          /** @var \ChapterThree\AppleNews\Document\Styles\ComponentTextStyle $text_style */
+          $text_style = $quote->getTextStyle();
+          $text_style->setTextAlignment('left');
+          // Section.
+          /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
+          $layout = $section->getLayout();
+          $layout->setColumnStart(3)->setColumnSpan(4);
+          break;
+
+        case 'center':
+          // Quote.
+          /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
+          $layout = $quote->getLayout();
+          $layout->setColumnStart(1)->setColumnSpan(5);
+          /** @var \ChapterThree\AppleNews\Document\Styles\ComponentTextStyle $text_style */
+          $text_style = $quote->getTextStyle();
+          $text_style->setTextAlignment('center');
+          // Section.
+          /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
+          $layout = $section->getLayout();
+          $layout->setColumnStart(1)->setColumnSpan(7);
+          break;
+
+        case 'right':
+          // Quote.
+          /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
+          $layout = $quote->getLayout();
+          $layout->setColumnSpan(6);
+          /** @var \ChapterThree\AppleNews\Document\Styles\ComponentTextStyle $text_style */
+          $text_style = $quote->getTextStyle();
+          $text_style->setTextAlignment('left');
+          // Section.
+          /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
+          $layout = $section->getLayout();
+          $layout->setColumnStart(0)->setColumnSpan(4);
+          break;
+
+      }
+
+      return [$section];
+
     }
-    $fill->setFillMode('cover')->setVerticalAlignment('top');
-    $style = new Styles\ComponentStyle();
-    $style->setFill($fill);
-    $header = new Components\Header();
-    $header->setStyle($style);
-    $layout = new Layouts\ComponentLayout();
-    $layout->setIgnoreDocumentMargin()
-      ->setMinimumHeight('75vw')
-      ->setMargin(new Margin(25, 25));
-    $header->setLayout($layout);
 
-    // Pullquote.
-    list($key, $quote) = $this->getSourceValues($value,
-      $this->settings['quote']);
-    if (empty($quote[0][$key])) {
-      return [];
-    }
-    $markdown = new Markdown();
-    $quote = new Components\Pullquote($markdown->convert($quote[0][$key]));
-    $quote->setFormat('markdown');
-    $layout = new Layouts\ComponentLayout();
-    $layout->setColumnStart(0)->setColumnSpan(7)->setMargin(new Margin(70));
-    $quote->setLayout($layout);
-    $quote->setBehavior(new Behaviors\BackgroundParallax());
-    $text_style = new Styles\ComponentTextStyle();
-    $text_style->setTextTransform('uppercase')
-      ->setFontName('AvenirNext-Bold')
-      ->setFontSize(16)
-      ->setLineHeight(20)
-      ->setTextColor('#FFF');
-    $quote->setTextStyle($text_style);
-
-    $header->addComponent($quote);
-    $section->addComponent($header);
-
-    switch ($this->export->getSetting('layout_alignment')) {
-
-      case 'left':
-        // Quote.
-        /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
-        $layout = $quote->getLayout();
-        $layout->setColumnStart(1);
-        /** @var \ChapterThree\AppleNews\Document\Styles\ComponentTextStyle $text_style */
-        $text_style = $quote->getTextStyle();
-        $text_style->setTextAlignment('left');
-        // Section.
-        /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
-        $layout = $section->getLayout();
-        $layout->setColumnStart(3)->setColumnSpan(4);
-        break;
-
-      case 'center':
-        // Quote.
-        /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
-        $layout = $quote->getLayout();
-        $layout->setColumnStart(1)->setColumnSpan(5);
-        /** @var \ChapterThree\AppleNews\Document\Styles\ComponentTextStyle $text_style */
-        $text_style = $quote->getTextStyle();
-        $text_style->setTextAlignment('center');
-        // Section.
-        /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
-        $layout = $section->getLayout();
-        $layout->setColumnStart(1)->setColumnSpan(7);
-        break;
-
-      case 'right':
-        // Quote.
-        /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
-        $layout = $quote->getLayout();
-        $layout->setColumnSpan(6);
-        /** @var \ChapterThree\AppleNews\Document\Styles\ComponentTextStyle $text_style */
-        $text_style = $quote->getTextStyle();
-        $text_style->setTextAlignment('left');
-        // Section.
-        /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
-        $layout = $section->getLayout();
-        $layout->setColumnStart(0)->setColumnSpan(4);
-        break;
-
-    }
-
-    return [$section];
   }
 
 }
