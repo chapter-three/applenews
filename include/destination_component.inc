@@ -97,12 +97,11 @@ class ApplenewsDestinationBodyPhoto extends ApplenewsDestinationBody {
     $markdown = $markdown->convert($value);
 
     // Each markdown block.
-    $markdown = explode(Markdown::BLOCK_DELIMITER, $markdown);
-    for ($i = 0; $i < count($markdown); $i++) {
+    foreach (explode(Markdown::BLOCK_DELIMITER, $markdown) as $block) {
       // Find img tags.
       $images = [];
-      // @todo This regex is a bit simplistic.
-      if (preg_match_all("/<img\s[^>]+>/", $markdown[$i], $matches)) {
+      // @todo This regex may be a bit simplistic.
+      if (preg_match_all("/<img\s[^>]+>/", $block, $matches)) {
         foreach ($matches as $match) {
           // Get src attribute.
           if (preg_match("/(?<=\ssrc=\")[^\"]+/", $match[0], $src)) {
@@ -110,13 +109,13 @@ class ApplenewsDestinationBodyPhoto extends ApplenewsDestinationBody {
             $images[] = $src[0];
           }
           // Remove tag.
-          $markdown[$i] = substr_replace($markdown[$i], '',
-            strpos($markdown[$i], $match[0]), strlen($match[0]));
+          $block = substr_replace($block, '',
+            strpos($block, $match[0]), strlen($match[0]));
         }
       }
       // Insert images after current block.
-      if (preg_match("/\S/", $markdown[$i])) {
-        $body = new Components\Body(trim($markdown[$i]));
+      if (preg_match("/\S/", $block)) {
+        $body = new Components\Body(trim($block));
         $body->setFormat('markdown');
         $components[] = $body;
       }
