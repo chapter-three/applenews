@@ -288,10 +288,6 @@ class ApplenewsExtraDestinationAudio extends ApplenewsDestination {
   /**
    * Exports to an Apple News Document container object.
    *
-   * NOTE: This is a simple Audio field integration example. This example
-   * doesn't include cases with multiple audio files with multiple
-   * explicitcontent and accessibilityCaption options.
-   *
    * @param mixed $value
    *   An array of children component objects.
    *
@@ -310,11 +306,12 @@ class ApplenewsExtraDestinationAudio extends ApplenewsDestination {
         $this->getSetting('explicitContent'));
     $components = [];
     foreach ($values as $delta => $value) {
-      $file = $value['file'];
-      if (is_object($file)) {
+      if (!empty($value[$key])) {
         switch ($this->getSetting('type')) {
+
           case 'music':
-            $component = new Components\Music($value['url']);
+            $url = $this->export->addAsset($value[$key]);
+            $component = new Components\Music($url);
             if (!empty($caption_value[$delta][$caption_key])) {
               $component->setCaption($caption_value[$delta][$caption_key]);
             }
@@ -327,6 +324,7 @@ class ApplenewsExtraDestinationAudio extends ApplenewsDestination {
               $component->setExplicitContent(TRUE);
             }
             break;
+
         }
         $components[] = $component;
       }
