@@ -668,7 +668,8 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
       $destination = apple_news_get_destination($info['module'], $info['machine_name']);
       $destination->weight = (int) $components['_new']['weight'];
       $destination->pid = $components['_new']['pid'] == '' ? NULL : (int) $components['_new']['pid'];
-      $destination->id = max(array_keys($this->destinations['components'])) + 1;
+      $destination->id = empty($this->destinations['components']) ? 1 :
+        max(array_keys($this->destinations['components'])) + 1;
       $this->destinations['components'][$destination->id] = $destination;
     }
 
