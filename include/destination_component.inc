@@ -27,7 +27,8 @@ class ApplenewsDestinationBody extends ApplenewsDestination {
    */
   public function settings() {
     return [
-      'text' => NULL,
+      'text'   => NULL,
+      'format' => 'markdown',
     ] + parent::settings();
   }
 
@@ -46,6 +47,16 @@ class ApplenewsDestinationBody extends ApplenewsDestination {
       '#default_value' => $this->getSetting('text'),
     ];
 
+    $form['format'] = [
+      '#title'         => t('Format'),
+      '#type'          => 'select',
+      '#options'       => [
+        ''         => t('None'),
+        'markdown' => t('Markdown'),
+      ],
+      '#default_value' => $this->getSetting('format'),
+    ];
+
     return $form;
   }
 
@@ -55,11 +66,21 @@ class ApplenewsDestinationBody extends ApplenewsDestination {
   public function export($value) {
     list($key, $values) = $this->getSourceValues($value,
       $this->getSetting('text'));
+
+    if ($this->getSetting('format') == 'markdown') {
+      $markdown = new Markdown();
+    }
+
     $components = [];
     foreach ($values as $value) {
-      $markdown = new Markdown();
-      $body = new Components\Body($markdown->convert($value[$key]));
-      $body->setFormat('markdown');
+      $body = $value[$key];
+      if ($this->getSetting('format') == 'markdown') {
+        $body = $markdown->convert($body);
+      }
+      $body = new Components\Body($body);
+      if ($this->getSetting('format')) {
+        $body->setFormat($this->getSetting('format'));
+      }
       $components[] = $body;
     }
     return $components;

@@ -28,6 +28,29 @@ class Applenewsstyle1DestinationBody extends ApplenewsDestinationBodyPhoto {
   /**
    * {@inheritdoc}
    */
+  public function getSetting($key) {
+    // Override parent settings.
+    switch ($key) {
+
+      case 'format':
+        return 'markdown';
+
+    }
+    return parent::getSetting($key);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getConfigForm($form, &$form_state) {
+    $form = parent::getConfigForm($form, $form_state);
+    $form['format']['#type'] = 'value';
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function export($value) {
 
     $body_text_style = new Styles\ComponentTextStyle();
@@ -395,8 +418,9 @@ class Applenewsstyle1DestinationPullQuote extends ApplenewsDestination {
    */
   public function settings() {
     return [
-      'image' => NULL,
-      'quote' => NULL,
+      'image'  => NULL,
+      'quote'  => NULL,
+      'format' => 'markdown',
     ] + parent::settings();
   }
 
@@ -422,6 +446,16 @@ class Applenewsstyle1DestinationPullQuote extends ApplenewsDestination {
       '#default_value' => $this->getSetting('quote'),
     ];
 
+    $form['format'] = [
+      '#title'         => t('Quote Format'),
+      '#type'          => 'select',
+      '#options'       => [
+        ''         => t('None'),
+        'markdown' => t('Markdown'),
+      ],
+      '#default_value' => $this->getSetting('format'),
+    ];
+
     return $form;
   }
 
@@ -436,6 +470,23 @@ class Applenewsstyle1DestinationPullQuote extends ApplenewsDestination {
    */
   public function export($value) {
 
+    // Pullquote.
+    list($key, $quote) = $this->getSourceValues($value,
+      $this->getSetting('quote'));
+    if (empty($quote[0][$key])) {
+      return [];
+    }
+    $quote = $quote[0][$key];
+    if ($this->getSetting('format') == 'markdown') {
+      $markdown = new Markdown();
+      $quote = $markdown->convert($quote);
+    }
+    $quote = new Components\Pullquote($quote);
+    if ($this->getSetting('format')) {
+      $quote->setFormat($this->getSetting('format'));
+    }
+
+    // Background.
     list($key, $file) = $this->getSourceValues($value,
       $this->getSetting('image'));
     if (empty($file[0][$key])) {
@@ -449,14 +500,6 @@ class Applenewsstyle1DestinationPullQuote extends ApplenewsDestination {
     if (empty($file)) {
 
       // Pullquote.
-      list($key, $quote) = $this->getSourceValues($value,
-        $this->getSetting('quote'));
-      if (empty($quote[0][$key])) {
-        return [];
-      }
-      $markdown = new Markdown();
-      $quote = new Components\Pullquote($markdown->convert($quote[0][$key]));
-      $quote->setFormat('markdown');
       $layout = new Layouts\ComponentLayout();
       $layout->setIgnoreDocumentMargin()
         ->setMinimumHeight('42vh');
@@ -535,14 +578,6 @@ class Applenewsstyle1DestinationPullQuote extends ApplenewsDestination {
       $header->setLayout($layout);
 
       // Pullquote.
-      list($key, $quote) = $this->getSourceValues($value,
-        $this->getSetting('quote'));
-      if (empty($quote[0][$key])) {
-        return [];
-      }
-      $markdown = new Markdown();
-      $quote = new Components\Pullquote($markdown->convert($quote[0][$key]));
-      $quote->setFormat('markdown');
       $layout = new Layouts\ComponentLayout();
       $layout->setColumnStart(0)->setColumnSpan(7)->setMargin(new Margin(70));
       $quote->setLayout($layout);
