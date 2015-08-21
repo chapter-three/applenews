@@ -565,7 +565,7 @@ function apple_news_update($channel_id, $entity_type, $entity_wrapper, $data) {
       return TRUE;
     }
     else {
-      watchdog('apple_news', "Could not update Apple News article @id. You could delete this article from Apple News and re-publish it.",
+      watchdog('apple_news', "Could not update Apple News article @id. You could try delete the article from Apple News and re-publish it.",
         ['@id' => $article->article_id],
         WATCHDOG_NOTICE
       );
