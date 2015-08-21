@@ -2,20 +2,50 @@
 
 #### Table of Contents
 
-1. [Before you Start](#before)
-2. [Minimum Requirements](#minimum-req)
-3. [Installation](#installation)
+1. [TL;DR](#tldr)
+2. [Before you Start](#before)
+3. [Minimum Requirements](#minimum-req)
+4. [Installation](#installation)
     1. [Drush based installation](#drush-install)
     2. [Manually based installation](#manual-install)
-4. [Configuration](#configuration)
+5. [Configuration](#configuration)
     1. [Initial settings configuration](#initial)
     2. [Channel/Channel settings](#channel)
     3. [Node configuration](#node)
     4. [Preview post](#preview)
     5. [Delete from channel](#delete)
-4. [Troubleshoot](#troubleshoot)
-5. [Developer API](#developer-api)
-6. [Contribute](#contribute)
+6. [Troubleshoot](#troubleshoot)
+7. [Developer API](#developer-api)
+8. [Contribute](#contribute)
+
+
+## <a name="tldr"></a>TL;DR
+
+Install modules:
+
+-   [Libraries](https://www.drupal.org/project/libraries)
+-   [Entity](https://www.drupal.org/project/entity)
+
+Install Libraries (see [Installing an external library that is required by a contributed module](https://www.drupal.org/node/1440066)):
+
+-   [php-curl-class 4.6.8](https://github.com/php-curl-class/php-curl-class)
+-   [AppleNews (latest)](https://github.com/chapter-three/AppleNews)
+
+Enable:
+
+-   Apple News (`apple_news`) -- Core module, you will be able to push content but it won't look very appealing.
+-   Apple News Style X (`apple_news_styleX`) -- Example implemenation, defines a usable export and style.
+
+Other modules:
+
+-   Apple News Article (`apple_news_article`) -- Another example module, used mostly for testing.
+-   Apple News Extras (`apple_news_extras`) -- Extension module with support for various contrib field modules.
+
+Go to `/admin/config/content/apple-news/`:
+
+1.  Enable, configure an export.
+2.  Preview exported content to test your export.
+3.  Configure your connection to the Apple Publisher API and push.
 
 ## <a name="before"></a>Before you start
 
