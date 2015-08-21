@@ -203,7 +203,6 @@ abstract class ApplenewsExport {
           '#attributes' => [
             'data-channel-id' => $channel_id
           ],
-          '#required' => TRUE,
           '#default_value' => !empty($saved_channels[$channel_id]) ? TRUE : FALSE,
         ];
         foreach ($channel['sections'] as $section_id => $section) {
