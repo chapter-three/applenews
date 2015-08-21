@@ -202,7 +202,7 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
     }
     foreach ($entity_types as $entity_type) {
       // Classify so we can order options.
-      $opts_refs = $opts_atts = $opts_fields = [];
+      $opts_atts = $opts_fields = [];
       // Each entity source that applies to $entity_type.
       foreach ($entity_sources($entity_type) as $source_info) {
         // Entity attributes.
@@ -215,18 +215,24 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
           ]);
           // Nested entity source.
           if (is_array($attr_info)) {
-            $opts_refs[$attr_info['label']] = $this->getSourceOptions($id,
+            $label = $attr_info['label'];
+            $opts_atts[$label] = $this->getSourceOptions($id,
               [$attr_info['type']]);
           }
           // Value source.
           else {
-            $opts_atts[$id] = "${source_info['name']} -- ${attr_info}";
+            $label = implode(' -- ', [
+              $source_info['name'],
+              $attr_info,
+            ]);
+            $opts_atts[$id] = $label;
           }
         }
       }
       // Each field source that applies to $entity_type.
       $bundles = empty($ancestors) ? $this->export->bundles() : FALSE;
-      foreach ($field_types($entity_type, $bundles) as $field_name => $field_type
+      foreach ($field_types($entity_type, $bundles) as
+               $field_name => $field_type
       ) {
         // Each field source that applies to $field_type.
         foreach ($field_sources($field_type) as $source_info) {
@@ -240,11 +246,29 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
               $field_name,
               $key,
             ]);
-            $opts_fields[$id] = "${source_info['name']} -- ${field_name} -- ${attr_info}";
+            // Nested entity source.
+            if (is_array($attr_info)) {
+              $label = implode(' -- ', [
+                $source_info['name'],
+                $field_name,
+                $attr_info['label']
+              ]);
+              $opts_fields[$label] = $this->getSourceOptions($id,
+                [$attr_info['type']]);
+            }
+            // Value source.
+            else {
+              $label = implode(' -- ', [
+                $source_info['name'],
+                $field_name,
+                $attr_info,
+              ]);
+              $opts_fields[$id] = $label;
+            }
           }
         }
       }
-      $options += $opts_atts + $opts_fields + $opts_refs;
+      $options += $opts_atts + $opts_fields;
     }
     return $options;
   }
