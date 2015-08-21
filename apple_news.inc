@@ -486,6 +486,12 @@ function apple_news_post($channel_id, $entity_type, $entity_wrapper, $data) {
     $post->insert($record);
     return TRUE;
   }
+  else {
+    watchdog('apple_news', "Could not post an Apple News article @id",
+      ['@id' => $entity_wrapper->getIdentifier()], 
+      WATCHDOG_NOTICE
+    );
+  }
   return FALSE;
 }
 
@@ -558,6 +564,12 @@ function apple_news_update($channel_id, $entity_type, $entity_wrapper, $data) {
       $post->update($record);
       return TRUE;
     }
+    else {
+      watchdog('apple_news', "Could not update Apple News article @id",
+        ['@id' => $article->article_id],
+        WATCHDOG_NOTICE
+      );
+    }
   }
   else {
     // Create new Apple News article.
@@ -588,6 +600,10 @@ function apple_news_delete($channel_id, $entity_type, $entity_wrapper) {
     $post->setPostId($entity_type, $entity_wrapper->getIdentifier(), $entity_wrapper->getIdentifier());
     $post->delete();
     //$post->deleteByEntity($entity_wrapper, $entity_type);
+    watchdog('apple_news', "Entity ID @id was removed from Apple News",
+      ['@id' => $entity_wrapper->getIdentifier()],
+      WATCHDOG_INFO
+    );
     return TRUE;
   }
   return FALSE;
