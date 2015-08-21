@@ -351,8 +351,22 @@ class ApplenewsSourceFieldFile extends ApplenewsSourceField {
    */
   static public function attributes() {
     return [
+      'uri' => 'URI',
       'url' => 'URL',
-      'file' => 'File',
+      'fid' => 'File ID',
+      'filename' => 'File Name',
+      'filesize' => 'File Size',
+      'status' => 'Status',
+      'filemime' => 'File Mime Type',
+      'timestamp' => 'Timestamp',
+      'alt' => 'Alt Text',
+      'title' => 'Title Text',
+      'width' => 'Width',
+      'height' => 'Height',
+      'owner' => [
+        'label' => 'File Owner',
+        'type' => 'user',
+      ],
     ];
   }
 
@@ -372,7 +386,18 @@ class ApplenewsSourceFieldFile extends ApplenewsSourceField {
   public function export($value = NULL) {
     $return = [
       'url' => '',
-      'file' => NULL,
+      'url' => '',
+      'fid' => '',
+      'filename' => '',
+      'filesize' => '',
+      'status' => '',
+      'filemime' => '',
+      'timestamp' => '',
+      'alt' => '',
+      'title' => '',
+      'width' => '',
+      'height' => '',
+      'owner' => '',
     ];
     if (!isset($value)) {
       try {
@@ -390,11 +415,22 @@ class ApplenewsSourceFieldFile extends ApplenewsSourceField {
       }
     }
     else {
-      $v = $value->value();
-      if (!empty($v['fid']) && $file = file_load($v['fid'])) {
-        $return['url'] = file_create_url($file->uri);
-        $return['file'] = $file;
-      }
+      $file = $value->value();
+      $return = [
+        'uri'       => $file['uri'],
+        'url'       => file_create_url($file['uri']),
+        'fid'       => $file['fid'],
+        'filename'  => isset($file['filename']) ? $file['filename'] : NULL,
+        'filesize'  => isset($file['filesize']) ? $file['filesize'] : NULL,
+        'status'    => isset($file['status']) ? $file['status'] : NULL,
+        'filemime'  => isset($file['filemime']) ? $file['filemime'] : NULL,
+        'timestamp' => isset($file['timestamp']) ? $file['timestamp'] : NULL,
+        'alt'       => isset($file['alt']) ? $file['alt'] : NULL,
+        'title'     => isset($file['title']) ? $file['title'] : NULL,
+        'width'     => isset($file['width']) ? $file['width'] : NULL,
+        'height'    => isset($file['height']) ? $file['height'] : NULL,
+        'owner'     => isset($file['uid']) ? $value->file->owner->value() : NULL,
+      ];
     }
     return $return;
   }

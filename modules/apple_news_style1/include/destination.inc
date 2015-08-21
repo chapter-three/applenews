@@ -172,13 +172,8 @@ class Applenewsstyle1DestinationHeaderImage extends ApplenewsDestination {
     if (empty($values[0][$key])) {
       return [];
     }
-    $file = $values[0][$key];
-    if (is_object($file)) {
-      $fill = new Styles\Fills\ImageFill($this->export->addAsset($file->uri));
-    }
-    else {
-      $fill = new Styles\Fills\ImageFill($this->export->addAsset($file));
-    }
+    $url = $this->export->addAsset($values[0][$key]);
+    $fill = new Styles\Fills\ImageFill($url);
     $fill->setFillMode('cover')->setVerticalAlignment('bottom');
     $style = new Styles\ComponentStyle();
     $style->setFill($fill);
@@ -489,15 +484,9 @@ class Applenewsstyle1DestinationPullQuote extends ApplenewsDestination {
     // Background.
     list($key, $file) = $this->getSourceValues($value,
       $this->getSetting('image'));
-    if (empty($file[0][$key])) {
-      $file = NULL;
-    }
-    else {
-      $file = $file[0][$key];
-    }
 
     // Pullquote without background.
-    if (empty($file)) {
+    if (empty($file[0][$key])) {
 
       // Pullquote.
       $layout = new Layouts\ComponentLayout();
@@ -560,12 +549,9 @@ class Applenewsstyle1DestinationPullQuote extends ApplenewsDestination {
       $section->setLayout($layout);
 
       // Header.
-      if (is_object($file)) {
-        $fill = new Styles\Fills\ImageFill($this->export->addAsset($file->uri));
-      }
-      else {
-        $fill = new Styles\Fills\ImageFill($this->export->addAsset($file));
-      }
+      $file = $file[0][$key];
+      $url = $this->export->addAsset($file);
+      $fill = new Styles\Fills\ImageFill($url);
       $fill->setFillMode('cover')->setVerticalAlignment('top');
       $style = new Styles\ComponentStyle();
       $style->setFill($fill);

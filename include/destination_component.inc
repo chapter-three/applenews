@@ -204,8 +204,9 @@ class ApplenewsDestinationImages extends ApplenewsDestination {
    */
   public function settings() {
     return [
-      'type'  => 'gallery',
-      'items' => NULL,
+      'type'    => 'gallery',
+      'items'   => NULL,
+      'caption' => NULL,
     ] + parent::settings();
   }
 
@@ -229,10 +230,18 @@ class ApplenewsDestinationImages extends ApplenewsDestination {
 
     $form['items'] = [
       '#title'         => t('Items'),
+      '#description'   => t('File URI, URL, or system path.'),
       '#required'      => TRUE,
       '#type'          => 'select',
       '#options'       => $this->getSourceOptions(),
       '#default_value' => $this->getSetting('items'),
+    ];
+
+    $form['caption'] = [
+      '#title'         => t('Caption'),
+      '#type'          => 'select',
+      '#options'       => $this->getSourceOptions(),
+      '#default_value' => $this->getSetting('caption'),
     ];
 
     return $form;
@@ -244,19 +253,18 @@ class ApplenewsDestinationImages extends ApplenewsDestination {
   public function export($value) {
     list($key, $values) = $this->getSourceValues($value,
       $this->getSetting('items'));
+    list($key_caption, $values_caption) = $this->getSourceValues($value,
+      $this->getSetting('caption'));
 
     $items = [];
     foreach ($values as $i => $value) {
       if (empty($value[$key])) {
         continue;
       }
-      $file = $value[$key];
-      if (is_object($file)) {
-        $item = new GalleryItem($this->export->addAsset($file->uri));
-        $item->setCaption(empty($file->title) ? (empty($file->alt) ? '' : $file->alt) : $file->title);
-      }
-      else {
-        $item = new GalleryItem($this->export->addAsset($file));
+      $url = $this->export->addAsset($value[$key]);
+      $item = new GalleryItem($url);
+      if (!empty($values_caption[$i][$key_caption])) {
+        $item->setCaption($values_caption[$i][$key_caption]);
       }
       $items[] = $item;
     }
@@ -379,8 +387,9 @@ class ApplenewsDestinationImage extends ApplenewsDestination {
    */
   public function settings() {
     return [
-      'type'   => 'logo',
-      'source' => NULL,
+      'type'    => 'logo',
+      'source'  => NULL,
+      'caption' => NULL,
     ] + parent::settings();
   }
 
@@ -402,10 +411,18 @@ class ApplenewsDestinationImage extends ApplenewsDestination {
 
     $form['source'] = [
       '#title'         => t('Value'),
+      '#description'   => t('File URI, URL, or system path.'),
       '#required'      => TRUE,
       '#type'          => 'select',
       '#options'       => $this->getSourceOptions(),
       '#default_value' => $this->getSetting('source'),
+    ];
+
+    $form['caption'] = [
+      '#title'         => t('Caption'),
+      '#type'          => 'select',
+      '#options'       => $this->getSourceOptions(),
+      '#default_value' => $this->getSetting('caption'),
     ];
 
     return $form;
@@ -417,17 +434,23 @@ class ApplenewsDestinationImage extends ApplenewsDestination {
   public function export($value) {
     list($key, $values) = $this->getSourceValues($value,
       $this->getSetting('source'));
+    list($key_caption, $values_caption) = $this->getSourceValues($value,
+      $this->getSetting('caption'));
+
     $components = [];
-    foreach ($values as $value) {
-      $file = $value[$key];
-      if (is_object($file)) {
-        switch ($this->getSetting('type')) {
-          case 'logo':
-            $component = new Components\Logo($this->export->addAsset($file->uri));
-            $component->setCaption(empty($file->title) ? (empty($file->alt) ? '' : $file->alt) : $file->title);
-            $components[] = $component;
-            break;
-        }
+    foreach ($values as $i => $value) {
+      if (empty($value[$key])) {
+        continue;
+      }
+      $url = $this->export->addAsset($value[$key]);
+      switch ($this->getSetting('type')) {
+        case 'logo':
+          $component = new Components\Logo($url);
+          if (!empty($values_caption[$i][$key_caption])) {
+            $component->setCaption($values_caption[$i][$key_caption]);
+          }
+          $components[] = $component;
+          break;
       }
     }
     return $components;
@@ -455,6 +478,7 @@ class ApplenewsDestinationScalableImage extends ApplenewsDestination {
     return [
       'type'                 => 'figure',
       'file'                 => NULL,
+      'caption'              => NULL,
       'accessibilityCaption' => NULL,
       'explicitContent'      => NULL,
     ] + parent::settings();
@@ -480,9 +504,17 @@ class ApplenewsDestinationScalableImage extends ApplenewsDestination {
 
     $form['file'] = [
       '#title'         => t('Value'),
+      '#description'   => t('File URI, URL, or system path.'),
       '#type'          => 'select',
       '#options'       => $this->getSourceOptions(),
       '#default_value' => $this->getSetting('file'),
+    ];
+
+    $form['caption'] = [
+      '#title'         => t('Caption'),
+      '#type'          => 'select',
+      '#options'       => $this->getSourceOptions(),
+      '#default_value' => $this->getSetting('caption'),
     ];
 
     $form['accessibilityCaption'] = [
@@ -508,6 +540,8 @@ class ApplenewsDestinationScalableImage extends ApplenewsDestination {
   public function export($value) {
     list($key, $values) = $this->getSourceValues($value,
       $this->getSetting('file'));
+    list($key_caption, $values_caption) = $this->getSourceValues($value,
+      $this->getSetting('caption'));
     list($accessibility_caption_key, $accessibility_caption_value)
       = $this->getSourceValues($value,
           $this->getSetting('accessibilityCaption'));
@@ -515,33 +549,36 @@ class ApplenewsDestinationScalableImage extends ApplenewsDestination {
       = $this->getSourceValues($value,
           $this->getSetting('explicitContent'));
     $components = [];
-    foreach ($values as $value) {
-      $file = $value[$key];
-      if (is_object($file)) {
-        switch ($this->getSetting('type')) {
-
-          case 'photo':
-            $component = new Components\Photo($this->export->addAsset($file->uri));
-            break;
-
-          case 'portrait':
-            $component = new Components\Portrait($this->export->addAsset($file->uri));
-            break;
-
-          case 'figure':
-            $component = new Components\Figure($this->export->addAsset($file->uri));
-            break;
-
-        }
-        if (!empty($accessibility_caption_value[0]['value']) && is_object($accessibility_caption_value[0]['value'])) {
-          $component->setAccessibilityCaption($this->export->addAsset($accessibility_caption_value[0]['value']));
-        }
-        if (!empty($explicit_content_value[0]['value'])) {
-          $component->setExplicitContent(TRUE);
-        }
-        $component->setCaption(empty($file->title) ? (empty($file->alt) ? '' : $file->alt) : $file->title);
-        $components[] = $component;
+    foreach ($values as $i => $value) {
+      if (empty($value[$key])) {
+        continue;
       }
+      $url = $this->export->addAsset($value[$key]);
+      switch ($this->getSetting('type')) {
+
+        case 'photo':
+          $component = new Components\Photo($url);
+          break;
+
+        case 'portrait':
+          $component = new Components\Portrait($url);
+          break;
+
+        case 'figure':
+          $component = new Components\Figure($url);
+          break;
+
+      }
+      if (!empty($accessibility_caption_value[$i]['value']) && is_object($accessibility_caption_value[$i]['value'])) {
+        $component->setAccessibilityCaption($this->export->addAsset($accessibility_caption_value[$i]['value']));
+      }
+      if (!empty($explicit_content_value[$i]['value'])) {
+        $component->setExplicitContent(TRUE);
+      }
+      if (!empty($values_caption[$i][$key_caption])) {
+        $component->setCaption($values_caption[$i][$key_caption]);
+      }
+      $components[] = $component;
     }
     return $components;
   }
