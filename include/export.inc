@@ -271,7 +271,7 @@ abstract class ApplenewsExport {
     $this->setSetting('channels', $channels)
       ->setSetting('sections', $sections);
 
-    foreach ($this->settings() as $key) {
+    foreach (array_keys($this->settings()) as $key) {
       if ($key != 'channels' && $key != 'sections' &&
           isset($form_state['values'][$key])
       ) {
