@@ -444,7 +444,7 @@ function apple_news_post($channel_id, $entity_type, $entity_wrapper, $data) {
   // Make POST request to Apple News via PublisherAPI.
   $response = apple_news_post_article($channel_id, $data);
   // If successful request.
-  if (!isset($response->errors)) {
+  if (!isset($response->errors) && isset($response->data->id)) {
     // Invoke Apple News insert hooks.
     module_invoke_all('apple_news_insert', $response->data->id, $response->data->revision, $channel_id, $entity_wrapper, $entity_type, $data);
     $sections = [];
@@ -524,7 +524,7 @@ function apple_news_update($channel_id, $entity_type, $entity_wrapper, $data) {
     // Make POST request to Apple News via PublisherAPI.
     $response = apple_news_update_article($article->article_id, $data);
     // If successful request.
-    if (!isset($response->errors)) {
+    if (!isset($response->errors) && isset($response->data->id)) {
       // Invoke Apple News update hooks.
       module_invoke_all('apple_news_update', $article->article_id, $article->article_revision_id, $channel_id, $entity_wrapper, $entity_type, $data);
       $sections = [];
