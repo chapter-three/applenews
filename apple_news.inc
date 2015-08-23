@@ -801,21 +801,19 @@ function apple_news_cleanup_data(stdClass $channel) {
  * @see apple_news_get_sections().
  */
 function apple_news_sections($channel_id) {
-  $sections = &drupal_static(__FUNCTION__);
-  if (!isset($sections)) {
-    if ($cache = cache_get('sections_' . $channel_id, 'cache_apple_news')) {
-      $sections = $cache->data;
-    }
-    else {
-      module_load_include('inc', 'apple_news', 'apple_news.publisher_api');
-      $response = apple_news_get_sections($channel_id);
-      if (!empty($response->data)) {
-        foreach ($response->data as $section) {
-          $sections[] = $section;
-        }
+  $sections = [];
+  if ($cache = cache_get('sections_' . $channel_id, 'cache_apple_news')) {
+    $sections = $cache->data;
+  }
+  else {
+    module_load_include('inc', 'apple_news', 'apple_news.publisher_api');
+    $response = apple_news_get_sections($channel_id);
+    if (!empty($response->data)) {
+      foreach ($response->data as $section) {
+        $sections[] = $section;
       }
-      cache_set('sections_' . $channel_id, $sections, 'cache_apple_news');
     }
+    cache_set('sections_' . $channel_id, $sections, 'cache_apple_news');
   }
   return $sections;
 }
@@ -839,23 +837,20 @@ function apple_news_section($section_id) {
  * @see apple_news_get_sections().
  */
 function apple_news_channel($channel_id) {
-  $channel = &drupal_static(__FUNCTION__);
-  if (!isset($channel)) {
-    if ($cache = cache_get('channel_' . $channel_id, 'cache_apple_news')) {
-      $channel = $cache->data;
+  if ($cache = cache_get('channel_' . $channel_id, 'cache_apple_news')) {
+    $channel = $cache->data;
+  }
+  else {
+    module_load_include('inc', 'apple_news', 'apple_news.publisher_api');
+    $response = apple_news_get_channel($channel_id);
+    if (!isset($response->errors)) {
+      if (!empty($response->data)) {
+        $channel = $response->data;
+        cache_set('channel_' . $channel_id, $channel, 'cache_apple_news');
+      }
     }
     else {
-      module_load_include('inc', 'apple_news', 'apple_news.publisher_api');
-      $response = apple_news_get_channel($channel_id);
-      if (!isset($response->errors)) {
-        if (!empty($response->data)) {
-          $channel = $response->data;
-          cache_set('channel_' . $channel_id, $channel, 'cache_apple_news');
-        }
-      }
-      else {
-        return $response;
-      }
+      return $response;
     }
   }
   return $channel;
