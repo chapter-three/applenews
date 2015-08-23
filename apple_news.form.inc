@@ -150,14 +150,14 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
 
           if (!empty($article_id) && count($api_channels)) {
 
-            $form['apple_news']['publish_date'] = [
-              '#markup' => '<div>' . format_date($article['postdate'], 'short') . '</div><br/>',
+            $form['apple_news']['post_date'] = [
+              '#markup' => '<div class="apple-news-post-date">' . format_date($article['postdate'], 'short') . '</div><br/>',
               '#prefix' => '<div><strong>' . t('Apple News post date') . '</strong></div>',
               '#weight' => -12,
             ];
 
             $form['apple_news']['share-url'] = [
-              '#markup' => '<div>' . l($article['share_url'], $article['share_url'],
+              '#markup' => '<div class="apple-news-share-url">' . l($article['share_url'], $article['share_url'],
                   [
                     'attributes' => [
                       'target' => '_blank'
@@ -170,7 +170,7 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
             ];
 
             $form['apple_news']['delete'] = [
-              '#markup' => '<div>' . t('<a href="!link">Delete</a> this article from Apple News.',
+              '#markup' => '<div class="apple-news-delete-link">' . t('<a href="!link">Delete</a> this article from Apple News.',
                 [
                   '!link' => url('admin/config/content/apple-news/'
                     . $type . '/'
