@@ -640,12 +640,14 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
         '#required'      => TRUE,
         '#title'         => t('Columns'),
         '#default_value' => $this->getSetting('layout_columns'),
+        '#description'   => t('The number of columns this document was designed for.'),
       ],
       'layout_width'   => [
         '#type'          => 'textfield',
         '#required'      => TRUE,
         '#title'         => t('Width'),
         '#default_value' => $this->getSetting('layout_width'),
+        '#description'   => t('The width (in points) this document was designed for. This property is used to calculate downscaling scenarios for smaller devices.'),
       ],
     ];
 
