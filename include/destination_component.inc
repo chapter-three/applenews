@@ -666,7 +666,7 @@ class ApplenewsDestinationText extends ApplenewsDestination {
       '#default_value' => $this->getSetting('heading'),
       '#states'        => [
         'visible' => [
-          ':input[name="component"]' => ['value' => 'Heading'],
+          ':input[name="component"]' => ['value' => 'heading'],
         ],
       ],
     ];
