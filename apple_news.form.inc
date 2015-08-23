@@ -151,7 +151,7 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
           if (!empty($article_id) && count($api_channels)) {
 
             $form['apple_news']['publish_date'] = [
-              '#markup' => '<div>' . format_date($article['postdate'], 'sort') . '</div><br/>',
+              '#markup' => '<div>' . format_date($article['postdate'], 'short') . '</div><br/>',
               '#prefix' => '<div><strong>' . t('Apple News post date') . '</strong></div>',
               '#weight' => -12,
             ];
