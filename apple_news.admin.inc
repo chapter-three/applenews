@@ -758,10 +758,13 @@ function apple_news_export_destination_edit_form_submit($form, &$form_state) {
 function apple_news_export_destination_delete_form($form, &$form_state, ApplenewsExportConfigurable $export, $type, $id) {
   module_load_include('inc', 'apple_news');
 
+  $destination = $export->getComponent($id);
+
   $form_state['storage'] = [
-    'export' => $export,
-    'type'   => $type,
-    'id'     => $id,
+    'export'      => $export,
+    'type'        => $type,
+    'id'          => $id,
+    'destination' => $destination,
   ];
 
   $export_id = apple_news_export_id($export->getModule(), $export->getMachineName());
@@ -769,7 +772,11 @@ function apple_news_export_destination_delete_form($form, &$form_state, Applenew
 
   return confirm_form(
     $form,
-    t("Do you really want delete this destination?"),
+    t("Do you really want delete <em>@name</em> destination?",
+      [
+        '@name' => $destination->label(),
+      ]
+    ),
     $path,
     t("This action cannot be undone."),
     t("Yes, delete")
@@ -785,6 +792,7 @@ function apple_news_export_destination_delete_form_submit($form, &$form_state) {
   $export = $form_state['storage']['export'];
   $type = $form_state['storage']['type'];
   $id = $form_state['storage']['id'];
+  $destination = $form_state['storage']['destination'];
 
   switch ($type) {
 
@@ -792,7 +800,11 @@ function apple_news_export_destination_delete_form_submit($form, &$form_state) {
       /** @var ApplenewsExport $export */
       $export->deleteComponent($id);
       apple_news_export_save($export);
-      drupal_set_message(t('Destination successfully deleted.'));
+      drupal_set_message(t('@name destination successfully deleted.',
+        [
+          '@name' => $destination->label(),
+        ]
+      ));
       break;
 
   }
