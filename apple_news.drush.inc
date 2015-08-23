@@ -51,14 +51,14 @@ function drush_apple_news($op, $module, $machine_name) {
   if ($export->enabled) {
     if ($op == 'export') {
       // Run brach enttiy export to Apple News.
-      $batch = apple_news_batch_run_export($info, $export);
+      $batch = apple_news_batch_run_export($info, $export, 'export');
       $batch['progressive'] = FALSE;
       batch_set($batch);
       drush_log('Entities successfully exported to Apple News.', 'ok');
     }
     elseif ($op == 'preview') {
       // Download News Preview compatible files.
-      $batch = apple_news_batch_export_to_file($info, $export);
+      $batch = apple_news_batch_run_export($info, $export, 'export-to-file');
       $batch['progressive'] = FALSE;
       batch_set($batch);
       drush_log('Apple News Native formatted entities successfully exported. The file archive file can be downloaded from files/apple-news/ directory.', 'ok');

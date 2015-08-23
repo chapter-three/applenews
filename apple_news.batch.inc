@@ -9,9 +9,24 @@
  *
  * @see apple_news_settings_exports_form_submit()
  */
-function apple_news_batch_run_export($info, $export) {
+function apple_news_batch_run_export($info, $export, $op) {
 
   $operations = [];
+
+  switch ($op) {
+
+    case 'export-to-file' :
+      $op_function = 'apple_news_batch_preview_generate';
+      $op_finish = 'apple_news_batch_export_to_file_finished';
+      break;
+
+    case 'export' :
+    default :
+      $op_function = 'apple_news_batch_post';
+      $op_finish = 'apple_news_batch_run_export_finished';
+      break;
+
+  }
 
   $result = $export->query()->execute();
   $entity_types = $export->entityTypes();
@@ -22,7 +37,7 @@ function apple_news_batch_run_export($info, $export) {
         // Load entity object and pass it to the document generator.
         $entity = entity_load_single($entity_type, $entity_id);
         $operations[] = [
-          'apple_news_batch_post',
+          $op_function,
           [
             $info,
             $export,
@@ -36,7 +51,7 @@ function apple_news_batch_run_export($info, $export) {
 
   return [
     'operations' => $operations,
-    'finished' => 'apple_news_batch_run_export_finished',
+    'finished' => $op_finish,
   ];
 }
 
@@ -197,44 +212,6 @@ function apple_news_batch_run_export_finished($success, $results, $operations) {
       )
     );
   }
-}
-
-/**
- * Batch Apple News export to file.
- *
- * @see apple_news_settings_exports_form_submit()
- */
-function apple_news_batch_export_to_file($info, $export) {
-  module_load_include('inc', 'apple_news');
-
-  $operations = [];
-
-  $result = $export->query()->execute();
-  $entity_types = $export->entityTypes();
-
-  foreach ($entity_types as $entity_type) {
-    apple_news_export_dir_cleanup();
-    if (isset($result[$entity_type])) {
-      foreach ($result[$entity_type] as $entity_id => $object) {
-        // Load entity object and pass it to the document generator.
-        $entity = entity_load_single($entity_type, $entity_id);
-        $operations[] = [
-          'apple_news_batch_preview_generate',
-          [
-            $info,
-            $export,
-            $entity_type,
-            $entity
-          ],
-        ];
-      }
-    }
-  }
-
-  return [
-    'operations' => $operations,
-    'finished'   => 'apple_news_batch_export_to_file_finished',
-  ];
 }
 
 /**
