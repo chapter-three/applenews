@@ -24,7 +24,13 @@
       $('fieldset.apple-news-options', context).drupalSetSummary(function (context) {
 
         if ($('.form-item-apple-news-publish-flag input:checked', context).length) {
-          return Drupal.t('Published on ' + $('.apple-news-post-date', context).html());
+          var $postdate = $('.apple-news-post-date', context);
+          if ($postdate[0]) {
+            return Drupal.t('Published on ' + $postdate.html());
+          }
+          else {
+            return Drupal.t('Published');
+          }
         }
         else {
           return Drupal.t('Not published');
