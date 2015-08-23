@@ -502,6 +502,7 @@ function apple_news_post($channel_id, $entity_type, $entity_wrapper, $data) {
  */
 function apple_news_update($channel_id, $entity_type, $entity_wrapper, $data) {
   module_load_include('inc', 'apple_news', 'apple_news.publisher_api');
+  module_load_include('inc', 'apple_news', 'include/db');
 
   $query = db_select('apple_news_entities', 'e');
   $query->join('apple_news_channels', 'c', 'c.post_id = e.post_id');
@@ -558,7 +559,6 @@ function apple_news_update($channel_id, $entity_type, $entity_wrapper, $data) {
           ]
         ],
       ];
-      module_load_include('inc', 'apple_news', 'include/db');
       $post = new ChapterThree\AppleNews\Database\ApplenewsDatabase();
       $post->setPostId($entity_type, $entity_wrapper->getIdentifier(), $entity_wrapper->getIdentifier());
       $post->update($record);
@@ -586,6 +586,8 @@ function apple_news_update($channel_id, $entity_type, $entity_wrapper, $data) {
  */
 function apple_news_delete($channel_id, $entity_type, $entity_wrapper) {
   module_load_include('inc', 'apple_news', 'apple_news.publisher_api');
+  module_load_include('inc', 'apple_news', 'include/db');
+  // Get article ID.
   $article_id = db_select('apple_news_entities', 'e')
     ->fields('e', ['article_id'])
     ->condition('entity_type', $entity_type)
@@ -598,7 +600,6 @@ function apple_news_delete($channel_id, $entity_type, $entity_wrapper) {
   if (empty($response)) {
     // Invoke Apple News delete hooks.
     module_invoke_all('apple_news_delete', $article_id, $channel_id, $entity_wrapper, $entity_type);
-    module_load_include('inc', 'apple_news', 'include/db');
     $post = new ChapterThree\AppleNews\Database\ApplenewsDatabase();
     $post->setPostId($entity_type, $entity_wrapper->getIdentifier(), $entity_wrapper->getIdentifier());
     $post->delete();
