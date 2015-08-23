@@ -192,6 +192,11 @@ function apple_news_batch_run_export_finished($success, $results, $operations) {
           '@count entities were successfully posted to Apple News.'
         );
         drupal_set_message($plural_message);
+        $msg = t('Batch export: %count entities successfully posted to Apple News.');
+        $args = [
+          '%count'   => $count,
+        ];
+        watchdog('apple_news', $msg, $args, WATCHDOG_NOTICE);
       }
       else {
 
