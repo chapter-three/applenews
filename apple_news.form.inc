@@ -9,6 +9,7 @@
  */
 function apple_news_form_alter(&$form, &$form_state, $form_id) {
   module_load_include('inc', 'apple_news');
+  module_load_include('inc', 'apple_news', 'include/db');
 
   // Get all possible entity types and bundles available for export.
   foreach (apple_news_get_entity_types() as $module => $info) {
@@ -50,13 +51,15 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
 
           if (!empty($entity_id)) {
 
+            // Load entity object.
             $entity = entity_load_single($type, $entity_id);
 
+            // Use entity ID value as revision ID.
             $revision_id = $entity_id;
 
             $chnnels_all = apple_news_channels();
 
-            module_load_include('inc', 'apple_news', 'include/db');
+            // Load existing Apple News article.
             $post = new ChapterThree\AppleNews\Database\ApplenewsDatabase();
             if (!empty($chnnels_all)) {
               $channel_ids = array_keys($chnnels_all);
@@ -108,14 +111,7 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
               }
             }
             $form['apple_news']['container'] = [
-              '#type' => 'tree',
-              '#states' => [
-                'invisible' => [
-                  ':input[name="apple_news_publish_flag"]' => [
-                    'checked' => FALSE
-                  ]
-                ],
-              ],
+              '#type' => 'container',
             ];
             $form['apple_news']['container'] = $export_form['channels'];
 
