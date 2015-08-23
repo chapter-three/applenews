@@ -79,6 +79,15 @@ function apple_news_batch_post($info, $export, $entity_type, $entity, &$context)
     $context['results']['info']['count'] = 0;
   }
 
+  // Save batch progress status. Export status indicator visible in the Status column.
+  $status = [
+    'count'     => !empty($context['results']['info']['count']) ? $context['results']['info']['count'] : 0,
+    'starttime' => !empty($context['results']['info']['starttime']) ? $context['results']['info']['starttime'] : 0,
+    'status'    => 'progress',
+  ];
+  $export_id = apple_news_export_id($info['module'], $info['machine_name']);
+  apple_news_batch_export_set_status($export_id, $status);
+
   // Successull request.
   $success = FALSE;
 
@@ -124,15 +133,6 @@ function apple_news_batch_post($info, $export, $entity_type, $entity, &$context)
       }
       if ($success) {
         $context['results']['info']['count']++;
-
-        // Save batch progress status.
-        $status = [
-          'count'     => !empty($context['results']['info']['count']) ? $context['results']['info']['count'] : 0,
-          'starttime' => !empty($context['results']['info']['starttime']) ? $context['results']['info']['starttime'] : 0,
-          'status'    => 'progress',
-        ];
-        $export_id = apple_news_export_id($info['module'], $info['machine_name']);
-        apple_news_batch_export_set_status($export_id, $status);
       }
     }
   }
