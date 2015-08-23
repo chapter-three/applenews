@@ -78,7 +78,7 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
           }
 
           $form['apple_news']['preview'] = [
-            '#markup' => '<div>' . $preview_message . '</div><br/>',
+            '#markup' => '<div class="apple-news-preview">' . $preview_message . '</div><br/>',
             '#prefix' => '<div><strong>' . t('Preview') . '</strong></div>',
             '#weight' => 20,
           ];
