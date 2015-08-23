@@ -502,11 +502,12 @@ class ApplenewsDestinationScalableImage extends ApplenewsDestination {
         'portrait' => t('Portrait'),
       ],
       '#default_value' => $this->getSetting('type'),
+      '#description'   => t('The type of scalable image.'),
     ];
 
     $form['file'] = [
       '#title'         => t('Value'),
-      '#description'   => t('File URI, URL, or system path.'),
+      '#description'   => t('File URI, URL, or system path. Images should be high-resolution so they can be smoothly scaled down. Supported image types: JPEG (with .jpg or .jpeg extension), PNG, and GIF.'),
       '#type'          => 'select',
       '#options'       => $this->getSourceOptions(),
       '#default_value' => $this->getSetting('file'),
@@ -517,6 +518,7 @@ class ApplenewsDestinationScalableImage extends ApplenewsDestination {
       '#type'          => 'select',
       '#options'       => $this->getSourceOptions(),
       '#default_value' => $this->getSetting('caption'),
+      '#description'   => t('A string that describes the image. Captions can be used by VoiceOver, or for other purposes. The rendering client may use the caption text in a full screen display of the image.'),
     ];
 
     $form['accessibilityCaption'] = [
@@ -524,6 +526,7 @@ class ApplenewsDestinationScalableImage extends ApplenewsDestination {
       '#type'          => 'select',
       '#options'       => $this->getSourceOptions(),
       '#default_value' => $this->getSetting('accessibilityCaption'),
+      '#description'   => t('Optional caption text describing the contents of the image. Note that this property differs from caption: although the caption may be displayed to readers, the Accessiblity Caption is used for VoiceOver only. The value in this property should describe the contents of the image for non-sighted users. If this property is omitted, the value from the caption is used for VoiceOver.'),
     ];
 
     $form['explicitContent'] = [
@@ -531,6 +534,7 @@ class ApplenewsDestinationScalableImage extends ApplenewsDestination {
       '#type'          => 'select',
       '#options'       => $this->getSourceOptions(),
       '#default_value' => $this->getSetting('explicitContent'),
+      '#description'   => t('This property indicates that the image may contain explicit/graphic content. Default value: false.'),
     ];
 
     return $form;
