@@ -310,15 +310,6 @@ function apple_news_settings_channel_sections_form($form, &$form_state, $channel
     }
   }
 
-  $links = [
-    l(t('&lt; Back to channels'), 'admin/config/content/apple-news/settings/channels', ['html' => TRUE]),
-  ];
-
-  $form['links'] = [
-    '#markup' => join(' ', $links),
-    '#suffix' => '<br><br>',
-  ];
-
   $form['sections'] = [
     '#markup' => theme('table',
       [
@@ -330,6 +321,11 @@ function apple_news_settings_channel_sections_form($form, &$form_state, $channel
       ]
     ),
   ];
+
+  $form['back'] = [
+    '#markup' => l(t('Back to channels'), 'admin/config/content/apple-news/settings/channels'),
+  ];
+
   return $form;
 }
 
