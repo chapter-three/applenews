@@ -872,3 +872,50 @@ function apple_news_download_article_json($entity_type, $entity_id, $revision_id
   }
   drupal_exit();
 }
+
+/**
+ * Autoinstall form.
+ */
+function apple_news_autoinstall_form($form, &$form_state) {
+  $libraries = [
+    'php-curl-class' => CURL_SUPPORTED_VERSION,
+    'AppleNews'      => APPLE_NEWS_SUPPORTED_VERSION,
+  ];
+  $count = 0;
+  foreach ($libraries as $name => $version) {
+    if ($library = libraries_detect($name)) {
+      $lib_version = !empty($library['version']) ? $library['version'] : '';
+      if ($lib_version == $version) {
+        $count++;
+      }
+    }
+  }
+  // All libraries successfully installed.
+  if ($count == 2) {
+    $form['info'] = [
+      '#markup' => t('Apple News dependant PHP libraries were successfully installed. Please <a href="!link">configure the module</a> and start posting content to Apple News.', [
+          '!link' => url('admin/config/content/apple-news/settings'),
+        ]
+      ),
+    ];
+  }
+  // Show download button.
+  else {
+    $form['submit'] = [
+      '#type' => 'submit',
+      '#value' => t('Download and Unzip'),
+      '#prefix' => '<div>' . t("This is experimental feature. The module will download and unzip Apple News dependant PHP libraries. Please note this module won't download libraries from private repositories.") . '</div><br/>',
+    ];
+  }
+  return $form;
+}
+
+/**
+ * Form submit handler.
+ */
+function apple_news_autoinstall_form_submit($form, &$form_state) {
+  module_load_include('inc', 'apple_news');
+  // Download and unzip PHP libraries.
+  // @see apple_news.inc file.
+  apple_news_autoinstall_libraries();
+}

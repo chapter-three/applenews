@@ -36,15 +36,22 @@ function apple_news_init() {
     }
     else {
       $error_message = !empty($library['error message']) ? $library['error message'] : '';
-      $msg = t('Please <a href="!link" target="_blank"><strong>download @name</strong> (version <strong>@v</strong>)</a> library to <strong><em>@path</em></strong> directory.',
+      $msg = t('Please <a href="!link" target="_blank"><strong>download @name</strong> (version <strong>@v</strong>)</a> library to <strong><em>@path</em></strong> directory or <a href="!install">try autoinstall</a>.',
         [
-          '!link' => $library['download url'],
-          '@name' => $library['name'],
-          '@path' => $info['path'],
-          '@v'    => $info['version'],
+          '!link'    => $library['download url'],
+          '@name'    => $library['name'],
+          '@path'    => $info['path'],
+          '@v'       => $info['version'],
+          '!install' => url('admin/apple-news/install'),
         ]
       );
-      drupal_set_message($error_message . ' ' . $msg, 'error');
+      // Display message in command line.
+      if (drupal_is_cli() && function_exists('drush_log')) {
+        drush_log($error_message . ' ' . $msg, 'error');
+      }
+      else {
+        drupal_set_message($error_message . ' ' . $msg, 'error');
+      }
     }
   }
 }
@@ -328,6 +335,17 @@ function apple_news_menu() {
     'file' => 'apple_news.admin.inc',
     'type' => MENU_CALLBACK,
     'weight' => 1,
+  ];
+
+  // Library autoinstall path.
+  $items['admin/apple-news/install'] = [
+    'title' => 'Autoinstall Apple News dependant PHP libraries',
+    'description' => t('Download and unzip PHP libraries.'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['apple_news_autoinstall_form'],
+    'access arguments' => ['administer apple news'],
+    'file' => 'apple_news.admin.inc',
+    'type' => MENU_CALLBACK,
   ];
 
   return $items;

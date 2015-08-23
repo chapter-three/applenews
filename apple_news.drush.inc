@@ -76,50 +76,8 @@ function drush_apple_news($op, $module, $machine_name) {
  * create library specific directory.
  */
 function drush_apple_news_libraries() {
-
-  $libraries = [
-    'AppleNews'      => APPLE_NEWS_SUPPORTED_VERSION,
-    'php-curl-class' => CURL_SUPPORTED_VERSION,
-  ];
-
-  foreach ($libraries as $name => $version) {
-    if ($library = libraries_load($name)) {
-      $lib_path = $library['library path'];
-      $lib_all_realpath = DRUPAL_ROOT . '/sites/all/libraries';
-      $lib_realpath = DRUPAL_ROOT . '/' . $lib_path;
-      $lib_version_realpath = $lib_realpath . '-' . $version;
-      $download_url = $library['download url'];
-      if (is_dir($lib_realpath)) {
-        continue;
-      }
-      // Get remote library file.
-      $request = drupal_http_request($download_url);
-      // If file exists.
-      if ($request->code == 200) {
-        if (!is_dir($lib_version_realpath)) {
-          // Get archive basename.
-          $filename = drupal_basename($download_url);
-          $filepath = $lib_all_realpath . '/' . $filename;
-          // Save remote archive file locally.
-          file_unmanaged_save_data($request->data, $filepath);
-          // Unzip the file.
-          $zip = new \ZipArchive();
-          if ($zip->open($filepath) === TRUE) {
-            // Extract library archive file.
-            $zip->extractTo($lib_all_realpath);
-            // Delete the archive file.
-            file_unmanaged_delete_recursive($lib_all_realpath . '/' . $filename);
-            // Rename unzipped directory to match the lib path.
-            @rename($lib_version_realpath, $lib_realpath);
-            drush_log($library['name'] . ' successfully downloaded and unzipped.', 'ok');
-          } 
-          else {
-            drush_log('Failed to unzip ' . $library['name'] . '.', 'warning');
-          }
-          $zip->close();
-        }
-      }
-    }
-  }
-
+  module_load_include('inc', 'apple_news');
+  // Download and unzip PHP libraries.
+  // @see apple_news.inc file.
+  apple_news_autoinstall_libraries();
 }

@@ -172,7 +172,7 @@ function apple_news_batch_run_export_finished($success, $results, $operations) {
         $status = [
           'count'     => $count,
           'starttime' => !empty($results['info']['starttime']) ? $results['info']['starttime'] : 0,
-          'endtime'   => $record['endtime'],
+          'endtime'   => REQUEST_TIME,
           'status'    => 'complete',
         ];
         $export_id = apple_news_export_id($results['info']['module'], $results['info']['machine_name']);
@@ -186,6 +186,17 @@ function apple_news_batch_run_export_finished($success, $results, $operations) {
         drupal_set_message($plural_message);
       }
       else {
+
+        // Save batch progress status.
+        $status = [
+          'count'     => 0,
+          'starttime' => !empty($results['info']['starttime']) ? $results['info']['starttime'] : 0,
+          'endtime'   => REQUEST_TIME,
+          'status'    => 'complete',
+        ];
+        $export_id = apple_news_export_id($results['info']['module'], $results['info']['machine_name']);
+        apple_news_batch_export_set_status($export_id, $status);
+
         drupal_set_message(t('There is no content for export to Apple News.'));
       }
     }
