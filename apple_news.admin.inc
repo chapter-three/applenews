@@ -389,19 +389,6 @@ function apple_news_settings_exports_form($form, &$form_state) {
     // Get current export status.
     $export_id = apple_news_export_id($info['module'], $info['machine_name']);
     $status = apple_news_batch_export_get_status($export_id);
-    // Status display message.
-    $export_status = '';
-    if (!empty($status['status'])) {
-      if ($status['status'] == 'complete') {
-        $export_status = t('complete');
-      }
-      elseif ($status['status'] == 'progress') {
-        $export_status = t('in progress');
-      }
-      elseif ($status['status'] == 'error') {
-        $export_status = t('error');
-      }
-    }
 
     $query = db_select('apple_news_log', 'l')
       ->fields('l', ['starttime', 'endtime'])
@@ -422,7 +409,7 @@ function apple_news_settings_exports_form($form, &$form_state) {
       'description' => $info['description'],
       'module'      => $module,
       'enabled'     => $enabled,
-      'status'      => $export_status,
+      'status'      => !empty($status['status']) ? $status['status'] : '',
       'lastexport'  => $lastexport,
       'edit'        => $edit,
     ];

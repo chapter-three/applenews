@@ -42,7 +42,8 @@ function apple_news_batch_run_export($info, $export, $op) {
             $info,
             $export,
             $entity_type,
-            $entity
+            $entity,
+            count($result[$entity_type])
           ],
         ];
       }
@@ -60,7 +61,7 @@ function apple_news_batch_run_export($info, $export, $op) {
  *
  * This is the function that is called on each operation in Apple News export.
  */
-function apple_news_batch_post($info, $export, $entity_type, $entity, &$context) {
+function apple_news_batch_post($info, $export, $entity_type, $entity, $total_count, &$context) {
   module_load_include('inc', 'apple_news');
 
   $export_settings = $export->settings;
@@ -79,11 +80,17 @@ function apple_news_batch_post($info, $export, $entity_type, $entity, &$context)
     $context['results']['info']['count'] = 0;
   }
 
+  if (!isset($context['results']['info']['step_count'])) {
+    $context['results']['info']['step_count'] = 0;
+  }
+
+  $count = !empty($context['results']['info']['step_count']) ? $context['results']['info']['step_count'] : 0;
+
   // Save batch progress status. Export status indicator visible in the Status column.
   $status = [
-    'count'     => !empty($context['results']['info']['count']) ? $context['results']['info']['count'] : 0,
+    'count'     => $count,
     'starttime' => !empty($context['results']['info']['starttime']) ? $context['results']['info']['starttime'] : 0,
-    'status'    => 'progress',
+    'status'    => 'in progress ' . $count . '/' . $total_count,
   ];
   $export_id = apple_news_export_id($info['module'], $info['machine_name']);
   apple_news_batch_export_set_status($export_id, $status);
@@ -135,6 +142,7 @@ function apple_news_batch_post($info, $export, $entity_type, $entity, &$context)
         $context['results']['info']['count']++;
       }
     }
+    $context['results']['info']['step_count']++;
   }
 
 }
@@ -207,7 +215,7 @@ function apple_news_batch_run_export_finished($success, $results, $operations) {
       'count'     => !empty($results['info']['count']) ? $results['info']['count'] : 0,
       'starttime' => !empty($results['info']['starttime']) ? $results['info']['starttime'] : 0,
       'endtime'   => REQUEST_TIME,
-      'status'    => 'error',
+      'status'    => 'error occured',
     ];
     $export_id = apple_news_export_id($results['info']['module'], $results['info']['machine_name']);
     apple_news_batch_export_set_status($export_id, $status);
@@ -230,7 +238,7 @@ function apple_news_batch_run_export_finished($success, $results, $operations) {
  *
  * This is the function that is called on each operation in Export to File.
  */
-function apple_news_batch_preview_generate($info, $export, $entity_type, $entity, &$context) {
+function apple_news_batch_preview_generate($info, $export, $entity_type, $entity, $total_count, &$context) {
   module_load_include('inc', 'apple_news');
 
   if (!isset($context['results']['count'])) {
