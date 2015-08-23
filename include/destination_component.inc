@@ -242,6 +242,7 @@ class ApplenewsDestinationImages extends ApplenewsDestination {
       '#type'          => 'select',
       '#options'       => $this->getSourceOptions(),
       '#default_value' => $this->getSetting('caption'),
+      '#description'   => t('A description of the image. This text can be used by VoiceOver, or for other purposes. The Gallery component does not display the caption to the user, except when the gallery is tapped to display it full screen.'),
     ];
 
     return $form;
