@@ -854,12 +854,14 @@ class ApplenewsDestinationDivider extends ApplenewsDestination {
       '#title' => t('Color'),
       '#type' => 'textfield',
       '#default_value' => $this->getSetting('color'),
+      '#description'   => t('The stroke color, defined as a 3- to 8-character RGBA hexadecimal string; e.g., #000 for black or #FF00007F for red with an alpha (opacity) of 50%. Defaults to #000 (black).')
     ];
 
     $form['width'] = [
       '#title' => t('Width'),
       '#type' => 'textfield',
       '#default_value' => $this->getSetting('width'),
+      '#description'   => t('The width of the stroke line. Can be either an integer value in points, or a string (10pt). Defaults to 1 point.'),
     ];
 
     $form['style'] = [
@@ -871,6 +873,7 @@ class ApplenewsDestinationDivider extends ApplenewsDestination {
         'dotted' => t('Dotted'),
       ],
       '#default_value' => $this->getSetting('style'),
+      '#description'   => t('The stroke properties that apply to the horizontal line.'),
     ];
 
     return $form;
