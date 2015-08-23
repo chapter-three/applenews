@@ -24,8 +24,6 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
           // Load export object.
           $export = $info['#export'];
 
-          $published_channels = [];
-
           // Entity object.
           $entity_id = isset($form['nid']['#value']) ? (int) $form['nid']['#value'] : NULL;
           $article_id = NULL;
