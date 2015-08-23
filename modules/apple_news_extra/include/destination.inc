@@ -178,6 +178,7 @@ class ApplenewsExtraDestinationEmbedWebVideo extends ApplenewsDestination {
       '#type'          => 'select',
       '#options'       => $this->getSourceOptions(),
       '#default_value' => $this->getSetting('caption'),
+      '#description'   => t('A caption that describes the content of the video. This text can be used by VoiceOver, or it can be shown when the video cannot be played.'),
     ];
 
     return $form;
@@ -251,6 +252,7 @@ class ApplenewsExtraDestinationAudio extends ApplenewsDestination {
         'music' => t('Music'),
       ],
       '#default_value' => $this->getSetting('type'),
+      '#description'   => t('The type of audio file.'),
     ];
 
     $form['url'] = [
@@ -259,6 +261,11 @@ class ApplenewsExtraDestinationAudio extends ApplenewsDestination {
       '#type'          => 'select',
       '#options'       => $this->getSourceOptions(),
       '#default_value' => $this->getSetting('url'),
+      '#description'   => t('The URL of an audio file beginning with http:// or https://. This component supports all audio formats that are supported by AVPlayer on iOS devices. Supported audio file types include: MP3, AAC, ALAC, HE-AAC (For a full list of supported codecs, refer to the <a href="!link" target="_blank">Supported Audio Formats developer documentation</a>).',
+        [
+          '!link' => 'https://developer.apple.com/library/ios/documentation/AudioVideo/Conceptual/MultimediaPG/UsingAudio/UsingAudio.html#//apple_ref/doc/uid/TP40009767-CH2-SW48',
+        ]
+      ),
     ];
 
     $form['imageURL'] = [
@@ -266,6 +273,7 @@ class ApplenewsExtraDestinationAudio extends ApplenewsDestination {
       '#type'          => 'select',
       '#options'       => $this->getSourceOptions(),
       '#default_value' => $this->getSetting('imageURL'),
+      '#description'   => t('Use File field. An optional URL to an image that should accompany the audio file, such as a still or a cover image. Supported image types include JPEG (with .jpg or .jpeg extension), PNG, and GIF.'),
     ];
 
     $form['caption'] = [
@@ -273,6 +281,7 @@ class ApplenewsExtraDestinationAudio extends ApplenewsDestination {
       '#type'          => 'select',
       '#options'       => $this->getSourceOptions(),
       '#default_value' => $this->getSetting('caption'),
+      '#description'   => t('A caption that describes the content of the audio file. This text can be used by VoiceOver, or it can be shown when the audio cannot be played.'),
     ];
 
     $form['explicitContent'] = [
@@ -280,6 +289,7 @@ class ApplenewsExtraDestinationAudio extends ApplenewsDestination {
       '#type'          => 'select',
       '#options'       => $this->getSourceOptions(),
       '#default_value' => $this->getSetting('explicitContent'),
+      '#description'   => t('This property indicates that the audio track may contain explicit/graphic content. Default value: false.'),
     ];
 
     return $form;

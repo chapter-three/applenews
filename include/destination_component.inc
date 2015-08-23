@@ -423,6 +423,7 @@ class ApplenewsDestinationImage extends ApplenewsDestination {
       '#type'          => 'select',
       '#options'       => $this->getSourceOptions(),
       '#default_value' => $this->getSetting('caption'),
+      '#description'   => t('A string that describes the image. Captions for images may not be displayed to readers but could be used by VoiceOver, or for other purposes.'),
     ];
 
     return $form;
