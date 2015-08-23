@@ -10,23 +10,67 @@
 
 namespace ChapterThree\AppleNews\Database;
 
-
 interface ApplenewsDatabaseInterface {
 
+  /**
+   * Get article object.
+   */
   public function getArticle();
 
+  /**
+   * Set entity ID.
+   */
   public function setEntityId($id);
+
+  /**
+   * Set entity revision ID.
+   */
   public function setEntityRevisionId($id);
+
+  /**
+   * Set entity type.
+   */
   public function setEntityType($type);
+
+  /**
+   * Set channel ID.
+   */
   public function setChannelId($id);
+
+  /**
+   * Get entity channels.
+   */
   public function getChannels();
 
+  /**
+   * Set post ID (primary key value).
+   * Returns post ID by entity type, entity ID, entity revision ID.
+   */
   public function setPostId($entity_type, $entity_id, $revision_id);
-  public function setArticleId($article_id);
 
+  /**
+   * Get article by article ID.
+   */
+  public function getArticleById($article_id);
+
+  /**
+   * Save new Apple News post information.
+   */
   public function insert($record);
+
+  /**
+   * Update Apple News related tables.
+   */
   public function update($record);
+
+  /**
+   * Delete Apple News related records.
+   */
   public function delete();
+
+  /**
+   * Delete Apple News related records by Entity ID and Entity Type.
+   */
   public function deleteByEntity($entity_id, $entity_type);
 
 }
@@ -254,9 +298,9 @@ class ApplenewsDatabase implements ApplenewsDatabaseInterface {
   }
 
   /**
-   * Get Apple News post by article ID.
+   * Get article by article ID.
    */
-  public function setArticleId($article_id) {
+  public function getArticleById($article_id) {
     $this->post_id = db_select('apple_news_entities', 'e')
       ->fields('e', ['post_id'])
       ->condition('article_id', $article_id)

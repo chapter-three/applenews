@@ -351,7 +351,7 @@ function apple_news_theme($existing, $type, $theme, $path) {
   return [
     'apple_news_export_edit_form' => [
       'render element' => 'form',
-      'file' => 'apple_news.admin.inc',
+      'file'           => 'apple_news.admin.inc',
     ],
   ];
 }
