@@ -8,8 +8,6 @@
  * related database tables.
  */
 
-namespace ChapterThree\AppleNews\Database;
-
 interface ApplenewsDatabaseInterface {
 
   /**

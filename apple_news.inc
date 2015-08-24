@@ -479,7 +479,7 @@ function apple_news_post($channel_id, $entity_type, $entity_wrapper, $data) {
       ],
     ];
     module_load_include('inc', 'apple_news', 'include/db');
-    $post = new ChapterThree\AppleNews\Database\ApplenewsDatabase();
+    $post = new ApplenewsDatabase();
     $post->setEntityId($entity_wrapper->getIdentifier());
     $post->setEntityRevisionId($entity_wrapper->getIdentifier());
     $post->setEntityType($entity_type);
@@ -559,7 +559,7 @@ function apple_news_update($channel_id, $entity_type, $entity_wrapper, $data) {
           ]
         ],
       ];
-      $post = new ChapterThree\AppleNews\Database\ApplenewsDatabase();
+      $post = new ApplenewsDatabase();
       $post->setPostId($entity_type, $entity_wrapper->getIdentifier(), $entity_wrapper->getIdentifier());
       $post->update($record);
       return TRUE;
@@ -600,7 +600,7 @@ function apple_news_delete($channel_id, $entity_type, $entity_wrapper) {
   if (empty($response)) {
     // Invoke Apple News delete hooks.
     module_invoke_all('apple_news_delete', $article_id, $channel_id, $entity_wrapper, $entity_type);
-    $post = new ChapterThree\AppleNews\Database\ApplenewsDatabase();
+    $post = new ApplenewsDatabase();
     $post->setPostId($entity_type, $entity_wrapper->getIdentifier(), $entity_wrapper->getIdentifier());
     $post->delete();
     //$post->deleteByEntity($entity_wrapper, $entity_type);
@@ -870,7 +870,7 @@ function apple_news_channel($channel_id) {
  */
 function apple_news_load_article_channels($entity, $type) {
   module_load_include('inc', 'apple_news', 'include/db');
-  $post = new ChapterThree\AppleNews\Database\ApplenewsDatabase();
+  $post = new ApplenewsDatabase();
   $entity_wrapper = entity_metadata_wrapper($type, $entity);
   $post->setPostId($type, $entity_wrapper->getIdentifier(), $entity_wrapper->getIdentifier());
   $channels_all = apple_news_channels();
@@ -898,7 +898,7 @@ function apple_news_load_article_channels($entity, $type) {
  */
 function apple_news_is_exported($channel_id, $entity_wrapper, $entity_type) {
   module_load_include('inc', 'apple_news', 'include/db');
-  $post = new ChapterThree\AppleNews\Database\ApplenewsDatabase();
+  $post = new ApplenewsDatabase();
   $post->setPostId($entity_type, $entity_wrapper->getIdentifier(), $entity_wrapper->getIdentifier());
   $post->setChannelId($channel_id);
   $article = $post->getArticle();
