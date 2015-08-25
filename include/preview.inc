@@ -5,8 +5,6 @@
  * Apple News article preview generator class.
  */
 
-namespace ChapterThree\AppleNews\Preview;
-
 /**
  * This class generate downloadable AppleNews formatted documents with
  * it's assets.
