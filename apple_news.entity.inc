@@ -54,6 +54,7 @@ function apple_news_entity_update($entity, $type) {
                 $settings['metadata']['data']['links']['sections'][] = apple_news_section_url($section_id);
               }
             }
+            $settings['override_revision'] = !empty($entity->apple_news_override_revision) ? TRUE : FALSE;
             apple_news_op('update', $channel_id, $entity, $type, $export, $settings);
           }
         }

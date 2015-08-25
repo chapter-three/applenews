@@ -143,6 +143,20 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
                 '#description' => t('Check this option if you would like to post this content to Apple News.'),
                 '#weight' => -14,
               ];
+              // Override revision.
+              if (!empty($article_id)) {
+                $form['apple_news']['apple_news_override_revision'] = [
+                  '#type' => 'checkbox',
+                  '#title' => t('Override Apple News article revision'),
+                  '#description' => t('Check this option if you would like to override current Apple News article revision.'),
+                  '#states' => [
+                    'visible' => [
+                      ':input[name="apple_news_publish_flag"]' => ['checked' => TRUE],
+                    ],
+                  ],
+                  '#weight' => -13,
+                ];
+              }
             }
 
           }

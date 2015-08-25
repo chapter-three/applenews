@@ -518,7 +518,15 @@ function apple_news_update($channel_id, $entity_type, $entity_wrapper, $data) {
       $data['metadata'] = json_decode($data['metadata'], true);
     }
     // Apple News Revision ID. Required in order to be able to update articles.
-    $data['metadata']['data']['revision'] = $article->article_revision_id;
+    if (!empty($data['override_revision'])) {
+      // This will override previous revisions.
+      $apple_news_article = apple_news_get_article($article->article_id);
+      $apple_news_revision_id = $apple_news_article->data->revision;
+    }
+    else {
+      $apple_news_revision_id = $article->article_revision_id;
+    }
+    $data['metadata']['data']['revision'] = $apple_news_revision_id;
     $data['metadata'] = json_encode($data['metadata']);
     // Make POST request to Apple News via PublisherAPI.
     $response = apple_news_update_article($article->article_id, $data);
@@ -662,9 +670,10 @@ function apple_news_op($op, $channel_id, $entity, $entity_type, $export = NULL, 
       $export->settings = array_merge($export->settings, $settings);
     }
     $data = [
-      'json'     => $document->json(),
-      'files'    => $export->getAssets(),
-      'metadata' => !empty($settings['metadata']) ? json_encode($settings['metadata']) : '',
+      'json'              => $document->json(),
+      'files'             => $export->getAssets(),
+      'metadata'          => !empty($settings['metadata']) ? json_encode($settings['metadata']) : '',
+      'override_revision' => !empty($settings['override_revision']) ? TRUE : FALSE,
     ];
   }
 
