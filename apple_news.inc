@@ -478,7 +478,6 @@ function apple_news_post($channel_id, $entity_type, $entity_wrapper, $data) {
         ]
       ],
     ];
-    module_load_include('inc', 'apple_news', 'include/db');
     $post = new ApplenewsDatabase();
     $post->setEntityId($entity_wrapper->getIdentifier());
     $post->setEntityRevisionId($entity_wrapper->getIdentifier());
@@ -502,7 +501,6 @@ function apple_news_post($channel_id, $entity_type, $entity_wrapper, $data) {
  */
 function apple_news_update($channel_id, $entity_type, $entity_wrapper, $data) {
   module_load_include('inc', 'apple_news', 'apple_news.publisher_api');
-  module_load_include('inc', 'apple_news', 'include/db');
 
   $query = db_select('apple_news_entities', 'e');
   $query->join('apple_news_channels', 'c', 'c.post_id = e.post_id');
@@ -586,7 +584,6 @@ function apple_news_update($channel_id, $entity_type, $entity_wrapper, $data) {
  */
 function apple_news_delete($channel_id, $entity_type, $entity_wrapper) {
   module_load_include('inc', 'apple_news', 'apple_news.publisher_api');
-  module_load_include('inc', 'apple_news', 'include/db');
   // Get article ID.
   $article_id = db_select('apple_news_entities', 'e')
     ->fields('e', ['article_id'])
@@ -869,7 +866,6 @@ function apple_news_channel($channel_id) {
  *   Entity objects.
  */
 function apple_news_load_article_channels($entity, $type) {
-  module_load_include('inc', 'apple_news', 'include/db');
   $post = new ApplenewsDatabase();
   $entity_wrapper = entity_metadata_wrapper($type, $entity);
   $post->setPostId($type, $entity_wrapper->getIdentifier(), $entity_wrapper->getIdentifier());
@@ -897,7 +893,6 @@ function apple_news_load_article_channels($entity, $type) {
  *   Export log record or FALSE if not results.
  */
 function apple_news_is_exported($channel_id, $entity_wrapper, $entity_type) {
-  module_load_include('inc', 'apple_news', 'include/db');
   $post = new ApplenewsDatabase();
   $post->setPostId($entity_type, $entity_wrapper->getIdentifier(), $entity_wrapper->getIdentifier());
   $post->setChannelId($channel_id);

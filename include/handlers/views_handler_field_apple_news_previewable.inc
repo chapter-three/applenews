@@ -26,7 +26,6 @@ class views_handler_field_apple_news_previewable extends views_handler_field {
 
   function render($values) {
     $articleId = $this->get_value($values);
-    module_load_include('inc', 'apple_news', 'include/db');
     $post = new ApplenewsDatabase();
     $article = $post->getArticleById($articleId);
     if (!empty($article['entity_id'])) {
