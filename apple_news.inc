@@ -920,8 +920,7 @@ function apple_news_section_url($section_id) {
  * Export to the Apple News previewable format documents.
  */
 function apple_news_export_to_file($entity_id, $entity_ids = [], $filename = NULL, $entity_archive = FALSE, $data = []) {
-  module_load_include('inc', 'apple_news', 'include/preview');
-  $preview = new ChapterThree\AppleNews\Preview\ApplenewsPreview($entity_id, $filename, $entity_archive, $data);
+  $preview = new ApplenewsPreview($entity_id, $filename, $entity_archive, $data);
   if (!empty($entity_id)) {
     $preview->toFile();
     $preview->archive($entity_ids);
@@ -937,8 +936,7 @@ function apple_news_export_to_file($entity_id, $entity_ids = [], $filename = NUL
  * Get file archive path.
  */
 function apple_news_export_file_path($entity_id) {
-  module_load_include('inc', 'apple_news', 'include/preview');
-  $preview = new ChapterThree\AppleNews\Preview\ApplenewsPreview(NULL, '', FALSE, []);
+  $preview = new ApplenewsPreview(NULL, '', FALSE, []);
   return $preview->getEntityArchivePath($entity_id);
 }
 
@@ -946,8 +944,7 @@ function apple_news_export_file_path($entity_id) {
  * Get file archive path.
  */
 function apple_news_export_file_delete($entity_id) {
-  module_load_include('inc', 'apple_news', 'include/preview');
-  $preview = new ChapterThree\AppleNews\Preview\ApplenewsPreview(NULL, '', FALSE, []);
+  $preview = new ApplenewsPreview(NULL, '', FALSE, []);
   return $preview->entityArchiveDelete($entity_id);
 }
 
@@ -955,8 +952,7 @@ function apple_news_export_file_delete($entity_id) {
  * Remove all temporary files.
  */
 function apple_news_export_dir_cleanup($entity_ids = []) {
-  module_load_include('inc', 'apple_news', 'include/preview');
-  $preview = new ChapterThree\AppleNews\Preview\ApplenewsPreview(NULL, '', FALSE, []);
+  $preview = new ApplenewsPreview(NULL, '', FALSE, []);
   $preview->removeDirectories($entity_ids);
 }
 

@@ -58,7 +58,7 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
             $chnnels_all = apple_news_channels();
 
             // Load existing Apple News article.
-            $post = new ChapterThree\AppleNews\Database\ApplenewsDatabase();
+            $post = new ApplenewsDatabase();
             if (!empty($chnnels_all)) {
               $channel_ids = array_keys($chnnels_all);
               $post->setChannelId($channel_ids);
