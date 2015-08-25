@@ -9,7 +9,6 @@
  */
 function apple_news_form_alter(&$form, &$form_state, $form_id) {
   module_load_include('inc', 'apple_news');
-  module_load_include('inc', 'apple_news', 'include/db');
 
   // Get all possible entity types and bundles available for export.
   foreach (apple_news_get_entity_types() as $module => $info) {
