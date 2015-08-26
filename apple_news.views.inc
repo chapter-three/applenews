@@ -52,46 +52,42 @@ function apple_news_views_data() {
   $fields = ['entity_id', 'revision_id'];
 
   // Add relationship to entity base via entity_id and revision_id fields.
-  foreach (apple_news_exports() as $info) {
-    if (!empty($info['entity_types'])) {
-      foreach ($info['entity_types'] as $entity_type) {
-        $entity_info = entity_get_info($entity_type);
-        foreach ($fields as $field_name) {
+  foreach ($entity_types as $entity_type) {
+    $entity_info = entity_get_info($entity_type);
+    foreach ($fields as $field_name) {
 
-          if ($field_name == 'entity_id') {
-            $data['apple_news_entities']['table']['join'][$entity_info['base table']] = [
-              'left_field' => $entity_info['entity keys']['id'],
-              'field' => $field_name,
-              'type' => 'LEFT'
-            ];
-          }
-
-          $data['apple_news_entities']['reverse_' . $field_name . '_' . $entity_type]['relationship'] = [
-            'handler' => 'views_handler_relationship_entity_reverse',
-            'field_name' => $field_name,
-            'field table' => 'apple_news_entities',
-            'field field' => $field_name,
-            'base' => $entity_info['base table'],
-            'base field' => ($field_name == 'entity_id') ? $entity_info['entity keys']['id'] : $entity_info['entity keys']['revision'],
-            'label' => t('Apple News articles referencing Drupal entities'),
-            'group' => t('Apple News'),
-            'title' => t('Apple News Referencing !field_name', ['!field_name' => $field_name]),
-            'help' => t('A bridge to the @entity_type entity that is referencing Apple News article via !field_name',
-              [
-                '@entity_type' => $entity_type,
-                '!field_name' => $field_name,
-              ]
-            ),
-            'join_extra' => [
-              0 => [
-                'field' => 'entity_type',
-                'value' => $entity_type,
-              ],
-            ],
-          ];
-
-        }
+      if ($field_name == 'entity_id') {
+        $data['apple_news_entities']['table']['join'][$entity_info['base table']] = [
+          'left_field' => $entity_info['entity keys']['id'],
+          'field' => $field_name,
+          'type' => 'LEFT'
+        ];
       }
+
+      $data['apple_news_entities']['reverse_' . $field_name . '_' . $entity_type]['relationship'] = [
+        'handler' => 'views_handler_relationship_entity_reverse',
+        'field_name' => $field_name,
+        'field table' => 'apple_news_entities',
+        'field field' => $field_name,
+        'base' => $entity_info['base table'],
+        'base field' => ($field_name == 'entity_id') ? $entity_info['entity keys']['id'] : $entity_info['entity keys']['revision'],
+        'label' => t('Apple News articles referencing Drupal entities'),
+        'group' => t('Apple News'),
+        'title' => t('Apple News Referencing !field_name', ['!field_name' => $field_name]),
+        'help' => t('A bridge to the @entity_type entity that is referencing Apple News article via !field_name',
+          [
+            '@entity_type' => $entity_type,
+            '!field_name' => $field_name,
+          ]
+        ),
+        'join_extra' => [
+          0 => [
+            'field' => 'entity_type',
+            'value' => $entity_type,
+          ],
+        ],
+      ];
+
     }
   }
 
