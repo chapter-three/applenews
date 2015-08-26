@@ -27,7 +27,7 @@ function apple_news_init() {
     ]
   ];
   foreach ($libraries as $name => $info) {
-    // Detect and load 'php-curl-class' PHP library.
+    // Detect and load PHP library.
     if (($library = libraries_detect($name)) &&
         !empty($library['installed']) &&
         $library['version'] == $info['version']

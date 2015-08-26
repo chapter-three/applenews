@@ -11,6 +11,12 @@
 function apple_news_settings_api_credentials_form($form, &$form_state) {
   module_load_include('inc', 'apple_news');
 
+  // Check if all required libraries installed, otherwise
+  // display message about missing PHP libraries.
+  if ($info = apple_news_libraries_installed()) {
+    return $info;
+  }
+
   $form['credentials'] = [
     '#type' => 'fieldset',
     '#title' => t('Apple News Credentials'),
@@ -196,6 +202,12 @@ function apple_news_settings_delete_configuration_form_submit($form, &$form_stat
 function apple_news_settings_channels_form() {
   module_load_include('inc', 'apple_news');
 
+  // Check if all required libraries installed, otherwise
+  // display message about missing PHP libraries.
+  if ($info = apple_news_libraries_installed()) {
+    return $info;
+  }
+
   $endpoint = variable_get('apple_news_variable_api_endpoint', '');
   $api_key = variable_get('apple_news_variable_api_key', '');
   $api_secret = variable_get('apple_news_variable_api_secret', '');
@@ -372,6 +384,12 @@ function apple_news_settings_delete_channel_form_submit($form, &$form_state) {
  */
 function apple_news_settings_exports_form($form, &$form_state) {
   module_load_include('inc', 'apple_news');
+
+  // Check if all required libraries installed, otherwise
+  // display message about missing PHP libraries.
+  if ($info = apple_news_libraries_installed()) {
+    return $info;
+  }
 
   $header = [
     'name'        => ['data' => t('Name')],

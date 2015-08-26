@@ -966,6 +966,43 @@ function apple_news_export_dir_cleanup($entity_ids = []) {
 }
 
 /**
+ * Check if all required libraries installed.
+ */
+function apple_news_libraries_installed() {
+
+  $libraries = [
+    'php-curl-class' => CURL_SUPPORTED_VERSION,
+    'AppleNews'      => APPLE_NEWS_SUPPORTED_VERSION
+  ];
+
+  $count_installed = 0;
+
+  foreach ($libraries as $name => $version) {
+    if (($library = libraries_detect($name)) &&
+        !empty($library['installed']) &&
+        $library['version'] == $version
+    ) {
+      $count_installed++;
+    }
+  }
+
+  if ($count_installed != count($libraries)) {
+    return [
+      'info' => [
+        '#markup' => t('Please install all required PHP libraries. See <a href="!link" target="_blank">README</a> file for instructions.',
+          [
+            '!link' => url(drupal_get_path('module', 'apple_news') . '/README.md'),
+          ]
+        ),
+      ]
+    ];
+  }
+
+  return [];
+
+}
+
+/**
  * Library autoinstall function (downloads and unzips library files).
  */
 function apple_news_autoinstall_libraries() {

@@ -43,6 +43,13 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
             ]
           ];
 
+          // Check if all required libraries installed, otherwise
+          // display message about missing PHP libraries.
+          if ($info = apple_news_libraries_installed()) {
+            $form['apple_news'] += $info;
+            continue;
+          }
+
           // Previewable download default message.
           $preview_message = t('You have to save this content in order to be able to preview the Apple News generated document.');
 
