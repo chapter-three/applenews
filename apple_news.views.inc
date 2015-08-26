@@ -48,13 +48,11 @@ function apple_news_views_data() {
     ],
   ];
 
-  $types = apple_news_get_entity_types();
-  $entity_types = array_keys($types);
+  $entity_types = ['node'];
   $fields = ['entity_id', 'revision_id'];
 
   // Add relationship to entity base via entity_id and revision_id fields.
-  $entity_type_exports = apple_news_get_entity_types();
-  foreach ($entity_type_exports as $module => $info) {
+  foreach (apple_news_exports() as $info) {
     if (!empty($info['entity_types'])) {
       foreach ($info['entity_types'] as $entity_type) {
         $entity_info = entity_get_info($entity_type);

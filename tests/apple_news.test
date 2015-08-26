@@ -152,7 +152,7 @@ class ApplenewsExportTestCase extends ApplenewsWebTestCase {
       t('Save changes')
     );
     /** @var ApplenewsExportNode $export */
-    $export = apple_news_get_export('apple_news', 'node');
+    $export = apple_news_get_export('apple_news', 'node', TRUE);
     /** @var ApplenewsDestinationBodyPhoto $component */
     $component = $export->getComponent(1);
     $this->assert($component instanceof ApplenewsDestinationBody,
@@ -177,7 +177,7 @@ class ApplenewsExportTestCase extends ApplenewsWebTestCase {
       t('Save changes')
     );
     /** @var ApplenewsExportNode $export */
-    $export = apple_news_get_export('apple_news', 'node');
+    $export = apple_news_get_export('apple_news', 'node', TRUE);
     /** @var ApplenewsDestinationBodyPhoto $component */
     $component = $export->getComponent(2);
     $this->assert($component instanceof ApplenewsDestinationScalableImage,

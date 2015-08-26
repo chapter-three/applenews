@@ -98,19 +98,18 @@ abstract class ApplenewsExport {
    */
   public function query() {
     $query = new EntityFieldQuery();
-    $query->addMetaData('account', user_load(1));
+    $query->entityCondition('entity_type', $this->entityType())
+      ->entityCondition('bundle', $this->bundles());
     return $query;
   }
 
   /**
-   * Entity types query() may match on.
+   * Entity type query() may match on.
    *
-   * @return array|NULL
-   *   List of entity types, or NULL for all.
+   * @return string
+   *   Entity type name.
    */
-  public function entityTypes() {
-    return NULL;
-  }
+  abstract public function entityType();
 
   /**
    * Entity bundles query() may match on.
@@ -702,19 +701,8 @@ class ApplenewsExportNode extends ApplenewsExportConfigurable {
   /**
    * {@inheritdoc}
    */
-  public function query() {
-    return parent::query()
-      ->entityCondition('entity_type', 'node')
-      ->entityCondition('bundle', $this->bundles)
-      ->propertyCondition('status', NODE_PUBLISHED)
-      ->entityOrderBy('entity_id');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function entityTypes() {
-    return ['node'];
+  public function entityType() {
+    return 'node';
   }
 
   /**

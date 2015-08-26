@@ -12,26 +12,22 @@ function apple_news_drush_command() {
   $items['apple-news'] = [
     'description' => 'Export entities to Apple News.',
     'arguments' => [
-      'op'           => 'Operation export/preview/install',
+      'op'           => 'Operation export/preview',
       'module'       => 'Apple News Export module name',
       'machine_name' => 'Apple News Export machine name',
     ],
     'examples' => [
-      'Run [module] [machine_name] export.'
-        => 'drush apple-news export [module] [machine_name]',
-      'Run [module] [machine_name] export to file.'
-        => 'drush apple-news preview [module] [machine_name]',
+      'apple-news export apple_news_style1 node'
+        => 'Run export.',
+      'apple-news preview apple_news_style1 node'
+        => 'Run export to file.',
     ],
     'aliases' => ['an'],
   ];
 
   $items['apple-news-libraries'] = [
     'description' => 'Download Apple News dependency PHP libraries.',
-    'examples' => [
-      'Download and unarchive libraries.'
-        => 'drush apple-news-libraries',
-    ],
-    'aliases' => ['an-libs'],
+    'aliases' => ['an-dl'],
   ];
 
   return $items;
@@ -46,13 +42,15 @@ function drush_apple_news($operation, $module, $machine_name) {
   module_load_include('inc', 'apple_news');
   module_load_include('inc', 'apple_news', 'apple_news.batch');
 
-  $export = apple_news_export_load($module, $machine_name);
+  $key = apple_news_export_id($module, $machine_name);
+  $info = apple_news_exports()[$key];
+  $export = apple_news_get_export($module, $machine_name);
 
   if ($export->enabled) {
 
     switch ($operation) {
 
-      // Run brach enttiy export to Apple News.
+      // Run branch entity export to Apple News.
       case 'export' :
         $batch = apple_news_batch_run_export($info, $export, 'export');
         $batch['progressive'] = FALSE;

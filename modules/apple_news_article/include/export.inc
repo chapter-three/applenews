@@ -15,19 +15,8 @@ class ApplenewsExportArticle extends ApplenewsExport {
   /**
    * {@inheritdoc}
    */
-  public function query() {
-    return parent::query()
-      ->entityCondition('entity_type', 'node')
-      ->entityCondition('bundle', ['article'])
-      ->propertyCondition('status', NODE_PUBLISHED)
-      ->entityOrderBy('entity_id');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function entityTypes() {
-    return ['node'];
+  public function entityType() {
+    return 'node';
   }
 
   /**
@@ -222,19 +211,8 @@ class ApplenewsExportConfigurableArticle extends ApplenewsExportConfigurable {
   /**
    * {@inheritdoc}
    */
-  public function query() {
-    return parent::query()
-      ->entityCondition('entity_type', 'node')
-      ->entityCondition('bundle', ['article'])
-      ->propertyCondition('status', NODE_PUBLISHED)
-      ->entityOrderBy('entity_id');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function entityTypes() {
-    return ['node'];
+  public function entityType() {
+    return 'node';
   }
 
   /**

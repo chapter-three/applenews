@@ -26,7 +26,7 @@ function apple_news_settings_api_credentials_form($form, &$form_state) {
   $endpoint = variable_get('apple_news_variable_api_endpoint', '');
   $api_key = variable_get('apple_news_variable_api_key', '');
   $api_secret = variable_get('apple_news_variable_api_secret', '');
-  $curl_opts = variable_get('apple_news_variable_api_curlopt', 
+  $curl_opts = variable_get('apple_news_variable_api_curlopt',
     [
       'ssl'        => TRUE,
       'proxy'      => '',
@@ -501,11 +501,7 @@ function apple_news_settings_exports_form_submit($form, &$form_state) {
         apple_news_export_save($export);
         drupal_set_message(
           t('<em>@name</em> export sucessfully <strong>enabled</strong>.',
-            [
-              '@name' => $info['name']
-            ]
-          )
-        );
+          ['@name' => $info['name']]));
       }
       break;
 
@@ -516,11 +512,7 @@ function apple_news_settings_exports_form_submit($form, &$form_state) {
         apple_news_export_save($export);
         drupal_set_message(
           t('<em>@name</em> export sucessfully <strong>disabled</strong>.',
-            [
-              '@name' => $info['name']
-            ]
-          )
-        );
+          ['@name' => $info['name']]));
       }
       break;
 
@@ -779,10 +771,7 @@ function apple_news_export_destination_delete_form($form, &$form_state, Applenew
   return confirm_form(
     $form,
     t("Do you really want delete <em>@name</em> destination?",
-      [
-        '@name' => $destination->label(),
-      ]
-    ),
+      ['@name' => $destination->label()]),
     $path,
     t("This action cannot be undone."),
     t("Yes, delete")
@@ -807,10 +796,7 @@ function apple_news_export_destination_delete_form_submit($form, &$form_state) {
       $export->deleteComponent($id);
       apple_news_export_save($export);
       drupal_set_message(t('@name destination successfully deleted.',
-        [
-          '@name' => $destination->label(),
-        ]
-      ));
+        ['@name' => $destination->label()]));
       break;
 
   }
@@ -845,14 +831,13 @@ function apple_news_settings_delete_article_form($form, &$form_state, $entity_ty
     'title'        => $title
   ];
 
+  $msg = t("Do you really want to delete <em>@title</em> article from <em>@channel</em>?", [
+    '@title'   => $title,
+    '@channel' => $channel->name,
+  ]);
   return confirm_form(
     $form,
-    t("Do you really want to delete <em>@title</em> article from <em>@channel</em>?",
-      [
-        '@title'   => $title,
-        '@channel' => $channel->name
-      ]
-    ),
+    $msg,
     $path,
     t("This action cannot be undone."),
     t("Yes, delete")
@@ -883,9 +868,7 @@ function apple_news_settings_delete_article_form_submit($form, &$form_state) {
         [
           '@title'   => $form_state['storage']['title'],
           '@channel' => $form_state['storage']['channel_name']
-        ]
-      ),
-      'warning'
+        ]), 'warning'
     );
   }
   drupal_goto($form_state['storage']['return_path']);
@@ -898,26 +881,31 @@ function apple_news_download_article_json($entity_type, $entity_id, $revision_id
   module_load_include('inc', 'apple_news');
   if (!empty($entity_id)) {
 
-    $data = apple_news_entity_export($entity_type, $entity_id, $revision_id);
-    apple_news_export_to_file($entity_id, [$entity_id], NULL, TRUE, $data);
-    $archive_path = apple_news_export_file_path($entity_id);
+    if ($export = apple_news_entity_get_export($entity_type, $entity_id)) {
+      $data = apple_news_entity_export($export, $entity_type, $entity_id);
+      apple_news_export_to_file($entity_id, [$entity_id], NULL, TRUE, $data);
+      $archive_path = apple_news_export_file_path($entity_id);
 
-    $archive = $archive_path . '.zip';
-    $output = file_get_contents($archive, FILE_USE_INCLUDE_PATH);
+      $archive = $archive_path . '.zip';
+      $output = file_get_contents($archive, FILE_USE_INCLUDE_PATH);
 
-    // Remove individual entity archive.
-    apple_news_export_file_delete($entity_id);
-    // Remove individual entity directory
-    apple_news_export_dir_cleanup([$entity_id]);
+      // Remove individual entity archive.
+      apple_news_export_file_delete($entity_id);
+      // Remove individual entity directory.
+      apple_news_export_dir_cleanup([$entity_id]);
 
-    drupal_add_http_header('Content-Type', 'application/zip');
-    drupal_add_http_header('Content-Disposition', 'attachment; filename=' . $entity_id . '.zip');
+      drupal_add_http_header('Content-Type', 'application/zip');
+      drupal_add_http_header('Content-Disposition', 'attachment; filename=' . $entity_id . '.zip');
 
-    echo $output;
+      echo $output;
 
+    }
+    else {
+      return t('Export not defined for this entity.');
+    }
   }
   else {
-    return t('Article not found');
+    return t('Entity not found.');
   }
   drupal_exit();
 }

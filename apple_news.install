@@ -136,6 +136,18 @@ function apple_news_schema() {
         'not null' => TRUE,
         'description' => 'Revision ID',
       ],
+      'module' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'description' => 'Export used.',
+      ],
+      'machine_name' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'description' => 'Export used.',
+      ],
       'article_id' => [
         'type' => 'varchar',
         'length' => 255,
@@ -163,6 +175,15 @@ function apple_news_schema() {
       ],
     ],
     'primary key' => ['post_id'],
+    'foreign keys' => [
+      'node_revision' => [
+        'table' => 'apple_news_status',
+        'columns' => [
+          'module' => 'module',
+          'machine_name' => 'machine_name',
+        ],
+      ],
+    ],
     'indexes' => [
       'post_id' => ['post_id'],
       'entity_type' => ['entity_type'],

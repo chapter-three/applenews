@@ -152,11 +152,10 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
    *
    * @param string $ancestors
    *   Internal use.
-   * @param array $entity_types
+   * @param string $entity_types
    *   Internal use.
    */
-  public function getSourceOptions($ancestors = '', array $entity_types = NULL) {
-    $options = $ancestors ? [] : ['' => '- ' . t('none') . ' -'];
+  public function getSourceOptions($ancestors = '', $entity_type = NULL) {
 
     // Source implementations.
     $sources = apple_news_get_module_apis()['sources'];
@@ -197,79 +196,78 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
     };
 
     // Can be called recursively.
-    if (!isset($entity_types)) {
-      $entity_types = $this->export->entityTypes();
+    if (!isset($entity_type)) {
+      $entity_type = $this->export->entityType();
     }
-    foreach ($entity_types as $entity_type) {
-      // Classify so we can order options.
-      $opts_atts = $opts_fields = [];
-      // Each entity source that applies to $entity_type.
-      foreach ($entity_sources($entity_type) as $source_info) {
-        // Entity attributes.
+    // Classify so we can order options.
+    $opts_atts = $opts_fields = [];
+    // Each entity source that applies to $entity_type.
+    foreach ($entity_sources($entity_type) as $source_info) {
+      // Entity attributes.
+      foreach ($source_info['class']::attributes() as $key => $attr_info) {
+        $id = implode('::', [
+          $ancestors . '::',
+          $source_info['module'],
+          $source_info['machine_name'],
+          $key,
+        ]);
+        // Nested entity source.
+        if (is_array($attr_info)) {
+          $label = $attr_info['label'];
+          $opts_atts[$label]
+            = $this->getSourceOptions($id, $attr_info['type']);
+        }
+        // Value source.
+        else {
+          $label = implode(' -- ', [
+            $source_info['name'],
+            $attr_info,
+          ]);
+          $opts_atts[$id] = $label;
+        }
+      }
+    }
+    // Each field source that applies to $entity_type.
+    $bundles = empty($ancestors) ? $this->export->bundles() : FALSE;
+    foreach ($field_types($entity_type, $bundles) as
+             $field_name => $field_type
+    ) {
+      // Each field source that applies to $field_type.
+      foreach ($field_sources($field_type) as $source_info) {
+        // Field attributes.
         foreach ($source_info['class']::attributes() as $key => $attr_info) {
           $id = implode('::', [
             $ancestors . '::',
             $source_info['module'],
             $source_info['machine_name'],
+            $entity_type,
+            $field_name,
             $key,
           ]);
           // Nested entity source.
           if (is_array($attr_info)) {
-            $label = $attr_info['label'];
-            $opts_atts[$label] = $this->getSourceOptions($id,
-              [$attr_info['type']]);
+            $label = implode(' -- ', [
+              $source_info['name'],
+              $field_name,
+              $attr_info['label']
+            ]);
+            $opts_fields[$label]
+              = $this->getSourceOptions($id, $attr_info['type']);
           }
           // Value source.
           else {
             $label = implode(' -- ', [
               $source_info['name'],
+              $field_name,
               $attr_info,
             ]);
-            $opts_atts[$id] = $label;
+            $opts_fields[$id] = $label;
           }
         }
       }
-      // Each field source that applies to $entity_type.
-      $bundles = empty($ancestors) ? $this->export->bundles() : FALSE;
-      foreach ($field_types($entity_type, $bundles) as
-               $field_name => $field_type
-      ) {
-        // Each field source that applies to $field_type.
-        foreach ($field_sources($field_type) as $source_info) {
-          // Field attributes.
-          foreach ($source_info['class']::attributes() as $key => $attr_info) {
-            $id = implode('::', [
-              $ancestors . '::',
-              $source_info['module'],
-              $source_info['machine_name'],
-              $entity_type,
-              $field_name,
-              $key,
-            ]);
-            // Nested entity source.
-            if (is_array($attr_info)) {
-              $label = implode(' -- ', [
-                $source_info['name'],
-                $field_name,
-                $attr_info['label']
-              ]);
-              $opts_fields[$label] = $this->getSourceOptions($id,
-                [$attr_info['type']]);
-            }
-            // Value source.
-            else {
-              $label = implode(' -- ', [
-                $source_info['name'],
-                $field_name,
-                $attr_info,
-              ]);
-              $opts_fields[$id] = $label;
-            }
-          }
-        }
-      }
-      $options += $opts_atts + $opts_fields;
     }
+    $options = ($ancestors ? [] : ['' => '- ' . t('none') . ' -']) +
+      $opts_atts + $opts_fields;
     return $options;
   }
 
