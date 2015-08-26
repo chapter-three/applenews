@@ -513,10 +513,12 @@ function apple_news_update($channel_id, $entity_type, $entity_wrapper, $data) {
 
   // Make sure article exists.
   if (!empty($article->article_id)) {
+
     // Add metadata.
     if (!empty($data['metadata'])) {
       $data['metadata'] = json_decode($data['metadata'], true);
     }
+
     // Apple News Revision ID. Required in order to be able to update articles.
     if (!empty($data['override_revision'])) {
       // This will override previous revisions.
@@ -526,6 +528,7 @@ function apple_news_update($channel_id, $entity_type, $entity_wrapper, $data) {
     else {
       $apple_news_revision_id = $article->article_revision_id;
     }
+
     $data['metadata']['data']['revision'] = $apple_news_revision_id;
     $data['metadata'] = json_encode($data['metadata']);
     // Make POST request to Apple News via PublisherAPI.
@@ -592,6 +595,7 @@ function apple_news_update($channel_id, $entity_type, $entity_wrapper, $data) {
  */
 function apple_news_delete($channel_id, $entity_type, $entity_wrapper) {
   module_load_include('inc', 'apple_news', 'apple_news.publisher_api');
+
   // Get article ID.
   $article_id = db_select('apple_news_entities', 'e')
     ->fields('e', ['article_id'])
@@ -599,6 +603,7 @@ function apple_news_delete($channel_id, $entity_type, $entity_wrapper) {
     ->condition('entity_id', $entity_wrapper->getIdentifier())
     ->execute()
     ->fetchField();
+
   // Make DELETE request to Apple News via PublisherAPI.
   $response = apple_news_delete_article($article_id);
   // If successful request.
@@ -647,7 +652,7 @@ function apple_news_get_entity_types() {
 /**
  * Perform operations on an entity.
  *
- * @param string $op
+ * @param string $operation
  *   Entity operation (insert/update/delete).
  * @param string $channel_id
  *   Apple News channel ID.
@@ -656,11 +661,11 @@ function apple_news_get_entity_types() {
  * @param string $type
  *   Entity type.
  */
-function apple_news_op($op, $channel_id, $entity, $entity_type, $export = NULL, array $settings = []) {
+function apple_news_op($operation, $channel_id, $entity, $entity_type, $export = NULL, array $settings = []) {
   $result = FALSE;
   $data = [];
   // Entity object wrapper.
-  $wrapper = entity_metadata_wrapper($entity_type, $entity);
+  $entity_wrapper = entity_metadata_wrapper($entity_type, $entity);
   // Generate Apple News Document formatted JSON string.
   if (is_object($export)) {
     $document = $export->export($entity);
@@ -677,14 +682,21 @@ function apple_news_op($op, $channel_id, $entity, $entity_type, $export = NULL, 
     ];
   }
 
-  if ($op == 'insert') {
-    $result = apple_news_post($channel_id, $entity_type, $wrapper, $data);
-  }
-  elseif ($op == 'update') {
-    $result = apple_news_update($channel_id, $entity_type, $wrapper, $data);
-  }
-  elseif ($op == 'delete') {
-    $result = apple_news_delete($channel_id, $entity_type, $wrapper);
+  switch ($operation) {
+    case 'insert' :
+     // Create new article in Apple News.
+      $result = apple_news_post($channel_id, $entity_type, $entity_wrapper, $data);
+      break;
+
+    case 'update' :
+      // Update existing Apple News article.
+      $result = apple_news_update($channel_id, $entity_type, $entity_wrapper, $data);
+      break;
+
+    case 'delete' :
+      // Delete article from Apple News.
+      $result = apple_news_delete($channel_id, $entity_type, $entity_wrapper);
+      break;
   }
   return $result;
 }
