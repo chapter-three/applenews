@@ -18,16 +18,14 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
   }
 
   $menu_item = menu_get_item();
-  if ($menu_item['page_callback'] == 'node_page_edit') {
-    $entity_type = 'node';
-    $entity = menu_get_object($entity_type);
-    $bundle = $entity->type;
-  }
-  else {
-    return;
-  }
+  switch ($menu_item['page_callback']) {
 
-  _apple_news_form_alter_node_form($form, $form_state);
+    case 'node_page_edit':
+    case 'node_add':
+      _apple_news_form_alter_node_form($form, $form_state);
+      break;
+
+  }
 }
 
 /**
@@ -37,29 +35,35 @@ function _apple_news_form_alter_node_form(&$form, &$form_state) {
   $entity_type = 'node';
 
   // Entity object.
-  $entity_id = isset($form['nid']['#value']) ? (int) $form['nid']['#value'] : NULL;
-  $entity = menu_get_object();
-  // Use entity ID value as revision ID.
-  $revision_id = $entity_id;
+  if ($entity = menu_get_object()) {
+    $entity = menu_get_object();
+    $entity_id = $entity->nid;
+    // Use entity ID value as revision ID.
+    $revision_id = $entity_id;
+  };
 
   // Entity form JS helper (hide/show Apple News entity form options).
   $form['#attached']['js'][] = drupal_get_path('module', 'apple_news') . '/js/form.js';
 
   module_load_include('inc', 'apple_news');
   $exports = apple_news_exports_enabled();
-  $default_export = apple_news_entity_get_export($entity_type, $entity_id);
+  $default_export = empty($entity_id) ? NULL
+    : apple_news_entity_get_export($entity_type, $entity_id);
   $channels_all = apple_news_channels();
 
   // Load existing Apple News article.
-  $post = new ApplenewsDatabase();
-  if (!empty($channels_all)) {
-    $channel_ids = array_keys($channels_all);
-    $post->setChannelId($channel_ids);
+  $api_channels = [];
+  if (!empty($entity_id)) {
+    $post = new ApplenewsDatabase();
+    if (!empty($channels_all)) {
+      $channel_ids = array_keys($channels_all);
+      $post->setChannelId($channel_ids);
+    }
+    $post->setPostId($entity_type, $entity_id, $revision_id);
+    $article = $post->getArticle();
+    $article_id = !empty($article['article_id']) ? $article['article_id'] : NULL;
+    $api_channels = apple_news_channels(TRUE);
   }
-  $post->setPostId($entity_type, $entity_id, $revision_id);
-  $article = $post->getArticle();
-  $article_id = !empty($article['article_id']) ? $article['article_id'] : NULL;
-  $api_channels = apple_news_channels(TRUE);
 
   // Add Apple News vertical tab.
   $form['apple_news'] = [
@@ -99,7 +103,7 @@ function _apple_news_form_alter_node_form(&$form, &$form_state) {
     $form['apple_news']['apple_news_publish_flag']['#default_value']
       = !empty($article_id) ? TRUE : FALSE;
   }
-  else {
+  elseif (!empty($entity_id)) {
     $form['apple_news']['apple_news_publish_flag']['#disabled'] = TRUE;
   }
 
@@ -155,13 +159,20 @@ function _apple_news_form_alter_node_form(&$form, &$form_state) {
   }
 
   // Exports.
-  $default_value = apple_news_export_id($default_export->getModule(),
-    $default_export->getMachineName());
+  if (!empty($default_export)) {
+    $default_value = apple_news_export_id($default_export->getModule(),
+      $default_export->getMachineName());
+  }
+  else {
+    $default_value = NULL;
+  }
   $options = [];
   foreach ($exports as $key => $info) {
     if ($key != $default_value) {
       $export = apple_news_get_export($info['module'], $info['machine_name']);
-      if (!apple_news_entity_export_valid($export, $entity_type, $entity_id)) {
+      if (isset($entity_id) &&
+          !apple_news_entity_export_valid($export, $entity_type, $entity_id)
+      ) {
         continue;
       }
     }
