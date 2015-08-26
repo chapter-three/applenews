@@ -57,7 +57,7 @@ function apple_news_batch_run_export($info, $export, $op) {
 }
 
 /**
- * Batch operation for bactch export.
+ * Batch operation for export.
  *
  * This is the function that is called on each operation in Apple News export.
  */
@@ -239,7 +239,7 @@ function apple_news_batch_run_export_finished($success, $results, $operations) {
 }
 
 /**
- * Batch operation for bactch export.
+ * Batch operation for export preview.
  *
  * This is the function that is called on each operation in Export to File.
  */
