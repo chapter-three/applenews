@@ -428,7 +428,7 @@ function apple_news_entity_get_export($entity_type, $entity_id) {
   }
   // Grab first matching export.
   foreach (apple_news_exports() as $info) {
-    if (!$info['#enabled']) {
+    if (!@$info['#enabled']) {
       continue;
     }
     $export = apple_news_get_export($info['module'], $info['machine_name']);
