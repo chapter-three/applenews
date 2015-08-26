@@ -416,21 +416,24 @@ class ApplenewsSourceFieldFile extends ApplenewsSourceField {
     }
     else {
       $file = $value->value();
-      $return = [
-        'uri'       => $file['uri'],
-        'url'       => file_create_url($file['uri']),
-        'fid'       => $file['fid'],
-        'filename'  => isset($file['filename']) ? $file['filename'] : NULL,
-        'filesize'  => isset($file['filesize']) ? $file['filesize'] : NULL,
-        'status'    => isset($file['status']) ? $file['status'] : NULL,
-        'filemime'  => isset($file['filemime']) ? $file['filemime'] : NULL,
-        'timestamp' => isset($file['timestamp']) ? $file['timestamp'] : NULL,
-        'alt'       => isset($file['alt']) ? $file['alt'] : NULL,
-        'title'     => isset($file['title']) ? $file['title'] : NULL,
-        'width'     => isset($file['width']) ? $file['width'] : NULL,
-        'height'    => isset($file['height']) ? $file['height'] : NULL,
-        'owner'     => isset($file['uid']) ? $value->file->owner->value() : NULL,
-      ];
+      if (!empty($file['fid'])) {
+        $obj = file_load($file['fid']);
+        $return = [
+          'uri'       => $obj->uri,
+          'url'       => file_create_url($obj->uri),
+          'fid'       => $obj->fid,
+          'filename'  => $obj->filename,
+          'filesize'  => $obj->filesize,
+          'status'    => $obj->status,
+          'filemime'  => $obj->filemime,
+          'timestamp' => $obj->timestamp,
+          'alt'       => isset($file['alt']) ? $file['alt'] : NULL,
+          'title'     => isset($file['title']) ? $file['title'] : NULL,
+          'width'     => isset($file['width']) ? $file['width'] : NULL,
+          'height'    => isset($file['height']) ? $file['height'] : NULL,
+          'owner'     => $value->file->owner->value(),
+        ];
+      }
     }
     return $return;
   }
