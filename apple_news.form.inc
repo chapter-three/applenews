@@ -228,7 +228,7 @@ function _apple_news_form_alter_node_form(&$form, &$form_state) {
         }
       }
       $form['apple_news']['channels'] = $export_form['channels'];
-
+      unset($form['apple_news']['channels']['#weight']);
     }
 
     // Preview-able download.
