@@ -576,9 +576,10 @@ function apple_news_update($channel_id, $entity_type, $entity_wrapper, $data) {
     }
 
     // Apple News Revision ID. Required in order to be able to update articles.
-    if (!empty($data['override_revision'])) {
+    if (!empty($data['override_revision']) &&
+        $apple_news_article = apple_news_get_article($article->article_id)
+    ) {
       // This will override previous revisions.
-      $apple_news_article = apple_news_get_article($article->article_id);
       $apple_news_revision_id = $apple_news_article->data->revision;
     }
     else {
