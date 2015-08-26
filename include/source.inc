@@ -51,6 +51,62 @@ interface ApplenewsSourceInterface {
 }
 
 /**
+ * Class for exporting global/literal values.
+ */
+class ApplenewsSourceValue implements ApplenewsSourceInterface {
+
+  /**
+   * {@inheritdoc}
+   */
+  static public function types() {
+    return [];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  static public function label() {
+    return t('Value');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  static public function attributes() {
+    return [
+      'value' => 'Value',
+    ];
+  }
+
+  /**
+   * The value.
+   *
+   * @var string
+   */
+  public $value;
+
+  /**
+   * Implements __construct().
+   *
+   * @param string $value
+   *   Value literal.
+   */
+  public function __construct($value) {
+    $this->value = $value;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function export() {
+    return [
+      'value' => $this->value,
+    ];
+  }
+
+}
+
+/**
  * Base class for exporting a Drupal entity.
  */
 abstract class ApplenewsSourceEntity implements ApplenewsSourceInterface {

@@ -35,14 +35,10 @@ class ApplenewsExtraDestinationInstagram extends ApplenewsDestination {
 
     $form = parent::getConfigForm($form, $form_state);
 
-    $form['source'] = [
-      '#title'         => t('Link'),
-      '#required'      => TRUE,
-      '#type'          => 'select',
-      '#options'       => $this->getSourceOptions(),
-      '#default_value' => $this->getSetting('source'),
-      '#description'   => t('URL format <em>https://instagram.com/p/6Lg1xVkNjJ</em>'),
-    ];
+    parent::getConfigFormSourceElement($form, $form_state, 'source');
+    $form['source']['#title'] = t('Link');
+    $form['source']['#required'] = TRUE;
+    $form['source']['#description'] = t('URL format <em>https://instagram.com/p/6Lg1xVkNjJ</em>');
 
     return $form;
   }
@@ -99,14 +95,10 @@ class ApplenewsExtraDestinationTweet extends ApplenewsDestination {
 
     $form = parent::getConfigForm($form, $form_state);
 
-    $form['source'] = [
-      '#title'         => t('Link'),
-      '#required'      => TRUE,
-      '#type'          => 'select',
-      '#options'       => $this->getSourceOptions(),
-      '#default_value' => $this->getSetting('source'),
-      '#description'   => t('URL format <em>https://twitter.com/chapter_three/status/623547179563495424</em>'),
-    ];
+    parent::getConfigFormSourceElement($form, $form_state, 'source');
+    $form['source']['#title'] = t('Link');
+    $form['source']['#required'] = TRUE;
+    $form['source']['#description'] = t('URL format <em>https://twitter.com/chapter_three/status/623547179563495424</em>');
 
     return $form;
   }
@@ -164,22 +156,13 @@ class ApplenewsExtraDestinationEmbedWebVideo extends ApplenewsDestination {
 
     $form = parent::getConfigForm($form, $form_state);
 
-    $form['video_url'] = [
-      '#title'         => t('Video URL'),
-      '#required'      => TRUE,
-      '#type'          => 'select',
-      '#options'       => $this->getSourceOptions(),
-      '#default_value' => $this->getSetting('video_url'),
-      '#description'   => t('URL format <em>https://www.youtube.com/embed/r4DQKtYL62Q</em> (Youtube) or <em>https://player.vimeo.com/video/121450839</em> (Vimeo)'),
-    ];
+    parent::getConfigFormSourceElement($form, $form_state, 'video_url');
+    $form['video_url']['#title'] = t('Video URL');
+    $form['video_url']['#required'] = TRUE;
+    $form['video_url']['#description'] = t('URL format <em>https://www.youtube.com/embed/r4DQKtYL62Q</em> (Youtube) or <em>https://player.vimeo.com/video/121450839</em> (Vimeo)');
 
-    $form['caption'] = [
-      '#title'         => t('Caption'),
-      '#type'          => 'select',
-      '#options'       => $this->getSourceOptions(),
-      '#default_value' => $this->getSetting('caption'),
-      '#description'   => t('A caption that describes the content of the video. This text can be used by VoiceOver, or it can be shown when the video cannot be played.'),
-    ];
+    parent::getConfigFormSourceElement($form, $form_state, 'caption');
+    $form['caption']['#title'] = t('Caption');
 
     return $form;
   }
@@ -255,42 +238,18 @@ class ApplenewsExtraDestinationAudio extends ApplenewsDestination {
       '#description'   => t('The type of audio file.'),
     ];
 
-    $form['url'] = [
-      '#title'         => t('Audio URL'),
-      '#required'      => TRUE,
-      '#type'          => 'select',
-      '#options'       => $this->getSourceOptions(),
-      '#default_value' => $this->getSetting('url'),
-      '#description'   => t('The URL of an audio file beginning with http:// or https://. This component supports all audio formats that are supported by AVPlayer on iOS devices. Supported audio file types include: MP3, AAC, ALAC, HE-AAC (For a full list of supported codecs, refer to the <a href="!link" target="_blank">Supported Audio Formats developer documentation</a>).',
-        [
-          '!link' => 'https://developer.apple.com/library/ios/documentation/AudioVideo/Conceptual/MultimediaPG/UsingAudio/UsingAudio.html#//apple_ref/doc/uid/TP40009767-CH2-SW48',
-        ]
-      ),
-    ];
+    parent::getConfigFormSourceElement($form, $form_state, 'url');
+    $form['url']['#title'] = t('Audio URL');
+    $form['url']['#required'] = TRUE;
 
-    $form['imageURL'] = [
-      '#title'         => t('Image URL'),
-      '#type'          => 'select',
-      '#options'       => $this->getSourceOptions(),
-      '#default_value' => $this->getSetting('imageURL'),
-      '#description'   => t('Use File field. An optional URL to an image that should accompany the audio file, such as a still or a cover image. Supported image types include JPEG (with .jpg or .jpeg extension), PNG, and GIF.'),
-    ];
+    parent::getConfigFormSourceElement($form, $form_state, 'imageURL');
+    $form['imageURL']['#title'] = t('Image URL');
 
-    $form['caption'] = [
-      '#title'         => t('Caption'),
-      '#type'          => 'select',
-      '#options'       => $this->getSourceOptions(),
-      '#default_value' => $this->getSetting('caption'),
-      '#description'   => t('A caption that describes the content of the audio file. This text can be used by VoiceOver, or it can be shown when the audio cannot be played.'),
-    ];
+    parent::getConfigFormSourceElement($form, $form_state, 'caption');
+    $form['caption']['#title'] = t('Caption');
 
-    $form['explicitContent'] = [
-      '#title'         => t('Explicit Content'),
-      '#type'          => 'select',
-      '#options'       => $this->getSourceOptions(),
-      '#default_value' => $this->getSetting('explicitContent'),
-      '#description'   => t('This property indicates that the audio track may contain explicit/graphic content. Default value: false.'),
-    ];
+    parent::getConfigFormSourceElement($form, $form_state, 'explicitContent');
+    $form['explicitContent']['#title'] = t('Explicit Content');
 
     return $form;
   }

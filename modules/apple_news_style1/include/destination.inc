@@ -152,13 +152,9 @@ class Applenewsstyle1DestinationHeaderImage extends ApplenewsDestination {
 
     $form = parent::getConfigForm($form, $form_state);
 
-    $form['file'] = [
-      '#title'         => t('File'),
-      '#required'      => TRUE,
-      '#type'          => 'select',
-      '#options'       => $this->getSourceOptions(),
-      '#default_value' => $this->getSetting('file'),
-    ];
+    parent::getConfigFormSourceElement($form, $form_state, 'file');
+    $form['file']['#title'] = t('File');
+    $form['file']['#required'] = TRUE;
 
     return $form;
   }
@@ -233,34 +229,18 @@ class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination
 
     $form = parent::getConfigForm($form, $form_state);
 
-    $form['title'] = [
-      '#title'         => t('Title'),
-      '#required'      => TRUE,
-      '#type'          => 'select',
-      '#options'       => $this->getSourceOptions(),
-      '#default_value' => $this->getSetting('title'),
-    ];
+    parent::getConfigFormSourceElement($form, $form_state, 'title');
+    $form['title']['#title'] = t('Title');
+    $form['title']['#required'] = TRUE;
 
-    $form['intro'] = [
-      '#title'         => t('Intro'),
-      '#type'          => 'select',
-      '#options'       => $this->getSourceOptions(),
-      '#default_value' => $this->getSetting('intro'),
-    ];
+    parent::getConfigFormSourceElement($form, $form_state, 'intro');
+    $form['intro']['#title'] = t('Intro');
 
-    $form['author'] = [
-      '#title'         => t('Author'),
-      '#type'          => 'select',
-      '#options'       => $this->getSourceOptions(),
-      '#default_value' => $this->getSetting('author'),
-    ];
+    parent::getConfigFormSourceElement($form, $form_state, 'author');
+    $form['author']['#title'] = t('Author');
 
-    $form['photographer'] = [
-      '#title'         => t('Photographer'),
-      '#type'          => 'select',
-      '#options'       => $this->getSourceOptions(),
-      '#default_value' => $this->getSetting('photographer'),
-    ];
+    parent::getConfigFormSourceElement($form, $form_state, 'photographer');
+    $form['photographer']['#title'] = t('Photographer');
 
     return $form;
   }
@@ -426,20 +406,12 @@ class Applenewsstyle1DestinationPullQuote extends ApplenewsDestination {
 
     $form = parent::getConfigForm($form, $form_state);
 
-    $form['image'] = [
-      '#title'         => t('Image'),
-      '#type'          => 'select',
-      '#options'       => $this->getSourceOptions(),
-      '#default_value' => $this->getSetting('image'),
-    ];
+    parent::getConfigFormSourceElement($form, $form_state, 'image');
+    $form['image']['#title'] = t('Image');
 
-    $form['quote'] = [
-      '#title'         => t('Quote'),
-      '#required'      => TRUE,
-      '#type'          => 'select',
-      '#options'       => $this->getSourceOptions(),
-      '#default_value' => $this->getSetting('quote'),
-    ];
+    parent::getConfigFormSourceElement($form, $form_state, 'quote');
+    $form['quote']['#title'] = t('Quote');
+    $form['quote']['#required'] = TRUE;
 
     $form['format'] = [
       '#title'         => t('Quote Format'),

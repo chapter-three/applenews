@@ -356,8 +356,13 @@ function apple_news_get_module_apis() {
       // different parameters in its constructor.
       // @see ApplenewsDestination::getSource()
       $reflection = apple_news_validate_class($source['class']);
-      if ($source['class'] == 'ApplenewsSourceEntity' ||
-          $reflection->isSubclassOf('ApplenewsSourceEntity')
+      if ($source['class'] == 'ApplenewsSourceValue' ||
+        $reflection->isSubclassOf('ApplenewsSourceValue')
+      ) {
+        $type = 'value';
+      }
+      elseif ($source['class'] == 'ApplenewsSourceEntity' ||
+        $reflection->isSubclassOf('ApplenewsSourceEntity')
       ) {
         $type = 'entity';
       }

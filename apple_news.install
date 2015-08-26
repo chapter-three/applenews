@@ -321,3 +321,29 @@ function apple_news_uninstall() {
   variable_del('apple_news_help_format');
   variable_del('apple_news_batch_export_status');
 }
+
+/**
+ * Source key format change.
+ */
+function apple_news_update_7100(&$sandbox) {
+  module_load_include('inc', 'apple_news');
+  $query = db_select('apple_news_status', 'a')
+    ->fields('a');
+  foreach ($query->execute() as $row) {
+    $export = unserialize($row->instance);
+    if (!$export instanceof ApplenewsExportConfigurable) {
+      continue;
+    }
+    /** @var ApplenewsExportConfigurable $export */
+    foreach ($export->getComponents() as $component) {
+      foreach ($component->settings as $key => &$value) {
+        if (!is_array($value) &&
+            substr($value, 0, 4) == '::::'
+        ) {
+          $value = ['source' => $value];
+        }
+      }
+    }
+    apple_news_export_save($export);
+  }
+}
