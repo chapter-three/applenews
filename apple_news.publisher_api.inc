@@ -97,6 +97,9 @@ function apple_news_get_section($section_id) {
 
 /**
  * Fetches an article.
+ *
+ * @return mixed
+ *   Response object, FALSE if not found, or NULL if error.
  */
 function apple_news_get_article($article_id) {
   $PublisherAPI = apple_news_publisher_api();
@@ -105,10 +108,21 @@ function apple_news_get_article($article_id) {
       'article_id' => $article_id
     ]
   );
-  if (!$response) {
+  if (empty($response)) {
     /** @var \Curl\Curl $client */
     watchdog('apple_news', $PublisherAPI->client->errorMessage, [], WATCHDOG_ERROR);
-    return FALSE;
+    return NULL;
+  }
+  elseif (!empty($response->errors)) {
+    foreach ($response->errors as $err) {
+      switch ($err->code) {
+        case 'NOT_FOUND':
+          return FALSE;
+        default:
+          watchdog('apple_news', $err->code, [], WATCHDOG_ERROR);
+          return NULL;
+      }
+    }
   }
   return $response;
 }

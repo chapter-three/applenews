@@ -223,7 +223,9 @@ class ApplenewsSourceField implements ApplenewsSourceInterface {
    */
   static public function attributes() {
     return [
-      'value' => 'Value',
+      'value' => 'Raw Value',
+      'value_sanitized' => 'Sanitized Value',
+      'value_decoded' => 'Decoded Value',
     ];
   }
 
@@ -290,6 +292,8 @@ class ApplenewsSourceField implements ApplenewsSourceInterface {
   public function export($value = NULL) {
     $return = [
       'value' => '',
+      'value_sanitized' => '',
+      'value_decoded' => '',
     ];
     if (!isset($value)) {
       try {
@@ -309,11 +313,20 @@ class ApplenewsSourceField implements ApplenewsSourceInterface {
     else {
       if ($value instanceof EntityValueWrapper) {
         /** @var EntityValueWrapper $value */
-        $return['value'] = $value->value(['decode' => FALSE]);
+        $return['value'] = $value->raw();
+        $return['value_sanitized'] = $value->value(array('sanitize' => TRUE));
+        $return['value_decoded'] = $value->value(array('decode' => TRUE));
       }
       else {
         /** @var EntityStructureWrapper $value */
-        $return['value'] = $value->value->value(['decode' => FALSE]);
+        try {
+          $return['value'] = $value->value->raw();
+        }
+        catch (EntityMetadataWrapperException $e) {
+          return $return;
+        }
+        $return['value_sanitized'] = $value->value->value(array('sanitize' => TRUE));
+        $return['value_decoded'] = $value->value->value(array('decode' => TRUE));
       }
     }
     return $return;
@@ -338,8 +351,22 @@ class ApplenewsSourceFieldFile extends ApplenewsSourceField {
    */
   static public function attributes() {
     return [
+      'uri' => 'URI',
       'url' => 'URL',
-      'file' => 'File',
+      'fid' => 'File ID',
+      'filename' => 'File Name',
+      'filesize' => 'File Size',
+      'status' => 'Status',
+      'filemime' => 'File Mime Type',
+      'timestamp' => 'Timestamp',
+      'alt' => 'Alt Text',
+      'title' => 'Title Text',
+      'width' => 'Width',
+      'height' => 'Height',
+      'owner' => [
+        'label' => 'File Owner',
+        'type' => 'user',
+      ],
     ];
   }
 
@@ -359,7 +386,18 @@ class ApplenewsSourceFieldFile extends ApplenewsSourceField {
   public function export($value = NULL) {
     $return = [
       'url' => '',
-      'file' => NULL,
+      'url' => '',
+      'fid' => '',
+      'filename' => '',
+      'filesize' => '',
+      'status' => '',
+      'filemime' => '',
+      'timestamp' => '',
+      'alt' => '',
+      'title' => '',
+      'width' => '',
+      'height' => '',
+      'owner' => '',
     ];
     if (!isset($value)) {
       try {
@@ -377,10 +415,24 @@ class ApplenewsSourceFieldFile extends ApplenewsSourceField {
       }
     }
     else {
-      $v = $value->value();
-      if (!empty($v['fid']) && $file = file_load($v['fid'])) {
-        $return['url'] = file_create_url($file->uri);
-        $return['file'] = $file;
+      $file = $value->value();
+      if (!empty($file['fid'])) {
+        $obj = file_load($file['fid']);
+        $return = [
+          'uri'       => $obj->uri,
+          'url'       => file_create_url($obj->uri),
+          'fid'       => $obj->fid,
+          'filename'  => $obj->filename,
+          'filesize'  => $obj->filesize,
+          'status'    => $obj->status,
+          'filemime'  => $obj->filemime,
+          'timestamp' => $obj->timestamp,
+          'alt'       => isset($file['alt']) ? $file['alt'] : NULL,
+          'title'     => isset($file['title']) ? $file['title'] : NULL,
+          'width'     => isset($file['width']) ? $file['width'] : NULL,
+          'height'    => isset($file['height']) ? $file['height'] : NULL,
+          'owner'     => $value->file->owner->value(),
+        ];
       }
     }
     return $return;

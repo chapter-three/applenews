@@ -9,9 +9,24 @@
  *
  * @see apple_news_settings_exports_form_submit()
  */
-function apple_news_batch_run_export($info, $export) {
+function apple_news_batch_run_export($info, $export, $op) {
 
   $operations = [];
+
+  switch ($op) {
+
+    case 'export-to-file' :
+      $op_function = 'apple_news_batch_preview_generate';
+      $op_finish = 'apple_news_batch_export_to_file_finished';
+      break;
+
+    case 'export' :
+    default :
+      $op_function = 'apple_news_batch_post';
+      $op_finish = 'apple_news_batch_run_export_finished';
+      break;
+
+  }
 
   $result = $export->query()->execute();
   $entity_types = $export->entityTypes();
@@ -22,12 +37,13 @@ function apple_news_batch_run_export($info, $export) {
         // Load entity object and pass it to the document generator.
         $entity = entity_load_single($entity_type, $entity_id);
         $operations[] = [
-          'apple_news_batch_post',
+          $op_function,
           [
             $info,
             $export,
             $entity_type,
-            $entity
+            $entity,
+            count($result[$entity_type])
           ],
         ];
       }
@@ -36,16 +52,16 @@ function apple_news_batch_run_export($info, $export) {
 
   return [
     'operations' => $operations,
-    'finished' => 'apple_news_batch_run_export_finished',
+    'finished' => $op_finish,
   ];
 }
 
 /**
- * Batch operation for bactch export.
+ * Batch operation for export.
  *
  * This is the function that is called on each operation in Apple News export.
  */
-function apple_news_batch_post($info, $export, $entity_type, $entity, &$context) {
+function apple_news_batch_post($info, $export, $entity_type, $entity, $total_count, &$context) {
   module_load_include('inc', 'apple_news');
 
   $export_settings = $export->settings;
@@ -63,6 +79,21 @@ function apple_news_batch_post($info, $export, $entity_type, $entity, &$context)
   if (!isset($context['results']['info']['count'])) {
     $context['results']['info']['count'] = 0;
   }
+
+  if (!isset($context['results']['info']['step_count'])) {
+    $context['results']['info']['step_count'] = 0;
+  }
+
+  $count = !empty($context['results']['info']['step_count']) ? $context['results']['info']['step_count'] : 0;
+
+  // Save batch progress status. Export status indicator visible in the Status column.
+  $status = [
+    'count'     => $count,
+    'starttime' => !empty($context['results']['info']['starttime']) ? $context['results']['info']['starttime'] : 0,
+    'status'    => 'in progress ' . $count . '/' . $total_count,
+  ];
+  $export_id = apple_news_export_id($info['module'], $info['machine_name']);
+  apple_news_batch_export_set_status($export_id, $status);
 
   // Successull request.
   $success = FALSE;
@@ -109,17 +140,9 @@ function apple_news_batch_post($info, $export, $entity_type, $entity, &$context)
       }
       if ($success) {
         $context['results']['info']['count']++;
-
-        // Save batch progress status.
-        $status = [
-          'count'     => !empty($context['results']['info']['count']) ? $context['results']['info']['count'] : 0,
-          'starttime' => !empty($context['results']['info']['starttime']) ? $context['results']['info']['starttime'] : 0,
-          'status'    => 'progress',
-        ];
-        $export_id = apple_news_export_id($info['module'], $info['machine_name']);
-        apple_news_batch_export_set_status($export_id, $status);
       }
     }
+    $context['results']['info']['step_count']++;
   }
 
 }
@@ -157,7 +180,7 @@ function apple_news_batch_run_export_finished($success, $results, $operations) {
         $status = [
           'count'     => $count,
           'starttime' => !empty($results['info']['starttime']) ? $results['info']['starttime'] : 0,
-          'endtime'   => $record['endtime'],
+          'endtime'   => REQUEST_TIME,
           'status'    => 'complete',
         ];
         $export_id = apple_news_export_id($results['info']['module'], $results['info']['machine_name']);
@@ -169,8 +192,24 @@ function apple_news_batch_run_export_finished($success, $results, $operations) {
           '@count entities were successfully posted to Apple News.'
         );
         drupal_set_message($plural_message);
+        $msg = t('Batch export: %count entities successfully posted to Apple News.');
+        $args = [
+          '%count'   => $count,
+        ];
+        watchdog('apple_news', $msg, $args, WATCHDOG_NOTICE);
       }
       else {
+
+        // Save batch progress status.
+        $status = [
+          'count'     => 0,
+          'starttime' => !empty($results['info']['starttime']) ? $results['info']['starttime'] : 0,
+          'endtime'   => REQUEST_TIME,
+          'status'    => 'complete',
+        ];
+        $export_id = apple_news_export_id($results['info']['module'], $results['info']['machine_name']);
+        apple_news_batch_export_set_status($export_id, $status);
+
         drupal_set_message(t('There is no content for export to Apple News.'));
       }
     }
@@ -181,7 +220,7 @@ function apple_news_batch_run_export_finished($success, $results, $operations) {
       'count'     => !empty($results['info']['count']) ? $results['info']['count'] : 0,
       'starttime' => !empty($results['info']['starttime']) ? $results['info']['starttime'] : 0,
       'endtime'   => REQUEST_TIME,
-      'status'    => 'error',
+      'status'    => 'error occured',
     ];
     $export_id = apple_news_export_id($results['info']['module'], $results['info']['machine_name']);
     apple_news_batch_export_set_status($export_id, $status);
@@ -200,49 +239,11 @@ function apple_news_batch_run_export_finished($success, $results, $operations) {
 }
 
 /**
- * Batch Apple News export to file.
- *
- * @see apple_news_settings_exports_form_submit()
- */
-function apple_news_batch_export_to_file($info, $export) {
-  module_load_include('inc', 'apple_news');
-
-  $operations = [];
-
-  $result = $export->query()->execute();
-  $entity_types = $export->entityTypes();
-
-  foreach ($entity_types as $entity_type) {
-    apple_news_export_dir_cleanup();
-    if (isset($result[$entity_type])) {
-      foreach ($result[$entity_type] as $entity_id => $object) {
-        // Load entity object and pass it to the document generator.
-        $entity = entity_load_single($entity_type, $entity_id);
-        $operations[] = [
-          'apple_news_batch_preview_generate',
-          [
-            $info,
-            $export,
-            $entity_type,
-            $entity
-          ],
-        ];
-      }
-    }
-  }
-
-  return [
-    'operations' => $operations,
-    'finished'   => 'apple_news_batch_export_to_file_finished',
-  ];
-}
-
-/**
- * Batch operation for bactch export.
+ * Batch operation for export preview.
  *
  * This is the function that is called on each operation in Export to File.
  */
-function apple_news_batch_preview_generate($info, $export, $entity_type, $entity, &$context) {
+function apple_news_batch_preview_generate($info, $export, $entity_type, $entity, $total_count, &$context) {
   module_load_include('inc', 'apple_news');
 
   if (!isset($context['results']['count'])) {

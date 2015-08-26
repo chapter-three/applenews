@@ -98,19 +98,18 @@ abstract class ApplenewsExport {
    */
   public function query() {
     $query = new EntityFieldQuery();
-    $query->addMetaData('account', user_load(1));
+    $query->entityCondition('entity_type', $this->entityType())
+      ->entityCondition('bundle', $this->bundles());
     return $query;
   }
 
   /**
-   * Entity types query() may match on.
+   * Entity type query() may match on.
    *
-   * @return array|NULL
-   *   List of entity types, or NULL for all.
+   * @return string
+   *   Entity type name.
    */
-  public function entityTypes() {
-    return NULL;
-  }
+  abstract public function entityType();
 
   /**
    * Entity bundles query() may match on.
@@ -123,24 +122,35 @@ abstract class ApplenewsExport {
   }
 
   /**
+   * Declare settins and defaults.
+   *
+   * @return array
+   *   Hash of valid keys for getSetting() and setSetting() to their default
+   *   value.
+   */
+  public function settings() {
+    return [
+      'channels' => [],
+      'sections' => [],
+    ];
+  }
+
+  /**
    * Get a user-configured setting, or default value.
    *
    * @param string $key
    *   Setting key.
    *
    * @return mixed
-   *   Set value, default, or NULL if undefined.
+   *   The set value, a default, or NULL if undefined.
    */
   public function getSetting($key) {
-    if (isset($this->settings[$key])) {
-      return $this->settings[$key];
-    }
-    switch ($key) {
-
-      case 'channels':
-      case 'sections':
-        return [];
-
+    $defaults = $this->settings();
+    if (array_key_exists($key, $defaults)) {
+      if (array_key_exists($key, $this->settings)) {
+        return $this->settings[$key];
+      }
+      return $defaults[$key];
     }
     return NULL;
   }
@@ -153,10 +163,17 @@ abstract class ApplenewsExport {
    * @param mixed $value
    *   Setting value.
    *
-   * @return $this
+   * @return ApplenewsExport|bool
+   *   $this for chaining, or FALSE if $key undefined.
    */
   public function setSetting($key, $value) {
-    $this->settings[$key] = $value;
+    $defaults = $this->settings();
+    if (array_key_exists($key, $defaults)) {
+      $this->settings[$key] = $value;
+    }
+    else {
+      return FALSE;
+    }
     return $this;
   }
 
@@ -185,7 +202,6 @@ abstract class ApplenewsExport {
           '#attributes' => [
             'data-channel-id' => $channel_id
           ],
-          '#required' => TRUE,
           '#default_value' => !empty($saved_channels[$channel_id]) ? TRUE : FALSE,
         ];
         foreach ($channel['sections'] as $section_id => $section) {
@@ -252,6 +268,15 @@ abstract class ApplenewsExport {
     // Save in two different arrays for now.
     $this->setSetting('channels', $channels)
       ->setSetting('sections', $sections);
+
+    foreach (array_keys($this->settings()) as $key) {
+      if ($key != 'channels' && $key != 'sections' &&
+          isset($form_state['values'][$key])
+      ) {
+        $this->setSetting($key, $form_state['values'][$key]);
+      }
+    }
+
   }
 
   /**
@@ -611,13 +636,17 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
       '#title'         => t('Layout'),
       'layout_columns' => [
         '#type'          => 'textfield',
+        '#required'      => TRUE,
         '#title'         => t('Columns'),
         '#default_value' => $this->getSetting('layout_columns'),
+        '#description'   => t('The number of columns this document was designed for.'),
       ],
       'layout_width'   => [
         '#type'          => 'textfield',
+        '#required'      => TRUE,
         '#title'         => t('Width'),
         '#default_value' => $this->getSetting('layout_width'),
+        '#description'   => t('The width (in points) this document was designed for. This property is used to calculate downscaling scenarios for smaller devices.'),
       ],
     ];
 
@@ -640,16 +669,9 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
       $destination = apple_news_get_destination($info['module'], $info['machine_name']);
       $destination->weight = (int) $components['_new']['weight'];
       $destination->pid = $components['_new']['pid'] == '' ? NULL : (int) $components['_new']['pid'];
-      $destination->id = max(array_keys($this->destinations['components'])) + 1;
+      $destination->id = empty($this->destinations['components']) ? 1 :
+        max(array_keys($this->destinations['components'])) + 1;
       $this->destinations['components'][$destination->id] = $destination;
-    }
-
-    foreach ([
-        'layout_columns',
-        'layout_width',
-      ] as $key
-    ) {
-      $this->setSetting($key, (int) $form_state['values'][$key]);
     }
 
     parent::submitConfigForm($form, $form_state);
@@ -679,19 +701,8 @@ class ApplenewsExportNode extends ApplenewsExportConfigurable {
   /**
    * {@inheritdoc}
    */
-  public function query() {
-    return parent::query()
-      ->entityCondition('entity_type', 'node')
-      ->entityCondition('bundle', $this->bundles)
-      ->propertyCondition('status', NODE_PUBLISHED)
-      ->entityOrderBy('entity_id');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function entityTypes() {
-    return ['node'];
+  public function entityType() {
+    return 'node';
   }
 
   /**

@@ -15,19 +15,8 @@ class ApplenewsExportArticle extends ApplenewsExport {
   /**
    * {@inheritdoc}
    */
-  public function query() {
-    return parent::query()
-      ->entityCondition('entity_type', 'node')
-      ->entityCondition('bundle', ['article'])
-      ->propertyCondition('status', NODE_PUBLISHED)
-      ->entityOrderBy('entity_id');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function entityTypes() {
-    return ['node'];
+  public function entityType() {
+    return 'node';
   }
 
   /**
@@ -40,17 +29,10 @@ class ApplenewsExportArticle extends ApplenewsExport {
   /**
    * {@inheritdoc}
    */
-  public function getSetting($key) {
-    if (isset($this->settings[$key])) {
-      return $this->settings[$key];
-    }
-    switch ($key) {
-
-      case 'layout':
-        return 'simple';
-
-    }
-    return parent::getSetting($key);
+  public function settings() {
+    return [
+      'layout' => 'simple',
+    ] + parent::settings();
   }
 
   /**
@@ -62,6 +44,7 @@ class ApplenewsExportArticle extends ApplenewsExport {
     $form['layout'] = [
       '#type'          => 'select',
       '#title'         => t('Layout'),
+      '#required'      => TRUE,
       '#default_value' => $this->getSetting('layout'),
       '#options'       => [
         'simple'              => t('Simple'),
@@ -77,14 +60,6 @@ class ApplenewsExportArticle extends ApplenewsExport {
    */
   public function validateConfigForm($form, &$form_state) {
     parent::validateConfigForm($form, $form_state);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitConfigForm($form, &$form_state) {
-    parent::submitConfigForm($form, $form_state);
-    $this->setSetting('layout', $form_state['values']['layout']);
   }
 
   /**
@@ -112,7 +87,8 @@ class ApplenewsExportArticle extends ApplenewsExport {
     // Body.
     $value = $wrapper->body->raw();
     $value = $value['value'];
-    $body = new Document\Components\Body(Document\Markdown::convert($value));
+    $markdown = new Document\Markdown();
+    $body = new Document\Components\Body($markdown->convert($value));
     $body->setFormat('markdown');
 
     // Image field.
@@ -235,19 +211,8 @@ class ApplenewsExportConfigurableArticle extends ApplenewsExportConfigurable {
   /**
    * {@inheritdoc}
    */
-  public function query() {
-    return parent::query()
-      ->entityCondition('entity_type', 'node')
-      ->entityCondition('bundle', ['article'])
-      ->propertyCondition('status', NODE_PUBLISHED)
-      ->entityOrderBy('entity_id');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function entityTypes() {
-    return ['node'];
+  public function entityType() {
+    return 'node';
   }
 
   /**

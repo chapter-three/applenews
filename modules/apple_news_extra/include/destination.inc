@@ -15,18 +15,17 @@ class ApplenewsExtraDestinationInstagram extends ApplenewsDestination {
   /**
    * {@inheritdoc}
    */
-  public function __construct() {
-    parent::__construct();
-    $this->settings += [
-      'source' => NULL,
-    ];
+  public function label() {
+    return t('Instagram') . ' (' . $this->id . ')';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function label() {
-    return t('Instagram') . ' (' . $this->id . ')';
+  public function settings() {
+    return [
+      'source' => NULL,
+    ] + parent::settings();
   }
 
   /**
@@ -37,11 +36,12 @@ class ApplenewsExtraDestinationInstagram extends ApplenewsDestination {
     $form = parent::getConfigForm($form, $form_state);
 
     $form['source'] = [
-      '#title' => t('Link'),
-      '#type' => 'select',
-      '#options' => $this->getSourceOptions(),
-      '#default_value' => $this->settings['source'],
-      '#description' => t('URL format <em>https://instagram.com/p/6Lg1xVkNjJ</em>'),
+      '#title'         => t('Link'),
+      '#required'      => TRUE,
+      '#type'          => 'select',
+      '#options'       => $this->getSourceOptions(),
+      '#default_value' => $this->getSetting('source'),
+      '#description'   => t('URL format <em>https://instagram.com/p/6Lg1xVkNjJ</em>'),
     ];
 
     return $form;
@@ -59,10 +59,12 @@ class ApplenewsExtraDestinationInstagram extends ApplenewsDestination {
   public function export($value) {
 
     list($key, $values) = $this->getSourceValues($value,
-      $this->settings['source']);
+      $this->getSetting('source'));
     $components = [];
     foreach ($values as $value) {
-      $components[] = new Components\Instagram($value[$key]);
+      if (!empty($value[$key])) {
+        $components[] = new Components\Instagram($value[$key]);
+      }
     }
     return $components;
   }
@@ -77,18 +79,17 @@ class ApplenewsExtraDestinationTweet extends ApplenewsDestination {
   /**
    * {@inheritdoc}
    */
-  public function __construct() {
-    parent::__construct();
-    $this->settings += [
-      'source' => NULL,
-    ];
+  public function label() {
+    return t('Tweet') . ' (' . $this->id . ')';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function label() {
-    return t('Tweet') . ' (' . $this->id . ')';
+  public function settings() {
+    return [
+      'source' => NULL,
+    ] + parent::settings();
   }
 
   /**
@@ -99,11 +100,12 @@ class ApplenewsExtraDestinationTweet extends ApplenewsDestination {
     $form = parent::getConfigForm($form, $form_state);
 
     $form['source'] = [
-      '#title' => t('Link'),
-      '#type' => 'select',
-      '#options' => $this->getSourceOptions(),
-      '#default_value' => $this->settings['source'],
-      '#description' => t('URL format <em>https://twitter.com/chapter_three/status/623547179563495424</em>'),
+      '#title'         => t('Link'),
+      '#required'      => TRUE,
+      '#type'          => 'select',
+      '#options'       => $this->getSourceOptions(),
+      '#default_value' => $this->getSetting('source'),
+      '#description'   => t('URL format <em>https://twitter.com/chapter_three/status/623547179563495424</em>'),
     ];
 
     return $form;
@@ -121,10 +123,12 @@ class ApplenewsExtraDestinationTweet extends ApplenewsDestination {
   public function export($value) {
 
     list($key, $values) = $this->getSourceValues($value,
-      $this->settings['source']);
+      $this->getSetting('source'));
     $components = [];
     foreach ($values as $value) {
-      $components[] = new Components\Tweet($value[$key]);
+      if (!empty($value[$key])) {
+        $components[] = new Components\Tweet($value[$key]);
+      }
     }
     return $components;
   }
@@ -139,19 +143,18 @@ class ApplenewsExtraDestinationEmbedWebVideo extends ApplenewsDestination {
   /**
    * {@inheritdoc}
    */
-  public function __construct() {
-    parent::__construct();
-    $this->settings += [
-      'video_url' => NULL,
-      'caption' => NULL,
-    ];
+  public function label() {
+    return t('Embed Web Video') . ' (' . $this->id . ')';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function label() {
-    return t('Embed Web Video') . ' (' . $this->id . ')';
+  public function settings() {
+    return [
+      'video_url' => NULL,
+      'caption'   => NULL,
+    ] + parent::settings();
   }
 
   /**
@@ -162,18 +165,20 @@ class ApplenewsExtraDestinationEmbedWebVideo extends ApplenewsDestination {
     $form = parent::getConfigForm($form, $form_state);
 
     $form['video_url'] = [
-      '#title' => t('Video URL'),
-      '#type' => 'select',
-      '#options' => $this->getSourceOptions(),
-      '#default_value' => $this->settings['video_url'],
-      '#description' => t('URL format <em>https://www.youtube.com/embed/r4DQKtYL62Q</em> (Youtube) or <em>https://player.vimeo.com/video/121450839</em> (Vimeo)'),
+      '#title'         => t('Video URL'),
+      '#required'      => TRUE,
+      '#type'          => 'select',
+      '#options'       => $this->getSourceOptions(),
+      '#default_value' => $this->getSetting('video_url'),
+      '#description'   => t('URL format <em>https://www.youtube.com/embed/r4DQKtYL62Q</em> (Youtube) or <em>https://player.vimeo.com/video/121450839</em> (Vimeo)'),
     ];
 
     $form['caption'] = [
-      '#title' => t('Caption'),
-      '#type' => 'select',
-      '#options' => $this->getSourceOptions(),
-      '#default_value' => $this->settings['caption'],
+      '#title'         => t('Caption'),
+      '#type'          => 'select',
+      '#options'       => $this->getSourceOptions(),
+      '#default_value' => $this->getSetting('caption'),
+      '#description'   => t('A caption that describes the content of the video. This text can be used by VoiceOver, or it can be shown when the video cannot be played.'),
     ];
 
     return $form;
@@ -190,14 +195,16 @@ class ApplenewsExtraDestinationEmbedWebVideo extends ApplenewsDestination {
    */
   public function export($value) {
     list($key, $values) = $this->getSourceValues($value,
-      $this->settings['video_url']);
+      $this->getSetting('video_url'));
     $components = [];
     foreach ($values as $value) {
-      $component = new Components\EmbedWebVideo($value[$key]);
-      if (!empty($value['caption'])) {
-        $component->setCaption($value['caption']);
+      if (!empty($value[$key])) {
+        $component = new Components\EmbedWebVideo($value[$key]);
+        if (!empty($value['caption'])) {
+          $component->setCaption($value['caption']);
+        }
+        $components[] = $component;
       }
-      $components[] = $component;
     }
     return $components;
   }
@@ -212,22 +219,22 @@ class ApplenewsExtraDestinationAudio extends ApplenewsDestination {
   /**
    * {@inheritdoc}
    */
-  public function __construct() {
-    parent::__construct();
-    $this->settings += [
-      'type' => NULL,
-      'url' => NULL,
-      'caption' => NULL,
-      'imageURL' => NULL,
-      'explicitContent' => FALSE,
-    ];
+  public function label() {
+    return t('Audio') . ' ' . $this->getSetting('type') .
+      ' (' . $this->id . ')';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function label() {
-    return t('Audio') . ' (' . (!empty($this->settings['type']) ? $this->settings['type'] : $this->id) . ')';
+  public function settings() {
+    return [
+      'type'            => 'music',
+      'url'             => NULL,
+      'caption'         => NULL,
+      'imageURL'        => NULL,
+      'explicitContent' => NULL,
+    ] + parent::settings();
   }
 
   /**
@@ -238,44 +245,51 @@ class ApplenewsExtraDestinationAudio extends ApplenewsDestination {
     $form = parent::getConfigForm($form, $form_state);
 
     $form['type'] = [
-      '#title' => t('Type'),
-      '#type' => 'select',
-      '#options' => [
-        'Music' => t('Music'),
+      '#title'         => t('Type'),
+      '#required'      => TRUE,
+      '#type'          => 'select',
+      '#options'       => [
+        'music' => t('Music'),
       ],
-      '#default_value' => !empty($this->settings['type']) ? $this->settings['type'] : 'Music',
+      '#default_value' => $this->getSetting('type'),
+      '#description'   => t('The type of audio file.'),
     ];
 
     $form['url'] = [
-      '#title' => t('Audio URL'),
-      '#type' => 'select',
-      '#options' => $this->getSourceOptions(),
-      '#default_value' => $this->settings['url'],
-      '#description' => t('The URL of an audio file beginning with http:// or https://. This component supports all audio formats that are supported by AVPlayer on iOS devices. Supported audio file types include: MP3, AAC, ALAC, HE-AAC. See Supported Audio Formats developer documentation.'),
+      '#title'         => t('Audio URL'),
+      '#required'      => TRUE,
+      '#type'          => 'select',
+      '#options'       => $this->getSourceOptions(),
+      '#default_value' => $this->getSetting('url'),
+      '#description'   => t('The URL of an audio file beginning with http:// or https://. This component supports all audio formats that are supported by AVPlayer on iOS devices. Supported audio file types include: MP3, AAC, ALAC, HE-AAC (For a full list of supported codecs, refer to the <a href="!link" target="_blank">Supported Audio Formats developer documentation</a>).',
+        [
+          '!link' => 'https://developer.apple.com/library/ios/documentation/AudioVideo/Conceptual/MultimediaPG/UsingAudio/UsingAudio.html#//apple_ref/doc/uid/TP40009767-CH2-SW48',
+        ]
+      ),
     ];
 
     $form['imageURL'] = [
-      '#title' => t('Image URL'),
-      '#type' => 'select',
-      '#options' => $this->getSourceOptions(),
-      '#default_value' => $this->settings['imageURL'],
-      '#description' => t('An optional URL to an image that should accompany the audio file, such as a still or a cover image. Supported image types include JPEG (with .jpg or .jpeg extension), PNG, and GIF. <strong>Important:</strong> This field sould be a <em>File</em> field.'),
+      '#title'         => t('Image URL'),
+      '#type'          => 'select',
+      '#options'       => $this->getSourceOptions(),
+      '#default_value' => $this->getSetting('imageURL'),
+      '#description'   => t('Use File field. An optional URL to an image that should accompany the audio file, such as a still or a cover image. Supported image types include JPEG (with .jpg or .jpeg extension), PNG, and GIF.'),
     ];
 
     $form['caption'] = [
-      '#title' => t('Caption'),
-      '#type' => 'select',
-      '#options' => $this->getSourceOptions(),
-      '#default_value' => $this->settings['caption'],
-      '#description' => t('A caption that describes the content of the audio file. This text can be used by VoiceOver, or it can be shown when the audio cannot be played.'),
+      '#title'         => t('Caption'),
+      '#type'          => 'select',
+      '#options'       => $this->getSourceOptions(),
+      '#default_value' => $this->getSetting('caption'),
+      '#description'   => t('A caption that describes the content of the audio file. This text can be used by VoiceOver, or it can be shown when the audio cannot be played.'),
     ];
 
     $form['explicitContent'] = [
-      '#title' => t('Explicit Content'),
-      '#type' => 'select',
-      '#options' => $this->getSourceOptions(),
-      '#default_value' => $this->settings['explicitContent'],
-      '#description' => t('This property indicates that the audio track may contain explicit/graphic content. Default value is False'),
+      '#title'         => t('Explicit Content'),
+      '#type'          => 'select',
+      '#options'       => $this->getSourceOptions(),
+      '#default_value' => $this->getSetting('explicitContent'),
+      '#description'   => t('This property indicates that the audio track may contain explicit/graphic content. Default value: false.'),
     ];
 
     return $form;
@@ -283,10 +297,6 @@ class ApplenewsExtraDestinationAudio extends ApplenewsDestination {
 
   /**
    * Exports to an Apple News Document container object.
-   *
-   * NOTE: This is a simple Audio field integration example.
-   *       This example doesn't include cases with multiple audio files
-   *       with multiple ExplicitContent and accessibilityCaption options
    *
    * @param mixed $value
    *   An array of children component objects.
@@ -296,31 +306,35 @@ class ApplenewsExtraDestinationAudio extends ApplenewsDestination {
    */
   public function export($value) {
     list($key, $values) = $this->getSourceValues($value,
-      $this->settings['url']);
-    list($imageURL_key, $imageURL_values) = $this->getSourceValues($value,
-      $this->settings['imageURL']);
+      $this->getSetting('url'));
+    list($imageurl_key, $imageurl_values) = $this->getSourceValues($value,
+      $this->getSetting('imageURL'));
     list($caption_key, $caption_value) = $this->getSourceValues($value,
-      $this->settings['caption']);
-    list($explicitContent_key, $explicitContent_value) = $this->getSourceValues($value,
-      $this->settings['explicitContent']);
+      $this->getSetting('caption'));
+    list($explicitcontent_key, $explicitcontent_value)
+      = $this->getSourceValues($value,
+        $this->getSetting('explicitContent'));
     $components = [];
-    foreach ($values as $value) {
-      $file = $value['file'];
-      if (is_object($file)) {
-        switch ($this->settings['type']) {
-          case 'Music' :
-          default :
-            $component = new Components\Music($value['url']);
-            if (!empty($caption_value[0]['value'])) {
-              $component->setCaption($caption_value[0]['value']);
+    foreach ($values as $delta => $value) {
+      if (!empty($value[$key])) {
+        switch ($this->getSetting('type')) {
+
+          case 'music':
+            $url = $this->export->addAsset($value[$key]);
+            $component = new Components\Music($url);
+            if (!empty($caption_value[$delta][$caption_key])) {
+              $component->setCaption($caption_value[$delta][$caption_key]);
             }
-            if (!empty($imageURL_values[0]['file']) && is_object($imageURL_values[0]['file'])) {
-              $component->setImageURL($this->export->addAsset($imageURL_values[0]['file']->uri));
+            if (!empty($imageurl_values[$delta][$imageurl_key]) &&
+                is_object($imageurl_values[$delta][$imageurl_key])
+            ) {
+              $component->setImageURL($this->export->addAsset($imageurl_values[$delta]['file']->uri));
             }
-            if (!empty($explicitContent_value[0]['value'])) {
+            if (!empty($explicitcontent_value[$delta][$explicitcontent_key])) {
               $component->setExplicitContent(TRUE);
             }
             break;
+
         }
         $components[] = $component;
       }

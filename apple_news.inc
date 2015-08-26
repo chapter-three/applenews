@@ -25,8 +25,8 @@ function apple_news_export_id_extract($id) {
  * @param ApplenewsExport $export
  *   Object as returned by apple_news_export_load() or apple_news_get_export().
  *
- * @return bool
- *   Success.
+ * @return ApplenewsExport|bool
+ *   The reloaded object if successful, otherwise FALSE.
  */
 function apple_news_export_save(ApplenewsExport $export) {
   $transaction = db_transaction();
@@ -50,7 +50,7 @@ function apple_news_export_save(ApplenewsExport $export) {
         ->condition('machine_name', $export->getMachineName())
         ->execute();
       if ($success) {
-        return TRUE;
+        return apple_news_get_export($export->getModule(), $export->getMachineName(), TRUE);
       }
       $transaction->rollback();
       watchdog('apple_news', $msg, $var, WATCHDOG_ERROR);
@@ -64,7 +64,7 @@ function apple_news_export_save(ApplenewsExport $export) {
           'instance'     => serialize($export),
         ])
         ->execute();
-      return TRUE;
+      return apple_news_get_export($export->getModule(), $export->getMachineName(), TRUE);
     }
   }
   catch (Exception $e) {
@@ -170,10 +170,16 @@ function apple_news_validate_class($class_name, $is_a = NULL) {
  *
  * @see apple_news_exports()
  */
-function apple_news_get_export($module, $machine_name) {
-  $exports = apple_news_exports();
+function apple_news_get_export($module, $machine_name, $reset = NULL) {
   $key = apple_news_export_id($module, $machine_name);
-  if (empty($exports[$key])) {
+
+  $exports = &drupal_static(__FUNCTION__);
+  if (!empty($exports[$key]) && empty($reset)) {
+    return $exports[$key];
+  }
+
+  $info = apple_news_exports();
+  if (empty($info[$key])) {
     $msg = t('No export %machine_name defined by %module.');
     $var = [
       '%machine_name' => $machine_name,
@@ -182,7 +188,7 @@ function apple_news_get_export($module, $machine_name) {
     watchdog('apple_news', $msg, $var, WATCHDOG_ERROR);
     return NULL;
   }
-  $info = $exports[$key];
+  $info = $info[$key];
   if (!class_exists($info['class'])) {
     $msg = 'No export class %class found.';
     $var = [
@@ -198,9 +204,15 @@ function apple_news_get_export($module, $machine_name) {
     ->condition('s.module', $module)
     ->condition('s.machine_name', $machine_name);
   if ($row = $query->execute()->fetchObject()) {
-    if ($export = unserialize($row->instance)) {
-      return $export;
+    if ($exports[$key] = unserialize($row->instance)) {
+      return $exports[$key];
     }
+    $msg = t('Export class %class could not be unserialized');
+    $var = [
+      '%class'   => $info['class'],
+    ];
+    watchdog('apple_news', $msg, $var, WATCHDOG_ERROR);
+    return NULL;
   }
 
   // Instantiate new export.
@@ -208,7 +220,8 @@ function apple_news_get_export($module, $machine_name) {
     if (!isset($info['arguments']) || !is_array($info['arguments'])) {
       $info['arguments'] = [];
     }
-    return new $info['class']($module, $machine_name, $info['arguments']);
+    $exports[$key] = new $info['class']($module, $machine_name, $info['arguments']);
+    return $exports[$key];
   }
   catch (Exception $e) {
     $msg = t('Export class %class could not be constructed: %message');
@@ -217,8 +230,8 @@ function apple_news_get_export($module, $machine_name) {
       '%message' => $e->getMessage(),
     ];
     watchdog('apple_news', $msg, $var, WATCHDOG_ERROR);
-    return NULL;
   }
+  return NULL;
 }
 
 /**
@@ -257,6 +270,15 @@ function apple_news_exports($reset = NULL) {
     }
   }
   return $exports;
+}
+
+/**
+ * Gets registered and enabled exports.
+ */
+function apple_news_exports_enabled($reset = NULL) {
+  return array_filter(apple_news_exports($reset), function($info) {
+    return !empty($info['#enabled']);
+  });
 }
 
 /**
@@ -389,25 +411,59 @@ function apple_news_get_module_apis() {
 }
 
 /**
- * Load export object for individual entity.
+ * Find export for an entity.
+ *
+ * @return ApplenewsExport|NULL
+ *   The configured export object, or NULL if none configured.
  */
-function apple_news_entity_export($entity_type, $entity_id, $revision_id) {
-  foreach (apple_news_exports() as $info) {
-    if (!empty($info['#enabled'])) {
-      $entity = entity_load_single($entity_type, $entity_id);
-      $entity_wrapper = entity_metadata_wrapper($entity_type, $entity);
-      $export = apple_news_get_export($info['module'], $info['machine_name']);
-      if (in_array($entity_type, $export->entityTypes()) && in_array($entity_wrapper->getBundle(), $export->bundles())) {
-        $document = $export->export($entity);
-        $data = [
-          'json'  => $document->json(),
-          'files' => $export->getAssets(),
-        ];
-        return $data;
-      }
+function apple_news_entity_get_export($entity_type, $entity_id) {
+  // Has the entity been assigned an export?
+  $post = new ApplenewsDatabase();
+  $post->setPostId($entity_type, $entity_id, $entity_id);
+  if ($article = $post->getArticle()) {
+    $export = apple_news_get_export($article['module'], $article['machine_name']);
+    if ($export) {
+      return $export;
     }
   }
-  return FALSE;
+  // Grab first matching export.
+  foreach (apple_news_exports() as $info) {
+    if (!$info['#enabled']) {
+      continue;
+    }
+    $export = apple_news_get_export($info['module'], $info['machine_name']);
+    if (apple_news_entity_export_valid($export, $entity_type, $entity_id)) {
+      return $export;
+    }
+  }
+  // No matching export.
+  return NULL;
+}
+
+/**
+ * Determine if an export is valid for an entity.
+ */
+function apple_news_entity_export_valid(ApplenewsExport $export, $entity_type, $entity_id) {
+  $query = $export->query();
+  $query->entityCondition('entity_id', $entity_id);
+  $result = $query->execute();
+  return isset($result[$entity_type][$entity_id]);
+}
+
+/**
+ * Export an individual drupal entity.
+ *
+ * @return array
+ *   With keys:
+ *   - json: The apple news document JSON.
+ *   - files: Array of asset paths keyed on Apple Document URL.
+ */
+function apple_news_entity_export(ApplenewsExport $export, $entity_type, $entity_id) {
+  $entity = entity_load_single($entity_type, $entity_id);
+  return [
+    'json'  => $export->export($entity)->json(),
+    'files' => $export->getAssets(),
+  ];
 }
 
 /**
@@ -420,7 +476,7 @@ function apple_news_batch_export_set_status($name, $info) {
 }
 
 /**
- * Get export status
+ * Get export status.
  */
 function apple_news_batch_export_get_status($batch_name) {
   $status = variable_get('apple_news_batch_export_status', []);
@@ -444,7 +500,7 @@ function apple_news_post($channel_id, $entity_type, $entity_wrapper, $data) {
   // Make POST request to Apple News via PublisherAPI.
   $response = apple_news_post_article($channel_id, $data);
   // If successful request.
-  if (!isset($response->errors)) {
+  if (!isset($response->errors) && isset($response->data->id)) {
     // Invoke Apple News insert hooks.
     module_invoke_all('apple_news_insert', $response->data->id, $response->data->revision, $channel_id, $entity_wrapper, $entity_type, $data);
     $sections = [];
@@ -478,13 +534,18 @@ function apple_news_post($channel_id, $entity_type, $entity_wrapper, $data) {
         ]
       ],
     ];
-    module_load_include('inc', 'apple_news', 'include/db');
-    $post = new ChapterThree\AppleNews\Database\ApplenewsDatabase();
+    $post = new ApplenewsDatabase();
     $post->setEntityId($entity_wrapper->getIdentifier());
     $post->setEntityRevisionId($entity_wrapper->getIdentifier());
     $post->setEntityType($entity_type);
     $post->insert($record);
     return TRUE;
+  }
+  else {
+    watchdog('apple_news', "Could not post an Apple News article @id",
+      ['@id' => $entity_wrapper->getIdentifier()],
+      WATCHDOG_NOTICE
+    );
   }
   return FALSE;
 }
@@ -508,16 +569,29 @@ function apple_news_update($channel_id, $entity_type, $entity_wrapper, $data) {
 
   // Make sure article exists.
   if (!empty($article->article_id)) {
+
     // Add metadata.
     if (!empty($data['metadata'])) {
-      $data['metadata'] = json_decode($data['metadata'], true);
+      $data['metadata'] = json_decode($data['metadata'], TRUE);
     }
-    $data['metadata']['data']['revision'] = $article->article_revision_id;
+
+    // Apple News Revision ID. Required in order to be able to update articles.
+    if (!empty($data['override_revision']) &&
+        $apple_news_article = apple_news_get_article($article->article_id)
+    ) {
+      // This will override previous revisions.
+      $apple_news_revision_id = $apple_news_article->data->revision;
+    }
+    else {
+      $apple_news_revision_id = $article->article_revision_id;
+    }
+
+    $data['metadata']['data']['revision'] = $apple_news_revision_id;
     $data['metadata'] = json_encode($data['metadata']);
     // Make POST request to Apple News via PublisherAPI.
     $response = apple_news_update_article($article->article_id, $data);
     // If successful request.
-    if (!isset($response->errors)) {
+    if (!isset($response->errors) && isset($response->data->id)) {
       // Invoke Apple News update hooks.
       module_invoke_all('apple_news_update', $article->article_id, $article->article_revision_id, $channel_id, $entity_wrapper, $entity_type, $data);
       $sections = [];
@@ -551,11 +625,19 @@ function apple_news_update($channel_id, $entity_type, $entity_wrapper, $data) {
           ]
         ],
       ];
-      module_load_include('inc', 'apple_news', 'include/db');
-      $post = new ChapterThree\AppleNews\Database\ApplenewsDatabase();
+      $post = new ApplenewsDatabase();
       $post->setPostId($entity_type, $entity_wrapper->getIdentifier(), $entity_wrapper->getIdentifier());
       $post->update($record);
       return TRUE;
+    }
+    else {
+      watchdog('apple_news', "Could not update Apple News article @id (entity ID: @etid). You could try delete the article from Apple News and re-publish it.",
+        [
+          '@id'   => $article->article_id,
+          '@etid' => $entity_wrapper->getIdentifier(),
+        ],
+        WATCHDOG_NOTICE
+      );
     }
   }
   else {
@@ -570,71 +652,51 @@ function apple_news_update($channel_id, $entity_type, $entity_wrapper, $data) {
  */
 function apple_news_delete($channel_id, $entity_type, $entity_wrapper) {
   module_load_include('inc', 'apple_news', 'apple_news.publisher_api');
+
+  // Get article ID.
   $article_id = db_select('apple_news_entities', 'e')
     ->fields('e', ['article_id'])
     ->condition('entity_type', $entity_type)
     ->condition('entity_id', $entity_wrapper->getIdentifier())
     ->execute()
     ->fetchField();
+
   // Make DELETE request to Apple News via PublisherAPI.
   $response = apple_news_delete_article($article_id);
   // If successful request.
   if (empty($response)) {
     // Invoke Apple News delete hooks.
     module_invoke_all('apple_news_delete', $article_id, $channel_id, $entity_wrapper, $entity_type);
-    module_load_include('inc', 'apple_news', 'include/db');
-    $post = new ChapterThree\AppleNews\Database\ApplenewsDatabase();
+    $post = new ApplenewsDatabase();
     $post->setPostId($entity_type, $entity_wrapper->getIdentifier(), $entity_wrapper->getIdentifier());
     $post->delete();
-    //$post->deleteByEntity($entity_wrapper, $entity_type);
+    // $post->deleteByEntity($entity_wrapper, $entity_type);
+    watchdog('apple_news', "Entity ID @id was removed from Apple News",
+      ['@id' => $entity_wrapper->getIdentifier()],
+      WATCHDOG_INFO
+    );
     return TRUE;
   }
   return FALSE;
 }
 
 /**
- * Get entity types and bundle names that are available for Apple News export.
- *
- * @deprecated
- *
- * @see apple_news_get_source_options()
- */
-function apple_news_get_entity_types() {
-  $result = [];
-  // Get all available Apple News exportable entity types and bundles.
-  foreach (apple_news_exports() as $info) {
-    // Load export object.
-    $export = apple_news_get_export($info['module'], $info['machine_name']);
-    $result[apple_news_export_id($info['module'], $info['machine_name'])] = 
-    [
-      'module'        => $info['module'],
-      'machine_name'  => $info['machine_name'],
-      'enabled'       => $export->enabled,
-      'entity_types'  => $export->entityTypes(),
-      'bundles'       => $export->bundles(),
-      '#export'       => $export,
-    ];
-  }
-  return $result;
-}
-
-/**
  * Perform operations on an entity.
  *
- * @param string $op
+ * @param string $operation
  *   Entity operation (insert/update/delete).
  * @param string $channel_id
  *   Apple News channel ID.
  * @param object $entity
  *   Entity object.
- * @param string $type
+ * @param string $entity_type
  *   Entity type.
  */
-function apple_news_op($op, $channel_id, $entity, $entity_type, $export = NULL, array $settings = []) {
+function apple_news_op($operation, $channel_id, $entity, $entity_type, $export = NULL, array $settings = []) {
   $result = FALSE;
   $data = [];
   // Entity object wrapper.
-  $wrapper = entity_metadata_wrapper($entity_type, $entity);
+  $entity_wrapper = entity_metadata_wrapper($entity_type, $entity);
   // Generate Apple News Document formatted JSON string.
   if (is_object($export)) {
     $document = $export->export($entity);
@@ -644,20 +706,28 @@ function apple_news_op($op, $channel_id, $entity, $entity_type, $export = NULL, 
       $export->settings = array_merge($export->settings, $settings);
     }
     $data = [
-      'json'     => $document->json(),
-      'files'    => $export->getAssets(),
-      'metadata' => !empty($settings['metadata']) ? json_encode($settings['metadata']) : '',
+      'json'              => $document->json(),
+      'files'             => $export->getAssets(),
+      'metadata'          => !empty($settings['metadata']) ? json_encode($settings['metadata']) : '',
+      'override_revision' => !empty($settings['override_revision']) ? TRUE : FALSE,
     ];
   }
 
-  if ($op == 'insert') {
-    $result = apple_news_post($channel_id, $entity_type, $wrapper, $data);
-  }
-  elseif ($op == 'update') {
-    $result = apple_news_update($channel_id, $entity_type, $wrapper, $data);
-  }
-  elseif ($op == 'delete') {
-    $result = apple_news_delete($channel_id, $entity_type, $wrapper);
+  switch ($operation) {
+    case 'insert' :
+     // Create new article in Apple News.
+      $result = apple_news_post($channel_id, $entity_type, $entity_wrapper, $data);
+      break;
+
+    case 'update' :
+      // Update existing Apple News article.
+      $result = apple_news_update($channel_id, $entity_type, $entity_wrapper, $data);
+      break;
+
+    case 'delete' :
+      // Delete article from Apple News.
+      $result = apple_news_delete($channel_id, $entity_type, $entity_wrapper);
+      break;
   }
   return $result;
 }
@@ -721,10 +791,11 @@ function apple_news_channels($grouped = FALSE) {
 }
 
 /**
- * Remove data related to $channel_id
+ * Remove data related to $channel_id.
+ *
  * Use this when removing channel ID from settings.
  *
- * @see apple_news.admin.inc.
+ * @see apple_news.admin.inc
  */
 function apple_news_cleanup_data(stdClass $channel) {
 
@@ -734,11 +805,11 @@ function apple_news_cleanup_data(stdClass $channel) {
     ->execute();
   db_delete('cache_apple_news')
     ->condition('cid', 'sections_' . $channel->id)
-    ->execute();// Delete settings when channel ID removed.
-    $result = db_select('apple_news_status', 's')
+    ->execute();
+  // Delete settings when channel ID removed.
+  $result = db_select('apple_news_status', 's')
       ->fields('s')
       ->execute();
-
   foreach ($result as $row) {
     $enabled = $row->enabled;
     $instance = unserialize($row->instance);
@@ -778,24 +849,22 @@ function apple_news_cleanup_data(stdClass $channel) {
 /**
  * Get Apple News sections.
  *
- * @see apple_news_get_sections().
+ * @see apple_news_get_sections()
  */
 function apple_news_sections($channel_id) {
-  $sections = &drupal_static(__FUNCTION__);
-  if (!isset($sections)) {
-    if ($cache = cache_get('sections_' . $channel_id, 'cache_apple_news')) {
-      $sections = $cache->data;
-    }
-    else {
-      module_load_include('inc', 'apple_news', 'apple_news.publisher_api');
-      $response = apple_news_get_sections($channel_id);
-      if (!empty($response->data)) {
-        foreach ($response->data as $section) {
-          $sections[] = $section;
-        }
+  $sections = [];
+  if ($cache = cache_get('sections_' . $channel_id, 'cache_apple_news')) {
+    $sections = $cache->data;
+  }
+  else {
+    module_load_include('inc', 'apple_news', 'apple_news.publisher_api');
+    $response = apple_news_get_sections($channel_id);
+    if (!empty($response->data)) {
+      foreach ($response->data as $section) {
+        $sections[] = $section;
       }
-      cache_set('sections_' . $channel_id, $sections, 'cache_apple_news');
     }
+    cache_set('sections_' . $channel_id, $sections, 'cache_apple_news');
   }
   return $sections;
 }
@@ -816,26 +885,23 @@ function apple_news_section($section_id) {
 /**
  * Get Apple News channels.
  *
- * @see apple_news_get_sections().
+ * @see apple_news_get_sections()
  */
 function apple_news_channel($channel_id) {
-  $channel = &drupal_static(__FUNCTION__);
-  if (!isset($channel)) {
-    if ($cache = cache_get('channel_' . $channel_id, 'cache_apple_news')) {
-      $channel = $cache->data;
+  if ($cache = cache_get('channel_' . $channel_id, 'cache_apple_news')) {
+    $channel = $cache->data;
+  }
+  else {
+    module_load_include('inc', 'apple_news', 'apple_news.publisher_api');
+    $response = apple_news_get_channel($channel_id);
+    if (!isset($response->errors)) {
+      if (!empty($response->data)) {
+        $channel = $response->data;
+        cache_set('channel_' . $channel_id, $channel, 'cache_apple_news');
+      }
     }
     else {
-      module_load_include('inc', 'apple_news', 'apple_news.publisher_api');
-      $response = apple_news_get_channel($channel_id);
-      if (!isset($response->errors)) {
-        if (!empty($response->data)) {
-          $channel = $response->data;
-          cache_set('channel_' . $channel_id, $channel, 'cache_apple_news');
-        }
-      }
-      else {
-        return $response;
-      }
+      return $response;
     }
   }
   return $channel;
@@ -853,8 +919,7 @@ function apple_news_channel($channel_id) {
  *   Entity objects.
  */
 function apple_news_load_article_channels($entity, $type) {
-  module_load_include('inc', 'apple_news', 'include/db');
-  $post = new ChapterThree\AppleNews\Database\ApplenewsDatabase();
+  $post = new ApplenewsDatabase();
   $entity_wrapper = entity_metadata_wrapper($type, $entity);
   $post->setPostId($type, $entity_wrapper->getIdentifier(), $entity_wrapper->getIdentifier());
   $channels_all = apple_news_channels();
@@ -881,8 +946,7 @@ function apple_news_load_article_channels($entity, $type) {
  *   Export log record or FALSE if not results.
  */
 function apple_news_is_exported($channel_id, $entity_wrapper, $entity_type) {
-  module_load_include('inc', 'apple_news', 'include/db');
-  $post = new ChapterThree\AppleNews\Database\ApplenewsDatabase();
+  $post = new ApplenewsDatabase();
   $post->setPostId($entity_type, $entity_wrapper->getIdentifier(), $entity_wrapper->getIdentifier());
   $post->setChannelId($channel_id);
   $article = $post->getArticle();
@@ -895,7 +959,8 @@ function apple_news_is_exported($channel_id, $entity_wrapper, $entity_type) {
 /**
  * Get section URL.
  *
- * @return URL.
+ * @return string
+ *   URL
  */
 function apple_news_section_url($section_id) {
   $url = variable_get('apple_news_variable_api_endpoint', FALSE);
@@ -909,8 +974,7 @@ function apple_news_section_url($section_id) {
  * Export to the Apple News previewable format documents.
  */
 function apple_news_export_to_file($entity_id, $entity_ids = [], $filename = NULL, $entity_archive = FALSE, $data = []) {
-  module_load_include('inc', 'apple_news', 'include/preview');
-  $preview = new ChapterThree\AppleNews\Preview\ApplenewsPreview($entity_id, $filename, $entity_archive, $data);
+  $preview = new ApplenewsPreview($entity_id, $filename, $entity_archive, $data);
   if (!empty($entity_id)) {
     $preview->toFile();
     $preview->archive($entity_ids);
@@ -926,8 +990,7 @@ function apple_news_export_to_file($entity_id, $entity_ids = [], $filename = NUL
  * Get file archive path.
  */
 function apple_news_export_file_path($entity_id) {
-  module_load_include('inc', 'apple_news', 'include/preview');
-  $preview = new ChapterThree\AppleNews\Preview\ApplenewsPreview(NULL, '', FALSE, []);
+  $preview = new ApplenewsPreview(NULL, '', FALSE, []);
   return $preview->getEntityArchivePath($entity_id);
 }
 
@@ -935,8 +998,7 @@ function apple_news_export_file_path($entity_id) {
  * Get file archive path.
  */
 function apple_news_export_file_delete($entity_id) {
-  module_load_include('inc', 'apple_news', 'include/preview');
-  $preview = new ChapterThree\AppleNews\Preview\ApplenewsPreview(NULL, '', FALSE, []);
+  $preview = new ApplenewsPreview(NULL, '', FALSE, []);
   return $preview->entityArchiveDelete($entity_id);
 }
 
@@ -944,7 +1006,107 @@ function apple_news_export_file_delete($entity_id) {
  * Remove all temporary files.
  */
 function apple_news_export_dir_cleanup($entity_ids = []) {
-  module_load_include('inc', 'apple_news', 'include/preview');
-  $preview = new ChapterThree\AppleNews\Preview\ApplenewsPreview(NULL, '', FALSE, []);
+  $preview = new ApplenewsPreview(NULL, '', FALSE, []);
   $preview->removeDirectories($entity_ids);
+}
+
+/**
+ * Check if all required libraries installed.
+ */
+function apple_news_libraries_installed() {
+
+  $libraries = [
+    'php-curl-class' => CURL_SUPPORTED_VERSION,
+    'AppleNews'      => APPLE_NEWS_SUPPORTED_VERSION
+  ];
+
+  $count_installed = 0;
+
+  foreach ($libraries as $name => $version) {
+    if (($library = libraries_detect($name)) &&
+        !empty($library['installed']) &&
+        $library['version'] == $version
+    ) {
+      $count_installed++;
+    }
+  }
+
+  if ($count_installed != count($libraries)) {
+    return [
+      'info' => [
+        '#markup' => t('Please install all required PHP libraries. See <a href="!link" target="_blank">README</a> file for instructions.',
+          [
+            '!link' => url(drupal_get_path('module', 'apple_news') . '/README.md'),
+          ]
+        ),
+      ]
+    ];
+  }
+
+  return [];
+
+}
+
+/**
+ * Library autoinstall function (downloads and unzips library files).
+ */
+function apple_news_autoinstall_libraries() {
+
+  $libraries = [
+    'AppleNews' => [
+      'version' => APPLE_NEWS_SUPPORTED_VERSION,
+      'path'    => 'sites/all/libraries/AppleNews',
+    ],
+    'php-curl-class' => [
+      'version' => CURL_SUPPORTED_VERSION,
+      'path'    => 'sites/all/libraries/php-curl-class',
+    ],
+  ];
+
+  foreach ($libraries as $name => $info) {
+    if ($library = libraries_load($name)) {
+      $lib_path = $info['path'];
+      $lib_all_realpath = DRUPAL_ROOT . '/sites/all/libraries';
+      $lib_realpath = DRUPAL_ROOT . '/' . $lib_path;
+      $lib_version_realpath = $lib_realpath . '-' . $info['version'];
+      $download_url = $library['download url'];
+
+      // Get remote library file.
+      $request = drupal_http_request($download_url);
+      // If file exists.
+      if ($request->code == 200) {
+        if (!is_dir($lib_version_realpath)) {
+          // Get archive basename.
+          $filename = drupal_basename($download_url);
+          $filepath = $lib_all_realpath . '/' . $filename;
+          // Save remote archive file locally.
+          file_unmanaged_save_data($request->data, $filepath);
+          // Unzip the file.
+          $zip = new \ZipArchive();
+          if ($zip->open($filepath) === TRUE) {
+            // Extract library archive file.
+            $zip->extractTo($lib_all_realpath);
+            // Delete the archive file.
+            file_unmanaged_delete_recursive($lib_all_realpath . '/' . $filename);
+            // Rename unzipped directory to match the lib path.
+            if (!rename($lib_version_realpath, $lib_realpath)) {
+              // Remove original PHP library directory.
+              file_unmanaged_delete_recursive($lib_version_realpath);
+            }
+            // Display message in command line.
+            if (drupal_is_cli() && function_exists('drush_log')) {
+              drush_log($library['name'] . ' successfully downloaded and unzipped.', 'ok');
+            }
+          }
+          else {
+            // Display message in command line.
+            if (drupal_is_cli() && function_exists('drush_log')) {
+              drush_log('Failed to unzip ' . $library['name'] . '.', 'warning');
+            }
+          }
+          $zip->close();
+        }
+      }
+    }
+  }
 }

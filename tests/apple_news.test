@@ -16,11 +16,21 @@ abstract class ApplenewsWebTestCase extends DrupalWebTestCase {
 
   protected $watchdogSeverityLevel = WATCHDOG_WARNING;
 
+  protected $admin_user;
+
   /**
    * {@inheritdoc}
    */
   public function setUp(array $modules = []) {
     parent::setUp(array_merge(['apple_news', 'dblog'], $modules));
+    $this->admin_user = $this->drupalCreateUser([
+      'access content',
+      'access administration pages',
+      'administer site configuration', 'administer content types', 'administer nodes',
+      'create article content', 'edit any article content', 'delete any article content',
+      'administer apple news',
+    ]);
+    $this->drupalLogin($this->admin_user);
   }
 
   /**
@@ -82,13 +92,13 @@ class ApplenewsExportTestCase extends ApplenewsWebTestCase {
         'title' => $this->randomName(32),
         'body' => $this->randomName(64),
         'image' => $file,
+        'image_title' => $this->randomName(32),
       ],
       [
         '_desc' => 'page',
         'type' => 'page',
         'title' => $this->randomName(32),
         'body' => $this->randomName(64),
-        'image' => $file,
       ],
     ];
 
@@ -101,31 +111,77 @@ class ApplenewsExportTestCase extends ApplenewsWebTestCase {
         'body' => [LANGUAGE_NONE => [['value' => $content['body']]]],
       ];
       if (isset($content['image'])) {
-        $settings['field_image'] = [LANGUAGE_NONE => [['fid' => $content['image']->fid]]];
+        $settings['field_image'] = [LANGUAGE_NONE => [[
+          'fid' => $content['image']->fid,
+          'title' => $content['image_title'],
+        ]]];
       }
       $node = $this->drupalCreateNode($settings);
       $this->assert($node->nid > 0, "Node \"${content['_desc']}\" created.");
       $map[$node->nid] = $i;
     }
 
-    // Load export object.
+    // Enable, configure export.
+    $this->drupalPost(
+      'admin/config/content/apple-news/exports/apple_news::node/edit',
+      [
+        'enabled' => TRUE,
+        'bundles[]' => ['article', 'page'],
+      ],
+      t('Save changes')
+    );
     /** @var ApplenewsExportNode $export */
     $export = apple_news_get_export('apple_news', 'node');
     $this->assert($export instanceof ApplenewsExportNode,
       "Export object loaded.");
-
-    // Enable export.
-    $export->enabled = TRUE;
-    $export->bundles = ['article', 'page'];
-    $export->destinations['components'][0] = new ApplenewsDestinationBody();
-    $export->destinations['components'][0]->settings = [
-      'text' => '::::apple_news::field::node::body::value',
-      'format' => 'markdown',
-    ];
-    $export->destinations['components'][0]->weight = '50';
-    $export->destinations['components'][0]->id = 1;
-    $result = apple_news_export_save($export);
-    $this->assert($result, 'Export enabled.');
+    // Add component.
+    $this->drupalPost(
+      'admin/config/content/apple-news/exports/apple_news::node/edit',
+      [
+        'components[_new][destination]' => 'apple_news::body',
+        'components[_new][weight]' => '1',
+      ],
+      t('Save changes')
+    );
+    // Configure component.
+    $this->drupalPost(
+      'admin/config/content/apple-news/exports/apple_news::node/components/1',
+      [
+        'text' => '::::apple_news::field::node::body::value',
+      ],
+      t('Save changes')
+    );
+    /** @var ApplenewsExportNode $export */
+    $export = apple_news_get_export('apple_news', 'node', TRUE);
+    /** @var ApplenewsDestinationBodyPhoto $component */
+    $component = $export->getComponent(1);
+    $this->assert($component instanceof ApplenewsDestinationBody,
+      "Destination object loaded.");
+    // Add component.
+    $this->drupalPost(
+      'admin/config/content/apple-news/exports/apple_news::node/edit',
+      [
+        'components[_new][destination]' => 'apple_news::scalable_image',
+        'components[_new][weight]' => '2',
+      ],
+      t('Save changes')
+    );
+    // Configure component.
+    $this->drupalPost(
+      'admin/config/content/apple-news/exports/apple_news::node/components/2',
+      [
+        'file' => '::::apple_news::file::node::field_image::uri',
+        'caption' => '::::apple_news::file::node::field_image::title',
+        'type' => 'photo',
+      ],
+      t('Save changes')
+    );
+    /** @var ApplenewsExportNode $export */
+    $export = apple_news_get_export('apple_news', 'node', TRUE);
+    /** @var ApplenewsDestinationBodyPhoto $component */
+    $component = $export->getComponent(2);
+    $this->assert($component instanceof ApplenewsDestinationScalableImage,
+      "Destination object loaded.");
 
     // Run query to get source ids.
     /** @var EntityFieldQuery $query */
@@ -159,9 +215,26 @@ class ApplenewsExportTestCase extends ApplenewsWebTestCase {
         'Export body component role.');
       $this->assertEqual('markdown', $item->format,
         'Export body component format.');
-      $expected = \ChapterThree\AppleNews\Document\Markdown::convert($content['body']);
+      $markdown = new \ChapterThree\AppleNews\Document\Markdown();
+      $expected = $markdown->convert($content['body']);
       $this->assertEqual(trim($expected), trim($item->text),
         'Export body component text -> component 1 text.');
+
+      if (isset($content['image'])) {
+        $item = $data->components[1];
+        $this->assertEqual('photo', $item->role,
+          'Export scalable_image component role.');
+        $this->assertEqual(drupal_realpath($file->uri),
+          @$export->getAssets()[$item->URL],
+          'Export image -> component 2 image URL.');
+        $this->assertEqual($content['image_title'],
+          $item->caption,
+          'Export image -> component 2 image caption.');
+      }
+      else {
+        $this->assertEqual(1, count($data->components),
+          'Export image missing -> no component');
+      }
 
     }
   }
@@ -185,8 +258,12 @@ class ApplenewsExportTestCase extends ApplenewsWebTestCase {
         'title' => $this->randomName(32),
         'body' => <<<EOD
 <p>a well-formed paragraph.</p>
+<p>a well-formed paragraph.</p>
+<p>a well-formed paragraph.</p>
 <img src="${file_url}"/>
+<p>a well-formed paragraph.</p>
 <p>a paragraph with a nested image: <img src="${file_url_relative}"/></p>
+<p>a well-formed paragraph.</p>
 EOD
         ,
       ],
@@ -212,26 +289,40 @@ EOD
       $map[$node->nid] = $i;
     }
 
-    // Load export object.
+    // Enable, configure export.
+    $this->drupalPost(
+      'admin/config/content/apple-news/exports/apple_news::node/edit',
+      [
+        'enabled' => TRUE,
+        'bundles[]' => ['article'],
+      ],
+      t('Save changes')
+    );
+    // Add component.
+    $this->drupalPost(
+      'admin/config/content/apple-news/exports/apple_news::node/edit',
+      [
+        'components[_new][destination]' => 'apple_news::bodyphoto',
+        'components[_new][weight]' => '0',
+      ],
+      t('Save changes')
+    );
+    // Configure component.
+    $this->drupalPost(
+      'admin/config/content/apple-news/exports/apple_news::node/components/1',
+      [
+        'text' => '::::apple_news::field::node::body::value',
+      ],
+      t('Save changes')
+    );
     /** @var ApplenewsExportNode $export */
     $export = apple_news_get_export('apple_news', 'node');
     $this->assert($export instanceof ApplenewsExportNode,
       "Export object loaded.");
-
-    // Enable export.
-    // @todo Should be testing module/frontend.
-    $export->enabled = TRUE;
-    $export->bundles = ['article'];
-    $component = new ApplenewsDestinationBodyPhoto();
-    $component->settings = [
-      'text' => '::::apple_news::field::node::body::value',
-    ];
-    $component->weight = '50';
-    $component->id = 1;
-    $component->export = $export;
-    $export->destinations['components'][] = $component;
-    $result = apple_news_export_save($export);
-    $this->assert($result, 'Export enabled.');
+    /** @var ApplenewsDestinationBodyPhoto $component */
+    $component = $export->getComponent(1);
+    $this->assert($component instanceof ApplenewsDestinationBodyPhoto,
+      "Destination object loaded.");
 
     // Run query to get source ids.
     /** @var EntityFieldQuery $query */
@@ -241,6 +332,8 @@ EOD
     $a = array_keys($map);
     $b = array_keys($result['node']);
     $this->assert(!array_diff($a, $b) && !array_diff($b, $a), 'Query result.');
+
+    $markdown = new \ChapterThree\AppleNews\Document\Markdown();
 
     // Export each.
     foreach (array_keys($result['node']) as $nid) {
@@ -265,7 +358,12 @@ EOD
         'Export body component role.');
       $this->assertEqual('markdown', $item->format,
         'Export body component format.');
-      $expected = \ChapterThree\AppleNews\Document\Markdown::convert('<p>a well-formed paragraph.</p>');
+      $expected = <<<'EOD'
+<p>a well-formed paragraph.</p>
+<p>a well-formed paragraph.</p>
+<p>a well-formed paragraph.</p>
+EOD;
+      $expected = $markdown->convert($expected);
       $this->assertEqual($expected, $item->text,
         'Export body fragment -> component 1 body text.');
 
@@ -281,7 +379,11 @@ EOD
         'Export body component role.');
       $this->assertEqual('markdown', $item->format,
         'Export body component format.');
-      $expected = \ChapterThree\AppleNews\Document\Markdown::convert('<p>a paragraph with a nested image: </p>');
+      $expected = <<<'EOD'
+<p>a well-formed paragraph.</p>
+<p>a paragraph with a nested image: </p>
+EOD;
+      $expected = $markdown->convert($expected);
       $this->assertEqual($expected, $item->text,
         'Export body fragment -> component 3 body text.');
 
@@ -291,6 +393,18 @@ EOD
       $this->assertEqual(drupal_realpath($file->uri),
         @$export->getAssets()[$item->URL],
         'Export body fragment -> component 4 image URL.');
+
+      $item = $data->components[4];
+      $this->assertEqual('body', $item->role,
+        'Export body component role.');
+      $this->assertEqual('markdown', $item->format,
+        'Export body component format.');
+      $expected = <<<'EOD'
+<p>a well-formed paragraph.</p>
+EOD;
+      $expected = $markdown->convert($expected);
+      $this->assertEqual($expected, $item->text,
+        'Export body fragment -> component 5 body text.');
 
     }
   }

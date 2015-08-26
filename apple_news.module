@@ -6,8 +6,8 @@
  */
 
 define('APPLE_NEWS_API_VERSION', 1);
-define('CURL_SUPPORTED_VERSION', '4.6.8');
-define('APPLE_NEWS_SUPPORTED_VERSION', '0.2.9');
+define('CURL_SUPPORTED_VERSION', '4.6.9');
+define('APPLE_NEWS_SUPPORTED_VERSION', '0.3.1');
 
 // Load Batch API helper functions.
 module_load_include('inc', 'apple_news', 'apple_news.batch');
@@ -27,7 +27,7 @@ function apple_news_init() {
     ]
   ];
   foreach ($libraries as $name => $info) {
-    // Detect and load 'php-curl-class' PHP library.
+    // Detect and load PHP library.
     if (($library = libraries_detect($name)) &&
         !empty($library['installed']) &&
         $library['version'] == $info['version']
@@ -36,15 +36,22 @@ function apple_news_init() {
     }
     else {
       $error_message = !empty($library['error message']) ? $library['error message'] : '';
-      $msg = t('Please <a href="!link" target="_blank"><strong>download @name</strong> (version <strong>@v</strong>)</a> library to <strong><em>@path</em></strong> directory.',
+      $msg = t('Please <a href="!link" target="_blank"><strong>download @name</strong> (version <strong>@v</strong>)</a> library to <strong><em>@path</em></strong> directory or <a href="!install">try autoinstall</a>.',
         [
-          '!link' => $library['download url'],
-          '@name' => $library['name'],
-          '@path' => $info['path'],
-          '@v'    => $info['version'],
+          '!link'    => $library['download url'],
+          '@name'    => $library['name'],
+          '@path'    => $info['path'],
+          '@v'       => $info['version'],
+          '!install' => url('admin/apple-news/install'),
         ]
       );
-      drupal_set_message($error_message . ' ' . $msg, 'error');
+      // Display message in command line.
+      if (drupal_is_cli() && function_exists('drush_log')) {
+        drush_log($error_message . ' ' . $msg, 'error');
+      }
+      else {
+        drupal_set_message($error_message . ' ' . $msg, 'error');
+      }
     }
   }
 }
@@ -239,8 +246,8 @@ function apple_news_menu() {
 
   $items['admin/config/content/apple-news/exports/%apple_news_export/%/%/delete'] = [
     'title' => 'Delete Export Destination',
-    'page callback' => 'apple_news_export_destination_delete',
-    'page arguments' => [5, 6, 7],
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['apple_news_export_destination_delete_form', 5, 6, 7],
     'access arguments' => ['administer apple news'],
     'file' => 'apple_news.admin.inc',
   ];
@@ -330,6 +337,17 @@ function apple_news_menu() {
     'weight' => 1,
   ];
 
+  // Library autoinstall path.
+  $items['admin/apple-news/install'] = [
+    'title' => 'Autoinstall Apple News dependant PHP libraries',
+    'description' => t('Download and unzip PHP libraries.'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['apple_news_autoinstall_form'],
+    'access arguments' => ['administer apple news'],
+    'file' => 'apple_news.admin.inc',
+    'type' => MENU_CALLBACK,
+  ];
+
   return $items;
 }
 
@@ -351,7 +369,7 @@ function apple_news_theme($existing, $type, $theme, $path) {
   return [
     'apple_news_export_edit_form' => [
       'render element' => 'form',
-      'file' => 'apple_news.admin.inc',
+      'file'           => 'apple_news.admin.inc',
     ],
   ];
 }
@@ -426,4 +444,26 @@ function apple_news_apple_news_api() {
       ],
     ],
   ];
+}
+
+/**
+ * Submit handler for _apple_news_form_alter_node_form().
+ */
+function _apple_news_form_alter_node_form_submit(&$form, &$form_state) {
+  $values = $form_state['values']['apple_news'];
+  if (!empty($values['exports'])) {
+
+    $entity = $form_state['node'];
+    $entity_type = 'node';
+    $revision_id = $entity_id = $entity->nid;
+
+    module_load_include('inc', 'apple_news');
+    list($module, $machine_name) = apple_news_export_id_extract(
+      $form_state['values']['apple_news']['exports']);
+
+    $post = new ApplenewsDatabase();
+    $post->setPostId($entity_type, $entity_id, $revision_id);
+    $post->setExport($module, $machine_name);
+
+  }
 }

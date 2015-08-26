@@ -8,28 +8,8 @@
  * Implements hook_entity_insert().
  */
 function apple_news_entity_insert($entity, $type) {
-  if (!empty($entity->apple_news_publish_flag)) {
-    module_load_include('inc', 'apple_news');
-    foreach (apple_news_get_entity_types() as $module => $info) {
-      if (!$info['enabled']) {
-        continue;
-      }
-      $export = $info['#export'];
-      $wrapper = entity_metadata_wrapper($type, $entity);
-      if (in_array($wrapper->getBundle(), $export->bundles()) && in_array($type, $export->entityTypes())) {
-        foreach (apple_news_channels(TRUE) as $channel_id => $channel) {
-          if (!empty($entity->{'channel-' . $channel_id})) {
-            $settings = [];
-            foreach ($channel['sections'] as $section_id => $section) {
-              if (!empty($entity->{'section-' . $channel_id . '-' . $section_id})) {
-                $settings['metadata']['data']['links']['sections'][] = apple_news_section_url($section_id);
-              }
-            }
-            apple_news_op('insert', $channel_id, $entity, $type, $export, $settings);
-          }
-        }
-      }
-    }
+  if (!empty($entity->apple_news['apple_news_publish_flag'])) {
+    _apple_news_entity_push('insert', $entity, $type);
   }
 }
 
@@ -37,27 +17,31 @@ function apple_news_entity_insert($entity, $type) {
  * Implements hook_entity_update().
  */
 function apple_news_entity_update($entity, $type) {
-  if (!empty($entity->apple_news_publish_flag)) {
-    module_load_include('inc', 'apple_news');
-    foreach (apple_news_get_entity_types() as $module => $info) {
-      if (!$info['enabled']) {
-        continue;
-      }
-      $export = $info['#export'];
-      $wrapper = entity_metadata_wrapper($type, $entity);
-      if (in_array($wrapper->getBundle(), $export->bundles()) && in_array($type, $export->entityTypes()) && $info['enabled']) {
-        foreach (apple_news_channels(TRUE) as $channel_id => $channel) {
-          if (!empty($entity->{'channel-' . $channel_id})) {
-            $settings = [];
-            foreach ($channel['sections'] as $section_id => $section) {
-              if (!empty($entity->{'section-' . $channel_id . '-' . $section_id})) {
-                $settings['metadata']['data']['links']['sections'][] = apple_news_section_url($section_id);
-              }
-            }
-            apple_news_op('update', $channel_id, $entity, $type, $export, $settings);
-          }
+  if (!empty($entity->apple_news['apple_news_publish_flag'])) {
+    _apple_news_entity_push('update', $entity, $type);
+  }
+}
+
+/**
+ * Push node.
+ */
+function _apple_news_entity_push($op, $entity, $type) {
+  module_load_include('inc', 'apple_news');
+
+  $wrapper = entity_metadata_wrapper($type, $entity);
+  $export = apple_news_entity_get_export($type, $wrapper->getIdentifier());
+
+  $el = $entity->apple_news;
+  foreach (apple_news_channels(TRUE) as $channel_id => $channel) {
+    if (!empty($el['channels']['channel-' . $channel_id])) {
+      $settings = [];
+      foreach ($channel['sections'] as $section_id => $section) {
+        if (!empty($el['channels']['section-' . $channel_id . '-' . $section_id])) {
+          $settings['metadata']['data']['links']['sections'][] = apple_news_section_url($section_id);
         }
       }
+      $settings['override_revision'] = !empty($el['override_revision']);
+      apple_news_op($op, $channel_id, $entity, $type, $export, $settings);
     }
   }
 }
