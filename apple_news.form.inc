@@ -9,14 +9,6 @@
  */
 function apple_news_form_alter(&$form, &$form_state, $form_id) {
 
-  // Check if all required libraries installed, otherwise
-  // display message about missing PHP libraries.
-  module_load_include('inc', 'apple_news');
-  if ($info = apple_news_libraries_installed()) {
-    $form['apple_news'] += $info;
-    return;
-  }
-
   $menu_item = menu_get_item();
   switch ($menu_item['page_callback']) {
 
@@ -32,6 +24,7 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
  * Entity edit form alter callback.
  */
 function _apple_news_form_alter_node_form(&$form, &$form_state) {
+  module_load_include('inc', 'apple_news');
   $entity_type = 'node';
 
   // Entity object.
@@ -78,6 +71,13 @@ function _apple_news_form_alter_node_form(&$form, &$form_state) {
       'class' => ['apple-news-options'],
     ]
   ];
+
+  // Check if all required libraries installed, otherwise
+  // display message about missing PHP libraries.
+  if ($info = apple_news_libraries_installed()) {
+    $form['apple_news'] += $info;
+    return;
+  }
 
   // Apple News status/publish flag.
   if (!empty($entity->changed) && !empty($article_id) && !empty($article['postdate'])) {
