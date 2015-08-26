@@ -41,7 +41,7 @@ function apple_news_drush_command() {
 /**
  * Callback for the "apple-news" command.
  */
-function drush_apple_news($op, $module, $machine_name) {
+function drush_apple_news($operation, $module, $machine_name) {
 
   module_load_include('inc', 'apple_news');
   module_load_include('inc', 'apple_news', 'apple_news.batch');
@@ -49,20 +49,27 @@ function drush_apple_news($op, $module, $machine_name) {
   $export = apple_news_export_load($module, $machine_name);
 
   if ($export->enabled) {
-    if ($op == 'export') {
+
+    switch ($operation) {
+
       // Run brach enttiy export to Apple News.
-      $batch = apple_news_batch_run_export($info, $export, 'export');
-      $batch['progressive'] = FALSE;
-      batch_set($batch);
-      drush_log('Entities successfully exported to Apple News.', 'ok');
-    }
-    elseif ($op == 'preview') {
+      case 'export' :
+        $batch = apple_news_batch_run_export($info, $export, 'export');
+        $batch['progressive'] = FALSE;
+        batch_set($batch);
+        drush_log('Entities successfully exported to Apple News.', 'ok');
+        break;
+
       // Download News Preview compatible files.
-      $batch = apple_news_batch_run_export($info, $export, 'export-to-file');
-      $batch['progressive'] = FALSE;
-      batch_set($batch);
-      drush_log('Apple News Native formatted entities successfully exported. The file archive file can be downloaded from files/apple-news/ directory.', 'ok');
+      case 'preview' :
+        $batch = apple_news_batch_run_export($info, $export, 'export-to-file');
+        $batch['progressive'] = FALSE;
+        batch_set($batch);
+        drush_log('Apple News Native formatted entities successfully exported. The file archive file can be downloaded from `files/apple-news/` directory.', 'ok');
+        break;
+
     }
+
   }
   else {
     drush_log($info['name'] . ' export is disabled.', 'warning');
