@@ -387,6 +387,17 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
   }
 
   /**
+   * Determines if the configuration is complete.
+   *
+   * @return bool
+   *   If FALSE, then export() will return an empty array.
+   */
+  public function validateSettings() {
+    // No required configuration.
+    return TRUE;
+  }
+
+  /**
    * Provides a configuration form for this destination.
    */
   public function getConfigForm($form, &$form_state) {

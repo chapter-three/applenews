@@ -35,6 +35,21 @@ class ApplenewsDestinationBody extends ApplenewsDestination {
   /**
    * {@inheritdoc}
    */
+  public function validateSettings() {
+    $source_options = $this->getSourceOptions();
+    foreach (['text'] as $key) {
+      if (@$this->getSetting($key) === NULL ||
+          !isset($source_options[$this->getSetting($key)])
+      ) {
+        return FALSE;
+      }
+    }
+    return TRUE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getConfigForm($form, &$form_state) {
 
     $form = parent::getConfigForm($form, $form_state);
@@ -208,6 +223,21 @@ class ApplenewsDestinationImages extends ApplenewsDestination {
       'items'   => NULL,
       'caption' => NULL,
     ] + parent::settings();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function validateSettings() {
+    $source_options = $this->getSourceOptions();
+    foreach (['items'] as $key) {
+      if (@$this->getSetting($key) === NULL ||
+          !isset($source_options[$this->getSetting($key)])
+      ) {
+        return FALSE;
+      }
+    }
+    return TRUE;
   }
 
   /**
@@ -397,6 +427,21 @@ class ApplenewsDestinationImage extends ApplenewsDestination {
   /**
    * {@inheritdoc}
    */
+  public function validateSettings() {
+    $source_options = $this->getSourceOptions();
+    foreach (['source'] as $key) {
+      if (@$this->getSetting($key) === NULL ||
+          !isset($source_options[$this->getSetting($key)])
+      ) {
+        return FALSE;
+      }
+    }
+    return TRUE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getConfigForm($form, &$form_state) {
 
     $form = parent::getConfigForm($form, $form_state);
@@ -484,6 +529,26 @@ class ApplenewsDestinationScalableImage extends ApplenewsDestination {
       'accessibilityCaption' => NULL,
       'explicitContent'      => NULL,
     ] + parent::settings();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function validateSettings() {
+    $source_options = $this->getSourceOptions();
+    foreach ([
+        'caption',
+        'accessibilityCaption',
+        'explicitContent',
+      ] as $key
+    ) {
+      if (@$this->getSetting($key) === NULL ||
+          !isset($source_options[$this->getSetting($key)])
+      ) {
+        return FALSE;
+      }
+    }
+    return TRUE;
   }
 
   /**
@@ -614,6 +679,21 @@ class ApplenewsDestinationText extends ApplenewsDestination {
       'heading'   => 'heading',
       'format'    => 'markdown',
     ] + parent::settings();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function validateSettings() {
+    $source_options = $this->getSourceOptions();
+    foreach (['text'] as $key) {
+      if (@$this->getSetting($key) === NULL ||
+          !isset($source_options[$this->getSetting($key)])
+      ) {
+        return FALSE;
+      }
+    }
+    return TRUE;
   }
 
   /**

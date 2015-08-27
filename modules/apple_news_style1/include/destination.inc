@@ -148,6 +148,21 @@ class Applenewsstyle1DestinationHeaderImage extends ApplenewsDestination {
   /**
    * {@inheritdoc}
    */
+  public function validateSettings() {
+    $source_options = $this->getSourceOptions();
+    foreach (['file'] as $key) {
+      if (@$this->getSetting($key) === NULL ||
+          !isset($source_options[$this->getSetting($key)])
+      ) {
+        return FALSE;
+      }
+    }
+    return TRUE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getConfigForm($form, &$form_state) {
 
     $form = parent::getConfigForm($form, $form_state);
@@ -224,6 +239,21 @@ class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination
       'author'       => NULL,
       'photographer' => NULL,
     ] + parent::settings();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function validateSettings() {
+    $source_options = $this->getSourceOptions();
+    foreach (['title'] as $key) {
+      if (@$this->getSetting($key) === NULL ||
+          !isset($source_options[$this->getSetting($key)])
+      ) {
+        return FALSE;
+      }
+    }
+    return TRUE;
   }
 
   /**
@@ -417,6 +447,21 @@ class Applenewsstyle1DestinationPullQuote extends ApplenewsDestination {
       'quote'  => NULL,
       'format' => 'markdown',
     ] + parent::settings();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function validateSettings() {
+    $source_options = $this->getSourceOptions();
+    foreach (['quote'] as $key) {
+      if (@$this->getSetting($key) === NULL ||
+          !isset($source_options[$this->getSetting($key)])
+      ) {
+        return FALSE;
+      }
+    }
+    return TRUE;
   }
 
   /**
