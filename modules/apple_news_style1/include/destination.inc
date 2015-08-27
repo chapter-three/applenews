@@ -149,10 +149,9 @@ class Applenewsstyle1DestinationHeaderImage extends ApplenewsDestination {
    * {@inheritdoc}
    */
   public function validateSettings() {
-    $source_options = $this->getSourceOptions();
     foreach (['file'] as $key) {
       if (@$this->getSetting($key) === NULL ||
-          !isset($source_options[$this->getSetting($key)])
+          !$this->sourceOptionValid($this->getSetting($key))
       ) {
         return FALSE;
       }
@@ -245,10 +244,9 @@ class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination
    * {@inheritdoc}
    */
   public function validateSettings() {
-    $source_options = $this->getSourceOptions();
     foreach (['title'] as $key) {
       if (@$this->getSetting($key) === NULL ||
-          !isset($source_options[$this->getSetting($key)])
+          !$this->sourceOptionValid($this->getSetting($key))
       ) {
         return FALSE;
       }
@@ -453,10 +451,9 @@ class Applenewsstyle1DestinationPullQuote extends ApplenewsDestination {
    * {@inheritdoc}
    */
   public function validateSettings() {
-    $source_options = $this->getSourceOptions();
     foreach (['quote'] as $key) {
       if (@$this->getSetting($key) === NULL ||
-          !isset($source_options[$this->getSetting($key)])
+          !$this->sourceOptionValid($this->getSetting($key))
       ) {
         return FALSE;
       }

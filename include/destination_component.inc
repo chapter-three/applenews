@@ -36,10 +36,9 @@ class ApplenewsDestinationBody extends ApplenewsDestination {
    * {@inheritdoc}
    */
   public function validateSettings() {
-    $source_options = $this->getSourceOptions();
     foreach (['text'] as $key) {
       if (@$this->getSetting($key) === NULL ||
-          !isset($source_options[$this->getSetting($key)])
+          !$this->sourceOptionValid($this->getSetting($key))
       ) {
         return FALSE;
       }
@@ -229,10 +228,9 @@ class ApplenewsDestinationImages extends ApplenewsDestination {
    * {@inheritdoc}
    */
   public function validateSettings() {
-    $source_options = $this->getSourceOptions();
     foreach (['items'] as $key) {
       if (@$this->getSetting($key) === NULL ||
-          !isset($source_options[$this->getSetting($key)])
+          !$this->sourceOptionValid($this->getSetting($key))
       ) {
         return FALSE;
       }
@@ -428,10 +426,9 @@ class ApplenewsDestinationImage extends ApplenewsDestination {
    * {@inheritdoc}
    */
   public function validateSettings() {
-    $source_options = $this->getSourceOptions();
     foreach (['source'] as $key) {
       if (@$this->getSetting($key) === NULL ||
-          !isset($source_options[$this->getSetting($key)])
+          !$this->sourceOptionValid($this->getSetting($key))
       ) {
         return FALSE;
       }
@@ -535,7 +532,6 @@ class ApplenewsDestinationScalableImage extends ApplenewsDestination {
    * {@inheritdoc}
    */
   public function validateSettings() {
-    $source_options = $this->getSourceOptions();
     foreach ([
         'caption',
         'accessibilityCaption',
@@ -543,7 +539,7 @@ class ApplenewsDestinationScalableImage extends ApplenewsDestination {
       ] as $key
     ) {
       if (@$this->getSetting($key) === NULL ||
-          !isset($source_options[$this->getSetting($key)])
+          !$this->sourceOptionValid($this->getSetting($key))
       ) {
         return FALSE;
       }
@@ -685,10 +681,9 @@ class ApplenewsDestinationText extends ApplenewsDestination {
    * {@inheritdoc}
    */
   public function validateSettings() {
-    $source_options = $this->getSourceOptions();
     foreach (['text'] as $key) {
       if (@$this->getSetting($key) === NULL ||
-          !isset($source_options[$this->getSetting($key)])
+          !$this->sourceOptionValid($this->getSetting($key))
       ) {
         return FALSE;
       }

@@ -32,10 +32,9 @@ class ApplenewsExtraDestinationInstagram extends ApplenewsDestination {
    * {@inheritdoc}
    */
   public function validateSettings() {
-    $source_options = $this->getSourceOptions();
     foreach (['source'] as $key) {
       if (@$this->getSetting($key) === NULL ||
-          !isset($source_options[$this->getSetting($key)])
+          !$this->sourceOptionValid($this->getSetting($key))
       ) {
         return FALSE;
       }
@@ -111,10 +110,9 @@ class ApplenewsExtraDestinationTweet extends ApplenewsDestination {
    * {@inheritdoc}
    */
   public function validateSettings() {
-    $source_options = $this->getSourceOptions();
     foreach (['source'] as $key) {
       if (@$this->getSetting($key) === NULL ||
-          !isset($source_options[$this->getSetting($key)])
+          !$this->sourceOptionValid($this->getSetting($key))
       ) {
         return FALSE;
       }
@@ -191,10 +189,9 @@ class ApplenewsExtraDestinationEmbedWebVideo extends ApplenewsDestination {
    * {@inheritdoc}
    */
   public function validateSettings() {
-    $source_options = $this->getSourceOptions();
     foreach (['video_url'] as $key) {
       if (@$this->getSetting($key) === NULL ||
-          !isset($source_options[$this->getSetting($key)])
+          !$this->sourceOptionValid($this->getSetting($key))
       ) {
         return FALSE;
       }
@@ -286,10 +283,9 @@ class ApplenewsExtraDestinationAudio extends ApplenewsDestination {
    * {@inheritdoc}
    */
   public function validateSettings() {
-    $source_options = $this->getSourceOptions();
     foreach (['url'] as $key) {
       if (@$this->getSetting($key) === NULL ||
-          !isset($source_options[$this->getSetting($key)])
+          !$this->sourceOptionValid($this->getSetting($key))
       ) {
         return FALSE;
       }
