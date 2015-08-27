@@ -447,9 +447,11 @@ function apple_news_apple_news_api() {
  */
 function _apple_news_form_alter_node_form_submit(&$form, &$form_state) {
   $values = $form_state['values']['apple_news'];
-  if (!empty($values['exports'])) {
+  if (!empty($form['#node']) && !empty($form['#node']->nid) &&
+      !empty($values['exports'])
+  ) {
 
-    $entity = $form_state['node'];
+    $entity = $form['#node'];
     $entity_type = 'node';
     $revision_id = $entity_id = $entity->nid;
 
