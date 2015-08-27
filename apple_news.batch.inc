@@ -9,7 +9,7 @@
  *
  * @see apple_news_settings_exports_form_submit()
  */
-function apple_news_batch_run_export($info, $export, $op) {
+function apple_news_batch_run_export($info, ApplenewsExport $export, $op) {
 
   $operations = [];
 
@@ -29,24 +29,22 @@ function apple_news_batch_run_export($info, $export, $op) {
   }
 
   $result = $export->query()->execute();
-  $entity_types = $export->entityTypes();
+  $entity_type = $export->entityType();
 
-  foreach ($entity_types as $entity_type) {
-    if (isset($result[$entity_type])) {
-      foreach ($result[$entity_type] as $entity_id => $object) {
-        // Load entity object and pass it to the document generator.
-        $entity = entity_load_single($entity_type, $entity_id);
-        $operations[] = [
-          $op_function,
-          [
-            $info,
-            $export,
-            $entity_type,
-            $entity,
-            count($result[$entity_type])
-          ],
-        ];
-      }
+  if (isset($result[$entity_type])) {
+    foreach ($result[$entity_type] as $entity_id => $object) {
+      // Load entity object and pass it to the document generator.
+      $entity = entity_load_single($entity_type, $entity_id);
+      $operations[] = [
+        $op_function,
+        [
+          $info,
+          $export,
+          $entity_type,
+          $entity,
+          count($result[$entity_type])
+        ],
+      ];
     }
   }
 
