@@ -681,6 +681,9 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
       $destination->id = empty($this->destinations['components']) ? 1 :
         max(array_keys($this->destinations['components'])) + 1;
       $this->destinations['components'][$destination->id] = $destination;
+      $form_state['redirect'] = 'admin/config/content/apple-news/exports/' .
+        apple_news_export_id($this->module, $this->machineName) .
+        '/components/' . $destination->id;
     }
 
     parent::submitConfigForm($form, $form_state);
