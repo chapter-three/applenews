@@ -25,8 +25,8 @@ function apple_news_export_id_extract($id) {
  * @param ApplenewsExport $export
  *   Object as returned by apple_news_export_load() or apple_news_get_export().
  *
- * @return ApplenewsExport|bool
- *   The reloaded object if successful, otherwise FALSE.
+ * @return bool
+ *   Success.
  */
 function apple_news_export_save(ApplenewsExport $export) {
   $transaction = db_transaction();
@@ -41,7 +41,7 @@ function apple_news_export_save(ApplenewsExport $export) {
       ->condition('s.machine_name', $export->getMachineName())
       ->countQuery()->execute()->fetchField();
     if ($update) {
-      $success = db_update('apple_news_status')
+      db_update('apple_news_status')
         ->fields([
           'enabled'  => (int) $export->enabled,
           'instance' => serialize($export),
@@ -49,11 +49,6 @@ function apple_news_export_save(ApplenewsExport $export) {
         ->condition('module', $export->getModule())
         ->condition('machine_name', $export->getMachineName())
         ->execute();
-      if ($success) {
-        return apple_news_get_export($export->getModule(), $export->getMachineName(), TRUE);
-      }
-      $transaction->rollback();
-      watchdog('apple_news', $msg, $var, WATCHDOG_ERROR);
     }
     else {
       db_insert('apple_news_status')
@@ -64,8 +59,10 @@ function apple_news_export_save(ApplenewsExport $export) {
           'instance'     => serialize($export),
         ])
         ->execute();
-      return apple_news_get_export($export->getModule(), $export->getMachineName(), TRUE);
     }
+    // @todo just need to flush cache.
+    apple_news_get_export($export->getModule(), $export->getMachineName(), TRUE);
+    return TRUE;
   }
   catch (Exception $e) {
     $transaction->rollback();
