@@ -210,7 +210,7 @@ abstract class ApplenewsExport {
             '#title' => $section['name'] . ' ' . (!empty($section['default']) ? t('<em>(default)</em>') : ''),
             '#attributes' => [
               'data-section-of' => $channel_id,
-              'class' => ['apple-news-sections']
+              'class'           => ['apple-news-sections'],
             ],
             '#default_value' => !empty($saved_sections[$section_id]) ? TRUE : FALSE,
           ];
@@ -222,7 +222,7 @@ abstract class ApplenewsExport {
         '#markup' => t('Please provide Apple News <a href="!credentials">credentials</a> and add at least one <a href="!channel">channel</a>.',
           [
             '!credentials' => url('admin/config/content/apple-news/settings'),
-            '!channel'        => url('admin/config/content/apple-news/settings/channels'),
+            '!channel'     => url('admin/config/content/apple-news/settings/channels'),
           ]
         )
       ];
