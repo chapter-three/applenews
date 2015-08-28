@@ -139,6 +139,15 @@ function apple_news_batch_post($info, $export, $entity_type, $entity, $total_cou
       if ($success) {
         $context['results']['info']['count']++;
       }
+      else {
+        drupal_set_message(
+          t('Unable to push %title to %channel',
+            [
+              '%title'   => $wrapper->label(),
+              '%channel' => filter_xss($channel->name)
+            ]), 'error'
+        );
+      }
     }
     $context['results']['info']['step_count']++;
   }

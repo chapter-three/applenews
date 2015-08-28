@@ -41,7 +41,15 @@ function _apple_news_entity_push($op, $entity, $type) {
         }
       }
       $settings['override_revision'] = !empty($el['override_revision']);
-      apple_news_op($op, $channel_id, $entity, $type, $export, $settings);
+      if (!apple_news_op($op, $channel_id, $entity, $type, $export, $settings)) {
+        drupal_set_message(
+          t('Unable to push %title to %channel',
+            [
+              '%title'   => $wrapper->label(),
+              '%channel' => filter_xss($channel->name)
+            ]), 'error'
+        );
+      }
     }
   }
 }
@@ -53,7 +61,17 @@ function apple_news_entity_delete($entity, $type) {
   module_load_include('inc', 'apple_news');
   if ($channel_ids = apple_news_load_article_channels($entity, $type)) {
     foreach ($channel_ids as $channel_id) {
-      apple_news_op('delete', $channel_id, $entity, $type);
+      if (!apple_news_op('delete', $channel_id, $entity, $type)) {
+        $wrapper = entity_metadata_wrapper($type, $entity);
+        $channel = apple_news_channel($channel_id);
+        drupal_set_message(
+          t('Unable to delete %title from %channel',
+            [
+              '%title'   => $wrapper->label(),
+              '%channel' => filter_xss($channel->name)
+            ]), 'error'
+        );
+      }
     }
   }
 }
