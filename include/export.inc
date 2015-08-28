@@ -545,13 +545,22 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
     ];
     /** @var ApplenewsDestination $destination */
     foreach ($this->getdestinations('components') as $destination) {
+      $edit = 'admin/config/content/apple-news/exports/' . apple_news_export_id($this->module, $this->machineName) . '/components/' . $destination->id;
+      if (!$destination->validateSettings()) {
+        drupal_set_message(t('The %label component needs to be !link.',
+          [
+            '%label' => check_plain($destination->label()),
+            '!link' => l(t('configured'), $edit)
+          ]),
+          'error');
+      }
       $form['components'][$destination->id] = [
         '#apple_news_destination' => $destination,
         'destination' => [
           '#markup' => check_plain($destination->label()),
         ],
         'edit' => [
-          '#markup' => l(t('edit'), 'admin/config/content/apple-news/exports/' . apple_news_export_id($this->module, $this->machineName) . '/components/' . $destination->id),
+          '#markup' => l(t('edit'), $edit),
         ],
         'delete' => [
           '#markup' => l(t('delete'), 'admin/config/content/apple-news/exports/' . apple_news_export_id($this->module, $this->machineName) . '/components/' . $destination->id . '/delete'),
@@ -672,6 +681,9 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
       $destination->id = empty($this->destinations['components']) ? 1 :
         max(array_keys($this->destinations['components'])) + 1;
       $this->destinations['components'][$destination->id] = $destination;
+      $form_state['redirect'] = 'admin/config/content/apple-news/exports/' .
+        apple_news_export_id($this->module, $this->machineName) .
+        '/components/' . $destination->id;
     }
 
     parent::submitConfigForm($form, $form_state);

@@ -148,6 +148,20 @@ class Applenewsstyle1DestinationHeaderImage extends ApplenewsDestination {
   /**
    * {@inheritdoc}
    */
+  public function validateSettings() {
+    foreach (['file'] as $key) {
+      if (@$this->getSetting($key) === NULL ||
+          !$this->sourceOptionValid($this->getSetting($key)['source'])
+      ) {
+        return FALSE;
+      }
+    }
+    return TRUE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getConfigForm($form, &$form_state) {
 
     $form = parent::getConfigForm($form, $form_state);
@@ -220,6 +234,20 @@ class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination
       'author'       => NULL,
       'photographer' => NULL,
     ] + parent::settings();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function validateSettings() {
+    foreach (['title'] as $key) {
+      if (@$this->getSetting($key) === NULL ||
+          !$this->sourceOptionValid($this->getSetting($key)['source'])
+      ) {
+        return FALSE;
+      }
+    }
+    return TRUE;
   }
 
   /**
@@ -397,6 +425,20 @@ class Applenewsstyle1DestinationPullQuote extends ApplenewsDestination {
       'quote'  => NULL,
       'format' => 'markdown',
     ] + parent::settings();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function validateSettings() {
+    foreach (['quote'] as $key) {
+      if (@$this->getSetting($key) === NULL ||
+          !$this->sourceOptionValid($this->getSetting($key)['source'])
+      ) {
+        return FALSE;
+      }
+    }
+    return TRUE;
   }
 
   /**

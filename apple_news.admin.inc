@@ -681,7 +681,9 @@ function apple_news_export_edit_form_submit($form, &$form_state) {
   $export = $form['#apple_news_export'];
   $export->submitConfigForm($form, $form_state);
   apple_news_export_save($export);
-  drupal_set_message(t('Changes have been successfully saved.'));
+  if (empty($form_state['redirect'])) {
+    drupal_set_message(t('Changes have been successfully saved.'));
+  }
 }
 
 /**
@@ -745,6 +747,8 @@ function apple_news_export_destination_edit_form_submit($form, &$form_state) {
   $destination->submitConfigForm($form, $form_state);
   apple_news_export_save($destination->export);
   drupal_set_message(t('Changes have been successfully saved.'));
+  $form_state['redirect'] = 'admin/config/content/apple-news/exports/' .
+    apple_news_export_id($destination->export->getModule(), $destination->export->getMachineName());
 }
 
 /**

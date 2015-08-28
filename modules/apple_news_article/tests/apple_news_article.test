@@ -81,8 +81,7 @@ class ApplenewsArticleExportTestCase extends ApplenewsWebTestCase {
 
     // Enable export.
     $export->enabled = TRUE;
-    $export = apple_news_export_save($export);
-    $this->assert($export->enabled, 'Export enabled.');
+    $this->assert(apple_news_export_save($export), 'Export saved.');
 
     // Run query to get source ids.
     /** @var EntityFieldQuery $query */
@@ -176,8 +175,7 @@ class ApplenewsArticleExportTestCase extends ApplenewsWebTestCase {
     // Enable export.
     $export->enabled = TRUE;
     $export->settings = ['layout' => 'header_image'];
-    $export = apple_news_export_save($export);
-    $this->assert($export->enabled, 'Export enabled.');
+    $this->assert(apple_news_export_save($export), 'Export saved.');
 
     // Run query to get source ids.
     /** @var EntityFieldQuery $query */

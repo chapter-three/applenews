@@ -148,6 +148,32 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
   }
 
   /**
+   * Validate a source key.
+   *
+   * @param $key
+   *   Key to search for.
+   * @param array|null $options
+   *   Internal use.
+   *
+   * @return bool
+   *   Key is valid.
+   */
+  public function sourceOptionValid($key, $options = NULL) {
+    if (!isset($options)) {
+      list($options,) = $this->getSourceOptions();
+    }
+    if (isset($options[$key]) && !is_array($options[$key])) {
+      return TRUE;
+    }
+    foreach (array_filter($options, 'is_array') as $options) {
+      if ($this->sourceOptionValid($key, $options)) {
+        return TRUE;
+      }
+    }
+    return FALSE;
+  }
+
+  /**
    * Generates a configurable source setting element.
    */
   protected function getConfigFormSourceElement(&$form, &$form_state, $key) {
@@ -459,6 +485,17 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
       return FALSE;
     }
     return $this;
+  }
+
+  /**
+   * Determines if the configuration is complete.
+   *
+   * @return bool
+   *   If FALSE, then export() will return an empty array.
+   */
+  public function validateSettings() {
+    // No required configuration.
+    return TRUE;
   }
 
   /**

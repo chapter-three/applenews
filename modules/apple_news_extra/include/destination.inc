@@ -31,6 +31,20 @@ class ApplenewsExtraDestinationInstagram extends ApplenewsDestination {
   /**
    * {@inheritdoc}
    */
+  public function validateSettings() {
+    foreach (['source'] as $key) {
+      if (@$this->getSetting($key) === NULL ||
+          !$this->sourceOptionValid($this->getSetting($key)['source'])
+      ) {
+        return FALSE;
+      }
+    }
+    return TRUE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getConfigForm($form, &$form_state) {
 
     $form = parent::getConfigForm($form, $form_state);
@@ -86,6 +100,20 @@ class ApplenewsExtraDestinationTweet extends ApplenewsDestination {
     return [
       'source' => NULL,
     ] + parent::settings();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function validateSettings() {
+    foreach (['source'] as $key) {
+      if (@$this->getSetting($key) === NULL ||
+          !$this->sourceOptionValid($this->getSetting($key)['source'])
+      ) {
+        return FALSE;
+      }
+    }
+    return TRUE;
   }
 
   /**
@@ -147,6 +175,20 @@ class ApplenewsExtraDestinationEmbedWebVideo extends ApplenewsDestination {
       'video_url' => NULL,
       'caption'   => NULL,
     ] + parent::settings();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function validateSettings() {
+    foreach (['video_url'] as $key) {
+      if (@$this->getSetting($key) === NULL ||
+          !$this->sourceOptionValid($this->getSetting($key)['source'])
+      ) {
+        return FALSE;
+      }
+    }
+    return TRUE;
   }
 
   /**
@@ -218,6 +260,20 @@ class ApplenewsExtraDestinationAudio extends ApplenewsDestination {
       'imageURL'        => NULL,
       'explicitContent' => NULL,
     ] + parent::settings();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function validateSettings() {
+    foreach (['url'] as $key) {
+      if (@$this->getSetting($key) === NULL ||
+          !$this->sourceOptionValid($this->getSetting($key)['source'])
+      ) {
+        return FALSE;
+      }
+    }
+    return TRUE;
   }
 
   /**
