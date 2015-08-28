@@ -40,8 +40,16 @@ function _apple_news_form_alter_node_form(&$form, &$form_state) {
 
   module_load_include('inc', 'apple_news');
   $exports = apple_news_exports_enabled();
-  $default_export = empty($entity_id) ? NULL
-    : apple_news_entity_get_export($entity_type, $entity_id);
+  if (count($exports)) {
+    if (empty($entity_id)) {
+      $default_export = reset($exports);
+      $default_export = apple_news_get_export($default_export['module'],
+        $default_export['machine_name']);
+    }
+    else {
+      $default_export = apple_news_entity_get_export($entity_type, $entity_id);
+    }
+  }
   $channels_all = apple_news_channels();
 
   // Load existing Apple News article.
@@ -232,7 +240,7 @@ function _apple_news_form_alter_node_form(&$form, &$form_state) {
     }
 
     // Preview-able download.
-    if (@$default_export->enabled) {
+    if (@$default_export->enabled && !empty($entity_id)) {
       $msg = t('<a href="!link">Download</a> the Apple News generated document (use the News Preview app to preview the article).',
         [
           '!link' => url('admin/config/content/apple-news/' . $entity_type . '/' . $entity_id . '/' . $revision_id . '/download'),
