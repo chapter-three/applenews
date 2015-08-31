@@ -122,6 +122,14 @@ abstract class ApplenewsExport {
   }
 
   /**
+   * Show this export as an option on entity edit form?
+   */
+  public function showOnEdit($entity_type, $bundle) {
+    return $entity_type == $this->entityType() &&
+      @$this->bundles()[$bundle];
+  }
+
+  /**
    * Declare settins and defaults.
    *
    * @return array
@@ -210,7 +218,7 @@ abstract class ApplenewsExport {
             '#title' => $section['name'] . ' ' . (!empty($section['default']) ? t('<em>(default)</em>') : ''),
             '#attributes' => [
               'data-section-of' => $channel_id,
-              'class' => ['apple-news-sections']
+              'class'           => ['apple-news-sections'],
             ],
             '#default_value' => !empty($saved_sections[$section_id]) ? TRUE : FALSE,
           ];
@@ -222,7 +230,7 @@ abstract class ApplenewsExport {
         '#markup' => t('Please provide Apple News <a href="!credentials">credentials</a> and add at least one <a href="!channel">channel</a>.',
           [
             '!credentials' => url('admin/config/content/apple-news/settings'),
-            '!channel'        => url('admin/config/content/apple-news/settings/channels'),
+            '!channel'     => url('admin/config/content/apple-news/settings/channels'),
           ]
         )
       ];
