@@ -33,15 +33,16 @@ abstract class ApplenewsDestinationComponent extends ApplenewsDestination {
   }
 
   /**
-   * {@inheritdoc}
+   * Determines if the configuration is complete.
+   *
+   * @return bool
+   *   If FALSE, then export() will return an empty array.
    */
-  public function export($value = NULL) {
-    /** @var \ChapterThree\AppleNews\Document\Components\Component $component */
-    $component = $this->export($value);
-    if ($this->layout) {
-      $component->setLayout($this->layout);
+  public function validateSettings() {
+    if ($this->layout && !$this->export->getComponentLayout($this->layout)) {
+      return FALSE;
     }
-    return $component;
+    return parent::validateSettings();
   }
 
   /**
@@ -75,6 +76,18 @@ abstract class ApplenewsDestinationComponent extends ApplenewsDestination {
       $this->layout = $form_state['values']['layout'];
     }
     parent::submitConfigForm($form, $form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function export($value = NULL) {
+    /** @var \ChapterThree\AppleNews\Document\Components\Component $component */
+    $component = $this->export($value);
+    if ($this->layout) {
+      $component->setLayout($this->layout);
+    }
+    return $component;
   }
 
 }

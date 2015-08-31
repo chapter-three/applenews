@@ -807,7 +807,28 @@ function apple_news_export_destination_edit_form_submit($form, &$form_state) {
 function apple_news_export_destination_delete_form($form, &$form_state, ApplenewsExportConfigurable $export, $type, $id) {
   module_load_include('inc', 'apple_news');
 
-  $destination = $export->getComponent($id);
+  switch ($type) {
+
+    case 'component':
+      $destination = $export->getComponent($id);
+      break;
+
+    case 'layout':
+      $destination = $export->getLayout();
+      break;
+
+    case 'componentLayout':
+      $destination = $export->getComponentLayout($id);
+      break;
+
+  }
+
+  $export_id = apple_news_export_id($export->getModule(), $export->getMachineName());
+  $path = 'admin/config/content/apple-news/exports/' . $export_id . '/edit';
+
+  if (empty($destination)) {
+    drupal_goto($path);
+  }
 
   $form_state['storage'] = [
     'export'      => $export,
@@ -815,9 +836,6 @@ function apple_news_export_destination_delete_form($form, &$form_state, Applenew
     'id'          => $id,
     'destination' => $destination,
   ];
-
-  $export_id = apple_news_export_id($export->getModule(), $export->getMachineName());
-  $path = 'admin/config/content/apple-news/exports/' . $export_id . '/edit';
 
   return confirm_form(
     $form,
@@ -835,28 +853,37 @@ function apple_news_export_destination_delete_form($form, &$form_state, Applenew
 function apple_news_export_destination_delete_form_submit($form, &$form_state) {
   module_load_include('inc', 'apple_news');
 
+  /** @var ApplenewsExportConfigurable $export */
   $export = $form_state['storage']['export'];
   $type = $form_state['storage']['type'];
   $id = $form_state['storage']['id'];
   $destination = $form_state['storage']['destination'];
+  $export_id = apple_news_export_id($export->getModule(), $export->getMachineName());
+  $path = 'admin/config/content/apple-news/exports/' . $export_id;
 
   switch ($type) {
 
-    case 'components':
-      /** @var ApplenewsExport $export */
+    case 'component':
       $export->deleteComponent($id);
-      apple_news_export_save($export);
-      drupal_set_message(t('@name destination successfully deleted.',
-        ['@name' => $destination->label()]));
+      break;
+
+    case 'layout':
+      // No-op.
+      drupal_goto($path);
+      break;
+
+    case 'componentLayout':
+      $export->deleteComponentLayout($id);
       break;
 
   }
 
-  $export_id = apple_news_export_id($export->getModule(), $export->getMachineName());
-  drupal_goto('admin/config/content/apple-news/exports/' . $export_id);
+  apple_news_export_save($export);
+  drupal_set_message(t('@name successfully deleted.',
+    ['@name' => $destination->label()]));
+  drupal_goto($path);
 
 }
-
 
 /**
  * Delete Apple News article w/ confirmation.

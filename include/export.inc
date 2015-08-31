@@ -546,11 +546,13 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
    */
   protected function addDestination($key, ApplenewsDestination $destination, $index = NULL) {
     if (!isset($index)) {
-      $this->destinations[$key][] = $destination;
+      $index = count($this->destinations[$key]);
+      while (isset($this->destinations[$key][$index])) {
+        $index++;
+      }
     }
-    else {
-      $this->destinations[$key][$index] = $destination;
-    }
+    $destination->id = $index;
+    $this->destinations[$key][$index] = $destination;
     return $this;
   }
 
@@ -842,20 +844,19 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
       $this->destinations['components'][$destination->id] = $destination;
       $form_state['redirect'][] = 'admin/config/content/apple-news/exports/' .
         apple_news_export_id($this->module, $this->machineName) .
-        '/components/' . $destination->id;
+        '/component/' . $destination->id;
     }
 
     $component_layouts = &$form_state['values']['component_layouts'];
     if ($component_layouts['_new']['destination']) {
       $destinations = apple_news_get_module_apis('destination');
       $info = $destinations[$component_layouts['_new']['destination']];
+      /** @var ApplenewsDestinationComponentLayout $destination */
       $destination = apple_news_get_destination($info['module'], $info['machine_name']);
-      $destination->id = empty($this->destinations['componentLayouts']) ? 1 :
-        max(array_keys($this->destinations['componentLayouts'])) + 1;
-      $this->destinations['componentLayouts'][$destination->id] = $destination;
+      $this->addComponentLayout($destination);
       $form_state['redirect'][] = 'admin/config/content/apple-news/exports/' .
         apple_news_export_id($this->module, $this->machineName) .
-        '/components/' . $destination->id;
+        '/componentLayout/' . $destination->id;
     }
 
     parent::submitConfigForm($form, $form_state);
