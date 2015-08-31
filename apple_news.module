@@ -410,6 +410,14 @@ function apple_news_apple_news_api() {
       ],
     ],
     'destinations' => [
+      'layout' => [
+        'class' => 'ApplenewsDestinationLayout',
+        'name' => 'Layout',
+      ],
+      'componentLayout' => [
+        'class' => 'ApplenewsDestinationComponentLayout',
+        'name' => 'Component Layout',
+      ],
       'container' => [
         'class' => 'ApplenewsDestinationContainer',
         'name' => 'Container',

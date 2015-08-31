@@ -330,11 +330,14 @@ function apple_news_update_7100(&$sandbox) {
   $query = db_select('apple_news_status', 'a')
     ->fields('a');
   foreach ($query->execute() as $row) {
+    /** @var ApplenewsExportConfigurable $export */
     $export = unserialize($row->instance);
     if (!$export instanceof ApplenewsExportConfigurable) {
       continue;
     }
-    /** @var ApplenewsExportConfigurable $export */
+    foreach (['componentLayouts'] as $key) {
+      $export->destinations[$key] = [];
+    }
     foreach ($export->getComponents() as $component) {
       foreach ($component->settings as $key => &$value) {
         if (!is_array($value) &&
@@ -344,6 +347,9 @@ function apple_news_update_7100(&$sandbox) {
         }
       }
     }
+    apple_news_export_save($export);
+    // Re-run init().
+    $export = apple_news_get_export($export->getModule(), $export->getMachineName());
     apple_news_export_save($export);
   }
 }

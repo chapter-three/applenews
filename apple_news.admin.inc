@@ -593,8 +593,38 @@ function theme_apple_news_export_edit_form($variables) {
   $form = $variables['form'];
   $output = '';
 
-  // In case we want to add more sets of destinations.
-  foreach (['components'] as $key) {
+  // Non-order-able table of destinations.
+  foreach (['component_layouts' => t('Component Layout')] as $key => $label) {
+    if (empty($form[$key])) {
+      continue;
+    }
+
+    $tree = &$form[$key];
+
+    $rows = [];
+    foreach (element_children($tree) as $id) {
+      $rows[] = [
+        'data' => [
+          drupal_render($tree[$id]['destination']),
+          drupal_render($tree[$id]['edit']),
+          drupal_render($tree[$id]['delete']),
+          drupal_render($tree[$id]['id']),
+        ],
+      ];
+    }
+
+    $header = [
+      $label,
+      ['data' => t('Operations'), 'colspan' => 2],
+    ];
+    $output .= theme('table', [
+      'header' => $header,
+      'rows' => $rows,
+    ]);
+  }
+
+  // Order-able sets of destinations.
+  foreach (['components' => t('Component')] as $key => $label) {
     if (empty($form[$key])) {
       continue;
     }
@@ -696,7 +726,7 @@ function apple_news_export_destination_edit_form($form, &$form_state, ApplenewsE
 
   switch ($type) {
 
-    case 'components':
+    case 'component':
       /** @var ApplenewsDestinationComponent $destination */
       $destination = $export->getComponent($id);
       $form['destination_label'] = [
@@ -704,13 +734,33 @@ function apple_news_export_destination_edit_form($form, &$form_state, ApplenewsE
         ' . $destination->label() . '
         </div>',
       ];
-      $form = $destination->getConfigForm($form, $form_state);
+      break;
+
+    case 'layout':
+      $destination = $export->getLayout();
+      $form['destination_label'] = [
+        '#markup' => '<div class="form-item"><label for="edit-weight">' . t('Layout') . ' </label>
+        ' . $destination->label() . '
+        </div>',
+      ];
+      break;
+
+    case 'componentLayout':
+      /** @var ApplenewsDestinationComponentLayout $destination */
+      $destination = $export->getComponentLayout($id);
+      $form['destination_label'] = [
+        '#markup' => '<div class="form-item"><label for="edit-weight">' . t('Component Layout') . ' </label>
+        ' . $destination->label() . '
+        </div>',
+      ];
       break;
 
     default:
       return $form;
 
   }
+
+  $form = $destination->getConfigForm($form, $form_state);
 
   $form['#apple_news_destination'] = $destination;
 
