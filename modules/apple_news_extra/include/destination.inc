@@ -10,7 +10,7 @@ use \ChapterThree\AppleNews\Document\Components;
 /**
  * Instagram component.
  */
-class ApplenewsExtraDestinationInstagram extends ApplenewsDestination {
+class ApplenewsExtraDestinationInstagram extends ApplenewsDestinationComponent {
 
   /**
    * {@inheritdoc}
@@ -85,7 +85,7 @@ class ApplenewsExtraDestinationInstagram extends ApplenewsDestination {
 /**
  * Tweet component.
  */
-class ApplenewsExtraDestinationTweet extends ApplenewsDestination {
+class ApplenewsExtraDestinationTweet extends ApplenewsDestinationComponent {
 
   /**
    * {@inheritdoc}
@@ -160,7 +160,7 @@ class ApplenewsExtraDestinationTweet extends ApplenewsDestination {
 /**
  * Embed Web Video component.
  */
-class ApplenewsExtraDestinationEmbedWebVideo extends ApplenewsDestination {
+class ApplenewsExtraDestinationEmbedWebVideo extends ApplenewsDestinationComponent {
 
   /**
    * {@inheritdoc}
@@ -242,7 +242,7 @@ class ApplenewsExtraDestinationEmbedWebVideo extends ApplenewsDestination {
 /**
  * Audio component.
  */
-class ApplenewsExtraDestinationAudio extends ApplenewsDestination {
+class ApplenewsExtraDestinationAudio extends ApplenewsDestinationComponent {
 
   /**
    * {@inheritdoc}

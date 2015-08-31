@@ -697,7 +697,7 @@ function apple_news_export_destination_edit_form($form, &$form_state, ApplenewsE
   switch ($type) {
 
     case 'components':
-      /** @var ApplenewsDestination $destination */
+      /** @var ApplenewsDestinationComponent $destination */
       $destination = $export->getComponent($id);
       $form['destination_label'] = [
         '#markup' => '<div class="form-item"><label for="edit-weight">' . t('Component') . ' </label>

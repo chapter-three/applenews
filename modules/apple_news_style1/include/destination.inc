@@ -127,7 +127,7 @@ class Applenewsstyle1DestinationBody extends ApplenewsDestinationBodyPhoto {
 /**
  * Image header component.
  */
-class Applenewsstyle1DestinationHeaderImage extends ApplenewsDestination {
+class Applenewsstyle1DestinationHeaderImage extends ApplenewsDestinationComponent {
 
   /**
    * {@inheritdoc}
@@ -216,7 +216,7 @@ class Applenewsstyle1DestinationHeaderImage extends ApplenewsDestination {
 /**
  * Gradient header container component.
  */
-class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination {
+class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestinationComponent {
 
   /**
    * {@inheritdoc}
@@ -410,7 +410,7 @@ class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination
 /**
  * Animated pullquote component.
  */
-class Applenewsstyle1DestinationPullQuote extends ApplenewsDestination {
+class Applenewsstyle1DestinationPullQuote extends ApplenewsDestinationComponent {
 
   /**
    * {@inheritdoc}

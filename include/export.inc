@@ -442,7 +442,7 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
    * @param int $index
    *   ID of component.
    *
-   * @return ApplenewsDestination|NULL
+   * @return ApplenewsDestinationComponent|NULL
    *   The component destination object.
    */
   public function getComponent($index) {
@@ -675,7 +675,7 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
    */
   public function submitConfigForm($form, &$form_state) {
     $components = &$form_state['values']['components'];
-    /** @var ApplenewsDestination $component */
+    /** @var ApplenewsDestinationComponent $component */
     foreach ($this->destinations['components'] as $id => $component) {
       $component->weight = (int) $components[$component->id]['weight'];
       $component->pid = $components[$component->id]['pid'] == '' ? NULL : (int) $components[$component->id]['pid'];
@@ -790,7 +790,7 @@ class ApplenewsExportNode extends ApplenewsExportConfigurable {
     $this->document = new Document($id, $title,
       apple_news_language_code($language), $layout);
     // Components.
-    /** @var ApplenewsDestination $destination */
+    /** @var ApplenewsDestinationComponent $destination */
     foreach ($this->getComponents() as $destination) {
       foreach ($destination->export($entity) as $component) {
         $this->document->addComponent($component);

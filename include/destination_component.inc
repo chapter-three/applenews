@@ -10,7 +10,16 @@ use \ChapterThree\AppleNews\Document\GalleryItem;
 use \ChapterThree\AppleNews\Document\Markdown;
 use \ChapterThree\AppleNews\Document\Styles;
 
-class ApplenewsDestinationContainer extends ApplenewsDestination {
+/**
+ * Base class for component destinations.
+ */
+abstract class ApplenewsDestinationComponent extends ApplenewsDestination {
+}
+
+/**
+ * Container component.
+ */
+class ApplenewsDestinationContainer extends ApplenewsDestinationComponent {
 
   /**
    * {@inheritdoc}
@@ -43,7 +52,7 @@ class ApplenewsDestinationContainer extends ApplenewsDestination {
 /**
  * Body component.
  */
-class ApplenewsDestinationBody extends ApplenewsDestination {
+class ApplenewsDestinationBody extends ApplenewsDestinationComponent {
 
   /**
    * {@inheritdoc}
@@ -232,7 +241,7 @@ class ApplenewsDestinationBodyPhoto extends ApplenewsDestinationBody {
 /**
  * Mosaic or Gallery component.
  */
-class ApplenewsDestinationImages extends ApplenewsDestination {
+class ApplenewsDestinationImages extends ApplenewsDestinationComponent {
 
   /**
    * {@inheritdoc}
@@ -336,7 +345,7 @@ class ApplenewsDestinationImages extends ApplenewsDestination {
 /**
  * Mosaic component.
  */
-class ApplenewsDestinationAd extends ApplenewsDestination {
+class ApplenewsDestinationAd extends ApplenewsDestinationComponent {
 
   /**
    * {@inheritdoc}
@@ -419,7 +428,7 @@ class ApplenewsDestinationAd extends ApplenewsDestination {
 /**
  * Image component.
  */
-class ApplenewsDestinationImage extends ApplenewsDestination {
+class ApplenewsDestinationImage extends ApplenewsDestinationComponent {
 
   /**
    * {@inheritdoc}
@@ -514,7 +523,7 @@ class ApplenewsDestinationImage extends ApplenewsDestination {
 /**
  * Scalable Image component.
  */
-class ApplenewsDestinationScalableImage extends ApplenewsDestination {
+class ApplenewsDestinationScalableImage extends ApplenewsDestinationComponent {
 
   /**
    * {@inheritdoc}
@@ -646,7 +655,7 @@ class ApplenewsDestinationScalableImage extends ApplenewsDestination {
 /**
  * Text component.
  */
-class ApplenewsDestinationText extends ApplenewsDestination {
+class ApplenewsDestinationText extends ApplenewsDestinationComponent {
 
   /**
    * {@inheritdoc}
@@ -886,7 +895,7 @@ class ApplenewsDestinationText extends ApplenewsDestination {
 /**
  * Divider component.
  */
-class ApplenewsDestinationDivider extends ApplenewsDestination {
+class ApplenewsDestinationDivider extends ApplenewsDestinationComponent {
 
   /**
    * {@inheritdoc}
