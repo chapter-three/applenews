@@ -122,6 +122,14 @@ abstract class ApplenewsExport {
   }
 
   /**
+   * Show this export as an option on entity edit form?
+   */
+  public function showOnEdit($entity_type, $bundle) {
+    return $entity_type == $this->entityType() &&
+      @$this->bundles()[$bundle];
+  }
+
+  /**
    * Declare settins and defaults.
    *
    * @return array
