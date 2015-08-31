@@ -14,6 +14,69 @@ use \ChapterThree\AppleNews\Document\Styles;
  * Base class for component destinations.
  */
 abstract class ApplenewsDestinationComponent extends ApplenewsDestination {
+
+  /**
+   * Settings for this destination.
+   *
+   * @var ApplenewsDestinationComponentLayout|string
+   *   ComponentLayout object for this component.
+   */
+  public $layout;
+
+  /**
+   * Implements __sleep().
+   */
+  public function __sleep() {
+    return array_merge([
+      'layout',
+    ], parent::__sleep());
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function export($value = NULL) {
+    /** @var \ChapterThree\AppleNews\Document\Components\Component $component */
+    $component = $this->export($value);
+    if ($this->layout) {
+      $component->setLayout($this->layout);
+    }
+    return $component;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getConfigForm($form, &$form_state) {
+
+    $options = [
+      '' => '- ' . t('none') . ' -',
+    ];
+    foreach ($this->export->getComponentLayouts() as $component_layout) {
+      $options[$component_layout->id] = $component_layout->label();
+    }
+    $form['layout'] = [
+      '#title' => t('Layout'),
+      '#type' => 'select',
+      '#options' => $options,
+      '#default_value' => $this->layout,
+    ];
+
+    $form = parent::getConfigForm($form, $form_state);
+
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function submitConfigForm($form, &$form_state) {
+    if ($form_state['values']['layout']) {
+      $this->layout = $form_state['values']['layout'];
+    }
+    parent::submitConfigForm($form, $form_state);
+  }
+
 }
 
 /**
