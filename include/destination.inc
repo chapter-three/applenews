@@ -61,7 +61,7 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
   /**
    * Unique id among a set of destinations.
    *
-   * @var int
+   * @var int|string
    */
   public $id;
 
@@ -210,7 +210,7 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
    *
    * @param string $ancestors
    *   Internal use.
-   * @param string $entity_types
+   * @param string $entity_type
    *   Internal use.
    */
   public function getSourceOptions($ancestors = '', $entity_type = NULL) {

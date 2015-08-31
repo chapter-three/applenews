@@ -181,7 +181,7 @@ class ApplenewsSourceNode extends ApplenewsSourceEntity {
   }
 
   /**
-   * Entity types this class applies to.
+   * {@inheritdoc}
    */
   static public function types() {
     return ['node'];

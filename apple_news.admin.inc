@@ -656,19 +656,16 @@ function theme_apple_news_export_edit_form($variables) {
           drupal_render($tree[$id]['edit']),
           drupal_render($tree[$id]['delete']),
           drupal_render($tree[$id]['weight']) .
-            drupal_render($tree[$id]['id']) .
-            drupal_render($tree[$id]['pid']),
+          drupal_render($tree[$id]['id']) .
+          drupal_render($tree[$id]['pid']),
         ],
         'class' => $class,
       ];
     }
 
     $header = [
-      t('Component'),
-      [
-        'data' => t('Operations'),
-        'colspan' => 2,
-      ],
+      $label,
+      ['data' => t('Operations'), 'colspan' => 2],
       t('Weight'),
     ];
     $table_id = $css_prefix . 'table';

@@ -418,6 +418,9 @@ class ApplenewsDestinationAd extends ApplenewsDestinationComponent {
         $ad->setBannerType($this->getSetting('banner_type'));
         break;
 
+      default:
+        return [];
+
     }
 
     return [$ad];
