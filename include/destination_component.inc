@@ -102,7 +102,10 @@ class ApplenewsDestinationContainer extends ApplenewsDestinationComponent {
    * {@inheritdoc}
    */
   public function export($value = NULL) {
-    if (empty($value)) return [];
+    if (empty($value)) {
+      return [];
+    }
+
     $container = new Components\Container();
     foreach ($this->children as $component) {
       $container->addComponent($component);
@@ -145,7 +148,7 @@ class ApplenewsDestinationBody extends ApplenewsDestinationComponent {
         return FALSE;
       }
     }
-    return TRUE;
+    return parent::validateSettings();
   }
 
   /**
@@ -176,7 +179,10 @@ class ApplenewsDestinationBody extends ApplenewsDestinationComponent {
    * {@inheritdoc}
    */
   public function export($value = NULL) {
-    if (empty($value)) return [];
+    if (empty($value)) {
+      return [];
+    }
+
     list($key, $values) = $this->getSourceValues($value,
       $this->getSetting('text'));
 
@@ -287,7 +293,10 @@ class ApplenewsDestinationBodyPhoto extends ApplenewsDestinationBody {
    * {@inheritdoc}
    */
   public function export($value = NULL) {
-    if (empty($value)) return [];
+    if (empty($value)) {
+      return [];
+    }
+
     list($key, $values) = $this->getSourceValues($value,
       $this->getSetting('text'));
 
@@ -335,7 +344,7 @@ class ApplenewsDestinationImages extends ApplenewsDestinationComponent {
         return FALSE;
       }
     }
-    return TRUE;
+    return parent::validateSettings();
   }
 
   /**
@@ -369,7 +378,10 @@ class ApplenewsDestinationImages extends ApplenewsDestinationComponent {
    * {@inheritdoc}
    */
   public function export($value = NULL) {
-    if (empty($value)) return [];
+    if (empty($value)) {
+      return [];
+    }
+
     list($key, $values) = $this->getSourceValues($value,
       $this->getSetting('items'));
     list($key_caption, $values_caption) = $this->getSourceValues($value,
@@ -526,7 +538,7 @@ class ApplenewsDestinationImage extends ApplenewsDestinationComponent {
         return FALSE;
       }
     }
-    return TRUE;
+    return parent::validateSettings();
   }
 
   /**
@@ -559,7 +571,10 @@ class ApplenewsDestinationImage extends ApplenewsDestinationComponent {
    * {@inheritdoc}
    */
   public function export($value = NULL) {
-    if (empty($value)) return [];
+    if (empty($value)) {
+      return [];
+    }
+
     list($key, $values) = $this->getSourceValues($value,
       $this->getSetting('source'));
     list($key_caption, $values_caption) = $this->getSourceValues($value,
@@ -628,7 +643,7 @@ class ApplenewsDestinationScalableImage extends ApplenewsDestinationComponent {
         return FALSE;
       }
     }
-    return TRUE;
+    return parent::validateSettings();
   }
 
   /**
@@ -670,7 +685,10 @@ class ApplenewsDestinationScalableImage extends ApplenewsDestinationComponent {
    * {@inheritdoc}
    */
   public function export($value = NULL) {
-    if (empty($value)) return [];
+    if (empty($value)) {
+      return [];
+    }
+
     list($key, $values) = $this->getSourceValues($value,
       $this->getSetting('file'));
     list($key_caption, $values_caption) = $this->getSourceValues($value,
@@ -754,7 +772,7 @@ class ApplenewsDestinationText extends ApplenewsDestinationComponent {
         return FALSE;
       }
     }
-    return TRUE;
+    return parent::validateSettings();
   }
 
   /**
@@ -825,7 +843,9 @@ class ApplenewsDestinationText extends ApplenewsDestinationComponent {
    * {@inheritdoc}
    */
   public function export($value = NULL) {
-    if (empty($value)) return [];
+    if (empty($value)) {
+      return [];
+    }
 
     list($key, $values) = $this->getSourceValues($value,
       $this->getSetting('text'));

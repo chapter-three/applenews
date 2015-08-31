@@ -150,7 +150,7 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
   /**
    * Validate a source key.
    *
-   * @param $key
+   * @param string $key
    *   Key to search for.
    * @param array|null $options
    *   Internal use.

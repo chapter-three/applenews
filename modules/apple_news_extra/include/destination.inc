@@ -39,7 +39,7 @@ class ApplenewsExtraDestinationInstagram extends ApplenewsDestinationComponent {
         return FALSE;
       }
     }
-    return TRUE;
+    return parent::validateSettings();
   }
 
   /**
@@ -67,7 +67,9 @@ class ApplenewsExtraDestinationInstagram extends ApplenewsDestinationComponent {
    *   A list of \ChapterThree\AppleNews\Document\Base objects.
    */
   public function export($value = NULL) {
-    if (empty($value)) return [];
+    if (empty($value)) {
+      return [];
+    }
 
     list($key, $values) = $this->getSourceValues($value,
       $this->getSetting('source'));
@@ -114,7 +116,7 @@ class ApplenewsExtraDestinationTweet extends ApplenewsDestinationComponent {
         return FALSE;
       }
     }
-    return TRUE;
+    return parent::validateSettings();
   }
 
   /**
@@ -142,7 +144,9 @@ class ApplenewsExtraDestinationTweet extends ApplenewsDestinationComponent {
    *   A list of \ChapterThree\AppleNews\Document\Base objects.
    */
   public function export($value = NULL) {
-    if (empty($value)) return [];
+    if (empty($value)) {
+      return [];
+    }
 
     list($key, $values) = $this->getSourceValues($value,
       $this->getSetting('source'));
@@ -190,7 +194,7 @@ class ApplenewsExtraDestinationEmbedWebVideo extends ApplenewsDestinationCompone
         return FALSE;
       }
     }
-    return TRUE;
+    return parent::validateSettings();
   }
 
   /**
@@ -221,7 +225,10 @@ class ApplenewsExtraDestinationEmbedWebVideo extends ApplenewsDestinationCompone
    *   A list of \ChapterThree\AppleNews\Document\Base objects.
    */
   public function export($value = NULL) {
-    if (empty($value)) return [];
+    if (empty($value)) {
+      return [];
+    }
+
     list($key, $values) = $this->getSourceValues($value,
       $this->getSetting('video_url'));
     $components = [];
@@ -276,7 +283,7 @@ class ApplenewsExtraDestinationAudio extends ApplenewsDestinationComponent {
         return FALSE;
       }
     }
-    return TRUE;
+    return parent::validateSettings();
   }
 
   /**
@@ -323,7 +330,10 @@ class ApplenewsExtraDestinationAudio extends ApplenewsDestinationComponent {
    *   A list of \ChapterThree\AppleNews\Document\Base objects.
    */
   public function export($value = NULL) {
-    if (empty($value)) return [];
+    if (empty($value)) {
+      return [];
+    }
+
     list($key, $values) = $this->getSourceValues($value,
       $this->getSetting('url'));
     list($imageurl_key, $imageurl_values) = $this->getSourceValues($value,

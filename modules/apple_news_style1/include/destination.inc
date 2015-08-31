@@ -156,7 +156,7 @@ class Applenewsstyle1DestinationHeaderImage extends ApplenewsDestinationComponen
         return FALSE;
       }
     }
-    return TRUE;
+    return parent::validateSettings();
   }
 
   /**
@@ -177,7 +177,10 @@ class Applenewsstyle1DestinationHeaderImage extends ApplenewsDestinationComponen
    * {@inheritdoc}
    */
   public function export($value = NULL) {
-    if (empty($value)) return [];
+    if (empty($value)) {
+      return [];
+    }
+
     list($key, $values) = $this->getSourceValues($value,
       $this->getSetting('file'));
     if (empty($values[0][$key])) {
@@ -248,7 +251,7 @@ class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination
         return FALSE;
       }
     }
-    return TRUE;
+    return parent::validateSettings();
   }
 
   /**
@@ -284,7 +287,9 @@ class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination
    *   A list of \ChapterThree\AppleNews\Document\Base objects.
    */
   public function export($value = NULL) {
-    if (empty($value)) return [];
+    if (empty($value)) {
+      return [];
+    }
 
     // Components container.
     $container = new Components\Container();
@@ -441,7 +446,7 @@ class Applenewsstyle1DestinationPullQuote extends ApplenewsDestinationComponent 
         return FALSE;
       }
     }
-    return TRUE;
+    return parent::validateSettings();
   }
 
   /**
@@ -481,7 +486,9 @@ class Applenewsstyle1DestinationPullQuote extends ApplenewsDestinationComponent 
    *   A list of \ChapterThree\AppleNews\Document\Base objects.
    */
   public function export($value = NULL) {
-    if (empty($value)) return [];
+    if (empty($value)) {
+      return [];
+    }
 
     // Pullquote.
     list($key, $quote) = $this->getSourceValues($value,
