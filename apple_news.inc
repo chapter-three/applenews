@@ -83,7 +83,7 @@ function apple_news_export_save(ApplenewsExport $export) {
  *   The instantiated class specified by the implementation..
  */
 function apple_news_get_destination($module, $machine_name) {
-  $implementations = apple_news_get_module_apis()['destinations'];
+  $implementations = apple_news_get_module_apis('destination');
   $key = apple_news_export_id($module, $machine_name);
   if (isset($implementations[$key])) {
     $info = $implementations[$key];
@@ -110,7 +110,7 @@ function apple_news_get_destination($module, $machine_name) {
  *   The instantiated class specified by the implementation..
  */
 function apple_news_get_source($module, $machine_name, $arg = NULL) {
-  $implementations = apple_news_get_module_apis()['sources'];
+  $implementations = apple_news_get_module_apis('source');
   $key = apple_news_export_id($module, $machine_name);
   if (isset($implementations[$key])) {
     $info = $implementations[$key];
@@ -240,9 +240,7 @@ function apple_news_exports($reset = NULL) {
     return $exports;
   }
 
-  $implementations = apple_news_get_module_apis();
-
-  $exports = $implementations['exports'];
+  $exports = apple_news_get_module_apis('export');
 
   $result = db_select('apple_news_status', 's')
     ->fields('s', ['module', 'machine_name', 'enabled'])
@@ -280,136 +278,193 @@ function apple_news_exports_enabled($reset = NULL) {
 
 /**
  * Get a list of implementations supporting the current API.
+ *
+ * @param string $class
+ *   One of:
+ *   - "export"
+ *   - "destination"
+ *   - "source"
+ * @param string $type
+ *   If $class is "destination", one of:
+ *   - "component"
+ *   - "layout"
+ *   - "componentLayout"
+ *
+ * @return array
+ *   List of implementation info arrays. If $class is NULL, the arrays are
+ *   nested in an associative array keyed on $class.
+ *
+ * @see hook_apple_news_api().
  */
-function apple_news_get_module_apis() {
+function apple_news_get_module_apis($class = NULL, $type = NULL, $reset = FALSE) {
+  $implementations = &drupal_static(__FUNCTION__);
+  if (empty($implementations) || $reset) {
+    $implementations = [];
 
-  $validate = function($type, $module, $machine_name, $definition) {
-    $args = [
-      '!type'         => $type,
-      '%machine_name' => $machine_name,
-      '%module'       => $module,
-    ];
-    if (empty($definition['class'])) {
-      $msg = '!type %machine_name defined by %module is missing required class';
-      watchdog('apple_news', $msg, $args, WATCHDOG_WARNING);
-      return FALSE;
-    }
-    if (!preg_match('/^[a-zA-Z0-9-_]+$/', $machine_name)) {
-      $msg = '!type machine name "%machine_name" defined by %module must match /^[a-zA-Z0-9-_]$/';
-      watchdog('apple_news', $msg, $args, WATCHDOG_WARNING);
-      return FALSE;
-    }
-    return TRUE;
-  };
-
-  $implementations = [];
-
-  foreach (module_implements('apple_news_api') as $module) {
-    $function = $module . '_apple_news_api';
-    $info = $function() + [
-      'exports'      => [],
-      'sources'      => [],
-      'destinations' => [],
-    ];
-
-    // Check API version.
-    if (!isset($info['api']) || $info['api'] != APPLE_NEWS_API_VERSION) {
-      $msg = t('%function supports Apple News API version %modversion, Apple News module API version is %version - migration support not loaded.');
+    $validate = function($type, $module, $machine_name, $definition) {
       $args = [
-        '%function'   => $function,
-        '%modversion' => $info['api'],
-        '%version'    => APPLE_NEWS_API_VERSION,
+        '!type'         => $type,
+        '%machine_name' => $machine_name,
+        '%module'       => $module,
       ];
-      watchdog('apple_news', $msg, $args, WATCHDOG_NOTICE);
-      continue;
-    }
+      if (empty($definition['class'])) {
+        $msg = '!type %machine_name defined by %module is missing required class';
+        watchdog('apple_news', $msg, $args, WATCHDOG_WARNING);
+        return FALSE;
+      }
+      if (!preg_match('/^[a-zA-Z0-9-_]+$/', $machine_name)) {
+        $msg = '!type machine name "%machine_name" defined by %module must match /^[a-zA-Z0-9-_]$/';
+        watchdog('apple_news', $msg, $args, WATCHDOG_WARNING);
+        return FALSE;
+      }
+      return TRUE;
+    };
 
-    // Exports.
-    foreach ($info['exports'] as $machine_name => $export) {
-      if (!$validate('Export', $module, $machine_name, $export)) {
+    foreach (module_implements('apple_news_api') as $module) {
+      $function = $module . '_apple_news_api';
+      $info = $function() + [
+          'exports'      => [],
+          'sources'      => [],
+          'destinations' => [],
+        ];
+
+      // Check API version.
+      if (!isset($info['api']) || $info['api'] != APPLE_NEWS_API_VERSION) {
+        $msg = t('%function supports Apple News API version %modversion, Apple News module API version is %version - migration support not loaded.');
+        $args = [
+          '%function'   => $function,
+          '%modversion' => $info['api'],
+          '%version'    => APPLE_NEWS_API_VERSION,
+        ];
+        watchdog('apple_news', $msg, $args, WATCHDOG_NOTICE);
         continue;
       }
-      $key = apple_news_export_id($module, $machine_name);
-      $implementations['exports'][$key] = array_merge([
+
+      // Exports.
+      foreach ($info['exports'] as $machine_name => $export) {
+        if (!$validate('Export', $module, $machine_name, $export)) {
+          continue;
+        }
+        $key = apple_news_export_id($module, $machine_name);
+        $implementations['export'][$key] = array_merge([
           'name'        => '',
           'description' => '',
           'arguments'   => [],
         ],
-        $export,
-        [
-          'module'       => $module,
-          'machine_name' => $machine_name,
-        ]
-      );
-    }
+          $export,
+          [
+            'module'       => $module,
+            'machine_name' => $machine_name,
+          ]
+        );
+      }
 
-    // Source classes.
-    foreach ($info['sources'] as $machine_name => $source) {
-      if (!$validate('Source', $module, $machine_name, $source)) {
-        continue;
-      }
-      $key = apple_news_export_id($module, $machine_name);
-      // Set "type" to classify source -- each type will take different
-      // different parameters in its constructor.
-      // @see ApplenewsDestination::getSource()
-      $reflection = apple_news_validate_class($source['class']);
-      if ($source['class'] == 'ApplenewsSourceValue' ||
-        $reflection->isSubclassOf('ApplenewsSourceValue')
-      ) {
-        $type = 'value';
-      }
-      elseif ($source['class'] == 'ApplenewsSourceEntity' ||
-        $reflection->isSubclassOf('ApplenewsSourceEntity')
-      ) {
-        $type = 'entity';
-      }
-      elseif ($source['class'] == 'ApplenewsSourceField' ||
+      // Source classes.
+      foreach ($info['sources'] as $machine_name => $source) {
+        if (!$validate('Source', $module, $machine_name, $source)) {
+          continue;
+        }
+        $key = apple_news_export_id($module, $machine_name);
+        // Set "type" to classify source -- each type will take different
+        // different parameters in its constructor.
+        // @see ApplenewsDestination::getSource()
+        $reflection = apple_news_validate_class($source['class']);
+        if ($source['class'] == 'ApplenewsSourceValue' ||
+          $reflection->isSubclassOf('ApplenewsSourceValue')
+        ) {
+          $type = 'value';
+        }
+        elseif ($source['class'] == 'ApplenewsSourceEntity' ||
+          $reflection->isSubclassOf('ApplenewsSourceEntity')
+        ) {
+          $type = 'entity';
+        }
+        elseif ($source['class'] == 'ApplenewsSourceField' ||
           $reflection->isSubclassOf('ApplenewsSourceField')
-      ) {
-        $type = 'field';
-      }
-      else {
-        $msg = 'Class %class is not a subclass of ApplenewsSourceEntity or ApplenewsSourceField.';
-        $args = ['%class' => $source['class']];
-        watchdog('apple_news', $msg, $args, WATCHDOG_WARNING);
-        return FALSE;
-      }
-      $implementations['sources'][$key] = array_merge([
+        ) {
+          $type = 'field';
+        }
+        else {
+          $msg = 'Class %class is not a subclass of ApplenewsSourceEntity or ApplenewsSourceField.';
+          $args = ['%class' => $source['class']];
+          watchdog('apple_news', $msg, $args, WATCHDOG_WARNING);
+          return FALSE;
+        }
+        $implementations['source'][$key] = array_merge([
           'name'        => '',
           'description' => '',
         ],
-        $source,
-        [
-          'module'       => $module,
-          'machine_name' => $machine_name,
-          'type'         => $type,
-        ]
-      );
-    }
-
-    // Destination classes.
-    foreach ($info['destinations'] as $machine_name => $destination) {
-      if (!$validate('Destination', $module, $machine_name, $destination)) {
-        continue;
+          $source,
+          [
+            'module'       => $module,
+            'machine_name' => $machine_name,
+            'type'         => $type,
+          ]
+        );
       }
-      $key = apple_news_export_id($module, $machine_name);
-      $implementations['destinations'][$key] = array_merge([
+
+      // Destination classes.
+      foreach ($info['destinations'] as $machine_name => $destination) {
+        if (!$validate('Destination', $module, $machine_name, $destination)) {
+          continue;
+        }
+        $key = apple_news_export_id($module, $machine_name);
+        // Set "type" to classify destination.
+        // @see ApplenewsExportConfigurable::getConfigForm()
+        $reflection = apple_news_validate_class($destination['class'],
+          'ApplenewsDestination');
+        if ($destination['class'] == 'ApplenewsDestinationComponent' ||
+          $reflection->isSubclassOf('ApplenewsDestinationComponent')
+        ) {
+          $type = 'component';
+        }
+        elseif ($destination['class'] == 'ApplenewsDestinationLayout' ||
+          $reflection->isSubclassOf('ApplenewsDestinationLayout')
+        ) {
+          $type = 'layout';
+        }
+        elseif ($destination['class'] == 'ApplenewsDestinationComponentLayout' ||
+          $reflection->isSubclassOf('ApplenewsDestinationComponentLayout')
+        ) {
+          $type = 'componentLayout';
+        }
+        $implementations['destination'][$key] = array_merge([
           'name'        => '',
           'description' => '',
         ],
-        $destination, [
-          'module'       => $module,
-          'machine_name' => $machine_name,
-        ]
-      );
+          $destination, [
+            'module'       => $module,
+            'machine_name' => $machine_name,
+            'type'         => $type,
+          ]
+        );
+      }
+
     }
 
+    // Allow modules to alter the migration information.
+    drupal_alter('apple_news_api', $implementations);
   }
 
-  // Allow modules to alter the migration information.
-  drupal_alter('apple_news_api', $implementations);
+  if (empty($class)) {
+    return $implementations;
+  }
 
-  return $implementations;
+  if (!in_array($class, ['export', 'destination', 'source'])) {
+    watchdog('apple_news', 'Invalid $class "%class".', ['%class' => $class], WATCHDOG_ERROR);
+    return NULL;
+  }
+  if ($class != 'destination' || empty($type)) {
+    return $implementations[$class];
+  }
+
+  if (!in_array($type, ['component', 'layout', 'componentLayout'])) {
+    watchdog('apple_news', 'Invalid $type "%type".', ['%type' => $type], WATCHDOG_ERROR);
+    return NULL;
+  }
+  return array_filter($implementations[$class], function($info) use($type) {
+    return $info['type'] == $type;
+  });
 }
 
 /**

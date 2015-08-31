@@ -601,7 +601,7 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
         ],
       ];
     }
-    $options = apple_news_get_module_apis()['destinations'];
+    $options = apple_news_get_module_apis('destination', 'component');
     $options = ['' => t('Select...')] +
       array_map(function($destination) {
         return "${destination['name']} (${destination['module']})";
@@ -681,7 +681,7 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
       $component->pid = $components[$component->id]['pid'] == '' ? NULL : (int) $components[$component->id]['pid'];
     }
     if ($components['_new']['destination']) {
-      $destinations = apple_news_get_module_apis()['destinations'];
+      $destinations = apple_news_get_module_apis('destination');
       $info = $destinations[$components['_new']['destination']];
       $destination = apple_news_get_destination($info['module'], $info['machine_name']);
       $destination->weight = (int) $components['_new']['weight'];

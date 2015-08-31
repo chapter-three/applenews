@@ -216,7 +216,7 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
   public function getSourceOptions($ancestors = '', $entity_type = NULL) {
 
     // Source implementations.
-    $sources = apple_news_get_module_apis()['sources'];
+    $sources = apple_news_get_module_apis('source');
     $value_sources = function() use(&$sources) {
       return array_filter($sources, function($info) {
         return $info['type'] == 'value';
@@ -369,7 +369,7 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
    *   A source object.
    */
   public function getSource(stdClass $value, $key_settings) {
-    $implementations = apple_news_get_module_apis()['sources'];
+    $implementations = apple_news_get_module_apis('source');
 
     $key = @$key_settings['source'];
     if (empty($key)) {
