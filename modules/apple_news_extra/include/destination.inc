@@ -66,7 +66,8 @@ class ApplenewsExtraDestinationInstagram extends ApplenewsDestination {
    * @return array
    *   A list of \ChapterThree\AppleNews\Document\Base objects.
    */
-  public function export($value) {
+  public function export($value = NULL) {
+    if (empty($value)) return [];
 
     list($key, $values) = $this->getSourceValues($value,
       $this->getSetting('source'));
@@ -140,7 +141,8 @@ class ApplenewsExtraDestinationTweet extends ApplenewsDestination {
    * @return array
    *   A list of \ChapterThree\AppleNews\Document\Base objects.
    */
-  public function export($value) {
+  public function export($value = NULL) {
+    if (empty($value)) return [];
 
     list($key, $values) = $this->getSourceValues($value,
       $this->getSetting('source'));
@@ -218,7 +220,8 @@ class ApplenewsExtraDestinationEmbedWebVideo extends ApplenewsDestination {
    * @return array
    *   A list of \ChapterThree\AppleNews\Document\Base objects.
    */
-  public function export($value) {
+  public function export($value = NULL) {
+    if (empty($value)) return [];
     list($key, $values) = $this->getSourceValues($value,
       $this->getSetting('video_url'));
     $components = [];
@@ -319,7 +322,8 @@ class ApplenewsExtraDestinationAudio extends ApplenewsDestination {
    * @return array
    *   A list of \ChapterThree\AppleNews\Document\Base objects.
    */
-  public function export($value) {
+  public function export($value = NULL) {
+    if (empty($value)) return [];
     list($key, $values) = $this->getSourceValues($value,
       $this->getSetting('url'));
     list($imageurl_key, $imageurl_values) = $this->getSourceValues($value,

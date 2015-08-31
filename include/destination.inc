@@ -27,7 +27,7 @@ interface ApplenewsDestinationInterface {
    * @return array
    *   A list of \ChapterThree\AppleNews\Document\Base objects.
    */
-  public function export($value);
+  public function export($value = NULL);
 
 }
 
@@ -118,7 +118,7 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
   /**
    * {@inheritdoc}
    */
-  abstract public function export($value);
+  abstract public function export($value = NULL);
 
   /**
    * Root-only -- can not be a child.

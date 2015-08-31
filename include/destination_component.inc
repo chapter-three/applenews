@@ -27,15 +27,10 @@ class ApplenewsDestinationContainer extends ApplenewsDestination {
   }
 
   /**
-   * Exports to an Apple News Document container object.
-   *
-   * @param array $value
-   *   An array of children component objects.
-   *
-   * @return array
-   *   A list of \ChapterThree\AppleNews\Document\Base objects.
+   * {@inheritdoc}
    */
-  public function export($value) {
+  public function export($value = NULL) {
+    if (empty($value)) return [];
     $container = new Components\Container();
     foreach ($this->children as $component) {
       $container->addComponent($component);
@@ -108,7 +103,8 @@ class ApplenewsDestinationBody extends ApplenewsDestination {
   /**
    * {@inheritdoc}
    */
-  public function export($value) {
+  public function export($value = NULL) {
+    if (empty($value)) return [];
     list($key, $values) = $this->getSourceValues($value,
       $this->getSetting('text'));
 
@@ -218,7 +214,8 @@ class ApplenewsDestinationBodyPhoto extends ApplenewsDestinationBody {
   /**
    * {@inheritdoc}
    */
-  public function export($value) {
+  public function export($value = NULL) {
+    if (empty($value)) return [];
     list($key, $values) = $this->getSourceValues($value,
       $this->getSetting('text'));
 
@@ -299,7 +296,8 @@ class ApplenewsDestinationImages extends ApplenewsDestination {
   /**
    * {@inheritdoc}
    */
-  public function export($value) {
+  public function export($value = NULL) {
+    if (empty($value)) return [];
     list($key, $values) = $this->getSourceValues($value,
       $this->getSetting('items'));
     list($key_caption, $values_caption) = $this->getSourceValues($value,
@@ -398,7 +396,7 @@ class ApplenewsDestinationAd extends ApplenewsDestination {
   /**
    * {@inheritdoc}
    */
-  public function export($value) {
+  public function export($value = NULL) {
 
     switch ($this->getSetting('type')) {
 
@@ -485,7 +483,8 @@ class ApplenewsDestinationImage extends ApplenewsDestination {
   /**
    * {@inheritdoc}
    */
-  public function export($value) {
+  public function export($value = NULL) {
+    if (empty($value)) return [];
     list($key, $values) = $this->getSourceValues($value,
       $this->getSetting('source'));
     list($key_caption, $values_caption) = $this->getSourceValues($value,
@@ -595,7 +594,8 @@ class ApplenewsDestinationScalableImage extends ApplenewsDestination {
   /**
    * {@inheritdoc}
    */
-  public function export($value) {
+  public function export($value = NULL) {
+    if (empty($value)) return [];
     list($key, $values) = $this->getSourceValues($value,
       $this->getSetting('file'));
     list($key_caption, $values_caption) = $this->getSourceValues($value,
@@ -749,7 +749,8 @@ class ApplenewsDestinationText extends ApplenewsDestination {
   /**
    * {@inheritdoc}
    */
-  public function export($value) {
+  public function export($value = NULL) {
+    if (empty($value)) return [];
 
     list($key, $values) = $this->getSourceValues($value,
       $this->getSetting('text'));
@@ -944,7 +945,7 @@ class ApplenewsDestinationDivider extends ApplenewsDestination {
   /**
    * {@inheritdoc}
    */
-  public function export($value) {
+  public function export($value = NULL) {
     $divider = new Components\Divider();
     if ($this->getSetting('color')) {
       $stroke = new Styles\StrokeStyle();

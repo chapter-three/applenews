@@ -51,7 +51,7 @@ class Applenewsstyle1DestinationBody extends ApplenewsDestinationBodyPhoto {
   /**
    * {@inheritdoc}
    */
-  public function export($value) {
+  public function export($value = NULL) {
 
     $body_text_style = new Styles\ComponentTextStyle();
     $body_text_style->setTextAlignment('left')
@@ -176,7 +176,8 @@ class Applenewsstyle1DestinationHeaderImage extends ApplenewsDestination {
   /**
    * {@inheritdoc}
    */
-  public function export($value) {
+  public function export($value = NULL) {
+    if (empty($value)) return [];
     list($key, $values) = $this->getSourceValues($value,
       $this->getSetting('file'));
     if (empty($values[0][$key])) {
@@ -282,7 +283,9 @@ class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination
    * @return array
    *   A list of \ChapterThree\AppleNews\Document\Base objects.
    */
-  public function export($value) {
+  public function export($value = NULL) {
+    if (empty($value)) return [];
+
     // Components container.
     $container = new Components\Container();
     $layout = new Layouts\ComponentLayout();
@@ -477,7 +480,8 @@ class Applenewsstyle1DestinationPullQuote extends ApplenewsDestination {
    * @return array
    *   A list of \ChapterThree\AppleNews\Document\Base objects.
    */
-  public function export($value) {
+  public function export($value = NULL) {
+    if (empty($value)) return [];
 
     // Pullquote.
     list($key, $quote) = $this->getSourceValues($value,
@@ -661,11 +665,12 @@ class Applenewsstyle1DestinationImages extends ApplenewsDestinationImages {
    * @return array
    *   A list of \ChapterThree\AppleNews\Document\Base objects.
    */
-  public function export($value) {
+  public function export($value = NULL) {
     $components = parent::export($value);
     if (empty($components)) {
       return [];
     }
+
     /** @var \ChapterThree\AppleNews\Document\Components\Mosaic|\ChapterThree\AppleNews\Document\Components\Gallery $images */
     list($images) = $components;
     $animation = new Animations\ComponentAnimations\ScaleFadeAnimation();
@@ -737,7 +742,7 @@ class Applenewsstyle1DestinationAd extends ApplenewsDestinationAd {
   /**
    * {@inheritdoc}
    */
-  public function export($value) {
+  public function export($value = NULL) {
     $ad = parent::export($value);
     if (empty($ad)) {
       return [];
