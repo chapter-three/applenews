@@ -372,17 +372,17 @@ function apple_news_get_module_apis($class = NULL, $type = NULL, $reset = FALSE)
         if ($source['class'] == 'ApplenewsSourceValue' ||
           $reflection->isSubclassOf('ApplenewsSourceValue')
         ) {
-          $type = 'value';
+          $class_type = 'value';
         }
         elseif ($source['class'] == 'ApplenewsSourceEntity' ||
           $reflection->isSubclassOf('ApplenewsSourceEntity')
         ) {
-          $type = 'entity';
+          $class_type = 'entity';
         }
         elseif ($source['class'] == 'ApplenewsSourceField' ||
           $reflection->isSubclassOf('ApplenewsSourceField')
         ) {
-          $type = 'field';
+          $class_type = 'field';
         }
         else {
           $msg = 'Class %class is not a subclass of ApplenewsSourceEntity or ApplenewsSourceField.';
@@ -398,7 +398,7 @@ function apple_news_get_module_apis($class = NULL, $type = NULL, $reset = FALSE)
           [
             'module'       => $module,
             'machine_name' => $machine_name,
-            'type'         => $type,
+            'type'         => $class_type,
           ]
         );
       }
@@ -416,17 +416,17 @@ function apple_news_get_module_apis($class = NULL, $type = NULL, $reset = FALSE)
         if ($destination['class'] == 'ApplenewsDestinationComponent' ||
           $reflection->isSubclassOf('ApplenewsDestinationComponent')
         ) {
-          $type = 'component';
+          $class_type = 'component';
         }
         elseif ($destination['class'] == 'ApplenewsDestinationLayout' ||
           $reflection->isSubclassOf('ApplenewsDestinationLayout')
         ) {
-          $type = 'layout';
+          $class_type = 'layout';
         }
         elseif ($destination['class'] == 'ApplenewsDestinationComponentLayout' ||
           $reflection->isSubclassOf('ApplenewsDestinationComponentLayout')
         ) {
-          $type = 'componentLayout';
+          $class_type = 'componentLayout';
         }
         $implementations['destination'][$key] = array_merge([
           'name'        => '',
@@ -435,7 +435,7 @@ function apple_news_get_module_apis($class = NULL, $type = NULL, $reset = FALSE)
           $destination, [
             'module'       => $module,
             'machine_name' => $machine_name,
-            'type'         => $type,
+            'type'         => $class_type,
           ]
         );
       }
