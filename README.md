@@ -252,7 +252,7 @@ Please download AppleNews (version 0.3.1) library to sites/all/libraries/AppleNe
 
 ---
 
-Please consult [drupal.org]() for any issues outside of this scope.
+Please consult [drupal.org](http://drupal.org) for any issues outside of this scope.
 
 ## <a name="developer-api"></a>Developer API
 
