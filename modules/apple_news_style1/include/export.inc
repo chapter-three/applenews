@@ -47,10 +47,11 @@ class Applenewsstyle1ExportNode extends ApplenewsExportNode {
     $form = parent::getConfigForm($form, $form_state);
 
     // Remove parent layout elements.
-    $form['layout']['layout_columns']['#type'] = 'value';
-    $form['layout']['layout_width']['#type'] = 'value';
+    $tab = &$form['additional_settings']['layouts_tab'];
+    $tab['layout']['#access'] = FALSE;
+    $tab['component_layouts']['#access'] = FALSE;
 
-    $form['layout']['layout_alignment'] = [
+    $tab['layout_alignment'] = [
       '#type'          => 'select',
       '#title'         => t('Alignment'),
       '#required'      => TRUE,

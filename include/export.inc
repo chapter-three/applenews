@@ -190,7 +190,31 @@ abstract class ApplenewsExport {
    */
   public function getConfigForm($form, &$form_state) {
 
-    $form['channels'] = [
+    $form['enabled'] = [
+      '#title' => t('Enable this export'),
+      '#type' => 'checkbox',
+      '#default_value' => $this->enabled,
+      '#description' => t('This export will not publish to Apple News until enabled.'),
+      '#prefix' => '<strong>' . t('Status') . '</strong>',
+      '#weight' => 10,
+    ];
+
+    $form['additional_settings'] = [
+      '#type' => 'vertical_tabs',
+      '#weight' => 99,
+    ];
+
+    $form['additional_settings']['general'] = [
+      '#type' => 'fieldset',
+      '#title' => t('General Settings'),
+      '#collapsible' => TRUE,
+      '#collapsed' => FALSE,
+      '#group' => 'main',
+      '#weight' => -10,
+    ];
+    $tab = &$form['additional_settings']['general'];
+
+    $tab['channels'] = [
       '#type' => 'container',
       '#prefix' => '<strong>' . t('Channels') . '</strong>',
       '#weight' => 9,
@@ -204,7 +228,7 @@ abstract class ApplenewsExport {
     $api_channels = apple_news_channels(TRUE);
     if (!empty($api_channels)) {
       foreach ($api_channels as $channel_id => $channel) {
-        $form['channels']['channel-' . $channel_id] = [
+        $tab['channels']['channel-' . $channel_id] = [
           '#type' => 'checkbox',
           '#title' => $channel['name'],
           '#attributes' => [
@@ -213,7 +237,7 @@ abstract class ApplenewsExport {
           '#default_value' => !empty($saved_channels[$channel_id]) ? TRUE : FALSE,
         ];
         foreach ($channel['sections'] as $section_id => $section) {
-          $form['channels']['section-' . $channel_id . '-' . $section_id] = [
+          $tab['channels']['section-' . $channel_id . '-' . $section_id] = [
             '#type' => 'checkbox',
             '#title' => $section['name'] . ' ' . (!empty($section['default']) ? t('<em>(default)</em>') : ''),
             '#attributes' => [
@@ -226,7 +250,7 @@ abstract class ApplenewsExport {
       }
     }
     else {
-      $form['channels']['info'] = [
+      $tab['channels']['info'] = [
         '#markup' => t('Please provide Apple News <a href="!credentials">credentials</a> and add at least one <a href="!channel">channel</a>.',
           [
             '!credentials' => url('admin/config/content/apple-news/settings'),
@@ -235,15 +259,6 @@ abstract class ApplenewsExport {
         )
       ];
     }
-
-    $form['enabled'] = [
-      '#title' => t('Enable this export'),
-      '#type' => 'checkbox',
-      '#default_value' => $this->enabled,
-      '#description' => t('This export will not publish to Apple News until enabled.'),
-      '#prefix' => '<strong>' . t('Status') . '</strong>',
-      '#weight' => 10,
-    ];
 
     return $form;
   }
@@ -618,6 +633,15 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
   public function getConfigForm($form, &$form_state) {
     $form = parent::getConfigForm($form, $form_state);
 
+    $form['additional_settings']['layouts_tab'] = [
+      '#type' => 'fieldset',
+      '#title' => t('Layout'),
+      '#collapsible' => TRUE,
+      '#collapsed' => FALSE,
+      '#group' => 'main',
+    ];
+    $tab = &$form['additional_settings']['layouts_tab'];
+
     // Layouts.
     $options = apple_news_get_module_apis('destination', 'layout');
     $default_value = array_keys($options);
@@ -641,20 +665,20 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
     $options = array_map(function($destination) {
       return "${destination['name']} (${destination['module']})";
     }, $options);
-    $form['layout'] = [
+    $edit = l(t('edit'), 'admin/config/content/apple-news/exports/' . apple_news_export_id($this->module, $this->machineName) . '/layout/0');
+    $tab['layout'] = [
       '#type'          => 'select',
-      '#title'         => t('Layout'),
+      '#title'         => t('Layout !edit', ['!edit' => $edit]),
       '#options'       => $options,
       '#default_value' => $default_value,
-      '#suffix'        => l(t('edit'), 'admin/config/content/apple-news/exports/' . apple_news_export_id($this->module, $this->machineName) . '/layout/0'),
-      '#weight'        => -50,
+      '#weight'        => 1,
     ];
 
     // Component Layouts.
-    $form['component_layouts'] = [
+    $tab['component_layouts'] = [
       '#title'  => t('Component Layouts'),
       '#tree'   => TRUE,
-      '#weight' => -49,
+      '#weight' => 2,
     ];
     /** @var ApplenewsDestinationComponentLayout $destination */
     foreach ($this->getdestinations('componentLayouts') as $destination) {
@@ -667,7 +691,7 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
           ]),
           'error');
       }
-      $form['component_layouts'][$destination->id] = [
+      $tab['component_layouts'][$destination->id] = [
         '#apple_news_destination' => $destination,
         'destination' => [
           '#markup' => check_plain($destination->label()),
@@ -693,7 +717,7 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
       array_map(function($destination) {
         return "${destination['name']} (${destination['module']})";
       }, $options);
-    $form['component_layouts']['_new'] = [
+    $tab['component_layouts']['_new'] = [
       '#apple_news_destination' => FALSE,
       'destination' => [
         '#title' => t('Add new component layout'),
@@ -717,11 +741,19 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
       ],
     ];
 
+    $form['additional_settings']['components_tab'] = [
+      '#type' => 'fieldset',
+      '#title' => t('Components'),
+      '#collapsible' => TRUE,
+      '#collapsed' => FALSE,
+      '#group' => 'main',
+    ];
+    $tab = &$form['additional_settings']['components_tab'];
+
     // Components.
-    $form['components'] = [
+    $tab['components'] = [
       '#title'  => t('Components'),
       '#tree'   => TRUE,
-      '#weight' => -47,
     ];
     /** @var ApplenewsDestinationComponent $destination */
     foreach ($this->getdestinations('components') as $destination) {
@@ -734,7 +766,7 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
           ]),
           'error');
       }
-      $form['components'][$destination->id] = [
+      $tab['components'][$destination->id] = [
         '#apple_news_destination' => $destination,
         'destination' => [
           '#markup' => check_plain($destination->label()),
@@ -778,7 +810,7 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
       array_map(function($destination) {
         return "${destination['name']} (${destination['module']})";
       }, $options);
-    $form['components']['_new'] = [
+    $tab['components']['_new'] = [
       '#apple_news_destination' => FALSE,
       'destination' => [
         '#title' => t('Add new component'),
@@ -903,11 +935,13 @@ class ApplenewsExportNode extends ApplenewsExportConfigurable {
   public function getConfigForm($form, &$form_state) {
     $form = parent::getConfigForm($form, $form_state);
 
+    $tab = &$form['additional_settings']['general'];
+
     $options = entity_get_info('node')['bundles'];
     $options = array_map(function($info) {
       return $info['label'];
     }, $options);
-    $form['bundles'] = [
+    $tab['bundles'] = [
       '#required'      => TRUE,
       '#title'         => t('Content Types'),
       '#type'          => 'select',

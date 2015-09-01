@@ -591,56 +591,57 @@ function apple_news_export_edit_form($form, &$form_state, ApplenewsExport $expor
  */
 function theme_apple_news_export_edit_form($variables) {
   $form = $variables['form'];
-  $output = '';
 
   // Non-order-able table of destinations.
-  foreach (['component_layouts' => t('Component Layout')] as $key => $label) {
-    if (empty($form[$key])) {
-      continue;
-    }
-
-    $tree = &$form[$key];
-
+  $elements = [
+    [
+      'item_label' => t('Component Layout'),
+      'element' => &$form['additional_settings']['layouts_tab']['component_layouts'],
+    ],
+  ];
+  foreach ($elements as $info) {
     $rows = [];
-    foreach (element_children($tree) as $id) {
+    foreach (element_children($info['element']) as $id) {
       $rows[] = [
         'data' => [
-          drupal_render($tree[$id]['destination']),
-          drupal_render($tree[$id]['edit']),
-          drupal_render($tree[$id]['delete']),
-          drupal_render($tree[$id]['id']),
+          drupal_render($info['element'][$id]['destination']),
+          drupal_render($info['element'][$id]['edit']),
+          drupal_render($info['element'][$id]['delete']),
+          drupal_render($info['element'][$id]['id']),
         ],
       ];
     }
 
     $header = [
-      $label,
+      $info['item_label'],
       ['data' => t('Operations'), 'colspan' => 2],
     ];
-    $output .= theme('table', [
-      'header' => $header,
-      'rows' => $rows,
-    ]);
+    $info['element'] = [
+      '#markup' => theme('table', ['header' => $header, 'rows' => $rows]),
+      '#weight' => @$info['element']['#weight'] ? $info['element']['#weight'] : 0,
+      '#access' => isset($info['element']['#access']) ? $info['element']['#access'] : TRUE,
+    ];
   }
 
   // Order-able sets of destinations.
-  foreach (['components' => t('Component')] as $key => $label) {
-    if (empty($form[$key])) {
-      continue;
-    }
-
-    $tree = &$form[$key];
+  $elements = [
+    'components' => [
+      'item_label' => t('Component'),
+      'element' => &$form['additional_settings']['components_tab']['components'],
+    ],
+  ];
+  foreach ($elements as $key => $info) {
     $css_prefix = "apple-news-${key}-";
 
     $rows = [];
-    foreach (element_children($tree) as $id) {
-      $tree[$id]['weight']['#attributes']['class'] = [$css_prefix . 'weight'];
-      $tree[$id]['id']['#attributes']['class'] = [$css_prefix . 'id'];
-      $tree[$id]['pid']['#attributes']['class'] = [$css_prefix . 'pid'];
+    foreach (element_children($info['element']) as $id) {
+      $info['element'][$id]['weight']['#attributes']['class'] = [$css_prefix . 'weight'];
+      $info['element'][$id]['id']['#attributes']['class'] = [$css_prefix . 'id'];
+      $info['element'][$id]['pid']['#attributes']['class'] = [$css_prefix . 'pid'];
       $class = ['draggable'];
-      if (@$tree[$id]['#apple_news_destination']) {
+      if (@$info['element'][$id]['#apple_news_destination']) {
         /** @var ApplenewsDestination $destination */
-        $destination = $tree[$id]['#apple_news_destination'];
+        $destination = $info['element'][$id]['#apple_news_destination'];
         if ($destination->isRoot()) {
           $class[] = 'tabledrag-root';
         }
@@ -648,32 +649,37 @@ function theme_apple_news_export_edit_form($variables) {
           $class[] = 'tabledrag-leaf';
         }
       }
-      $indent = theme('indentation', ['size' => $tree[$id]['depth']['#value']]);
-      unset($tree[$id]['depth']);
+      $indent = theme('indentation', ['size' => $info['element'][$id]['depth']['#value']]);
+      unset($info['element'][$id]['depth']);
       $rows[] = [
         'data' => [
-          $indent . drupal_render($tree[$id]['destination']),
-          drupal_render($tree[$id]['edit']),
-          drupal_render($tree[$id]['delete']),
-          drupal_render($tree[$id]['weight']) .
-          drupal_render($tree[$id]['id']) .
-          drupal_render($tree[$id]['pid']),
+          $indent . drupal_render($info['element'][$id]['destination']),
+          drupal_render($info['element'][$id]['edit']),
+          drupal_render($info['element'][$id]['delete']),
+          drupal_render($info['element'][$id]['weight']) .
+          drupal_render($info['element'][$id]['id']) .
+          drupal_render($info['element'][$id]['pid']),
         ],
         'class' => $class,
       ];
     }
 
     $header = [
-      $label,
+      $info['item_label'],
       ['data' => t('Operations'), 'colspan' => 2],
       t('Weight'),
     ];
     $table_id = $css_prefix . 'table';
-    $output .= theme('table', [
+    $table = [
       'header' => $header,
       'rows' => $rows,
       'attributes' => ['id' => $table_id],
-    ]);
+    ];
+    $info['element'] = [
+      '#markup' => theme('table', $table),
+      '#weight' => @$info['element']['#weight'] ? $info['element']['#weight'] : 0,
+      '#access' => isset($info['element']['#access']) ? $info['element']['#access'] : TRUE,
+    ];
     drupal_add_tabledrag($table_id, 'match', 'parent',
       $css_prefix . 'pid',
       $css_prefix . 'pid',
@@ -686,8 +692,7 @@ function theme_apple_news_export_edit_form($variables) {
       TRUE);
   }
 
-  $output .= drupal_render_children($form);
-  return $output;
+  return drupal_render_children($form);
 }
 
 /**
