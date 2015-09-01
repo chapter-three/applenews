@@ -24,29 +24,12 @@ class Applenewsstyle1ExportNode extends ApplenewsExportNode {
   }
 
   /**
-   * {@inheritdoc}
-   */
-  public function getSetting($key) {
-    // Override parent settings.
-    switch ($key) {
-
-      case 'layout_columns':
-        return 7;
-
-      case 'layout_width':
-        return 1024;
-
-    }
-    return parent::getSetting($key);
-  }
-
-  /**
    * Provides a configuration form for this export.
    */
   public function getConfigForm($form, &$form_state) {
     $form = parent::getConfigForm($form, $form_state);
 
-    // Remove parent layout elements.
+    // Hide parent layout elements.
     $tab = &$form['additional_settings']['layouts_tab'];
     $tab['layout']['#access'] = FALSE;
     $tab['component_layouts']['#access'] = FALSE;
@@ -64,29 +47,6 @@ class Applenewsstyle1ExportNode extends ApplenewsExportNode {
     ];
 
     return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitConfigForm($form, &$form_state) {
-    $this->setSetting('layout_alignment',
-      $form_state['values']['layout_alignment']);
-    switch ($this->getSetting('layout_alignment')) {
-
-      case 'left':
-      case 'right':
-        $this->setSetting('layout_width', 1024);
-        $this->setSetting('layout_columns', 7);
-        break;
-
-      case 'center':
-        $this->setSetting('layout_width', 768);
-        $this->setSetting('layout_columns', 9);
-        break;
-
-    }
-    parent::submitConfigForm($form, $form_state);
   }
 
   /**
@@ -143,9 +103,21 @@ class Applenewsstyle1ExportNode extends ApplenewsExportNode {
    */
   public function export($entity) {
     parent::export($entity);
-    $this->document->getLayout()
-      ->setMargin(75)
-      ->setGutter(20);
+
+    $layout = $this->document->getLayout();
+    switch ($this->getSetting('layout_alignment')) {
+
+      case 'left':
+      case 'right':
+        $layout->setWidth(1024)->setColumns(7);
+        break;
+
+      case 'center':
+        $layout->setWidth(768)->setColumns(9);
+        break;
+
+    }
+    $layout->setMargin(75)->setGutter(20);
     $this->associateComponents();
     return $this->document;
   }
