@@ -1,4 +1,4 @@
-[Draft] Apple News
+# [Draft] Apple News
 
 #### Table of Contents
 
@@ -6,7 +6,7 @@
 2. [Before you Start](#before)
 3. [Minimum Requirements](#minimum-req)
 4. [Installation](#installation)
-    1. [Drush based installation](#Drush-install)
+    1. [Drush based installation](#drush-install)
     2. [Manually based installation](#manual-install)
 5. [Configuration](#configuration)
     1. [Initial settings configuration](#initial)
@@ -21,12 +21,12 @@
 
 ## <a name="tldr"></a>TL;DR
 
-Install modules:
+[Install modules](https://www.drupal.org/documentation/install/modules-themes/modules-7):
 
 -   [Libraries](https://www.drupal.org/project/libraries)
 -   [Entity](https://www.drupal.org/project/entity)
 
-Install Libraries (see [Installing an external library that is required by a contributed module](https://www.drupal.org/node/1440066)):
+[Install Libraries](https://www.drupal.org/node/1440066):
 
 -   [php-curl-class 4.6.9](https://github.com/php-curl-class/php-curl-class)
 -   [AppleNews (latest)](https://github.com/chapter-three/AppleNews)
