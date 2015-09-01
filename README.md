@@ -1,4 +1,4 @@
-# [DRAFT] Apple News
+[Draft] Apple News
 
 #### Table of Contents
 
@@ -6,7 +6,7 @@
 2. [Before you Start](#before)
 3. [Minimum Requirements](#minimum-req)
 4. [Installation](#installation)
-    1. [Drush based installation](#drush-install)
+    1. [Drush based installation](#Drush-install)
     2. [Manually based installation](#manual-install)
 5. [Configuration](#configuration)
     1. [Initial settings configuration](#initial)
@@ -47,41 +47,40 @@ Go to `/admin/config/content/apple-news/`:
 2.  Preview exported content to test your export.
 3.  Configure your connection to the Apple Publisher API and push.
 
-## <a name="before"></a>Before you start
+## <a name="before"></a>Before You Start
 
-These instructions assume that you have a working Drupal 7 site (brand new or pre-existing) ready to work with, that you have access to administer modules and add code to the site's code base, And that you meet the minimum requirements for installing this module. Please confirm that you have the [Minimum Requirements](#minimum-req) before proceeding with this installation.
+Before you start you must have a working Drupal 7 site, permissions to administer modules and add code, and that you meet the [Minimum Requirements](#minimum-req).
 
-To install Drupal locally or on remote server, please see these guides on [Quick installation](https://www.drupal.org/documentation/install) and [Quick installation for developers](https://www.drupal.org/documentation/install/developers).
+To install Drupal see these guides: [Quick installation](https://www.drupal.org/documentation/install) and [Quick installation for developers](https://www.drupal.org/documentation/install/developers).
 
-[Drush](https://github.com/drush-ops/drush) is not mandatory but will make for an easier, and faster installation.
+[Drush](https://github.com/drush-ops/drush) is not mandatory but will make for an easier, faster installation.
 
 ## <a name="minimum-req"></a>Minimum Requirements
 
-Please make sure that your Drupal site matches these minimum requirements, in order to avoid installation problems.
+These are the minimum requirements for the Apple News module.
 
-* **PHP version 5.4 and above.** Version 5.3, and below, will cause fatal error.
-* **Drupal 7.** Latest version of Drupal always recommended.
-* **PHP compiled with cURL support**. One way to check is to install your drupal site and then visit (`admin/reports/status/php`), and check for 'curl'. If not enabled, a quick google search with 'enable curl php [your server type]' will help.
-* **(Optional) Drush 5.9 and above**. You will need Drush installed to follow the [Drush based installation](#drush-install) guide, Otherwise, you will have to follow the [Manually based installation](#manual-install) guide
+* **PHP version 5.4 and above.** Version 5.3 and below will cause a fatal error.
+* **Drupal 7.** The late version of Drupal 7 is recommended.
+* **PHP compiled with cURL support**. Check by going to /admin/reports/status/php on your Drupal site and looking for 'curl'. If not enabled, do a Google search for 'enable curl php [your server type]'.
+* **(Optional) Drush 5.9 and above**. If Drush is installed, follow the [Drush-based Installation](#drush-install) guide. Otherwise, follow the [Manual Installation](#manual-install) guide
 
 ## <a name="installation"></a>Installation
 
-You can install the apple_news module using Drush or manually adding the modules and libraries to your code base.
+You can install the Apple News module using Drush or manually by adding the modules and libraries to your code base.
 
-### <a name="drush-install"></a>Drush based installation
+### <a name="drush-install"></a>Drush-based installation
 
-To properly run drush commands on your site you must shell into your Drupal sites directory, into the folder that contains the settings.php file specifically for your site. Some examples of what this would be are:
+To properly run Drush commands, first you must shell into the folder that contains the settings.php file for your Drupal site. Some possible settings.php file locations are:
 
 ```shell
-sites/default/[location of settings.php file]
-sites/mysite.local/[location of settings.php file]
-sites/mysuperawesomenewssite.com/[location of settings.php file]
+sites/default/settings.php file
+sites/mysite.local/settings.php
+sites/mysuperawesomenewssite.com/settings.php
 ```
 
-To install Apple News using drush and command line:
 
 
-1. First, download and enable the module dependencies for this module.
+1. Download and enable the module dependencies for this module.
 
     -   [Libraries](https://www.drupal.org/project/libraries)
     -   [Entity](https://www.drupal.org/project/entity)
@@ -91,32 +90,32 @@ To install Apple News using drush and command line:
     $ drush en libraries entity
     ```
 
-2. Next, in your terminal, navigate to your `sites/all/libraries` folder and run the following curl commands to download the proper library versions. If the `libraries` folder does not exist, please create it before running the following command:
+2. In your terminal, navigate to your `sites/all/libraries` folder and run the following curl commands to download the proper library versions. If the `libraries` folder does not exist, create it before running the following command:
 
     ```shell
     $ curl -L https://github.com/php-curl-class/php-curl-class/archive/4.6.9.tar.gz | tar xz
     $ mv php-curl-class-4.6.9 php-curl-class
     ```
 
-    **NOTE: The AppleNews library is currently gated in a private repo. the curl command won't work until publicly released. To get around this, if you have access to the repo, you can download from [the github page](https://github.com/chapter-three/AppleNews/tree/0.3.1)**
+    **NOTE: The Apple News library is currently gated in a private repo. The curl command won't work until it is publicly released. You can download from [the Apple News GitHub page](https://github.com/chapter-three/AppleNews/tree/0.3.1), if you have access to it.**
 
-3. Next, still inside the libraries folder, run the following curl command:
+3. While still inside the libraries folder, run the following curl command:
 
     ```shell
     $ curl -L https://github.com/chapter-three/AppleNews/archive/0.3.1.tar.gz | tar xz
     $ mv AppleNews-0.3.1 AppleNews
     ```
 
-4. After the libraries are downloaded, your should see directories matching the following setups (You may need to rename the folders you just downloaded to match):
+4. After the libraries are downloaded, your should have directories matching the following paths. You may need to rename the folders you just downloaded to match):
 
     ```
     sites/all/libraries/AppleNews/[files start here]
     sites/all/libraries/php-curl-class/[files start here]
     ```
 
-5. Add the apple_news module to your code base in the [usual manner](https://www.drupal.org/documentation/install/modules-themes), enable it using the drush command:
+5.  [Add the apple_news module](https://www.drupal.org/documentation/install/modules-themes) to your code base  and enable it using the Drush command:
 
-    **NOTE: Before the module is added to drupal.org, the apple_news module can't be downloaded using [Drush](https://github.com/drush-ops/drush). It must be manually added to the sites/all/modules/contrib directory. If you have access to the repo, you can download the module from [the github page](https://github.com/chapter-three/apple_news)**
+    **NOTE: The apple_news module can't be downloaded using [Drush](https://github.com/drush-ops/drush). It must be manually added to the sites/all/modules/contrib directory. If you have access to the repo, you can download the module from [the github page](https://github.com/chapter-three/apple_news)**
 
     ```shell
     $ drush en apple_news -y
@@ -126,69 +125,77 @@ If you enable the module before downloading the required libraries, you will rec
 
 After installing all modules and libraries, check the status of the installation on your sites Status Report page (`admin/reports/status`). Look for "Apple News" and "PHP Curl Class" and make sure they are green. If green, you are good to go and jump to the [Configuration Section](#configuration). If not, please see the [Troubleshooting section](#troubleshoot).
 
-### <a name="manual-install"></a>Manually based installation
+### <a name="manual-install"></a>Manual Installation
 
 To manually install:
 
-1.  Download this module and its dependencies in the [usual manner](https://www.drupal.org/documentation/install/modules-themes):
+1.  Download this module and [its dependencies](https://www.drupal.org/documentation/install/modules-themes):
     -   [Libraries](https://www.drupal.org/project/libraries)
     -   [Entity](https://www.drupal.org/project/entity)
-2.  Next, [Download and install the Apple News library (version 0.3.1)](https://github.com/chapter-three/AppleNews/archive/0.3.1.zip) into your libraries folder. If you do not have a sites/all/libraries folder, please create it before downloading **Note: The AppleNews library is currently gated in a private repo. This download may not be accessible unless you have access to the private repository**
-3.  [Download and install the PHP Curl Class library (version 4.6.9)](https://github.com/php-curl-class/php-curl-class/archive/4.6.9.tar.gz) into your libraries folder. **Note: Must be version 4.6.9, not higher or lower.**
-4. After the libraries are downloaded, you should see directories matching the following setups (You may need to rename the folders you just downloaded to match):
+2.  [Download the Apple News library (version 0.3.1)](https://github.com/chapter-three/AppleNews/archive/0.3.1.zip) into your sites/all/libraries folder. If the libraries folder does not exist, create it before downloading.
+
+    **NOTE: Before the module is added to drupal.org, the apple_news module can't be downloaded using [Drush](https://github.com/drush-ops/drush). It must be manually added to the sites/all/modules/contrib directory. If you have access to the repo, you can download the module from [the github page](https://github.com/chapter-three/apple_news)**
+
+3.  [Download and install the PHP Curl Class library (version 4.6.9)](https://github.com/php-curl-class/php-curl-class/archive/4.6.9.tar.gz) into your libraries folder. **Note: It must be version 4.6.9, not higher or lower.**
+4.  After the libraries are downloaded, your should have directories matching the following paths. (You may need to rename the folders you just downloaded to match):
 
     ```shell
     sites/all/libraries/AppleNews/[files start here]
     sites/all/libraries/php-curl-class/[files start here]
     ```
 
-5.  Visit `admin/modules` and enable the Apple News module. This will enable the Libraries module and the Entities module, as well as any other additional dependencies.
+5.  Go to `admin/modules` enable the Apple News module. This will enable the Libraries module and the Entities module, as well as any additional dependencies.
 
-After installing all modules and libraries, check the status of the installation on your sites Status Report page (`admin/reports/status`). Look for "Apple News" and "PHP Curl Class" and make sure they are green. If green, you are good to go and jump to the [Configuration Section](#configuration). If not, please see the [Troubleshooting section](#troubleshoot)
+After installing all modules and libraries, check the status on your site's Status Report page (`admin/reports/status`). Make sure that "Apple News" and "PHP Curl Class" are green. If so, you can jump to the [Configuration section](#configuration). If not, see the [Troubleshooting section](#troubleshoot)
 
 
 ## <a name="configuration"></a>Configuration
 
-Congrats on installing the Apple News module. Please follow these configuration instructions to start publishing your content.
+Follow these configuration instructions to start publishing your content.
 
-### <a name="initial"></a>Initial settings configuration
+### <a name="initial"></a>Initial Settings configuration
 
-1. Visit apple.com to get your credentials and create a news channel that your Drupal site will use.
+1. Visit [apple.com](http://apple.com) to get your credentials and create a news channel that your Drupal site will use.
+
 2. In your Drupal site, navigate to the "Apple news credentials page" (`admin/config/content/apple-news/settings`) and add your Apple News credentials.
-3. In your Drupal site, navigate to the "Apple news channels page" (`admin/config/content/apple-news/settings/channels`) and add a channel ID from your apple account. Please add one ID at a time. The channels are validated by the apple credentials you added to your Drupal site, and if valid, will fetch the channel information and add them to your sites list of channels.
 
-### <a name="channel"></a>Export configuration
+3. In your Drupal site, navigate to the "Apple news channels page" (`admin/config/content/apple-news/settings/channels`) and add a channel ID from your Apple account. Please add one ID at a time. The channels are validated by the Apple credentials that you added to your Drupal site. If valid, it will fetch the channel information and add them to your site's list of channels.
 
-An *export* is code that defines how to transform data in a Drupal site so it can be pushed to Apple News. The `apple_news` module defines a simple export, while the `apple_news_style1` module defines a more usable style.
+### <a name="channel"></a>Export Configuration
+
+An *export* is code that defines how to transform data in a Drupal site so it can be pushed to Apple News. The Apple News module defines a simple export, while the `apple_news_style1` module defines a more usable style.
 
 To get started, we suggest enabling the `apple_news_style1` module and using that as a starting point.
 
 1. In your Drupal site, navigate to the "Apple news export manager page" (`admin/config/content/apple-news`).
-2. Click on the **'edit'** link of the export you would like to connect to an apple news channel.
-3. In this "Edit page", the minimum requirements to properly configure a channel to an apple news channel are:
+2. Click on the **'edit'** link of the export you would like to connect to an Apple News channel.
+3. On the Edit page, the minimum requirements to properly configure a channel to an Apple News channel are:
     1. Under "Add new component", select a component.
-    2. Under "Channels", select the channel (Apple News Channel) that this export will be tied to. (in other words, this export channel will get nodes, process them, and send them to this selected channel for display in the Apple News app.)
+    2. Under "Channels", select the channel (Apple News Channel) that this export will be tied to. This export channel will get nodes, process them, and send them to the selected channel for display in the Apple News app.
     3. Under "Content types", select the content types that should be processed with this channel.
-    4. Click **Save Changes**
-    5. After saving, you will see some options to the right of the new components we just added. These are "edit" and "delete". Click on **"edit"**
-    6. Configure the component. Most components will require that you specify source fields -- the component will use the data in those fields as content in the component.
-    7. Click **Save Changes**
+    4. Click **Save Changes**.
+    5. After saving, you will see "edit" and "delete" options to the right of the new components we just added. Click on **"edit"**.
+    6. Configure the component. Most components will require that you specify source fields and the component will use the data in those fields as content in the component.
+    7. Click **Save Changes**.
 
-### <a name="node"></a>Node configuration
+### <a name="node"></a>Node Configuration
 
-Once a content type is enabled in an export/channel, the option to add the individual post reside in the nodes add/edit page. If a content type is not added to any channel export, these options will not be available on the node add/edit page.
+Once a content type is enabled in an export/channel, the option to add the individual post is in the node's add/edit page. If a content type is not added to any channel export, these options will not be available on the node add/edit page.
 
-1. To add a node to the channel sent to apple, In the "Apple News" tab, select _"Publish to Apple"_. If you want to temporarily stop publishing to apple, or make revisions to the post before publishing or re-publishing to apple, deselect this checkbox. It is the equivalent to the "Publish/Unpublish" feature with drupal nodes.
-2. Next, select one or more channels from the available list.
-2. And for each selected channel, select an available "Section" that it belongs to. ("Sections" are created on apple.com, where you initially created the channel).
-3. Once a node is initially published to an apple news channel, It will also display a general information section showing Post date, Share URL, the Section, and the Channel its published to.
+1. To add a node to the channel sent to Apple, select _"Publish to Apple"_ in the "Apple News" tab. If you want to temporarily stop publishing to Apple, or make revisions to the post before publishing or re-publishing to Apple, deselect this checkbox. It is the equivalent to the "Publish/Unpublish" feature with Drupal nodes.
 
-### <a name="preview"></a>Preview a post before publishing
+2. Select one or more channels from the available list.
 
-If you want to preview a post before sending it to apple, You will need to first download and install the Apple "News Preview" Application (LINK TBD).
+3. For each selected channel, select an available "section" that it belongs to. ("Sections" are created on apple.com, where you initially created the channel).
 
-1. After saving the node, return to the nodes edit page
-2. Find the "Apple News" Tab, and click the "Download" link under "Preview". This will download a folder containing the specialy formatted file needed by the News Preview App.
+4. Once a node is initially published to an Apple news channel, it will display a general information section showing post date, share URL, and the section and channel where it is published.
+
+### <a name="preview"></a>Preview a Post Before Publishing
+
+If you want to preview a post before sending it to Apple, you will need to first download and install the Apple "News Preview" Application (LINK TBD).
+
+1. After saving the node, return to the node's edit page
+2. Find the "Apple News" tab, and click the "Download" link under "Preview." This will download a folder containing the specialy formatted file needed by the News Preview App.
 2. Drag the whole folder into the App icon to open, and it will display the page just as the Apple News App will be displaying it.
 
 ### <a name="delete"></a>Delete a post from publishing
@@ -203,7 +210,7 @@ You are now ready to start sharing your posts and articles with the Apple News S
 
 ## <a name="troubleshoot"></a>Troubleshoot
 
-If you are having trouble installing the module or it's dependencies, review the common scenarios below.
+If you are having trouble installing the module or its dependencies, review the common scenarios below.
 
 **Problem:** I'm getting the error message that includes:
 
@@ -221,7 +228,7 @@ Fatal error: undefined '['
 SSL certificate problem: unable to get local issuer certificate
 ```
 
-**Solution:** This is a mis-configuration in your server setup. Depending on what server OS you are using, the fix is different. Please see this StackOverflow post "[curl: (60) SSL certificate : unable to get local issuer certificate](http://stackoverflow.com/questions/24611640/curl-60-ssl-certificate-unable-to-get-local-issuer-certificate)" For more information on possible fixes specific for your system
+**Solution:** This is a mis-configuration in your server setup. Depending on what server OS you are using, the fix is different. Please see this StackOverflow post "[curl: (60) SSL certificate : unable to get local issuer certificate](http://stackoverflow.com/questions/24611640/curl-60-ssl-certificate-unable-to-get-local-issuer-certificate)" for more information on possible fixes specific for your system.
 
 ---
 
@@ -245,7 +252,7 @@ Please download AppleNews (version 0.3.1) library to sites/all/libraries/AppleNe
 
 ---
 
-Please consult drupal.org for any issues outside of this scope.
+Please consult [drupal.org]() for any issues outside of this scope.
 
 ## <a name="developer-api"></a>Developer API
 
