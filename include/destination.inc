@@ -92,14 +92,6 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
   public $depth;
 
   /**
-   * Child components.
-   *
-   * @var array
-   *   List of \ChapterThree\AppleNews\Document objects.
-   */
-  public $children;
-
-  /**
    * Implements __construct().
    */
   public function __construct() {
@@ -138,13 +130,6 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
    */
   public function isLeaf() {
     return TRUE;
-  }
-
-  /**
-   * If isLeaf() returns FALSE, this should set any child components.
-   */
-  public function setChildren($children) {
-    $this->children = $children;
   }
 
   /**
