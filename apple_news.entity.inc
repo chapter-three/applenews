@@ -40,7 +40,6 @@ function _apple_news_entity_push($op, $entity, $type) {
           $settings['metadata']['data']['links']['sections'][] = apple_news_section_url($section_id);
         }
       }
-      $settings['override_revision'] = !empty($el['override_revision']);
       if (!apple_news_op($op, $channel_id, $entity, $type, $export, $settings)) {
         drupal_set_message(
           t('Unable to push %title to %channel',

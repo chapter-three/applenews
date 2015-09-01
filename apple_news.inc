@@ -635,15 +635,14 @@ function apple_news_update($channel_id, $entity_type, $entity_wrapper, $data) {
     }
 
     // Apple News Revision ID. Required in order to be able to update articles.
-    if (!empty($data['override_revision']) &&
-        $apple_news_article = apple_news_get_article($article->article_id)
-    ) {
+    $apple_news_revision_id = NULL;
+    if ($apple_news_article = apple_news_get_article($article->article_id)) {
       // This will override previous revisions.
       $apple_news_revision_id = $apple_news_article->data->revision;
     }
-    else {
-      $apple_news_revision_id = $article->article_revision_id;
-    }
+    // else {
+      // $apple_news_revision_id = $article->article_revision_id;
+    // }
 
     $data['metadata']['data']['revision'] = $apple_news_revision_id;
     $data['metadata'] = json_encode($data['metadata']);
@@ -768,7 +767,6 @@ function apple_news_op($operation, $channel_id, $entity, $entity_type, $export =
       'json'              => $document->json(),
       'files'             => $export->getAssets(),
       'metadata'          => !empty($settings['metadata']) ? json_encode($settings['metadata']) : '',
-      'override_revision' => !empty($settings['override_revision']) ? TRUE : FALSE,
     ];
   }
 

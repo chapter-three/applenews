@@ -126,20 +126,6 @@ function _apple_news_form_alter_node_form(&$form, &$form_state) {
     ];
     $form['apple_news']['apple_news_publish_flag']['#default_value']
       = !empty($article_id) ? TRUE : FALSE;
-
-    // Override revision.
-    if (!empty($article_id)) {
-      $form['apple_news']['override_revision'] = [
-        '#type' => 'checkbox',
-        '#title' => t('Override Apple News article revision'),
-        '#description' => t('Check this option if you would like to override current Apple News article revision.'),
-        '#states' => [
-          'visible' => [
-            ':input[name="apple_news_publish_flag"]' => ['checked' => TRUE],
-          ],
-        ],
-      ];
-    }
   }
 
   // Pushed.
