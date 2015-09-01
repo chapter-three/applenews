@@ -990,7 +990,8 @@ class ApplenewsExportNode extends ApplenewsExportConfigurable {
     // Components.
     /** @var ApplenewsDestinationComponentLayout $destination */
     foreach ($this->getComponentLayouts() as $key => $destination) {
-      $this->document->addComponentLayout($key, $destination->export());
+      $this->document
+        ->addComponentLayout($destination->id, $destination->export());
     }
     /** @var ApplenewsDestinationComponent $destination */
     foreach ($this->getComponents() as $destination) {
