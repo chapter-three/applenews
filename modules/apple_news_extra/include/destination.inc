@@ -73,13 +73,14 @@ class ApplenewsExtraDestinationInstagram extends ApplenewsDestinationComponent {
 
     list($key, $values) = $this->getSourceValues($value,
       $this->getSetting('source'));
-    $components = [];
+
     foreach ($values as $value) {
       if (!empty($value[$key])) {
-        $components[] = new Components\Instagram($value[$key]);
+        $this->destinations[] = new Components\Instagram($value[$key]);
       }
     }
-    return $components;
+
+    return parent::export($value);
   }
 
 }
@@ -150,13 +151,14 @@ class ApplenewsExtraDestinationTweet extends ApplenewsDestinationComponent {
 
     list($key, $values) = $this->getSourceValues($value,
       $this->getSetting('source'));
-    $components = [];
+
     foreach ($values as $value) {
       if (!empty($value[$key])) {
-        $components[] = new Components\Tweet($value[$key]);
+        $this->destinations[] = new Components\Tweet($value[$key]);
       }
     }
-    return $components;
+
+    return parent::export($value);
   }
 
 }
@@ -231,17 +233,18 @@ class ApplenewsExtraDestinationEmbedWebVideo extends ApplenewsDestinationCompone
 
     list($key, $values) = $this->getSourceValues($value,
       $this->getSetting('video_url'));
-    $components = [];
+
     foreach ($values as $value) {
       if (!empty($value[$key])) {
         $component = new Components\EmbedWebVideo($value[$key]);
         if (!empty($value['caption'])) {
           $component->setCaption($value['caption']);
         }
-        $components[] = $component;
+        $this->destinations[] = $component;
       }
     }
-    return $components;
+
+    return parent::export($value);
   }
 
 }
@@ -343,7 +346,7 @@ class ApplenewsExtraDestinationAudio extends ApplenewsDestinationComponent {
     list($explicitcontent_key, $explicitcontent_value)
       = $this->getSourceValues($value,
         $this->getSetting('explicitContent'));
-    $components = [];
+
     foreach ($values as $delta => $value) {
       if (!empty($value[$key])) {
         switch ($this->getSetting('type')) {
@@ -365,10 +368,11 @@ class ApplenewsExtraDestinationAudio extends ApplenewsDestinationComponent {
             break;
 
         }
-        $components[] = $component;
+        $this->destinations[] = $component;
       }
     }
-    return $components;
+
+    return parent::export($value);
   }
 
 }

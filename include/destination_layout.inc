@@ -16,6 +16,14 @@ use \ChapterThree\AppleNews\Document\Layouts\ComponentLayout;
 class ApplenewsDestinationLayout extends ApplenewsDestination {
 
   /**
+   * Destination object(s), to be returned by export().
+   *
+   * @var \ChapterThree\AppleNews\Document\Layouts\Layout
+   *   Layout object.
+   */
+  public $destination;
+
+  /**
    * {@inheritdoc}
    */
   public function label() {
@@ -86,18 +94,18 @@ class ApplenewsDestinationLayout extends ApplenewsDestination {
    * {@inheritdoc}
    */
   public function export($value = NULL) {
-    $layout = new Layout($this->getSetting('columns'), $this->getSetting('width'));
+    $this->destination = new Layout($this->getSetting('columns'), $this->getSetting('width'));
     foreach ([
         'margin' => 'setMargin',
         'gutter' => 'setGutter',
       ] as $key => $method
     ) {
       $value = $this->getSetting($key);
-      if ($value !== NULL) {
-        $layout->{$method}($value);
+      if ($value !== NULL && $value !== '') {
+        $this->destination->{$method}($value);
       }
     }
-    return $layout;
+    return $this->destination;
   }
 
 }
@@ -108,6 +116,14 @@ class ApplenewsDestinationLayout extends ApplenewsDestination {
  * All ComponentLayout destinations must extend this class.
  */
 class ApplenewsDestinationComponentLayout extends ApplenewsDestination {
+
+  /**
+   * Destination object(s), to be returned by export().
+   *
+   * @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout
+   *   ComponentLayout object.
+   */
+  public $destination;
 
   /**
    * {@inheritdoc}
@@ -208,6 +224,7 @@ class ApplenewsDestinationComponentLayout extends ApplenewsDestination {
    * {@inheritdoc}
    */
   public function validateConfigForm($form, &$form_state) {
+    parent::validateConfigForm($form, $form_state);
     if ($form_state['values']['id'] != $this->id &&
         $this->export->getComponentLayout($form_state['values']['id'])
     ) {
@@ -225,16 +242,19 @@ class ApplenewsDestinationComponentLayout extends ApplenewsDestination {
    * {@inheritdoc}
    */
   public function submitConfigForm($form, &$form_state) {
-    $this->export->deleteComponentLayout($this->id);
-    $this->id = $form_state['values']['id'];
-    $this->export->addComponentLayout($this, $this->id);
+    if ($form_state['values']['id'] != $this->id) {
+      $this->export->deleteComponentLayout($this->id);
+      $this->id = $form_state['values']['id'];
+      $this->export->addComponentLayout($this, $this->id);
+    }
+    parent::submitConfigForm($form, $form_state);
   }
 
   /**
    * {@inheritdoc}
    */
   public function export($value = NULL) {
-    $layout = new ComponentLayout();
+    $this->destination = new ComponentLayout();
     foreach ([
         'columnStart'                => 'setColumnStart',
         'columnSpan'                 => 'setColumnSpan',
@@ -248,11 +268,11 @@ class ApplenewsDestinationComponentLayout extends ApplenewsDestination {
       ] as $key => $method
     ) {
       $value = $this->getSetting($key);
-      if ($value !== NULL) {
-        $layout->{$method}($value);
+      if ($value !== NULL && $value !== '') {
+        $this->destination->{$method}($value);
       }
     }
-    return $layout;
+    return $this->destination;
   }
 
 }

@@ -96,30 +96,30 @@ class Applenewsstyle1DestinationBody extends ApplenewsDestinationBodyPhoto {
 
     }
 
-    $components = parent::export($value);
-    for ($i = 0; $i < count($components); $i++) {
-      $comp = $components[$i];
-      if ($comp instanceof Components\Body) {
-        /** @var \ChapterThree\AppleNews\Document\Components\Body $comp */
-        if ($comp->getFormat() != 'markdown') {
-          $comp->addInlineTextStyles($body_inline_text_style);
+    $this->destinations = parent::export($value);
+    for ($i = 0; $i < count($this->destinations); $i++) {
+      $component = $this->destinations[$i];
+      if ($component instanceof Components\Body) {
+        /** @var \ChapterThree\AppleNews\Document\Components\Body $component */
+        if ($component->getFormat() != 'markdown') {
+          $component->addInlineTextStyles($body_inline_text_style);
         }
-        $comp->setLayout($body_layout)
+        $component->setLayout($body_layout)
           ->setAnimation($body_animation);
         if ($i) {
-          $comp->setTextStyle($body_text_style);
+          $component->setTextStyle($body_text_style);
         }
         else {
-          $comp->setTextStyle($initial_body_text_style);
+          $component->setTextStyle($initial_body_text_style);
         }
       }
-      elseif ($comp instanceof Components\ScalableImage) {
-        /** @var \ChapterThree\AppleNews\Document\Components\ScalableImage $comp */
-        $comp->setLayout($image_layout);
+      elseif ($component instanceof Components\ScalableImage) {
+        /** @var \ChapterThree\AppleNews\Document\Components\ScalableImage $component */
+        $component->setLayout($image_layout);
       }
     }
 
-    return $components;
+    return $this->destinations;
   }
 
 }
@@ -186,6 +186,7 @@ class Applenewsstyle1DestinationHeaderImage extends ApplenewsDestinationComponen
     if (empty($values[0][$key])) {
       return [];
     }
+
     $url = $this->export->addAsset($values[0][$key]);
     $fill = new Styles\Fills\ImageFill($url);
     $fill->setFillMode('cover')->setVerticalAlignment('bottom');
@@ -211,7 +212,8 @@ class Applenewsstyle1DestinationHeaderImage extends ApplenewsDestinationComponen
 
     }
 
-    return [$header];
+    $this->destinations = [$header];
+    return $this->destinations;
   }
 
 }
@@ -407,7 +409,9 @@ class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination
     $style->setFill($fill);
     $header->setStyle($style);
     $header->addComponent($container);
-    return [$header];
+
+    $this->destinations = [$header];
+    return $this->destinations;
   }
 
 }
@@ -559,7 +563,7 @@ class Applenewsstyle1DestinationPullQuote extends ApplenewsDestinationComponent 
 
       }
 
-      return [$quote];
+      $this->destinations = [$quote];
 
     }
     // Pullquote with background.
@@ -650,10 +654,11 @@ class Applenewsstyle1DestinationPullQuote extends ApplenewsDestinationComponent 
 
       }
 
-      return [$section];
+      $this->destinations = [$section];
 
     }
 
+    return $this->destinations;
   }
 
 }
@@ -702,7 +707,8 @@ class Applenewsstyle1DestinationImages extends ApplenewsDestinationImages {
 
     }
 
-    return [$images];
+    $this->destinations = [$images];
+    return $this->destinations;
   }
 
 }
@@ -773,7 +779,8 @@ class Applenewsstyle1DestinationAd extends ApplenewsDestinationAd {
 
     }
 
-    return [$ad];
+    $this->destinations = [$ad];
+    return $this->destinations;
   }
 
 }

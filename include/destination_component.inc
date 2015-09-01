@@ -16,6 +16,14 @@ use \ChapterThree\AppleNews\Document\Styles;
 abstract class ApplenewsDestinationComponent extends ApplenewsDestination {
 
   /**
+   * Destination object(s), to be returned by export().
+   *
+   * @var array
+   *   Array of \ChapterThree\AppleNews\Document\Components\Component objects.
+   */
+  public $destinations;
+
+  /**
    * Settings for this destination.
    *
    * @var ApplenewsDestinationComponentLayout|string
@@ -82,12 +90,21 @@ abstract class ApplenewsDestinationComponent extends ApplenewsDestination {
    * {@inheritdoc}
    */
   public function export($value = NULL) {
-    /** @var \ChapterThree\AppleNews\Document\Components\Component $component */
-    $component = $this->export($value);
-    if ($this->layout) {
-      $component->setLayout($this->layout);
+    if (@$this->layout) {
+      if ($this->layout instanceof ApplenewsDestinationComponentLayout) {
+        /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
+        $layout = $this->layout->export();
+      }
+      else {
+        /** @var string $layout */
+        $layout = $this->layout;
+      }
+      /** @var \ChapterThree\AppleNews\Document\Components\Component $destination */
+      foreach ($this->destinations as &$destination) {
+        $destination->setLayout($layout);
+      }
     }
-    return $component;
+    return $this->destinations;
   }
 
 }
@@ -125,7 +142,9 @@ class ApplenewsDestinationContainer extends ApplenewsDestinationComponent {
     // foreach ($this->export->getChildComponents($this) as $component) {
     //   $container->addComponent($component->export($value));
     // }
-    return $container;
+
+    $this->destinations = [$container];
+    return parent::export($value);
   }
 
 }
@@ -205,7 +224,6 @@ class ApplenewsDestinationBody extends ApplenewsDestinationComponent {
       $markdown = new Markdown();
     }
 
-    $components = [];
     foreach ($values as $value) {
       $body = $value[$key];
       if ($this->getSetting('format') == 'markdown') {
@@ -215,9 +233,10 @@ class ApplenewsDestinationBody extends ApplenewsDestinationComponent {
       if ($this->getSetting('format')) {
         $body->setFormat($this->getSetting('format'));
       }
-      $components[] = $body;
+      $this->destinations[] = $body;
     }
-    return $components;
+
+    return parent::export($value);
   }
 
 }
@@ -315,12 +334,14 @@ class ApplenewsDestinationBodyPhoto extends ApplenewsDestinationBody {
     list($key, $values) = $this->getSourceValues($value,
       $this->getSetting('text'));
 
-    $components = [];
     foreach ($values as $value) {
-      $components = array_merge($components,
+      $this->destinations = array_merge($this->destinations,
         $this->exportConvertHTML($value[$key]));
     }
-    return $components;
+
+    // @todo configure, apply layout
+
+    return $this->destinations;
   }
 
 }
@@ -419,15 +440,15 @@ class ApplenewsDestinationImages extends ApplenewsDestinationComponent {
       switch ($this->getSetting('type')) {
 
         case 'gallery':
-          return [new Components\Gallery($items)];
+          $this->destinations = [new Components\Gallery($items)];
 
         case 'mosaic':
-          return [new Components\Mosaic($items)];
+          $this->destinations = [new Components\Mosaic($items)];
 
       }
     }
 
-    return [];
+    return parent::export($value);
   }
 
 }
@@ -513,7 +534,8 @@ class ApplenewsDestinationAd extends ApplenewsDestinationComponent {
 
     }
 
-    return [$ad];
+    $this->destinations = [$ad];
+    return parent::export($value);
   }
 
 }
@@ -595,7 +617,6 @@ class ApplenewsDestinationImage extends ApplenewsDestinationComponent {
     list($key_caption, $values_caption) = $this->getSourceValues($value,
       $this->getSetting('caption'));
 
-    $components = [];
     foreach ($values as $i => $value) {
       if (empty($value[$key])) {
         continue;
@@ -607,11 +628,11 @@ class ApplenewsDestinationImage extends ApplenewsDestinationComponent {
           if (!empty($values_caption[$i][$key_caption])) {
             $component->setCaption($values_caption[$i][$key_caption]);
           }
-          $components[] = $component;
+          $this->destinations[] = $component;
           break;
       }
     }
-    return $components;
+    return parent::export($value);
   }
 
 }
@@ -714,7 +735,7 @@ class ApplenewsDestinationScalableImage extends ApplenewsDestinationComponent {
     list($explicit_content_key, $explicit_content_value)
       = $this->getSourceValues($value,
           $this->getSetting('explicitContent'));
-    $components = [];
+
     foreach ($values as $i => $value) {
       if (empty($value[$key])) {
         continue;
@@ -744,9 +765,10 @@ class ApplenewsDestinationScalableImage extends ApplenewsDestinationComponent {
       if (!empty($values_caption[$i][$key_caption])) {
         $component->setCaption($values_caption[$i][$key_caption]);
       }
-      $components[] = $component;
+      $this->destinations[] = $component;
     }
-    return $components;
+
+    return parent::export($value);
   }
 
 }
@@ -867,7 +889,6 @@ class ApplenewsDestinationText extends ApplenewsDestinationComponent {
 
     $markdown = new Markdown();
 
-    $components = [];
     foreach ($values as $value) {
       switch ($this->getSetting('component')) {
 
@@ -985,10 +1006,11 @@ class ApplenewsDestinationText extends ApplenewsDestinationComponent {
           break;
 
       }
-      $components[] = $component;
+      $this->destinations[] = $component;
 
     }
-    return $components;
+
+    return parent::export($value);
   }
 
 }
@@ -1064,7 +1086,8 @@ class ApplenewsDestinationDivider extends ApplenewsDestinationComponent {
       $stroke->setStyle($this->getSetting('style'));
       $divider->setStroke($stroke);
     }
-    return [$divider];
+    $this->destinations = [$divider];
+    return parent::export($value);
   }
 
 }
