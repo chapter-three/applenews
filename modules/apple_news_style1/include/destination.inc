@@ -69,9 +69,6 @@ class Applenewsstyle1DestinationBody extends ApplenewsDestinationBodyPhoto {
     $initial_body_text_style->setDropCapStyle($dc_style);
 
     $body_inline_text_style = new Styles\InlineTextStyle(1, 19, $body_text_style);
-    $body_animation = new Animations\ComponentAnimations\FadeInAnimation();
-    $body_animation->setInitialAlpha(0.0)
-      ->setUserControllable(TRUE);
     $body_layout = new Layouts\ComponentLayout();
     $body_layout->setMargin(new Margin(25, 25));
 
@@ -104,8 +101,7 @@ class Applenewsstyle1DestinationBody extends ApplenewsDestinationBodyPhoto {
         if ($component->getFormat() != 'markdown') {
           $component->addInlineTextStyles($body_inline_text_style);
         }
-        $component->setLayout($body_layout)
-          ->setAnimation($body_animation);
+        $component->setLayout($body_layout);
         if ($i) {
           $component->setTextStyle($body_text_style);
         }
