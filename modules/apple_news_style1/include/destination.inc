@@ -689,12 +689,12 @@ class Applenewsstyle1DestinationImages extends ApplenewsDestinationImages {
 
     /** @var \ChapterThree\AppleNews\Document\Components\Mosaic|\ChapterThree\AppleNews\Document\Components\Gallery $component */
     $component = $components[0];
-    $animation = new Animations\ComponentAnimations\ScaleFadeAnimation();
-    $animation->setInitialAlpha(0.5)->setInitialScale(0.75);
+    $animation = new Animations\ComponentAnimations\MoveInAnimation();
+    $animation->setPreferredStartingPosition('right');
     $component->setAnimation($animation);
     $layout = new Layouts\ComponentLayout();
     $layout
-      ->setIgnoreDocumentMargin()
+      ->setIgnoreDocumentMargin('left')
       ->setMargin(new Margin(25, 25));
     $component->setLayout($layout);
 
