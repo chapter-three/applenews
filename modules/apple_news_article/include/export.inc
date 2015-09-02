@@ -65,11 +65,9 @@ class ApplenewsExportArticle extends ApplenewsExport {
   /**
    * {@inheritdoc}
    */
-  public function export($entity) {
-    parent::export($entity);
-
+  public function export() {
     /** @var EntityDrupalWrapper $wrapper */
-    $wrapper = entity_metadata_wrapper('node', $entity);
+    $wrapper = entity_metadata_wrapper('node', $this->source);
 
     // Identifier;
     $id = $wrapper->getIdentifier();
@@ -199,27 +197,6 @@ class ApplenewsExportArticle extends ApplenewsExport {
     }
 
     return $this->document;
-  }
-
-}
-
-/**
- * Exports a Drupal article as defined by the default install profile.
- */
-class ApplenewsExportConfigurableArticle extends ApplenewsExportConfigurable {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function entityType() {
-    return 'node';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function bundles() {
-    return ['article'];
   }
 
 }

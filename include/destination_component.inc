@@ -11,9 +11,15 @@ use \ChapterThree\AppleNews\Document\Markdown;
 use \ChapterThree\AppleNews\Document\Styles;
 
 /**
+ * Base class for component destinations.
+ */
+abstract class ApplenewsDestinationComponent extends ApplenewsDestination {
+}
+
+/**
  * Body component.
  */
-class ApplenewsDestinationBody extends ApplenewsDestination {
+class ApplenewsDestinationBody extends ApplenewsDestinationComponent {
 
   /**
    * {@inheritdoc}
@@ -38,12 +44,12 @@ class ApplenewsDestinationBody extends ApplenewsDestination {
   public function validateSettings() {
     foreach (['text'] as $key) {
       if (@$this->getSetting($key) === NULL ||
-          !$this->sourceOptionValid($this->getSetting($key))
+          !$this->sourceOptionValid($this->getSetting($key)['source'])
       ) {
         return FALSE;
       }
     }
-    return TRUE;
+    return parent::validateSettings();
   }
 
   /**
@@ -53,13 +59,9 @@ class ApplenewsDestinationBody extends ApplenewsDestination {
 
     $form = parent::getConfigForm($form, $form_state);
 
-    $form['text'] = [
-      '#title'         => t('Text'),
-      '#type'          => 'select',
-      '#required'      => TRUE,
-      '#options'       => $this->getSourceOptions(),
-      '#default_value' => $this->getSetting('text'),
-    ];
+    parent::getConfigFormSourceElement($form, $form_state, 'text');
+    $form['text']['#title'] = t('Text');
+    $form['text']['#required'] = TRUE;
 
     $form['format'] = [
       '#title'         => t('Format'),
@@ -77,10 +79,11 @@ class ApplenewsDestinationBody extends ApplenewsDestination {
   /**
    * {@inheritdoc}
    */
-  public function export($value) {
-    list($key, $values) = $this->getSourceValues($value,
+  public function export() {
+    list($key, $values) = $this->getSourceValues($this->export->source,
       $this->getSetting('text'));
 
+    $markdown = FALSE;
     if ($this->getSetting('format') == 'markdown') {
       $markdown = new Markdown();
     }
@@ -88,15 +91,16 @@ class ApplenewsDestinationBody extends ApplenewsDestination {
     $components = [];
     foreach ($values as $value) {
       $body = $value[$key];
-      if ($this->getSetting('format') == 'markdown') {
+      if ($markdown) {
         $body = $markdown->convert($body);
       }
       $body = new Components\Body($body);
-      if ($this->getSetting('format')) {
+      if ($markdown) {
         $body->setFormat($this->getSetting('format'));
       }
       $components[] = $body;
     }
+
     return $components;
   }
 
@@ -116,6 +120,12 @@ class ApplenewsDestinationBodyPhoto extends ApplenewsDestinationBody {
 
   /**
    * Create image object from img element src attribute value.
+   *
+   * @param string $src
+   *   Attribute value.
+   *
+   * @return \ChapterThree\AppleNews\Document\Components\Photo
+   *   Photo component.
    */
   public function exportCreateImage($src) {
     return new Components\Photo($this->export->addAsset($src));
@@ -123,6 +133,12 @@ class ApplenewsDestinationBodyPhoto extends ApplenewsDestinationBody {
 
   /**
    * Converts an HTML string into a series of Body and image components.
+   *
+   * @param string $value
+   *   HTML string.
+   *
+   * @return array
+   *   List of components.
    */
   public function exportConvertHtml($value) {
     $components = [];
@@ -187,15 +203,17 @@ class ApplenewsDestinationBodyPhoto extends ApplenewsDestinationBody {
   /**
    * {@inheritdoc}
    */
-  public function export($value) {
-    list($key, $values) = $this->getSourceValues($value,
+  public function export() {
+    list($key, $values) = $this->getSourceValues($this->export->source,
       $this->getSetting('text'));
 
     $components = [];
+
     foreach ($values as $value) {
       $components = array_merge($components,
         $this->exportConvertHTML($value[$key]));
     }
+
     return $components;
   }
 
@@ -204,7 +222,7 @@ class ApplenewsDestinationBodyPhoto extends ApplenewsDestinationBody {
 /**
  * Mosaic or Gallery component.
  */
-class ApplenewsDestinationImages extends ApplenewsDestination {
+class ApplenewsDestinationImages extends ApplenewsDestinationComponent {
 
   /**
    * {@inheritdoc}
@@ -230,12 +248,12 @@ class ApplenewsDestinationImages extends ApplenewsDestination {
   public function validateSettings() {
     foreach (['items'] as $key) {
       if (@$this->getSetting($key) === NULL ||
-          !$this->sourceOptionValid($this->getSetting($key))
+          !$this->sourceOptionValid($this->getSetting($key)['source'])
       ) {
         return FALSE;
       }
     }
-    return TRUE;
+    return parent::validateSettings();
   }
 
   /**
@@ -256,36 +274,25 @@ class ApplenewsDestinationImages extends ApplenewsDestination {
       '#default_value' => $this->getSetting('type'),
     ];
 
-    $form['items'] = [
-      '#title'         => t('Items'),
-      '#description'   => t('File URI, URL, or system path.'),
-      '#required'      => TRUE,
-      '#type'          => 'select',
-      '#options'       => $this->getSourceOptions(),
-      '#default_value' => $this->getSetting('items'),
-    ];
+    parent::getConfigFormSourceElement($form, $form_state, 'items');
+    $form['items']['#title'] = t('Items');
+    $form['items']['#required'] = TRUE;
 
-    $form['caption'] = [
-      '#title'         => t('Caption'),
-      '#type'          => 'select',
-      '#options'       => $this->getSourceOptions(),
-      '#default_value' => $this->getSetting('caption'),
-      '#description'   => t('A description of the image. This text can be used by VoiceOver, or for other purposes. The Gallery component does not display the caption to the user, except when the gallery is tapped to display it full screen.'),
-    ];
-
+    parent::getConfigFormSourceElement($form, $form_state, 'caption');
+    $form['caption']['#title'] = t('Caption');
     return $form;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function export($value) {
-    list($key, $values) = $this->getSourceValues($value,
+  public function export() {
+    list($key, $values) = $this->getSourceValues($this->export->source,
       $this->getSetting('items'));
-    list($key_caption, $values_caption) = $this->getSourceValues($value,
-      $this->getSetting('caption'));
+    list($key_caption, $values_caption) = $this->getSourceValues(
+      $this->export->source, $this->getSetting('caption'));
 
-    $items = [];
+    $components = [];
     foreach ($values as $i => $value) {
       if (empty($value[$key])) {
         continue;
@@ -295,17 +302,17 @@ class ApplenewsDestinationImages extends ApplenewsDestination {
       if (!empty($values_caption[$i][$key_caption])) {
         $item->setCaption($values_caption[$i][$key_caption]);
       }
-      $items[] = $item;
+      $components[] = $item;
     }
 
-    if (count($items)) {
+    if (count($components)) {
       switch ($this->getSetting('type')) {
 
         case 'gallery':
-          return [new Components\Gallery($items)];
+          return [new Components\Gallery($components)];
 
         case 'mosaic':
-          return [new Components\Mosaic($items)];
+          return [new Components\Mosaic($components)];
 
       }
     }
@@ -318,7 +325,7 @@ class ApplenewsDestinationImages extends ApplenewsDestination {
 /**
  * Mosaic component.
  */
-class ApplenewsDestinationAd extends ApplenewsDestination {
+class ApplenewsDestinationAd extends ApplenewsDestinationComponent {
 
   /**
    * {@inheritdoc}
@@ -378,22 +385,22 @@ class ApplenewsDestinationAd extends ApplenewsDestination {
   /**
    * {@inheritdoc}
    */
-  public function export($value) {
+  public function export() {
 
     switch ($this->getSetting('type')) {
 
       case 'medium_rectangle':
         $ad = new Components\Advertisements\MediumRectangleAdvertisement();
-        break;
+        return [$ad];
 
       case 'banner':
         $ad = new Components\Advertisements\BannerAdvertisement();
         $ad->setBannerType($this->getSetting('banner_type'));
-        break;
+        return [$ad];
 
     }
 
-    return [$ad];
+    return [];
   }
 
 }
@@ -401,7 +408,7 @@ class ApplenewsDestinationAd extends ApplenewsDestination {
 /**
  * Image component.
  */
-class ApplenewsDestinationImage extends ApplenewsDestination {
+class ApplenewsDestinationImage extends ApplenewsDestinationComponent {
 
   /**
    * {@inheritdoc}
@@ -428,12 +435,12 @@ class ApplenewsDestinationImage extends ApplenewsDestination {
   public function validateSettings() {
     foreach (['source'] as $key) {
       if (@$this->getSetting($key) === NULL ||
-          !$this->sourceOptionValid($this->getSetting($key))
+          !$this->sourceOptionValid($this->getSetting($key)['source'])
       ) {
         return FALSE;
       }
     }
-    return TRUE;
+    return parent::validateSettings();
   }
 
   /**
@@ -452,22 +459,12 @@ class ApplenewsDestinationImage extends ApplenewsDestination {
       '#default_value' => $this->getSetting('type'),
     ];
 
-    $form['source'] = [
-      '#title'         => t('Value'),
-      '#description'   => t('File URI, URL, or system path.'),
-      '#required'      => TRUE,
-      '#type'          => 'select',
-      '#options'       => $this->getSourceOptions(),
-      '#default_value' => $this->getSetting('source'),
-    ];
+    parent::getConfigFormSourceElement($form, $form_state, 'source');
+    $form['source']['#title'] = t('Value');
+    $form['source']['#required'] = TRUE;
 
-    $form['caption'] = [
-      '#title'         => t('Caption'),
-      '#type'          => 'select',
-      '#options'       => $this->getSourceOptions(),
-      '#default_value' => $this->getSetting('caption'),
-      '#description'   => t('A string that describes the image. Captions for images may not be displayed to readers but could be used by VoiceOver, or for other purposes.'),
-    ];
+    parent::getConfigFormSourceElement($form, $form_state, 'caption');
+    $form['caption']['#title'] = t('Caption');
 
     return $form;
   }
@@ -475,13 +472,14 @@ class ApplenewsDestinationImage extends ApplenewsDestination {
   /**
    * {@inheritdoc}
    */
-  public function export($value) {
-    list($key, $values) = $this->getSourceValues($value,
+  public function export() {
+    list($key, $values) = $this->getSourceValues($this->export->source,
       $this->getSetting('source'));
-    list($key_caption, $values_caption) = $this->getSourceValues($value,
-      $this->getSetting('caption'));
+    list($key_caption, $values_caption) = $this->getSourceValues(
+      $this->export->source, $this->getSetting('caption'));
 
     $components = [];
+
     foreach ($values as $i => $value) {
       if (empty($value[$key])) {
         continue;
@@ -505,7 +503,7 @@ class ApplenewsDestinationImage extends ApplenewsDestination {
 /**
  * Scalable Image component.
  */
-class ApplenewsDestinationScalableImage extends ApplenewsDestination {
+class ApplenewsDestinationScalableImage extends ApplenewsDestinationComponent {
 
   /**
    * {@inheritdoc}
@@ -539,12 +537,12 @@ class ApplenewsDestinationScalableImage extends ApplenewsDestination {
       ] as $key
     ) {
       if (@$this->getSetting($key) === NULL ||
-          !$this->sourceOptionValid($this->getSetting($key))
+          !$this->sourceOptionValid($this->getSetting($key)['source'])
       ) {
         return FALSE;
       }
     }
-    return TRUE;
+    return parent::validateSettings();
   }
 
   /**
@@ -566,37 +564,18 @@ class ApplenewsDestinationScalableImage extends ApplenewsDestination {
       '#description'   => t('The type of scalable image.'),
     ];
 
-    $form['file'] = [
-      '#title'         => t('Value'),
-      '#description'   => t('File URI, URL, or system path. Images should be high-resolution so they can be smoothly scaled down. Supported image types: JPEG (with .jpg or .jpeg extension), PNG, and GIF.'),
-      '#type'          => 'select',
-      '#options'       => $this->getSourceOptions(),
-      '#default_value' => $this->getSetting('file'),
-    ];
+    parent::getConfigFormSourceElement($form, $form_state, 'file');
+    $form['file']['#title'] = t('Value');
 
-    $form['caption'] = [
-      '#title'         => t('Caption'),
-      '#type'          => 'select',
-      '#options'       => $this->getSourceOptions(),
-      '#default_value' => $this->getSetting('caption'),
-      '#description'   => t('A string that describes the image. Captions can be used by VoiceOver, or for other purposes. The rendering client may use the caption text in a full screen display of the image.'),
-    ];
+    parent::getConfigFormSourceElement($form, $form_state, 'caption');
+    $form['caption']['#title'] = t('Caption');
 
-    $form['accessibilityCaption'] = [
-      '#title'         => t('Accessibility Caption'),
-      '#type'          => 'select',
-      '#options'       => $this->getSourceOptions(),
-      '#default_value' => $this->getSetting('accessibilityCaption'),
-      '#description'   => t('Optional caption text describing the contents of the image. Note that this property differs from caption: although the caption may be displayed to readers, the Accessiblity Caption is used for VoiceOver only. The value in this property should describe the contents of the image for non-sighted users. If this property is omitted, the value from the caption is used for VoiceOver.'),
-    ];
+    parent::getConfigFormSourceElement($form, $form_state,
+      'accessibilityCaption');
+    $form['accessibilityCaption']['#title'] = t('Accessibility Caption');
 
-    $form['explicitContent'] = [
-      '#title'         => t('Explicit Content'),
-      '#type'          => 'select',
-      '#options'       => $this->getSourceOptions(),
-      '#default_value' => $this->getSetting('explicitContent'),
-      '#description'   => t('This property indicates that the image may contain explicit/graphic content. Default value: false.'),
-    ];
+    parent::getConfigFormSourceElement($form, $form_state, 'explicitContent');
+    $form['explicitContent']['#title'] = t('Explicit Content');
 
     return $form;
   }
@@ -604,18 +583,20 @@ class ApplenewsDestinationScalableImage extends ApplenewsDestination {
   /**
    * {@inheritdoc}
    */
-  public function export($value) {
-    list($key, $values) = $this->getSourceValues($value,
+  public function export() {
+    list($key, $values) = $this->getSourceValues($this->export->source,
       $this->getSetting('file'));
-    list($key_caption, $values_caption) = $this->getSourceValues($value,
-      $this->getSetting('caption'));
+    list($key_caption, $values_caption) = $this->getSourceValues(
+      $this->export->source, $this->getSetting('caption'));
     list($accessibility_caption_key, $accessibility_caption_value)
-      = $this->getSourceValues($value,
+      = $this->getSourceValues($this->export->source,
           $this->getSetting('accessibilityCaption'));
     list($explicit_content_key, $explicit_content_value)
-      = $this->getSourceValues($value,
+      = $this->getSourceValues($this->export->source,
           $this->getSetting('explicitContent'));
+
     $components = [];
+
     foreach ($values as $i => $value) {
       if (empty($value[$key])) {
         continue;
@@ -635,11 +616,15 @@ class ApplenewsDestinationScalableImage extends ApplenewsDestination {
           $component = new Components\Figure($url);
           break;
 
+        default:
+          continue 2;
+
       }
-      if (!empty($accessibility_caption_value[$i]['value']) && is_object($accessibility_caption_value[$i]['value'])) {
-        $component->setAccessibilityCaption($this->export->addAsset($accessibility_caption_value[$i]['value']));
+      if (!empty($accessibility_caption_value[$i][$accessibility_caption_key])) {
+        $component->setAccessibilityCaption(
+          $accessibility_caption_value[$i][$accessibility_caption_key]);
       }
-      if (!empty($explicit_content_value[$i]['value'])) {
+      if (!empty($explicit_content_value[$i][$explicit_content_key])) {
         $component->setExplicitContent(TRUE);
       }
       if (!empty($values_caption[$i][$key_caption])) {
@@ -647,6 +632,7 @@ class ApplenewsDestinationScalableImage extends ApplenewsDestination {
       }
       $components[] = $component;
     }
+
     return $components;
   }
 
@@ -655,7 +641,7 @@ class ApplenewsDestinationScalableImage extends ApplenewsDestination {
 /**
  * Text component.
  */
-class ApplenewsDestinationText extends ApplenewsDestination {
+class ApplenewsDestinationText extends ApplenewsDestinationComponent {
 
   /**
    * {@inheritdoc}
@@ -683,12 +669,12 @@ class ApplenewsDestinationText extends ApplenewsDestination {
   public function validateSettings() {
     foreach (['text'] as $key) {
       if (@$this->getSetting($key) === NULL ||
-          !$this->sourceOptionValid($this->getSetting($key))
+          !$this->sourceOptionValid($this->getSetting($key)['source'])
       ) {
         return FALSE;
       }
     }
-    return TRUE;
+    return parent::validateSettings();
   }
 
   /**
@@ -698,13 +684,9 @@ class ApplenewsDestinationText extends ApplenewsDestination {
 
     $form = parent::getConfigForm($form, $form_state);
 
-    $form['text'] = [
-      '#title'         => t('Text'),
-      '#required'      => TRUE,
-      '#type'          => 'select',
-      '#options'       => $this->getSourceOptions(),
-      '#default_value' => $this->getSetting('text'),
-    ];
+    parent::getConfigFormSourceElement($form, $form_state, 'text');
+    $form['text']['#title'] = t('Text');
+    $form['text']['#required'] = TRUE;
 
     $form['component'] = [
       '#title'         => t('Component'),
@@ -762,14 +744,14 @@ class ApplenewsDestinationText extends ApplenewsDestination {
   /**
    * {@inheritdoc}
    */
-  public function export($value) {
-
-    list($key, $values) = $this->getSourceValues($value,
+  public function export() {
+    list($key, $values) = $this->getSourceValues($this->export->source,
       $this->getSetting('text'));
 
     $markdown = new Markdown();
 
     $components = [];
+
     foreach ($values as $value) {
       switch ($this->getSetting('component')) {
 
@@ -781,7 +763,6 @@ class ApplenewsDestinationText extends ApplenewsDestination {
           else {
             $component = new Components\Author($value[$key]);
           }
-          $components[] = $component;
           break;
 
         case 'body':
@@ -890,6 +871,7 @@ class ApplenewsDestinationText extends ApplenewsDestination {
       $components[] = $component;
 
     }
+
     return $components;
   }
 
@@ -898,7 +880,7 @@ class ApplenewsDestinationText extends ApplenewsDestination {
 /**
  * Divider component.
  */
-class ApplenewsDestinationDivider extends ApplenewsDestination {
+class ApplenewsDestinationDivider extends ApplenewsDestinationComponent {
 
   /**
    * {@inheritdoc}
@@ -957,7 +939,7 @@ class ApplenewsDestinationDivider extends ApplenewsDestination {
   /**
    * {@inheritdoc}
    */
-  public function export($value) {
+  public function export() {
     $divider = new Components\Divider();
     if ($this->getSetting('color')) {
       $stroke = new Styles\StrokeStyle();

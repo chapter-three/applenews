@@ -51,7 +51,7 @@ class Applenewsstyle1DestinationBody extends ApplenewsDestinationBodyPhoto {
   /**
    * {@inheritdoc}
    */
-  public function export($value) {
+  public function export() {
 
     $body_text_style = new Styles\ComponentTextStyle();
     $body_text_style->setTextAlignment('left')
@@ -96,26 +96,26 @@ class Applenewsstyle1DestinationBody extends ApplenewsDestinationBodyPhoto {
 
     }
 
-    $components = parent::export($value);
+    $components = parent::export();
     for ($i = 0; $i < count($components); $i++) {
-      $comp = $components[$i];
-      if ($comp instanceof Components\Body) {
-        /** @var \ChapterThree\AppleNews\Document\Components\Body $comp */
-        if ($comp->getFormat() != 'markdown') {
-          $comp->addInlineTextStyles($body_inline_text_style);
+      $component = $components[$i];
+      if ($component instanceof Components\Body) {
+        /** @var \ChapterThree\AppleNews\Document\Components\Body $component */
+        if ($component->getFormat() != 'markdown') {
+          $component->addInlineTextStyles($body_inline_text_style);
         }
-        $comp->setLayout($body_layout)
+        $component->setLayout($body_layout)
           ->setAnimation($body_animation);
         if ($i) {
-          $comp->setTextStyle($body_text_style);
+          $component->setTextStyle($body_text_style);
         }
         else {
-          $comp->setTextStyle($initial_body_text_style);
+          $component->setTextStyle($initial_body_text_style);
         }
       }
-      elseif ($comp instanceof Components\ScalableImage) {
-        /** @var \ChapterThree\AppleNews\Document\Components\ScalableImage $comp */
-        $comp->setLayout($image_layout);
+      elseif ($component instanceof Components\ScalableImage) {
+        /** @var \ChapterThree\AppleNews\Document\Components\ScalableImage $component */
+        $component->setLayout($image_layout);
       }
     }
 
@@ -127,7 +127,7 @@ class Applenewsstyle1DestinationBody extends ApplenewsDestinationBodyPhoto {
 /**
  * Image header component.
  */
-class Applenewsstyle1DestinationHeaderImage extends ApplenewsDestination {
+class Applenewsstyle1DestinationHeaderImage extends ApplenewsDestinationComponent {
 
   /**
    * {@inheritdoc}
@@ -151,12 +151,12 @@ class Applenewsstyle1DestinationHeaderImage extends ApplenewsDestination {
   public function validateSettings() {
     foreach (['file'] as $key) {
       if (@$this->getSetting($key) === NULL ||
-          !$this->sourceOptionValid($this->getSetting($key))
+          !$this->sourceOptionValid($this->getSetting($key)['source'])
       ) {
         return FALSE;
       }
     }
-    return TRUE;
+    return parent::validateSettings();
   }
 
   /**
@@ -166,13 +166,9 @@ class Applenewsstyle1DestinationHeaderImage extends ApplenewsDestination {
 
     $form = parent::getConfigForm($form, $form_state);
 
-    $form['file'] = [
-      '#title'         => t('File'),
-      '#required'      => TRUE,
-      '#type'          => 'select',
-      '#options'       => $this->getSourceOptions(),
-      '#default_value' => $this->getSetting('file'),
-    ];
+    parent::getConfigFormSourceElement($form, $form_state, 'file');
+    $form['file']['#title'] = t('File');
+    $form['file']['#required'] = TRUE;
 
     return $form;
   }
@@ -180,12 +176,13 @@ class Applenewsstyle1DestinationHeaderImage extends ApplenewsDestination {
   /**
    * {@inheritdoc}
    */
-  public function export($value) {
-    list($key, $values) = $this->getSourceValues($value,
+  public function export() {
+    list($key, $values) = $this->getSourceValues($this->export->source,
       $this->getSetting('file'));
     if (empty($values[0][$key])) {
       return [];
     }
+
     $url = $this->export->addAsset($values[0][$key]);
     $fill = new Styles\Fills\ImageFill($url);
     $fill->setFillMode('cover')->setVerticalAlignment('bottom');
@@ -219,7 +216,7 @@ class Applenewsstyle1DestinationHeaderImage extends ApplenewsDestination {
 /**
  * Gradient header container component.
  */
-class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination {
+class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestinationComponent {
 
   /**
    * {@inheritdoc}
@@ -246,12 +243,12 @@ class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination
   public function validateSettings() {
     foreach (['title'] as $key) {
       if (@$this->getSetting($key) === NULL ||
-          !$this->sourceOptionValid($this->getSetting($key))
+          !$this->sourceOptionValid($this->getSetting($key)['source'])
       ) {
         return FALSE;
       }
     }
-    return TRUE;
+    return parent::validateSettings();
   }
 
   /**
@@ -261,48 +258,27 @@ class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination
 
     $form = parent::getConfigForm($form, $form_state);
 
-    $form['title'] = [
-      '#title'         => t('Title'),
-      '#required'      => TRUE,
-      '#type'          => 'select',
-      '#options'       => $this->getSourceOptions(),
-      '#default_value' => $this->getSetting('title'),
-    ];
+    parent::getConfigFormSourceElement($form, $form_state, 'title');
+    $form['title']['#title'] = t('Title');
+    $form['title']['#required'] = TRUE;
 
-    $form['intro'] = [
-      '#title'         => t('Intro'),
-      '#type'          => 'select',
-      '#options'       => $this->getSourceOptions(),
-      '#default_value' => $this->getSetting('intro'),
-    ];
+    parent::getConfigFormSourceElement($form, $form_state, 'intro');
+    $form['intro']['#title'] = t('Intro');
 
-    $form['author'] = [
-      '#title'         => t('Author'),
-      '#type'          => 'select',
-      '#options'       => $this->getSourceOptions(),
-      '#default_value' => $this->getSetting('author'),
-    ];
+    parent::getConfigFormSourceElement($form, $form_state, 'author');
+    $form['author']['#title'] = t('Author');
 
-    $form['photographer'] = [
-      '#title'         => t('Photographer'),
-      '#type'          => 'select',
-      '#options'       => $this->getSourceOptions(),
-      '#default_value' => $this->getSetting('photographer'),
-    ];
+    parent::getConfigFormSourceElement($form, $form_state, 'photographer');
+    $form['photographer']['#title'] = t('Photographer');
 
     return $form;
   }
 
   /**
-   * Exports to an Apple News Document container object.
-   *
-   * @param mixed $value
-   *   An array of children component objects.
-   *
-   * @return array
-   *   A list of \ChapterThree\AppleNews\Document\Base objects.
+   * {@inheritdoc}
    */
-  public function export($value) {
+  public function export() {
+
     // Components container.
     $container = new Components\Container();
     $layout = new Layouts\ComponentLayout();
@@ -322,7 +298,7 @@ class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination
     $container->addComponent($divider);
 
     // Title.
-    list($key, $values) = $this->getSourceValues($value,
+    list($key, $values) = $this->getSourceValues($this->export->source,
       $this->getSetting('title'));
     if (empty($values[0][$key])) {
       return [];
@@ -353,7 +329,7 @@ class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination
     $container->addComponent($divider);
 
     // Intro.
-    list($key, $values) = $this->getSourceValues($value,
+    list($key, $values) = $this->getSourceValues($this->export->source,
       $this->getSetting('intro'));
     if (!empty($values[0][$key])) {
       $intro = new Components\Intro($values[0][$key]);
@@ -377,7 +353,7 @@ class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination
       ->setFontName('AvenirNextCondensed-DemiBold')
       ->setFontSize(13)
       ->setTextColor('#FFF');
-    list($key, $values) = $this->getSourceValues($value,
+    list($key, $values) = $this->getSourceValues($this->export->source,
       $this->getSetting('author'));
     if (!empty($values[0][$key])) {
       $author = new Components\Author($values[0][$key]);
@@ -388,7 +364,7 @@ class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination
       $author->setTextStyle($text_style);
       $container->addComponent($author);
     }
-    list($key, $values) = $this->getSourceValues($value,
+    list($key, $values) = $this->getSourceValues($this->export->source,
       $this->getSetting('photographer'));
     if (!empty($values[0][$key])) {
       $photog = new Components\Photographer($values[0][$key]);
@@ -419,6 +395,7 @@ class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination
     $style->setFill($fill);
     $header->setStyle($style);
     $header->addComponent($container);
+
     return [$header];
   }
 
@@ -427,7 +404,7 @@ class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination
 /**
  * Animated pullquote component.
  */
-class Applenewsstyle1DestinationPullQuote extends ApplenewsDestination {
+class Applenewsstyle1DestinationPullQuote extends ApplenewsDestinationComponent {
 
   /**
    * {@inheritdoc}
@@ -453,12 +430,12 @@ class Applenewsstyle1DestinationPullQuote extends ApplenewsDestination {
   public function validateSettings() {
     foreach (['quote'] as $key) {
       if (@$this->getSetting($key) === NULL ||
-          !$this->sourceOptionValid($this->getSetting($key))
+          !$this->sourceOptionValid($this->getSetting($key)['source'])
       ) {
         return FALSE;
       }
     }
-    return TRUE;
+    return parent::validateSettings();
   }
 
   /**
@@ -468,20 +445,12 @@ class Applenewsstyle1DestinationPullQuote extends ApplenewsDestination {
 
     $form = parent::getConfigForm($form, $form_state);
 
-    $form['image'] = [
-      '#title'         => t('Image'),
-      '#type'          => 'select',
-      '#options'       => $this->getSourceOptions(),
-      '#default_value' => $this->getSetting('image'),
-    ];
+    parent::getConfigFormSourceElement($form, $form_state, 'image');
+    $form['image']['#title'] = t('Image');
 
-    $form['quote'] = [
-      '#title'         => t('Quote'),
-      '#required'      => TRUE,
-      '#type'          => 'select',
-      '#options'       => $this->getSourceOptions(),
-      '#default_value' => $this->getSetting('quote'),
-    ];
+    parent::getConfigFormSourceElement($form, $form_state, 'quote');
+    $form['quote']['#title'] = t('Quote');
+    $form['quote']['#required'] = TRUE;
 
     $form['format'] = [
       '#title'         => t('Quote Format'),
@@ -497,18 +466,12 @@ class Applenewsstyle1DestinationPullQuote extends ApplenewsDestination {
   }
 
   /**
-   * Exports to an Apple News Document container object.
-   *
-   * @param mixed $value
-   *   An array of children component objects.
-   *
-   * @return array
-   *   A list of \ChapterThree\AppleNews\Document\Base objects.
+   * {@inheritdoc}
    */
-  public function export($value) {
+  public function export() {
 
     // Pullquote.
-    list($key, $quote) = $this->getSourceValues($value,
+    list($key, $quote) = $this->getSourceValues($this->export->source,
       $this->getSetting('quote'));
     if (empty($quote[0][$key])) {
       return [];
@@ -524,7 +487,7 @@ class Applenewsstyle1DestinationPullQuote extends ApplenewsDestination {
     }
 
     // Background.
-    list($key, $file) = $this->getSourceValues($value,
+    list($key, $file) = $this->getSourceValues($this->export->source,
       $this->getSetting('image'));
 
     // Pullquote without background.
@@ -579,98 +542,95 @@ class Applenewsstyle1DestinationPullQuote extends ApplenewsDestination {
       return [$quote];
 
     }
+
     // Pullquote with background.
-    else {
 
-      // Parent section.
-      $section = new Components\Section();
-      $section->setScene(new Animations\Scenes\ParallaxScaleHeader());
-      $layout = new Layouts\ComponentLayout();
-      $layout->setIgnoreDocumentMargin()
-        ->setMinimumHeight('42vh');
-      $section->setLayout($layout);
+    // Parent section.
+    $section = new Components\Section();
+    $section->setScene(new Animations\Scenes\ParallaxScaleHeader());
+    $layout = new Layouts\ComponentLayout();
+    $layout->setIgnoreDocumentMargin()
+      ->setMinimumHeight('42vh');
+    $section->setLayout($layout);
 
-      // Header.
-      $file = $file[0][$key];
-      $url = $this->export->addAsset($file);
-      $fill = new Styles\Fills\ImageFill($url);
-      $fill->setFillMode('cover')->setVerticalAlignment('top');
-      $style = new Styles\ComponentStyle();
-      $style->setFill($fill);
-      $header = new Components\Header();
-      $header->setStyle($style);
-      $layout = new Layouts\ComponentLayout();
-      $layout->setIgnoreDocumentMargin()
-        ->setMinimumHeight('75vw')
-        ->setMargin(new Margin(25, 25));
-      $header->setLayout($layout);
+    // Header.
+    $file = $file[0][$key];
+    $url = $this->export->addAsset($file);
+    $fill = new Styles\Fills\ImageFill($url);
+    $fill->setFillMode('cover')->setVerticalAlignment('top');
+    $style = new Styles\ComponentStyle();
+    $style->setFill($fill);
+    $header = new Components\Header();
+    $header->setStyle($style);
+    $layout = new Layouts\ComponentLayout();
+    $layout->setIgnoreDocumentMargin()
+      ->setMinimumHeight('75vw')
+      ->setMargin(new Margin(25, 25));
+    $header->setLayout($layout);
 
-      // Pullquote.
-      $layout = new Layouts\ComponentLayout();
-      $layout->setColumnStart(0)->setColumnSpan(7)->setMargin(new Margin(70));
-      $quote->setLayout($layout);
-      $quote->setBehavior(new Behaviors\BackgroundParallax());
-      $text_style = new Styles\ComponentTextStyle();
-      $text_style->setTextTransform('uppercase')
-        ->setFontName('AvenirNext-Bold')
-        ->setFontSize(16)
-        ->setLineHeight(20)
-        ->setTextColor('#FFF');
-      $quote->setTextStyle($text_style);
+    // Pullquote.
+    $layout = new Layouts\ComponentLayout();
+    $layout->setColumnStart(0)->setColumnSpan(7)->setMargin(new Margin(70));
+    $quote->setLayout($layout);
+    $quote->setBehavior(new Behaviors\BackgroundParallax());
+    $text_style = new Styles\ComponentTextStyle();
+    $text_style->setTextTransform('uppercase')
+      ->setFontName('AvenirNext-Bold')
+      ->setFontSize(16)
+      ->setLineHeight(20)
+      ->setTextColor('#FFF');
+    $quote->setTextStyle($text_style);
 
-      $header->addComponent($quote);
-      $section->addComponent($header);
+    $header->addComponent($quote);
+    $section->addComponent($header);
 
-      switch ($this->export->getSetting('layout_alignment')) {
+    switch ($this->export->getSetting('layout_alignment')) {
 
-        case 'left':
-          // Quote.
-          /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
-          $layout = $quote->getLayout();
-          $layout->setColumnStart(1);
-          /** @var \ChapterThree\AppleNews\Document\Styles\ComponentTextStyle $text_style */
-          $text_style = $quote->getTextStyle();
-          $text_style->setTextAlignment('left');
-          // Section.
-          /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
-          $layout = $section->getLayout();
-          $layout->setColumnStart(3)->setColumnSpan(4);
-          break;
+      case 'left':
+        // Quote.
+        /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
+        $layout = $quote->getLayout();
+        $layout->setColumnStart(1);
+        /** @var \ChapterThree\AppleNews\Document\Styles\ComponentTextStyle $text_style */
+        $text_style = $quote->getTextStyle();
+        $text_style->setTextAlignment('left');
+        // Section.
+        /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
+        $layout = $section->getLayout();
+        $layout->setColumnStart(3)->setColumnSpan(4);
+        break;
 
-        case 'center':
-          // Quote.
-          /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
-          $layout = $quote->getLayout();
-          $layout->setColumnStart(1)->setColumnSpan(5);
-          /** @var \ChapterThree\AppleNews\Document\Styles\ComponentTextStyle $text_style */
-          $text_style = $quote->getTextStyle();
-          $text_style->setTextAlignment('center');
-          // Section.
-          /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
-          $layout = $section->getLayout();
-          $layout->setColumnStart(1)->setColumnSpan(7);
-          break;
+      case 'center':
+        // Quote.
+        /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
+        $layout = $quote->getLayout();
+        $layout->setColumnStart(1)->setColumnSpan(5);
+        /** @var \ChapterThree\AppleNews\Document\Styles\ComponentTextStyle $text_style */
+        $text_style = $quote->getTextStyle();
+        $text_style->setTextAlignment('center');
+        // Section.
+        /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
+        $layout = $section->getLayout();
+        $layout->setColumnStart(1)->setColumnSpan(7);
+        break;
 
-        case 'right':
-          // Quote.
-          /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
-          $layout = $quote->getLayout();
-          $layout->setColumnSpan(6);
-          /** @var \ChapterThree\AppleNews\Document\Styles\ComponentTextStyle $text_style */
-          $text_style = $quote->getTextStyle();
-          $text_style->setTextAlignment('left');
-          // Section.
-          /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
-          $layout = $section->getLayout();
-          $layout->setColumnStart(0)->setColumnSpan(4);
-          break;
-
-      }
-
-      return [$section];
+      case 'right':
+        // Quote.
+        /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
+        $layout = $quote->getLayout();
+        $layout->setColumnSpan(6);
+        /** @var \ChapterThree\AppleNews\Document\Styles\ComponentTextStyle $text_style */
+        $text_style = $quote->getTextStyle();
+        $text_style->setTextAlignment('left');
+        // Section.
+        /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
+        $layout = $section->getLayout();
+        $layout->setColumnStart(0)->setColumnSpan(4);
+        break;
 
     }
 
+    return [$section];
   }
 
 }
@@ -681,29 +641,24 @@ class Applenewsstyle1DestinationPullQuote extends ApplenewsDestination {
 class Applenewsstyle1DestinationImages extends ApplenewsDestinationImages {
 
   /**
-   * Exports to an Apple News Document container object.
-   *
-   * @param mixed $value
-   *   An array of children component objects.
-   *
-   * @return array
-   *   A list of \ChapterThree\AppleNews\Document\Base objects.
+   * {@inheritdoc}
    */
-  public function export($value) {
-    $components = parent::export($value);
+  public function export() {
+    $components = parent::export();
     if (empty($components)) {
       return [];
     }
-    /** @var \ChapterThree\AppleNews\Document\Components\Mosaic|\ChapterThree\AppleNews\Document\Components\Gallery $images */
-    list($images) = $components;
+
+    /** @var \ChapterThree\AppleNews\Document\Components\Mosaic|\ChapterThree\AppleNews\Document\Components\Gallery $component */
+    $component = $components[0];
     $animation = new Animations\ComponentAnimations\ScaleFadeAnimation();
     $animation->setInitialAlpha(0.5)->setInitialScale(0.75);
-    $images->setAnimation($animation);
+    $component->setAnimation($animation);
     $layout = new Layouts\ComponentLayout();
     $layout
       ->setIgnoreDocumentMargin()
       ->setMargin(new Margin(25, 25));
-    $images->setLayout($layout);
+    $component->setLayout($layout);
 
     switch ($this->export->getSetting('layout_alignment')) {
 
@@ -718,7 +673,7 @@ class Applenewsstyle1DestinationImages extends ApplenewsDestinationImages {
 
     }
 
-    return [$images];
+    return [$component];
   }
 
 }
@@ -765,16 +720,16 @@ class Applenewsstyle1DestinationAd extends ApplenewsDestinationAd {
   /**
    * {@inheritdoc}
    */
-  public function export($value) {
-    $ad = parent::export($value);
-    if (empty($ad)) {
+  public function export() {
+    $components = parent::export();
+    if (empty($components)) {
       return [];
     }
-    /** @var \ChapterThree\AppleNews\Document\Components\Advertisements\BannerAdvertisement $ad */
-    $ad = $ad[0];
+    /** @var \ChapterThree\AppleNews\Document\Components\Advertisements\BannerAdvertisement $component */
+    $component = $components[0];
 
     $layout = new Layouts\ComponentLayout();
-    $ad->setLayout($layout);
+    $component->setLayout($layout);
 
     switch ($this->export->getSetting('layout_alignment')) {
 
@@ -789,7 +744,7 @@ class Applenewsstyle1DestinationAd extends ApplenewsDestinationAd {
 
     }
 
-    return [$ad];
+    return $components;
   }
 
 }

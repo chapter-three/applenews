@@ -9,32 +9,9 @@ use \ChapterThree\AppleNews\Document\Components;
 use \ChapterThree\AppleNews\Document\Styles;
 
 /**
- * Interface for an Apple News source.
- */
-interface ApplenewsDestinationInterface {
-
-  /**
-   * Administrative label.
-   */
-  public function label();
-
-  /**
-   * Exports to an Apple News Document object.
-   *
-   * @param mixed $value
-   *   Value.
-   *
-   * @return array
-   *   A list of \ChapterThree\AppleNews\Document\Base objects.
-   */
-  public function export($value);
-
-}
-
-/**
  * Base class for a configurable Apple News destination.
  */
-abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
+abstract class ApplenewsDestination {
 
   /**
    * Settings for this destination.
@@ -61,7 +38,7 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
   /**
    * Unique id among a set of destinations.
    *
-   * @var int
+   * @var int|string
    */
   public $id;
 
@@ -92,21 +69,13 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
   public $depth;
 
   /**
-   * Child components.
-   *
-   * @var array
-   *   List of \ChapterThree\AppleNews\Document objects.
-   */
-  public $children;
-
-  /**
    * Implements __construct().
    */
   public function __construct() {
   }
 
   /**
-   * {@inheritdoc}
+   * Administrative label.
    */
   public function label() {
     if ($this->id === NULL) {
@@ -116,9 +85,12 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
   }
 
   /**
-   * {@inheritdoc}
+   * Exports to an Apple News Document object.
+   *
+   * @return array
+   *   A list of \ChapterThree\AppleNews\Document\Base objects.
    */
-  abstract public function export($value);
+  abstract public function export();
 
   /**
    * Root-only -- can not be a child.
@@ -141,16 +113,9 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
   }
 
   /**
-   * If isLeaf() returns FALSE, this should set any child components.
-   */
-  public function setChildren($children) {
-    $this->children = $children;
-  }
-
-  /**
    * Validate a source key.
    *
-   * @param $key
+   * @param string $key
    *   Key to search for.
    * @param array|null $options
    *   Internal use.
@@ -160,7 +125,7 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
    */
   public function sourceOptionValid($key, $options = NULL) {
     if (!isset($options)) {
-      $options = $this->getSourceOptions();
+      list($options,) = $this->getSourceOptions();
     }
     if (isset($options[$key]) && !is_array($options[$key])) {
       return TRUE;
@@ -174,17 +139,54 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
   }
 
   /**
+   * Generates a configurable source setting element.
+   */
+  protected function getConfigFormSourceElement(&$form, &$form_state, $key) {
+    list($options, $metadata) = $this->getSourceOptions();
+    $form[$key] = [
+      '#type'  => 'fieldset',
+      '#tree'  => TRUE,
+      'source' => [
+        '#title'         => t('Source'),
+        '#type'          => 'select',
+        '#options'       => $options,
+        '#default_value' => @$this->getSetting($key)['source'],
+      ],
+    ];
+    // Textarea for literal value sources.
+    if (!empty($metadata['types']['value'])) {
+      foreach ($metadata['types']['value'] as $source_key) {
+        $visible_states[][':input[name="' . $key . '[source]"]']
+          = ['value' => $source_key];
+      }
+      $form[$key]['value'] = [
+        '#title'         => t('Value'),
+        '#type'          => 'textarea',
+        '#default_value' => @$this->getSetting($key)['value'],
+        '#states'        => [
+          'visible' => $visible_states,
+        ]
+      ];
+    }
+  }
+
+  /**
    * List available source options.
    *
    * @param string $ancestors
    *   Internal use.
-   * @param string $entity_types
+   * @param string $entity_type
    *   Internal use.
    */
   public function getSourceOptions($ancestors = '', $entity_type = NULL) {
 
     // Source implementations.
-    $sources = apple_news_get_module_apis()['sources'];
+    $sources = apple_news_get_module_apis('source');
+    $value_sources = function() use(&$sources) {
+      return array_filter($sources, function($info) {
+        return $info['type'] == 'value';
+      });
+    };
     $entity_sources = function($entity_type) use(&$sources) {
       return array_filter($sources, function($info) use($entity_type) {
         return $info['type'] == 'entity' &&
@@ -221,6 +223,31 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
       return $field_names;
     };
 
+    $options = [];
+    $metadata = [];
+    // Top-level-only.
+    if (!$ancestors) {
+      $options += [
+        '' => '- ' . t('none') . ' -',
+      ];
+      // Each value source.
+      foreach ($value_sources() as $source_info) {
+        foreach ($source_info['class']::attributes() as $key => $attr_info) {
+          $id = implode('::', [
+            $ancestors . '::',
+            $source_info['module'],
+            $source_info['machine_name'],
+            $key,
+          ]);
+          $label = implode(' -- ', [
+            $source_info['name'],
+            $attr_info,
+          ]);
+          $options[$id] = $label;
+          $metadata['types']['value'][$id] = $id;
+        }
+      }
+    }
     // Can be called recursively.
     if (!isset($entity_type)) {
       $entity_type = $this->export->entityType();
@@ -240,8 +267,9 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
         // Nested entity source.
         if (is_array($attr_info)) {
           $label = $attr_info['label'];
-          $opts_atts[$label]
+          list($opts_atts[$label], $m)
             = $this->getSourceOptions($id, $attr_info['type']);
+          $metadata += $m;
         }
         // Value source.
         else {
@@ -250,6 +278,7 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
             $attr_info,
           ]);
           $opts_atts[$id] = $label;
+          $metadata['types']['entity'][$id] = $id;
         }
       }
     }
@@ -277,8 +306,9 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
               $field_name,
               $attr_info['label']
             ]);
-            $opts_fields[$label]
+            list($opts_atts[$label], $m)
               = $this->getSourceOptions($id, $attr_info['type']);
+            $metadata += $m;
           }
           // Value source.
           else {
@@ -288,13 +318,13 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
               $attr_info,
             ]);
             $opts_fields[$id] = $label;
+            $metadata['types']['field'][$id] = $id;
           }
         }
       }
     }
-    $options = ($ancestors ? [] : ['' => '- ' . t('none') . ' -']) +
-      $opts_atts + $opts_fields;
-    return $options;
+    $options += $opts_atts + $opts_fields;
+    return [$options, $metadata];
   }
 
   /**
@@ -303,9 +333,10 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
    * @return ApplenewsSourceInterface
    *   A source object.
    */
-  public function getSource(stdClass $value, $key) {
-    $implementations = apple_news_get_module_apis()['sources'];
+  public function getSource(stdClass $value, $key_settings) {
+    $implementations = apple_news_get_module_apis('source');
 
+    $key = @$key_settings['source'];
     if (empty($key)) {
       return NULL;
     }
@@ -330,10 +361,17 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
         watchdog('apple_news', $msg, $var, WATCHDOG_ERROR);
         return NULL;
       }
-      // Don't need key.
-      array_pop($args);
-      // Add entity.
-      $args[] = $value;
+      $key = array_pop($args);
+      // @todo this needs to be configurable in the class.
+      $reflection = new ReflectionClass($implementations[$id]['class']);
+      if ($reflection->isSubclassOf('ApplenewsSourceValue')) {
+        // Add literal.
+        $args[] = $key_settings[$key];
+      }
+      else {
+        // Add entity.
+        $args[] = $value;
+      }
       // Instantiate.
       $source = call_user_func_array('apple_news_get_source', $args);
     }
@@ -346,7 +384,10 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
    */
   public function getSourceValues(stdClass $value, $source_key) {
     $source = $this->getSource($value, $source_key);
-    $key = explode('::', $source_key);
+    if (empty($source_key['source'])) {
+      return [NULL, []];
+    }
+    $key = explode('::', $source_key['source']);
     $key = array_pop($key);
     if (empty($source)) {
       return [$key, []];

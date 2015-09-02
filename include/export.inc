@@ -39,6 +39,13 @@ abstract class ApplenewsExport {
   public $document;
 
   /**
+   * Source object.
+   *
+   * @var object
+   */
+  public $source;
+
+  /**
    * Assets bundled with an export.
    *
    * @var array
@@ -190,7 +197,31 @@ abstract class ApplenewsExport {
    */
   public function getConfigForm($form, &$form_state) {
 
-    $form['channels'] = [
+    $form['enabled'] = [
+      '#title' => t('Enable this export'),
+      '#type' => 'checkbox',
+      '#default_value' => $this->enabled,
+      '#description' => t('This export will not publish to Apple News until enabled.'),
+      '#prefix' => '<strong>' . t('Status') . '</strong>',
+      '#weight' => 10,
+    ];
+
+    $form['additional_settings'] = [
+      '#type' => 'vertical_tabs',
+      '#weight' => 99,
+    ];
+
+    $form['additional_settings']['general'] = [
+      '#type' => 'fieldset',
+      '#title' => t('General Settings'),
+      '#collapsible' => TRUE,
+      '#collapsed' => FALSE,
+      '#group' => 'main',
+      '#weight' => -10,
+    ];
+    $tab = &$form['additional_settings']['general'];
+
+    $tab['channels'] = [
       '#type' => 'container',
       '#prefix' => '<strong>' . t('Channels') . '</strong>',
       '#weight' => 9,
@@ -204,7 +235,7 @@ abstract class ApplenewsExport {
     $api_channels = apple_news_channels(TRUE);
     if (!empty($api_channels)) {
       foreach ($api_channels as $channel_id => $channel) {
-        $form['channels']['channel-' . $channel_id] = [
+        $tab['channels']['channel-' . $channel_id] = [
           '#type' => 'checkbox',
           '#title' => $channel['name'],
           '#attributes' => [
@@ -213,7 +244,7 @@ abstract class ApplenewsExport {
           '#default_value' => !empty($saved_channels[$channel_id]) ? TRUE : FALSE,
         ];
         foreach ($channel['sections'] as $section_id => $section) {
-          $form['channels']['section-' . $channel_id . '-' . $section_id] = [
+          $tab['channels']['section-' . $channel_id . '-' . $section_id] = [
             '#type' => 'checkbox',
             '#title' => $section['name'] . ' ' . (!empty($section['default']) ? t('<em>(default)</em>') : ''),
             '#attributes' => [
@@ -226,7 +257,7 @@ abstract class ApplenewsExport {
       }
     }
     else {
-      $form['channels']['info'] = [
+      $tab['channels']['info'] = [
         '#markup' => t('Please provide Apple News <a href="!credentials">credentials</a> and add at least one <a href="!channel">channel</a>.',
           [
             '!credentials' => url('admin/config/content/apple-news/settings'),
@@ -235,15 +266,6 @@ abstract class ApplenewsExport {
         )
       ];
     }
-
-    $form['enabled'] = [
-      '#title' => t('Enable this export'),
-      '#type' => 'checkbox',
-      '#default_value' => $this->enabled,
-      '#description' => t('This export will not publish to Apple News until enabled.'),
-      '#prefix' => '<strong>' . t('Status') . '</strong>',
-      '#weight' => 10,
-    ];
 
     return $form;
   }
@@ -288,20 +310,29 @@ abstract class ApplenewsExport {
   }
 
   /**
-   * Exports the entity to an Apple Native Document.
+   * Set the source prior to export.
    *
    * @param object $entity
    *   An entity to export.
+   *
+   * @return $this
+   */
+  public function setSource($entity) {
+    $this->assets = [];
+    $this->document = NULL;
+    $this->source = $entity;
+    return $this;
+  }
+
+  /**
+   * Exports the entity to an Apple Native Document.
    *
    * @return NULL|\ChapterThree\AppleNews\Document
    *   A document object, or NULL to skip the export.
    *
    * @todo verify NULL return aborts push.
    */
-  public function export($entity) {
-    $this->assets = [];
-    return $this->document;
-  }
+  abstract public function export();
 
   /**
    * Generates a News Document URL for an asset.
@@ -378,7 +409,9 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
    *
    * @var array
    */
-  public $destinations = ['components' => []];
+  public $destinations = [
+    'components' => [],
+  ];
 
   /**
    * {@inheritdoc}
@@ -413,9 +446,10 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
   }
 
   /**
-   * Copy some attribute data to child objects.
+   * Initialize some attributes.
    */
   protected function init() {
+    // Copy some attribute data to child objects.
     foreach ($this->destinations as $key => $destinations) {
       /** @var ApplenewsDestination $obj */
       foreach ($destinations as $index => $obj) {
@@ -442,7 +476,7 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
    * @param int $index
    *   ID of component.
    *
-   * @return ApplenewsDestination|NULL
+   * @return ApplenewsDestinationComponent|NULL
    *   The component destination object.
    */
   public function getComponent($index) {
@@ -464,6 +498,30 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
    */
   public function getComponents() {
     return $this->getDestinations('components');
+  }
+
+  /**
+   * Sets the destination to id $index.
+   *
+   * @param string $key
+   *   Destination type.
+   * @param ApplenewsDestination $destination
+   *   ComponentLayout object.
+   * @param int|string $index
+   *   ID of componentLayout.
+   *
+   * @return $this
+   */
+  protected function addDestination($key, ApplenewsDestination $destination, $index = NULL) {
+    if (!isset($index)) {
+      $index = count($this->destinations[$key]);
+      while (isset($this->destinations[$key][$index])) {
+        $index++;
+      }
+    }
+    $destination->id = $index;
+    $this->destinations[$key][$index] = $destination;
+    return $this;
   }
 
   /**
@@ -525,35 +583,37 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
   /**
    * {@inheritdoc}
    */
-  public function getSetting($key) {
-    if (isset($this->settings[$key])) {
-      return $this->settings[$key];
-    }
-    switch ($key) {
-
-      case 'layout_columns':
-        return 7;
-
-      case 'layout_width':
-        return 1024;
-
-    }
-    return parent::getSetting($key);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function getConfigForm($form, &$form_state) {
     $form = parent::getConfigForm($form, $form_state);
 
-    $form['components'] = [
-      '#title' => t('Components'),
-      '#tree' => TRUE,
+    $form['additional_settings']['layouts_tab'] = [
+      '#type' => 'fieldset',
+      '#title' => t('Layout'),
+      '#collapsible' => TRUE,
+      '#collapsed' => FALSE,
+      '#group' => 'main',
     ];
-    /** @var ApplenewsDestination $destination */
+    $tab = &$form['additional_settings']['layouts_tab'];
+    
+    // @todo Layout, ComponentLayout
+
+    $form['additional_settings']['components_tab'] = [
+      '#type' => 'fieldset',
+      '#title' => t('Components'),
+      '#collapsible' => TRUE,
+      '#collapsed' => FALSE,
+      '#group' => 'main',
+    ];
+    $tab = &$form['additional_settings']['components_tab'];
+
+    // Components.
+    $tab['components'] = [
+      '#title'  => t('Components'),
+      '#tree'   => TRUE,
+    ];
+    /** @var ApplenewsDestinationComponent $destination */
     foreach ($this->getdestinations('components') as $destination) {
-      $edit = 'admin/config/content/apple-news/exports/' . apple_news_export_id($this->module, $this->machineName) . '/components/' . $destination->id;
+      $edit = 'admin/config/content/apple-news/exports/' . apple_news_export_id($this->module, $this->machineName) . '/component/' . $destination->id;
       if (!$destination->validateSettings()) {
         drupal_set_message(t('The %label component needs to be !link.',
           [
@@ -562,7 +622,7 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
           ]),
           'error');
       }
-      $form['components'][$destination->id] = [
+      $tab['components'][$destination->id] = [
         '#apple_news_destination' => $destination,
         'destination' => [
           '#markup' => check_plain($destination->label()),
@@ -571,7 +631,7 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
           '#markup' => l(t('edit'), $edit),
         ],
         'delete' => [
-          '#markup' => l(t('delete'), 'admin/config/content/apple-news/exports/' . apple_news_export_id($this->module, $this->machineName) . '/components/' . $destination->id . '/delete'),
+          '#markup' => l(t('delete'), 'admin/config/content/apple-news/exports/' . apple_news_export_id($this->module, $this->machineName) . '/component/' . $destination->id . '/delete'),
         ],
         'id' => [
           '#type' => 'hidden',
@@ -601,12 +661,12 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
         ],
       ];
     }
-    $options = apple_news_get_module_apis()['destinations'];
+    $options = apple_news_get_module_apis('destination', 'component');
     $options = ['' => t('Select...')] +
       array_map(function($destination) {
         return "${destination['name']} (${destination['module']})";
       }, $options);
-    $form['components']['_new'] = [
+    $tab['components']['_new'] = [
       '#apple_news_destination' => FALSE,
       'destination' => [
         '#title' => t('Add new component'),
@@ -648,25 +708,6 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
       ],
     ];
 
-    $form['layout'] = [
-      '#type'          => 'fieldset',
-      '#title'         => t('Layout'),
-      'layout_columns' => [
-        '#type'          => 'textfield',
-        '#required'      => TRUE,
-        '#title'         => t('Columns'),
-        '#default_value' => $this->getSetting('layout_columns'),
-        '#description'   => t('The number of columns this document was designed for.'),
-      ],
-      'layout_width'   => [
-        '#type'          => 'textfield',
-        '#required'      => TRUE,
-        '#title'         => t('Width'),
-        '#default_value' => $this->getSetting('layout_width'),
-        '#description'   => t('The width (in points) this document was designed for. This property is used to calculate downscaling scenarios for smaller devices.'),
-      ],
-    ];
-
     return $form;
   }
 
@@ -675,13 +716,13 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
    */
   public function submitConfigForm($form, &$form_state) {
     $components = &$form_state['values']['components'];
-    /** @var ApplenewsDestination $component */
+    /** @var ApplenewsDestinationComponent $component */
     foreach ($this->destinations['components'] as $id => $component) {
       $component->weight = (int) $components[$component->id]['weight'];
       $component->pid = $components[$component->id]['pid'] == '' ? NULL : (int) $components[$component->id]['pid'];
     }
     if ($components['_new']['destination']) {
-      $destinations = apple_news_get_module_apis()['destinations'];
+      $destinations = apple_news_get_module_apis('destination');
       $info = $destinations[$components['_new']['destination']];
       $destination = apple_news_get_destination($info['module'], $info['machine_name']);
       $destination->weight = (int) $components['_new']['weight'];
@@ -689,9 +730,9 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
       $destination->id = empty($this->destinations['components']) ? 1 :
         max(array_keys($this->destinations['components'])) + 1;
       $this->destinations['components'][$destination->id] = $destination;
-      $form_state['redirect'] = 'admin/config/content/apple-news/exports/' .
+      $form_state['redirect'][] = 'admin/config/content/apple-news/exports/' .
         apple_news_export_id($this->module, $this->machineName) .
-        '/components/' . $destination->id;
+        '/component/' . $destination->id;
     }
 
     parent::submitConfigForm($form, $form_state);
@@ -738,11 +779,13 @@ class ApplenewsExportNode extends ApplenewsExportConfigurable {
   public function getConfigForm($form, &$form_state) {
     $form = parent::getConfigForm($form, $form_state);
 
+    $tab = &$form['additional_settings']['general'];
+
     $options = entity_get_info('node')['bundles'];
     $options = array_map(function($info) {
       return $info['label'];
     }, $options);
-    $form['bundles'] = [
+    $tab['bundles'] = [
       '#required'      => TRUE,
       '#title'         => t('Content Types'),
       '#type'          => 'select',
@@ -765,11 +808,10 @@ class ApplenewsExportNode extends ApplenewsExportConfigurable {
   /**
    * {@inheritdoc}
    */
-  public function export($entity) {
-    parent::export($entity);
+  public function export() {
 
     /** @var EntityDrupalWrapper $wrapper */
-    $wrapper = entity_metadata_wrapper('node', $entity);
+    $wrapper = entity_metadata_wrapper('node', $this->source);
 
     // Identifier;
     $id = $wrapper->getIdentifier();
@@ -784,15 +826,15 @@ class ApplenewsExportNode extends ApplenewsExportConfigurable {
       $language = $language->language;
     }
 
-    $layout = new Document\Layouts\Layout(
-      $this->getSetting('layout_columns'),
-      $this->getSetting('layout_width'));
     $this->document = new Document($id, $title,
-      apple_news_language_code($language), $layout);
+      apple_news_language_code($language),
+      // @todo Make these arbitrary values configurable.
+      new Document\Layouts\Layout(7, 1024));
+
     // Components.
-    /** @var ApplenewsDestination $destination */
+    /** @var ApplenewsDestinationComponent $destination */
     foreach ($this->getComponents() as $destination) {
-      foreach ($destination->export($entity) as $component) {
+      foreach ($destination->export() as $component) {
         $this->document->addComponent($component);
       }
     }

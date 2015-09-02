@@ -27,11 +27,6 @@ function apple_news_article_apple_news_api() {
         'name' => t('Articles'),
         'description' => t('Export articles as defined by default install profile.'),
       ],
-      'article_config' => [
-        'class' => 'ApplenewsExportConfigurableArticle',
-        'name' => t('Articles (configurable)'),
-        'description' => t('Export articles as defined by default install profile.'),
-      ],
     ],
   ];
 }

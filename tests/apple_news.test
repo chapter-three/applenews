@@ -145,9 +145,9 @@ class ApplenewsExportTestCase extends ApplenewsWebTestCase {
     );
     // Configure component.
     $this->drupalPost(
-      'admin/config/content/apple-news/exports/apple_news::node/components/1',
+      'admin/config/content/apple-news/exports/apple_news::node/component/1',
       [
-        'text' => '::::apple_news::field::node::body::value',
+        'text[source]' => '::::apple_news::field::node::body::value',
       ],
       t('Save changes')
     );
@@ -168,10 +168,10 @@ class ApplenewsExportTestCase extends ApplenewsWebTestCase {
     );
     // Configure component.
     $this->drupalPost(
-      'admin/config/content/apple-news/exports/apple_news::node/components/2',
+      'admin/config/content/apple-news/exports/apple_news::node/component/2',
       [
-        'file' => '::::apple_news::file::node::field_image::uri',
-        'caption' => '::::apple_news::file::node::field_image::title',
+        'file[source]' => '::::apple_news::file::node::field_image::uri',
+        'caption[source]' => '::::apple_news::file::node::field_image::title',
         'type' => 'photo',
       ],
       t('Save changes')
@@ -196,7 +196,7 @@ class ApplenewsExportTestCase extends ApplenewsWebTestCase {
     foreach (array_keys($result['node']) as $nid) {
       $content = $contents[$map[$nid]];
 
-      $document = $export->export(node_load($nid));
+      $document = $export->setSource(node_load($nid))->export();
       $this->assert($document instanceof \ChapterThree\AppleNews\Document,
         "Export document for node \"${content['_desc']}\" loaded.");
       $json = $document->json();
@@ -309,9 +309,9 @@ EOD
     );
     // Configure component.
     $this->drupalPost(
-      'admin/config/content/apple-news/exports/apple_news::node/components/1',
+      'admin/config/content/apple-news/exports/apple_news::node/component/1',
       [
-        'text' => '::::apple_news::field::node::body::value',
+        'text[source]' => '::::apple_news::field::node::body::value',
       ],
       t('Save changes')
     );
@@ -339,7 +339,7 @@ EOD
     foreach (array_keys($result['node']) as $nid) {
       $content = $contents[$map[$nid]];
 
-      $document = $export->export(node_load($nid));
+      $document = $export->setSource(node_load($nid))->export();
       $this->assert($document instanceof \ChapterThree\AppleNews\Document,
         "Export document for node \"${content['_desc']}\" loaded.");
       $json = $document->json();

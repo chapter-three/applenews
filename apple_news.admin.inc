@@ -591,26 +591,53 @@ function apple_news_export_edit_form($form, &$form_state, ApplenewsExport $expor
  */
 function theme_apple_news_export_edit_form($variables) {
   $form = $variables['form'];
-  $output = '';
 
-  // In case we want to add more sets of destinations.
-  foreach (['components'] as $key) {
-    if (empty($form[$key])) {
-      continue;
+  // Non-order-able table of destinations.
+  $elements = [
+  ];
+  foreach ($elements as $info) {
+    $rows = [];
+    foreach (element_children($info['element']) as $id) {
+      $rows[] = [
+        'data' => [
+          drupal_render($info['element'][$id]['destination']),
+          drupal_render($info['element'][$id]['edit']),
+          drupal_render($info['element'][$id]['delete']),
+          drupal_render($info['element'][$id]['id']),
+        ],
+      ];
     }
 
-    $tree = &$form[$key];
+    $header = [
+      $info['item_label'],
+      ['data' => t('Operations'), 'colspan' => 2],
+    ];
+    $info['element'] = [
+      '#markup' => theme('table', ['header' => $header, 'rows' => $rows]),
+      '#weight' => @$info['element']['#weight'] ? $info['element']['#weight'] : 0,
+      '#access' => isset($info['element']['#access']) ? $info['element']['#access'] : TRUE,
+    ];
+  }
+
+  // Order-able sets of destinations.
+  $elements = [
+    'components' => [
+      'item_label' => t('Component'),
+      'element' => &$form['additional_settings']['components_tab']['components'],
+    ],
+  ];
+  foreach ($elements as $key => $info) {
     $css_prefix = "apple-news-${key}-";
 
     $rows = [];
-    foreach (element_children($tree) as $id) {
-      $tree[$id]['weight']['#attributes']['class'] = [$css_prefix . 'weight'];
-      $tree[$id]['id']['#attributes']['class'] = [$css_prefix . 'id'];
-      $tree[$id]['pid']['#attributes']['class'] = [$css_prefix . 'pid'];
+    foreach (element_children($info['element']) as $id) {
+      $info['element'][$id]['weight']['#attributes']['class'] = [$css_prefix . 'weight'];
+      $info['element'][$id]['id']['#attributes']['class'] = [$css_prefix . 'id'];
+      $info['element'][$id]['pid']['#attributes']['class'] = [$css_prefix . 'pid'];
       $class = ['draggable'];
-      if (@$tree[$id]['#apple_news_destination']) {
+      if (@$info['element'][$id]['#apple_news_destination']) {
         /** @var ApplenewsDestination $destination */
-        $destination = $tree[$id]['#apple_news_destination'];
+        $destination = $info['element'][$id]['#apple_news_destination'];
         if ($destination->isRoot()) {
           $class[] = 'tabledrag-root';
         }
@@ -618,35 +645,37 @@ function theme_apple_news_export_edit_form($variables) {
           $class[] = 'tabledrag-leaf';
         }
       }
-      $indent = theme('indentation', ['size' => $tree[$id]['depth']['#value']]);
-      unset($tree[$id]['depth']);
+      $indent = theme('indentation', ['size' => $info['element'][$id]['depth']['#value']]);
+      unset($info['element'][$id]['depth']);
       $rows[] = [
         'data' => [
-          $indent . drupal_render($tree[$id]['destination']),
-          drupal_render($tree[$id]['edit']),
-          drupal_render($tree[$id]['delete']),
-          drupal_render($tree[$id]['weight']) .
-            drupal_render($tree[$id]['id']) .
-            drupal_render($tree[$id]['pid']),
+          $indent . drupal_render($info['element'][$id]['destination']),
+          drupal_render($info['element'][$id]['edit']),
+          drupal_render($info['element'][$id]['delete']),
+          drupal_render($info['element'][$id]['weight']) .
+          drupal_render($info['element'][$id]['id']) .
+          drupal_render($info['element'][$id]['pid']),
         ],
         'class' => $class,
       ];
     }
 
     $header = [
-      t('Component'),
-      [
-        'data' => t('Operations'),
-        'colspan' => 2,
-      ],
+      $info['item_label'],
+      ['data' => t('Operations'), 'colspan' => 2],
       t('Weight'),
     ];
     $table_id = $css_prefix . 'table';
-    $output .= theme('table', [
+    $table = [
       'header' => $header,
       'rows' => $rows,
       'attributes' => ['id' => $table_id],
-    ]);
+    ];
+    $info['element'] = [
+      '#markup' => theme('table', $table),
+      '#weight' => @$info['element']['#weight'] ? $info['element']['#weight'] : 0,
+      '#access' => isset($info['element']['#access']) ? $info['element']['#access'] : TRUE,
+    ];
     drupal_add_tabledrag($table_id, 'match', 'parent',
       $css_prefix . 'pid',
       $css_prefix . 'pid',
@@ -659,8 +688,7 @@ function theme_apple_news_export_edit_form($variables) {
       TRUE);
   }
 
-  $output .= drupal_render_children($form);
-  return $output;
+  return drupal_render_children($form);
 }
 
 /**
@@ -696,21 +724,22 @@ function apple_news_export_destination_edit_form($form, &$form_state, ApplenewsE
 
   switch ($type) {
 
-    case 'components':
-      /** @var ApplenewsDestination $destination */
+    case 'component':
+      /** @var ApplenewsDestinationComponent $destination */
       $destination = $export->getComponent($id);
       $form['destination_label'] = [
         '#markup' => '<div class="form-item"><label for="edit-weight">' . t('Component') . ' </label>
         ' . $destination->label() . '
         </div>',
       ];
-      $form = $destination->getConfigForm($form, $form_state);
       break;
 
     default:
       return $form;
 
   }
+
+  $form = $destination->getConfigForm($form, $form_state);
 
   $form['#apple_news_destination'] = $destination;
 
@@ -760,7 +789,20 @@ function apple_news_export_destination_edit_form_submit($form, &$form_state) {
 function apple_news_export_destination_delete_form($form, &$form_state, ApplenewsExportConfigurable $export, $type, $id) {
   module_load_include('inc', 'apple_news');
 
-  $destination = $export->getComponent($id);
+  switch ($type) {
+
+    case 'component':
+      $destination = $export->getComponent($id);
+      break;
+
+  }
+
+  $export_id = apple_news_export_id($export->getModule(), $export->getMachineName());
+  $path = 'admin/config/content/apple-news/exports/' . $export_id . '/edit';
+
+  if (empty($destination)) {
+    drupal_goto($path);
+  }
 
   $form_state['storage'] = [
     'export'      => $export,
@@ -768,9 +810,6 @@ function apple_news_export_destination_delete_form($form, &$form_state, Applenew
     'id'          => $id,
     'destination' => $destination,
   ];
-
-  $export_id = apple_news_export_id($export->getModule(), $export->getMachineName());
-  $path = 'admin/config/content/apple-news/exports/' . $export_id . '/edit';
 
   return confirm_form(
     $form,
@@ -788,28 +827,28 @@ function apple_news_export_destination_delete_form($form, &$form_state, Applenew
 function apple_news_export_destination_delete_form_submit($form, &$form_state) {
   module_load_include('inc', 'apple_news');
 
+  /** @var ApplenewsExportConfigurable $export */
   $export = $form_state['storage']['export'];
   $type = $form_state['storage']['type'];
   $id = $form_state['storage']['id'];
   $destination = $form_state['storage']['destination'];
+  $export_id = apple_news_export_id($export->getModule(), $export->getMachineName());
+  $path = 'admin/config/content/apple-news/exports/' . $export_id;
 
   switch ($type) {
 
-    case 'components':
-      /** @var ApplenewsExport $export */
+    case 'component':
       $export->deleteComponent($id);
-      apple_news_export_save($export);
-      drupal_set_message(t('@name destination successfully deleted.',
-        ['@name' => $destination->label()]));
       break;
 
   }
 
-  $export_id = apple_news_export_id($export->getModule(), $export->getMachineName());
-  drupal_goto('admin/config/content/apple-news/exports/' . $export_id);
+  apple_news_export_save($export);
+  drupal_set_message(t('@name successfully deleted.',
+    ['@name' => $destination->label()]));
+  drupal_goto($path);
 
 }
-
 
 /**
  * Delete Apple News article w/ confirmation.

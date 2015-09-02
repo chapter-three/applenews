@@ -388,6 +388,10 @@ function apple_news_apple_news_api() {
       ],
     ],
     'sources' => [
+      'value' => [
+        'class' => 'ApplenewsSourceValue',
+        'name' => 'Literal Value',
+      ],
       'node' => [
         'class' => 'ApplenewsSourceNode',
         'name' => 'Node',
