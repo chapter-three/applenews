@@ -22,7 +22,7 @@ class Applenewsstyle1DestinationBody extends ApplenewsDestinationBodyPhoto {
    * {@inheritdoc}
    */
   public function label() {
-    return t('Body') . ' (' . $this->id . ')';
+    return t('Body (%id)', ['%id' => $this->id]);
   }
 
   /**
@@ -128,7 +128,7 @@ class Applenewsstyle1DestinationHeaderImage extends ApplenewsDestinationComponen
    * {@inheritdoc}
    */
   public function label() {
-    return t('Header Image') . ' (' . $this->id . ')';
+    return t('Header Image (%id)', ['%id' => $this->id]);
   }
 
   /**
@@ -217,7 +217,7 @@ class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination
    * {@inheritdoc}
    */
   public function label() {
-    return t('Header with Credits') . ' (' . $this->id . ')';
+    return t('Header with Credits (%id)', ['%id' => $this->id]);
   }
 
   /**
@@ -446,7 +446,7 @@ class Applenewsstyle1DestinationPullQuote extends ApplenewsDestinationComponent 
    * {@inheritdoc}
    */
   public function label() {
-    return t('Pull Quote') . ' (' . $this->id . ')';
+    return t('Pull Quote (%id)', ['%id' => $this->id]);
   }
 
   /**
@@ -583,7 +583,6 @@ class Applenewsstyle1DestinationPullQuote extends ApplenewsDestinationComponent 
     }
 
     // Pullquote with background.
-
     // Parent section.
     $section = new Components\Section();
     $section->setScene(new Animations\Scenes\ParallaxScaleHeader());
@@ -726,7 +725,7 @@ class Applenewsstyle1DestinationAd extends ApplenewsDestinationAd {
    * {@inheritdoc}
    */
   public function label() {
-    return t('Banner Ad') . ' (' . $this->id . ')';
+    return t('Banner Ad (%id)', ['%id' => $this->id]);
   }
 
   /**

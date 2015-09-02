@@ -25,7 +25,7 @@ class ApplenewsDestinationBody extends ApplenewsDestinationComponent {
    * {@inheritdoc}
    */
   public function label() {
-    return t('Body') . ' ' . parent::label();
+    return t('Body (%id)', ['%id' => $this->id]);
   }
 
   /**
@@ -118,7 +118,7 @@ class ApplenewsDestinationBodyPhoto extends ApplenewsDestinationBody {
    * {@inheritdoc}
    */
   public function label() {
-    return t('Body and Photos') . ' (' . $this->id . ')';
+    return t('Body and Photos (%id)', ['%id' => $this->id]);
   }
 
   /**
@@ -234,7 +234,7 @@ class ApplenewsDestinationImages extends ApplenewsDestinationComponent {
    * {@inheritdoc}
    */
   public function label() {
-    return t('Image Series (Gallery or Mosaic)') . ' (' . $this->id . ')';
+    return t('Image Series (Gallery or Mosaic) (%id)', ['%id' => $this->id]);
   }
 
   /**
@@ -337,7 +337,7 @@ class ApplenewsDestinationAd extends ApplenewsDestinationComponent {
    * {@inheritdoc}
    */
   public function label() {
-    return t('Advertisement') . ' (' . $this->id . ')';
+    return t('Advertisement (%id)', ['%id' => $this->id]);
   }
 
   /**
@@ -420,8 +420,7 @@ class ApplenewsDestinationImage extends ApplenewsDestinationComponent {
    * {@inheritdoc}
    */
   public function label() {
-    return t('Image') . ' ' . $this->getSetting('type') .
-      ' (' . $this->id . ')';
+    return t('Image (%id)', ['%id' => $this->id]);
   }
 
   /**
@@ -515,8 +514,7 @@ class ApplenewsDestinationScalableImage extends ApplenewsDestinationComponent {
    * {@inheritdoc}
    */
   public function label() {
-    return t('Scalable Image') . ' ' . $this->getSetting('type') .
-      ' (' . $this->id . ')';
+    return t('Scalable Image (%id)', ['%id' => $this->id]);
   }
 
   /**
@@ -653,8 +651,7 @@ class ApplenewsDestinationText extends ApplenewsDestinationComponent {
    * {@inheritdoc}
    */
   public function label() {
-    return t('Text') . ' ' . $this->getSetting('component') .
-      ' (' . $this->id . ')';
+    return t('Text (%id)', ['%id' => $this->id]);
   }
 
   /**
@@ -815,7 +812,7 @@ class ApplenewsDestinationText extends ApplenewsDestinationComponent {
 
         default:
           continue 2;
-          
+
       }
       if ($this->getSetting('format')) {
         $component->setFormat($this->getSetting('format'));
@@ -837,7 +834,7 @@ class ApplenewsDestinationDivider extends ApplenewsDestinationComponent {
    * {@inheritdoc}
    */
   public function label() {
-    return t('Divider') . ' (' . $this->id . ')';
+    return t('Divider (%id)', ['%id' => $this->id]);
   }
 
   /**

@@ -130,6 +130,14 @@ abstract class ApplenewsExport {
 
   /**
    * Show this export as an option on entity edit form?
+   *
+   * @param string $entity_type
+   *   The entity type.
+   * @param string $bundle
+   *   The entity bundle.
+   *
+   * @return bool
+   *   Show if true.
    */
   public function showOnEdit($entity_type, $bundle) {
     return $entity_type == $this->entityType() &&
@@ -615,9 +623,9 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
     foreach ($this->getdestinations('components') as $destination) {
       $edit = 'admin/config/content/apple-news/exports/' . apple_news_export_id($this->module, $this->machineName) . '/component/' . $destination->id;
       if (!$destination->validateSettings()) {
-        drupal_set_message(t('The %label component needs to be !link.',
+        drupal_set_message(t('The !label component needs to be !link.',
           [
-            '%label' => check_plain($destination->label()),
+            '!label' => $destination->label(),
             '!link' => l(t('configured'), $edit)
           ]),
           'error');
@@ -625,7 +633,7 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
       $tab['components'][$destination->id] = [
         '#apple_news_destination' => $destination,
         'destination' => [
-          '#markup' => check_plain($destination->label()),
+          '#markup' => $destination->label(),
         ],
         'edit' => [
           '#markup' => l(t('edit'), $edit),

@@ -16,7 +16,7 @@ class ApplenewsExtraDestinationInstagram extends ApplenewsDestinationComponent {
    * {@inheritdoc}
    */
   public function label() {
-    return t('Instagram') . ' (' . $this->id . ')';
+    return t('Instagram (%id)', ['%id' => $this->id]);
   }
 
   /**
@@ -58,13 +58,7 @@ class ApplenewsExtraDestinationInstagram extends ApplenewsDestinationComponent {
   }
 
   /**
-   * Exports to an Apple News Document container object.
-   *
-   * @param mixed $value
-   *   An array of children component objects.
-   *
-   * @return array
-   *   A list of \ChapterThree\AppleNews\Document\Base objects.
+   * {@inheritdoc}
    */
   public function export() {
     list($key, $values) = $this->getSourceValues($this->export->source,
@@ -92,7 +86,7 @@ class ApplenewsExtraDestinationTweet extends ApplenewsDestinationComponent {
    * {@inheritdoc}
    */
   public function label() {
-    return t('Tweet') . ' (' . $this->id . ')';
+    return t('Tweet (%id)', ['%id' => $this->id]);
   }
 
   /**
@@ -134,13 +128,7 @@ class ApplenewsExtraDestinationTweet extends ApplenewsDestinationComponent {
   }
 
   /**
-   * Exports to an Apple News Document container object.
-   *
-   * @param mixed $value
-   *   An array of children component objects.
-   *
-   * @return array
-   *   A list of \ChapterThree\AppleNews\Document\Base objects.
+   * {@inheritdoc}
    */
   public function export() {
     list($key, $values) = $this->getSourceValues($this->export->source,
@@ -168,7 +156,7 @@ class ApplenewsExtraDestinationEmbedWebVideo extends ApplenewsDestinationCompone
    * {@inheritdoc}
    */
   public function label() {
-    return t('Embed Web Video') . ' (' . $this->id . ')';
+    return t('Embed Web Video (%id)', ['%id' => $this->id]);
   }
 
   /**
@@ -214,13 +202,7 @@ class ApplenewsExtraDestinationEmbedWebVideo extends ApplenewsDestinationCompone
   }
 
   /**
-   * Exports to an Apple News Document container object.
-   *
-   * @param mixed $value
-   *   An array of children component objects.
-   *
-   * @return array
-   *   A list of \ChapterThree\AppleNews\Document\Base objects.
+   * {@inheritdoc}
    */
   public function export() {
     list($key, $values) = $this->getSourceValues($this->export->source,
@@ -252,8 +234,7 @@ class ApplenewsExtraDestinationAudio extends ApplenewsDestinationComponent {
    * {@inheritdoc}
    */
   public function label() {
-    return t('Audio') . ' ' . $this->getSetting('type') .
-      ' (' . $this->id . ')';
+    return t('Audio (%id)', ['%id' => $this->id]);
   }
 
   /**
@@ -350,10 +331,10 @@ class ApplenewsExtraDestinationAudio extends ApplenewsDestinationComponent {
             if (!empty($explicitcontent_value[$delta][$explicitcontent_key])) {
               $component->setExplicitContent(TRUE);
             }
+            $components[] = $component;
             break;
 
         }
-        $components[] = $component;
       }
     }
 
