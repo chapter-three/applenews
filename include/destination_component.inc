@@ -94,6 +94,9 @@ class ApplenewsDestinationBody extends ApplenewsDestinationComponent {
       if ($markdown) {
         $body = $markdown->convert($body);
       }
+      if (empty($body)) {
+        continue;
+      }
       $body = new Components\Body($body);
       if ($markdown) {
         $body->setFormat($this->getSetting('format'));
@@ -146,6 +149,9 @@ class ApplenewsDestinationBodyPhoto extends ApplenewsDestinationBody {
     // Convert to markdown, leaving image elements inline.
     $markdown = new Markdown(['img']);
     $markdown = $markdown->convert($value);
+    if (empty($markdown)) {
+      return $components;
+    }
 
     // Concatenate blocks into body component(s), inserting image components
     // after the image-containing block.
@@ -753,123 +759,68 @@ class ApplenewsDestinationText extends ApplenewsDestinationComponent {
     $components = [];
 
     foreach ($values as $value) {
+      $content = $value[$key];
+      if ($this->getSetting('format') == 'markdown') {
+        $content = $markdown->convert($content);
+      }
+      if (empty($content)) {
+        continue;
+      }
       switch ($this->getSetting('component')) {
 
         case 'author':
-          if ($this->getSetting('format')) {
-            $component = new Components\Author($markdown->convert($value[$key]));
-            $component->setFormat($this->getSetting('format'));
-          }
-          else {
-            $component = new Components\Author($value[$key]);
-          }
+          $component = new Components\Author($content);
           break;
 
         case 'body':
-          if ($this->getSetting('format')) {
-            $component = new Components\Body($markdown->convert($value[$key]));
-            $component->setFormat($this->getSetting('format'));
-          }
-          else {
-            $component = new Components\Body($value[$key]);
-          }
+          $component = new Components\Body($content);
           break;
 
         case 'byline':
-          if ($this->getSetting('format')) {
-            $component = new Components\Byline($markdown->convert($value[$key]));
-            $component->setFormat($this->getSetting('format'));
-          }
-          else {
-            $component = new Components\Byline($value[$key]);
-          }
+          $component = new Components\Byline($content);
           break;
 
         case 'caption':
-          if ($this->getSetting('format')) {
-            $component = new Components\Caption($markdown->convert($value[$key]));
-            $component->setFormat($this->getSetting('format'));
-          }
-          else {
-            $component = new Components\Caption($value[$key]);
-          }
+          $component = new Components\Caption($content);
           break;
 
         case 'heading':
-          if ($this->getSetting('format')) {
-            $component = new Components\Heading($markdown->convert($value[$key]));
-            $component->setFormat($this->getSetting('format'));
-          }
-          else {
-            $component = new Components\Heading($value[$key]);
-          }
+          $component = new Components\Heading($content);
           $component->setRole($this->getSetting('heading'));
           break;
 
         case 'illustrator':
-          if ($this->getSetting('format')) {
-            $component = new Components\Illustrator($markdown->convert($value[$key]));
-            $component->setFormat($this->getSetting('format'));
-          }
-          else {
-            $component = new Components\Illustrator($value[$key]);
-          }
+          $component = new Components\Illustrator($content);
           break;
 
         case 'intro':
-          if ($this->getSetting('format')) {
-            $component = new Components\Intro($markdown->convert($value[$key]));
-            $component->setFormat($this->getSetting('format'));
-          }
-          else {
-            $component = new Components\Intro($value[$key]);
-          }
+          $component = new Components\Intro($content);
           break;
 
         case 'photographer':
-          if ($this->getSetting('format')) {
-            $component = new Components\Photographer($markdown->convert($value[$key]));
-            $component->setFormat($this->getSetting('format'));
-          }
-          else {
-            $component = new Components\Photographer($value[$key]);
-          }
+          $component = new Components\Photographer($content);
           break;
 
         case 'pullquote':
-          if ($this->getSetting('format')) {
-            $component = new Components\Pullquote($markdown->convert($value[$key]));
-            $component->setFormat($this->getSetting('format'));
-          }
-          else {
-            $component = new Components\Pullquote($value[$key]);
-          }
+          $component = new Components\Pullquote($content);
           break;
 
         case 'quote':
-          if ($this->getSetting('format')) {
-            $component = new Components\Quote($markdown->convert($value[$key]));
-            $component->setFormat($this->getSetting('format'));
-          }
-          else {
-            $component = new Components\Quote($value[$key]);
-          }
+          $component = new Components\Quote($content);
           break;
 
         case 'title':
-        default:
-          if ($this->getSetting('format')) {
-            $component = new Components\Title($markdown->convert($value[$key]));
-            $component->setFormat($this->getSetting('format'));
-          }
-          else {
-            $component = new Components\Title($value[$key]);
-          }
+          $component = new Components\Title($content);
           break;
 
+        default:
+          continue 2;
+          
+      }
+      if ($this->getSetting('format')) {
+        $component->setFormat($this->getSetting('format'));
       }
       $components[] = $component;
-
     }
 
     return $components;

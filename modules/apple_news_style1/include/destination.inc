@@ -521,6 +521,9 @@ class Applenewsstyle1DestinationPullQuote extends ApplenewsDestinationComponent 
     if ($this->getSetting('format') == 'markdown') {
       $markdown = new Markdown();
       $quote = $markdown->convert($quote);
+      if (empty($quote)) {
+        return [];
+      }
     }
     $quote = new Components\Pullquote($quote);
     if ($this->getSetting('format')) {
