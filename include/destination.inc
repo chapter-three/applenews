@@ -155,6 +155,7 @@ abstract class ApplenewsDestination {
     ];
     // Textarea for literal value sources.
     if (!empty($metadata['types']['value'])) {
+      $visible_states = [];
       foreach ($metadata['types']['value'] as $source_key) {
         $visible_states[][':input[name="' . $key . '[source]"]']
           = ['value' => $source_key];

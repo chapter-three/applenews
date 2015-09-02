@@ -222,7 +222,7 @@ class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination
    * {@inheritdoc}
    */
   public function label() {
-    return t('Header Gradient Container') . ' (' . $this->id . ')';
+    return t('Header with Credits') . ' (' . $this->id . ')';
   }
 
   /**
@@ -234,6 +234,8 @@ class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination
       'intro'        => NULL,
       'author'       => NULL,
       'photographer' => NULL,
+      'image'        => NULL,
+      'gradient'     => FALSE,
     ] + parent::settings();
   }
 
@@ -270,6 +272,20 @@ class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination
 
     parent::getConfigFormSourceElement($form, $form_state, 'photographer');
     $form['photographer']['#title'] = t('Photographer');
+
+    parent::getConfigFormSourceElement($form, $form_state, 'image');
+    $form['image']['#title'] = t('Background Image');
+
+    $form['gradient'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Gradient'),
+      '#default_value' => $this->getSetting('gradient'),
+      '#states' => [
+        'visible' => [
+          ':input[name="image[source]"]' => ['value' => ''],
+        ],
+      ]
+    ];
 
     return $form;
   }
@@ -347,6 +363,9 @@ class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination
       $container->addComponent($intro);
     }
 
+    $wrapper = entity_metadata_wrapper('node', $this->export->source);
+    $language = $wrapper->language->value();
+
     // Author.
     $text_style = new Styles\ComponentTextStyle();
     $text_style->setTextAlignment('center')
@@ -356,7 +375,8 @@ class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination
     list($key, $values) = $this->getSourceValues($this->export->source,
       $this->getSetting('author'));
     if (!empty($values[0][$key])) {
-      $author = new Components\Author($values[0][$key]);
+      $author = new Components\Author(
+        t('By', ['langcode' => $language]) . ' ' . $values[0][$key]);
       $layout = new Layouts\ComponentLayout();
       $layout->setColumnStart(0)->setColumnSpan(7)
         ->setMargin(new Margin(10, 5));
@@ -367,7 +387,8 @@ class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination
     list($key, $values) = $this->getSourceValues($this->export->source,
       $this->getSetting('photographer'));
     if (!empty($values[0][$key])) {
-      $photog = new Components\Photographer($values[0][$key]);
+      $photog = new Components\Photographer(
+        t('Photos', ['langcode' => $language]) . ': ' . $values[0][$key]);
       $layout = new Layouts\ComponentLayout();
       $layout->setColumnStart(0)->setColumnSpan(7)
         ->setMargin(new Margin(NULL, 15));
@@ -381,20 +402,40 @@ class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination
     $layout = new Layouts\ComponentLayout();
     $layout->setColumnStart(0)->setColumnSpan(7)
       ->setIgnoreDocumentMargin()
-      ->setMinimumHeight('80vh')
+      ->setMinimumHeight('40vh')
       ->setMargin(new Margin(NULL, 25));
     $header->setLayout($layout);
-    $fill = new Styles\Fills\Gradients\LinearGradientFill([
-      new Styles\Fills\Gradients\ColorStop('#263236'),
-      new Styles\Fills\Gradients\ColorStop('#3B4A4E'),
-      new Styles\Fills\Gradients\ColorStop('#6D8A95'),
-      new Styles\Fills\Gradients\ColorStop('#FFFFFF'),
-    ]);
-    $fill->setAngle(180);
-    $style = new Styles\ComponentStyle();
-    $style->setFill($fill);
-    $header->setStyle($style);
     $header->addComponent($container);
+
+    // Image or gradient.
+    $fill = FALSE;
+    list($key, $values) = $this->getSourceValues($this->export->source,
+      $this->getSetting('image'));
+    if (!empty($values[0][$key])) {
+      $url = $this->export->addAsset($values[0][$key]);
+      $fill = new Styles\Fills\ImageFill($url);
+      $fill->setFillMode('cover')->setVerticalAlignment('bottom');
+    }
+    else {
+      if ($this->getSetting('gradient')) {
+        $fill = new Styles\Fills\Gradients\LinearGradientFill([
+          new Styles\Fills\Gradients\ColorStop('#263236'),
+          new Styles\Fills\Gradients\ColorStop('#3B4A4E'),
+          new Styles\Fills\Gradients\ColorStop('#6D8A95'),
+          new Styles\Fills\Gradients\ColorStop('#FFFFFF'),
+        ]);
+        $fill->setAngle(180);
+      }
+    }
+    if ($fill) {
+      $style = new Styles\ComponentStyle();
+      $style->setFill($fill);
+    }
+    else {
+      $style = new Styles\ComponentStyle();
+      $style->setBackgroundColor('#3B4A4E');
+    }
+    $header->setStyle($style);
 
     return [$header];
   }
