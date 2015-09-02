@@ -97,13 +97,13 @@ sites/mysuperawesomenewssite.com/settings.php
     $ mv php-curl-class-4.6.9 php-curl-class
     ```
 
-    **NOTE: The Apple News library is currently gated in a private repo. The curl command won't work until it is publicly released. You can download from [the Apple News GitHub page](https://github.com/chapter-three/AppleNews/tree/0.3.2), if you have access to it.**
+    **NOTE: The Apple News library is currently gated in a private repo. The curl command won't work until it is publicly released. You can download from [the Apple News GitHub page](https://github.com/chapter-three/AppleNews/tree/0.3.3), if you have access to it.**
 
 3. While still inside the libraries folder, run the following curl command:
 
     ```shell
-    $ curl -L https://github.com/chapter-three/AppleNews/archive/0.3.2.tar.gz | tar xz
-    $ mv AppleNews-0.3.2 AppleNews
+    $ curl -L https://github.com/chapter-three/AppleNews/archive/0.3.3.tar.gz | tar xz
+    $ mv AppleNews-0.3.3 AppleNews
     ```
 
 4. After the libraries are downloaded, your should have directories matching the following paths. You may need to rename the folders you just downloaded to match):
@@ -132,7 +132,7 @@ To manually install:
 1.  Download this module and [its dependencies](https://www.drupal.org/documentation/install/modules-themes):
     -   [Libraries](https://www.drupal.org/project/libraries)
     -   [Entity](https://www.drupal.org/project/entity)
-2.  [Download the Apple News library (version 0.3.2)](https://github.com/chapter-three/AppleNews/archive/0.3.2.zip) into your sites/all/libraries folder. If the libraries folder does not exist, create it before downloading.
+2.  [Download the Apple News library (version 0.3.3)](https://github.com/chapter-three/AppleNews/archive/0.3.3.zip) into your sites/all/libraries folder. If the libraries folder does not exist, create it before downloading.
 
     **NOTE: Before the module is added to drupal.org, the apple_news module can't be downloaded using [Drush](https://github.com/drush-ops/drush). It must be manually added to the sites/all/modules/contrib directory. If you have access to the repo, you can download the module from [the github page](https://github.com/chapter-three/apple_news)**
 
@@ -245,10 +245,10 @@ Please download PHP-Curl-Class (version 4.6.9) library to sites/all/libraries/ph
 **Problem:** I'm getting the error message:
 
 ```shell
-Please download AppleNews (version 0.3.2) library to sites/all/libraries/AppleNews
+Please download AppleNews (version 0.3.3) library to sites/all/libraries/AppleNews
 ```
 
-**Solution:** This means that the library has not been downloaded, the wrong version is in place, or the folder for the library is labeled wrong. Double check that the library was downloaded into `sites/all/libraries/AppleNews/[files start here]`. Check that the version is 0.3.2 by opening up the composer.json file and search for "version": "0.3.2". Lastly, if still not resolved, make sure the folder is named `AppleNews` and **NOT** something like `AppleNews-master` or `AppleNews-0.3.2`.
+**Solution:** This means that the library has not been downloaded, the wrong version is in place, or the folder for the library is labeled wrong. Double check that the library was downloaded into `sites/all/libraries/AppleNews/[files start here]`. Check that the version is 0.3.3 by opening up the composer.json file and search for "version": "0.3.3". Lastly, if still not resolved, make sure the folder is named `AppleNews` and **NOT** something like `AppleNews-master` or `AppleNews-0.3.3`.
 
 ---
 
