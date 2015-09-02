@@ -63,8 +63,7 @@ class Applenewsstyle1DestinationBody extends ApplenewsDestinationBodyPhoto {
     $dc_style = new Styles\DropCapStyle(5);
     $dc_style->setNumberOfCharacters(1)
       ->setFontName('AvenirNext-UltraLight')
-      ->setTextColor('#222E33')
-      ->setPadding(5);
+      ->setTextColor('#222E33');
     $initial_body_text_style = clone($body_text_style);
     $initial_body_text_style->setDropCapStyle($dc_style);
 
