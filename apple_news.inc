@@ -417,7 +417,7 @@ function apple_news_entity_get_export($entity_type, $entity_id) {
   // Has the entity been assigned an export?
   $post = new ApplenewsDatabase();
   $post->setPostId($entity_type, $entity_id, $entity_id);
-  if ($article = $post->getArticle() &&
+  if (($article = $post->getArticle()) ||
       !empty($article['module']) && !empty($article['machine_name'])
   ) {
     $export = apple_news_get_export($article['module'], $article['machine_name']);
