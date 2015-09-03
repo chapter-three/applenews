@@ -131,7 +131,9 @@ class ApplenewsDestinationBodyPhoto extends ApplenewsDestinationBody {
    *   Photo component.
    */
   public function exportCreateImage($src) {
-    return new Components\Photo($this->export->addAsset($src));
+    if ($path = $this->export->addAsset($src)) {
+      return new Components\Photo($path);
+    }
   }
 
   /**
@@ -148,8 +150,8 @@ class ApplenewsDestinationBodyPhoto extends ApplenewsDestinationBody {
 
     // Convert to markdown, leaving image elements inline.
     $markdown = new Markdown(['img']);
-    $markdown = $markdown->convert($value);
-    if (empty($markdown)) {
+    $value = $markdown->convert($value);
+    if (empty($value)) {
       return $components;
     }
 
@@ -186,7 +188,9 @@ class ApplenewsDestinationBodyPhoto extends ApplenewsDestinationBody {
           $components[] = $body;
         }
         foreach ($images as $src) {
-          $components[] = $this->exportCreateImage($src);
+          if ($component = $this->exportCreateImage($src)) {
+            $components[] = $component;
+          }
         }
       }
       else {
