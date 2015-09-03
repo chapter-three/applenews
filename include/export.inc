@@ -374,7 +374,7 @@ abstract class ApplenewsExport {
       }
       if ($path) {
         $url = 'bundle://' . count($this->assets);
-        if ($ext = pathinfo($uri, PATHINFO_EXTENSION)) {
+        if ($ext = pathinfo($path, PATHINFO_EXTENSION)) {
           $url .= ".${ext}";
         }
         $this->assets[$uri] = [
