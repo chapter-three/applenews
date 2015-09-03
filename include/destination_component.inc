@@ -159,19 +159,19 @@ class ApplenewsDestinationBodyPhoto extends ApplenewsDestinationBody {
     // after the image-containing block.
     $blocks = [];
     // Each markdown block.
-    foreach (explode(Markdown::BLOCK_DELIMITER, $markdown) as $block) {
+    foreach (explode(Markdown::BLOCK_DELIMITER, $value) as $block) {
       // Find img tags.
       $images = [];
       // @todo This regex may be a bit simplistic.
       if (preg_match_all("/<img\s[^>]+>/", $block, $matches)) {
-        foreach ($matches as $match) {
+        foreach ($matches[0] as $match) {
           // Get src attribute.
-          if (preg_match("/(?<=\ssrc=\")[^\"]+/", $match[0], $src)) {
+          if (preg_match("/(?<=\ssrc=\")[^\"]+/", $match, $src)) {
             $images[] = $src[0];
           }
           // Remove tag.
           $block = substr_replace($block, '',
-            strpos($block, $match[0]), strlen($match[0]));
+            strpos($block, $match), strlen($match));
         }
       }
       // Create body component if necessary, then append image components.
