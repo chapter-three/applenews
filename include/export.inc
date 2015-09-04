@@ -220,18 +220,12 @@ abstract class ApplenewsExport {
    */
   public function getConfigForm(array $form, array &$form_state) {
 
-    $form['enabled'] = [
-      '#title' => t('Enable this export'),
-      '#type' => 'checkbox',
-      '#default_value' => $this->enabled,
-      '#description' => t('This export will not publish to Apple News until enabled.'),
-      '#prefix' => '<strong>' . t('Status') . '</strong>',
-      '#weight' => 10,
-    ];
-
     $form['additional_settings'] = [
       '#type' => 'vertical_tabs',
       '#weight' => 99,
+      '#attached' => [
+        'js' => [drupal_get_path('module', 'apple_news') . '/js/export-settings.js']
+      ]
     ];
 
     $form['additional_settings']['general'] = [
@@ -242,6 +236,16 @@ abstract class ApplenewsExport {
       '#group' => 'main',
       '#weight' => -10,
     ];
+
+    $form['additional_settings']['general']['enabled'] = [
+      '#title' => t('Enable this export'),
+      '#type' => 'checkbox',
+      '#default_value' => $this->enabled,
+      '#description' => t('This export will not publish to Apple News until enabled.'),
+      '#prefix' => '<strong>' . t('Status') . '</strong>',
+      '#weight' => 10,
+    ];
+
     $tab = &$form['additional_settings']['general'];
 
     $tab['channels'] = [

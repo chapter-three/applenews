@@ -1,6 +1,6 @@
 /**
  * @file
- * Apple News vertical tab helper.
+ * Apple News individual entity vertical tab helper.
  */
 
 (function ($) {
