@@ -268,9 +268,12 @@ class ApplenewsExportTestCase extends ApplenewsWebTestCase {
 <img src="${file_url}"/>
 <p>a well-formed paragraph.</p>
 <p>a paragraph with a nested image: <img src="${file_url_relative}"/></p>
+<p>a paragraph with several: <img src="${file_url}"/> and another <img src="${file_url_relative}"/></p>
 <p>a well-formed paragraph.</p>
 EOD
         ,
+        'body_expected' => "a well\\-formed paragraph.\n\na well\\-formed paragraph.\n\na well\\-formed paragraph.\n\n\n\na well\\-formed paragraph.\n\na paragraph with a nested image: \n\na paragraph with several:  and another \n\na well\\-formed paragraph.",
+
       ],
     ];
 
@@ -363,13 +366,7 @@ EOD
         'Export body component role.');
       $this->assertEqual('markdown', $item->format,
         'Export body component format.');
-      $expected = <<<'EOD'
-<p>a well-formed paragraph.</p>
-<p>a well-formed paragraph.</p>
-<p>a well-formed paragraph.</p>
-EOD;
-      $expected = $markdown->convert($expected);
-      $this->assertEqual($expected, $item->text,
+      $this->assertEqual($content['body_expected'], $item->text,
         'Export body fragment -> component 1 body text.');
 
       $item = $data->components[1];
@@ -380,17 +377,11 @@ EOD;
         'Export body fragment -> component 2 image URL.');
 
       $item = $data->components[2];
-      $this->assertEqual('body', $item->role,
-        'Export body component role.');
-      $this->assertEqual('markdown', $item->format,
-        'Export body component format.');
-      $expected = <<<'EOD'
-<p>a well-formed paragraph.</p>
-<p>a paragraph with a nested image: </p>
-EOD;
-      $expected = $markdown->convert($expected);
-      $this->assertEqual($expected, $item->text,
-        'Export body fragment -> component 3 body text.');
+      $this->assertEqual('photo', $item->role,
+        'Export inline image component role.');
+      $this->assertEqual(drupal_realpath($file->uri),
+        @$export->getAssets()[$item->URL],
+        'Export body fragment -> component 3 image URL.');
 
       $item = $data->components[3];
       $this->assertEqual('photo', $item->role,
@@ -400,16 +391,11 @@ EOD;
         'Export body fragment -> component 4 image URL.');
 
       $item = $data->components[4];
-      $this->assertEqual('body', $item->role,
-        'Export body component role.');
-      $this->assertEqual('markdown', $item->format,
-        'Export body component format.');
-      $expected = <<<'EOD'
-<p>a well-formed paragraph.</p>
-EOD;
-      $expected = $markdown->convert($expected);
-      $this->assertEqual($expected, $item->text,
-        'Export body fragment -> component 5 body text.');
+      $this->assertEqual('photo', $item->role,
+        'Export inline image component role.');
+      $this->assertEqual(drupal_realpath($file->uri),
+        @$export->getAssets()[$item->URL],
+        'Export body fragment -> component 5 image URL.');
 
     }
   }

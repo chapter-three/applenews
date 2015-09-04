@@ -46,6 +46,13 @@ abstract class ApplenewsExport {
   public $source;
 
   /**
+   * Identifier index.
+   *
+   * @var int
+   */
+  private $identifierIndex;
+
+  /**
    * Assets bundled with an export.
    *
    * @var array
@@ -347,6 +354,7 @@ abstract class ApplenewsExport {
     $this->assets = [];
     $this->document = NULL;
     $this->source = $entity;
+    $this->identifierIndex = 1;
     return $this;
   }
 
@@ -359,6 +367,16 @@ abstract class ApplenewsExport {
    * @todo verify NULL return aborts push.
    */
   abstract public function export();
+
+  /**
+   * Generates a unique identifier each time called..
+   *
+   * @return string
+   *   An identifier string.
+   */
+  public function generateIdentifier() {
+    return '__' . $this->identifierIndex++;
+  }
 
   /**
    * Generates a News Document URL for an asset.

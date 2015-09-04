@@ -60,39 +60,42 @@ class Applenewsstyle1ExportNode extends ApplenewsExportNode {
       /** @var \ChapterThree\AppleNews\Document\Components\Component $comp */
       $comp = $components[$i];
 
-      // Associate with previous body component.
+      // Associate with previous component.
       if ($i) {
-        /** @var \ChapterThree\AppleNews\Document\Components\Body $prev */
-        $prev = $components[$i - 1];
-        if (!$prev instanceof Components\Body) {
-          continue;
-        }
 
-        // Anchor to previous component.
-        $anchor_range_length = FALSE;
-        if ($comp instanceof Components\ScalableImage ||
-            $comp instanceof Components\Pullquote
-        ) {
-          $anchor_range_length = strlen($prev->getText());
-        }
-        elseif ($comp instanceof Components\ComponentNested) {
-          /** @var \ChapterThree\AppleNews\Document\Components\ComponentNested $comp */
-          $class_name = '\ChapterThree\AppleNews\Document\Components\Pullquote';
-          if ($comp->hasComponentType($class_name)) {
-            $anchor_range_length = strlen($prev->getText());
+        $prev = $components[$i - 1];
+
+        // Previous is a body component.
+        /** @var \ChapterThree\AppleNews\Document\Components\Body $prev */
+        if ($prev instanceof Components\Body) {
+
+          // Anchor to previous component if not anchor-ed already.
+          if (!$comp->getAnchor()) {
+            // One of:
+            $anchor = $comp instanceof Components\Image ||
+              $comp instanceof Components\ScalableImage ||
+              $comp instanceof Components\Pullquote;
+            // Or contains pullquote.
+            if (!$anchor && $comp instanceof Components\ComponentNested) {
+              $class_pullquote = '\ChapterThree\AppleNews\Document\Components\Pullquote';
+              /** @var \ChapterThree\AppleNews\Document\Components\ComponentNested $comp */
+              if ($comp->hasComponentType($class_pullquote)) {
+                $anchor = TRUE;
+              }
+            }
+            if ($anchor) {
+              if (!$id = $prev->getIdentifier()) {
+                $id = $this->generateIdentifier();
+                $prev->setIdentifier($id);
+              }
+              $anchor = new Anchor('bottom');
+              $anchor->setOriginAnchorPosition('bottom')
+                ->setTargetComponentIdentifier($id)
+                ->setRangeStart(0)
+                ->setRangeLength(1);
+              $comp->setAnchor($anchor);
+            }
           }
-        }
-        if ($anchor_range_length) {
-          if (!$id = $prev->getIdentifier()) {
-            $id = $this->document->generateIdentifier();
-            $prev->setIdentifier($id);
-          }
-          $anchor = new Anchor('bottom');
-          $anchor->setOriginAnchorPosition('bottom')
-            ->setTargetComponentIdentifier($id)
-            ->setRangeStart(0)
-            ->setRangeLength($anchor_range_length);
-          $comp->setAnchor($anchor);
         }
       }
     }
