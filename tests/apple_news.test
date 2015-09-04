@@ -16,21 +16,21 @@ abstract class ApplenewsWebTestCase extends DrupalWebTestCase {
 
   protected $watchdogSeverityLevel = WATCHDOG_WARNING;
 
-  protected $admin_user;
+  protected $adminUser;
 
   /**
    * {@inheritdoc}
    */
   public function setUp(array $modules = []) {
     parent::setUp(array_merge(['apple_news', 'dblog'], $modules));
-    $this->admin_user = $this->drupalCreateUser([
+    $this->adminUser = $this->drupalCreateUser([
       'access content',
       'access administration pages',
       'administer site configuration', 'administer content types', 'administer nodes',
       'create article content', 'edit any article content', 'delete any article content',
       'administer apple news',
     ]);
-    $this->drupalLogin($this->admin_user);
+    $this->drupalLogin($this->adminUser);
   }
 
   /**
@@ -39,6 +39,7 @@ abstract class ApplenewsWebTestCase extends DrupalWebTestCase {
    * @see http://dcycleproject.org/blog/96/catching-watchdog-errors-your-simpletests
    */
   public function tearDown() {
+    /** @var SelectQuery $query */
     $query = db_select('watchdog')
       ->fields(NULL, ['wid'])
       ->condition('severity', $this->watchdogSeverityLevel, '<=')
@@ -111,10 +112,14 @@ class ApplenewsExportTestCase extends ApplenewsWebTestCase {
         'body' => [LANGUAGE_NONE => [['value' => $content['body']]]],
       ];
       if (isset($content['image'])) {
-        $settings['field_image'] = [LANGUAGE_NONE => [[
-          'fid' => $content['image']->fid,
-          'title' => $content['image_title'],
-        ]]];
+        $settings['field_image'] = [
+          LANGUAGE_NONE => [
+            [
+              'fid' => $content['image']->fid,
+              'title' => $content['image_title'],
+            ],
+          ],
+        ];
       }
       $node = $this->drupalCreateNode($settings);
       $this->assert($node->nid > 0, "Node \"${content['_desc']}\" created.");

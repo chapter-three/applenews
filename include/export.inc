@@ -202,8 +202,16 @@ abstract class ApplenewsExport {
 
   /**
    * Provides a configuration form for this export.
+   *
+   * @param array $form
+   *   FAPI $form.
+   * @param array $form_state
+   *   FAPI $form_state.
+   *
+   * @return array
+   *   FAPI $form.
    */
-  public function getConfigForm($form, &$form_state) {
+  public function getConfigForm(array $form, array &$form_state) {
 
     $form['enabled'] = [
       '#title' => t('Enable this export'),
@@ -266,10 +274,10 @@ abstract class ApplenewsExport {
     }
     else {
       $tab['channels']['info'] = [
-        '#markup' => t('Please provide Apple News <a href="!credentials">credentials</a> and add at least one <a href="!channel">channel</a>.',
+        '#markup' => t('Please provide Apple News !credentials and add at least one !channel.',
           [
-            '!credentials' => url('admin/config/content/apple-news/settings'),
-            '!channel'     => url('admin/config/content/apple-news/settings/channels'),
+            '!credentials' => l(t('credentials'), 'admin/config/content/apple-news/settings'),
+            '!channel'     => l(t('channel'), 'admin/config/content/apple-news/settings/channels'),
           ]
         )
       ];
@@ -280,14 +288,24 @@ abstract class ApplenewsExport {
 
   /**
    * Validation handler for the configuration form for this export.
+   *
+   * @param array $form
+   *   FAPI $form.
+   * @param array $form_state
+   *   FAPI $form_state.
    */
-  public function validateConfigForm($form, &$form_state) {
+  public function validateConfigForm(array $form, array &$form_state) {
   }
 
   /**
    * Submit handler for the configuration form for this export.
+   *
+   * @param array $form
+   *   FAPI $form.
+   * @param array $form_state
+   *   FAPI $form_state.
    */
-  public function submitConfigForm($form, &$form_state) {
+  public function submitConfigForm(array $form, array &$form_state) {
     $this->enabled = $form_state['values']['enabled'];
     $channels = [];
     $sections = [];
@@ -350,8 +368,10 @@ abstract class ApplenewsExport {
    */
   public function addAsset($uri) {
     if (!isset($this->assets[$uri])) {
+      $path = FALSE;
       // A drupal uri.
       if (file_valid_uri($uri)) {
+        /** @var DrupalStreamWrapperInterface $wrapper */
         if ($wrapper = file_stream_wrapper_get_instance_by_uri($uri)) {
           $path = $wrapper->realPath();
         }
@@ -469,6 +489,14 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
 
   /**
    * Calculate depth of a destination object.
+   *
+   * @param string $key
+   *   A key in $this->destinations.
+   * @param string|int $id
+   *   Id of destination.
+   *
+   * @return int
+   *   The depth.
    */
   protected function destinationDepth($key, $id) {
     $pid = @$this->destinations[$key][$id]->pid;
@@ -535,6 +563,9 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
   /**
    * A set of destinations, sorted.
    *
+   * @param string $key
+   *   A key in $this->destinations.
+   *
    * @return array
    *   A sorted list of destinations.
    */
@@ -591,7 +622,7 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
   /**
    * {@inheritdoc}
    */
-  public function getConfigForm($form, &$form_state) {
+  public function getConfigForm(array $form, array &$form_state) {
     $form = parent::getConfigForm($form, $form_state);
 
     $form['additional_settings']['layouts_tab'] = [
@@ -601,9 +632,9 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
       '#collapsed' => FALSE,
       '#group' => 'main',
     ];
-    $tab = &$form['additional_settings']['layouts_tab'];
-    
-    // @todo Layout, ComponentLayout
+    // $tab = &$form['additional_settings']['layouts_tab'];
+    // @todo Layout, ComponentLayout.
+
 
     $form['additional_settings']['components_tab'] = [
       '#type' => 'fieldset',
@@ -720,9 +751,9 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
   }
 
   /**
-   * Submit handler for the configuration form for this export.
+   * {@inheritdoc}
    */
-  public function submitConfigForm($form, &$form_state) {
+  public function submitConfigForm(array $form, array &$form_state) {
     $components = &$form_state['values']['components'];
     /** @var ApplenewsDestinationComponent $component */
     foreach ($this->destinations['components'] as $id => $component) {
@@ -784,7 +815,7 @@ class ApplenewsExportNode extends ApplenewsExportConfigurable {
   /**
    * {@inheritdoc}
    */
-  public function getConfigForm($form, &$form_state) {
+  public function getConfigForm(array $form, array &$form_state) {
     $form = parent::getConfigForm($form, $form_state);
 
     $tab = &$form['additional_settings']['general'];
@@ -808,7 +839,7 @@ class ApplenewsExportNode extends ApplenewsExportConfigurable {
   /**
    * {@inheritdoc}
    */
-  public function submitConfigForm($form, &$form_state) {
+  public function submitConfigForm(array $form, array &$form_state) {
     $this->bundles = array_filter($form_state['values']['bundles']);
     parent::submitConfigForm($form, $form_state);
   }
@@ -828,8 +859,11 @@ class ApplenewsExportNode extends ApplenewsExportConfigurable {
     $title = $wrapper->label();
 
     // Language code.
-    $language = $wrapper->language->value();
+    /** @var EntityValueWrapper $language */
+    $language = $wrapper->get('language');
+    $language = $language->value();
     if ($language == LANGUAGE_NONE) {
+      /** @var stdClass $language */
       $language = language_default();
       $language = $language->language;
     }

@@ -38,7 +38,7 @@ class ApplenewsExportArticle extends ApplenewsExport {
   /**
    * {@inheritdoc}
    */
-  public function getConfigForm($form, &$form_state) {
+  public function getConfigForm(array $form, array &$form_state) {
     $form = parent::getConfigForm($form, $form_state);
 
     $form['layout'] = [
@@ -58,7 +58,7 @@ class ApplenewsExportArticle extends ApplenewsExport {
   /**
    * {@inheritdoc}
    */
-  public function validateConfigForm($form, &$form_state) {
+  public function validateConfigForm(array $form, array &$form_state) {
     parent::validateConfigForm($form, $form_state);
   }
 
