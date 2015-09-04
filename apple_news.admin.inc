@@ -813,8 +813,8 @@ function apple_news_export_destination_delete_form($form, &$form_state, Applenew
 
   return confirm_form(
     $form,
-    t("Do you really want delete <em>@name</em> destination?",
-      ['@name' => $destination->label()]),
+    t("Do you really want delete !name destination?",
+      ['!name' => $destination->label()]),
     $path,
     t("This action cannot be undone."),
     t("Yes, delete")
@@ -844,8 +844,8 @@ function apple_news_export_destination_delete_form_submit($form, &$form_state) {
   }
 
   apple_news_export_save($export);
-  drupal_set_message(t('@name successfully deleted.',
-    ['@name' => $destination->label()]));
+  drupal_set_message(t('!name successfully deleted.',
+    ['!name' => $destination->label()]));
   drupal_goto($path);
 
 }
