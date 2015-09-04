@@ -750,7 +750,13 @@ function apple_news_export_destination_edit_form($form, &$form_state, ApplenewsE
       '#value' => t('Save changes'),
     ],
     'cancel' => [
-      '#markup' => l(t('Back'), 'admin/config/content/apple-news/exports/' . apple_news_export_id($export->getModule(), $export->getMachineName())),
+      '#markup' => l(t('Back'),
+        'admin/config/content/apple-news/exports/' . apple_news_export_id($export->getModule(), $export->getMachineName()),
+        [
+          // Set components tab as Active.
+          'fragment' => 'edit-components-tab',
+        ]
+      ),
     ],
   ];
 
@@ -776,8 +782,14 @@ function apple_news_export_destination_edit_form_submit($form, &$form_state) {
   $destination->submitConfigForm($form, $form_state);
   apple_news_export_save($destination->export);
   drupal_set_message(t('Changes have been successfully saved.'));
-  $form_state['redirect'] = 'admin/config/content/apple-news/exports/' .
-    apple_news_export_id($destination->export->getModule(), $destination->export->getMachineName());
+  $form_state['redirect'] = [
+    'admin/config/content/apple-news/exports/' .
+    apple_news_export_id($destination->export->getModule(), $destination->export->getMachineName()),
+    [
+      // Set components tab as Active.
+      'fragment' => 'edit-components-tab',
+    ]
+  ];
 }
 
 /**
@@ -801,7 +813,13 @@ function apple_news_export_destination_delete_form($form, &$form_state, Applenew
   $path = 'admin/config/content/apple-news/exports/' . $export_id . '/edit';
 
   if (empty($destination)) {
-    drupal_goto($path);
+    drupal_goto($path, [
+        // Set components tab as Active.
+        'attributes' => [
+          'fragment' => 'edit-components-tab',
+        ]
+      ]
+    );
   }
 
   $form_state['storage'] = [
@@ -813,9 +831,14 @@ function apple_news_export_destination_delete_form($form, &$form_state, Applenew
 
   return confirm_form(
     $form,
-    t("Do you really want delete <em>@name</em> destination?",
-      ['@name' => $destination->label()]),
-    $path,
+    t("Do you really want delete <em>!name</em> destination?",
+      ['!name' => $destination->label()]
+    ),
+    [
+      'path' => $path,
+      // Set components tab as Active.
+      'fragment' => 'edit-components-tab',
+    ],
     t("This action cannot be undone."),
     t("Yes, delete")
   );
@@ -833,7 +856,6 @@ function apple_news_export_destination_delete_form_submit($form, &$form_state) {
   $id = $form_state['storage']['id'];
   $destination = $form_state['storage']['destination'];
   $export_id = apple_news_export_id($export->getModule(), $export->getMachineName());
-  $path = 'admin/config/content/apple-news/exports/' . $export_id;
 
   switch ($type) {
 
@@ -844,9 +866,15 @@ function apple_news_export_destination_delete_form_submit($form, &$form_state) {
   }
 
   apple_news_export_save($export);
-  drupal_set_message(t('@name successfully deleted.',
-    ['@name' => $destination->label()]));
-  drupal_goto($path);
+  drupal_set_message(t('!name successfully deleted.',
+    ['!name' => $destination->label()]));
+  $form_state['redirect'] = [
+    'admin/config/content/apple-news/exports/' . $export_id,
+    [
+      // Set components tab as Active.
+      'fragment' => 'edit-components-tab',
+    ]
+  ];
 
 }
 
