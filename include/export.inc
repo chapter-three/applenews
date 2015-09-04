@@ -845,7 +845,7 @@ class ApplenewsExportNode extends ApplenewsExportConfigurable {
     $tab['bundles'] = [
       '#required'      => TRUE,
       '#title'         => t('Content Types'),
-      '#type'          => 'select',
+      '#type'          => 'checkboxes',
       '#multiple'      => TRUE,
       '#options'       => $options,
       '#default_value' => $this->bundles,
