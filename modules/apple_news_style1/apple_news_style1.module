@@ -39,7 +39,7 @@ function apple_news_style1_apple_news_api() {
       ],
       'header_container' => [
         'class' => 'Applenewsstyle1DestinationHeaderGradContainer',
-        'name' => 'Gradient Header with Title, Intro and Credits',
+        'name' => 'Header with Credits',
       ],
       'pullquote' => [
         'class' => 'Applenewsstyle1DestinationPullQuote',

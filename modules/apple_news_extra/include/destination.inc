@@ -16,7 +16,7 @@ class ApplenewsExtraDestinationInstagram extends ApplenewsDestinationComponent {
    * {@inheritdoc}
    */
   public function label() {
-    return t('Instagram') . ' (' . $this->id . ')';
+    return t('Instagram (%id)', ['%id' => $this->id]);
   }
 
   /**
@@ -58,29 +58,22 @@ class ApplenewsExtraDestinationInstagram extends ApplenewsDestinationComponent {
   }
 
   /**
-   * Exports to an Apple News Document container object.
-   *
-   * @param mixed $value
-   *   An array of children component objects.
-   *
-   * @return array
-   *   A list of \ChapterThree\AppleNews\Document\Base objects.
+   * {@inheritdoc}
    */
-  public function export($value = NULL) {
-    if (empty($value)) {
-      return [];
-    }
-
-    list($key, $values) = $this->getSourceValues($value,
+  public function export() {
+    list($key, $values) = $this->getSourceValues($this->export->source,
       $this->getSetting('source'));
+
+    $components = [];
 
     foreach ($values as $value) {
       if (!empty($value[$key])) {
-        $this->destinations[] = new Components\Instagram($value[$key]);
+        $components[] = new Components\Instagram($value[$key]);
       }
     }
 
-    return parent::export($value);
+    array_map([$this, 'setComponentLayout'], $components);
+    return $components;
   }
 
 }
@@ -94,7 +87,7 @@ class ApplenewsExtraDestinationTweet extends ApplenewsDestinationComponent {
    * {@inheritdoc}
    */
   public function label() {
-    return t('Tweet') . ' (' . $this->id . ')';
+    return t('Tweet (%id)', ['%id' => $this->id]);
   }
 
   /**
@@ -136,29 +129,22 @@ class ApplenewsExtraDestinationTweet extends ApplenewsDestinationComponent {
   }
 
   /**
-   * Exports to an Apple News Document container object.
-   *
-   * @param mixed $value
-   *   An array of children component objects.
-   *
-   * @return array
-   *   A list of \ChapterThree\AppleNews\Document\Base objects.
+   * {@inheritdoc}
    */
-  public function export($value = NULL) {
-    if (empty($value)) {
-      return [];
-    }
-
-    list($key, $values) = $this->getSourceValues($value,
+  public function export() {
+    list($key, $values) = $this->getSourceValues($this->export->source,
       $this->getSetting('source'));
+
+    $components = [];
 
     foreach ($values as $value) {
       if (!empty($value[$key])) {
-        $this->destinations[] = new Components\Tweet($value[$key]);
+        $components[] = new Components\Tweet($value[$key]);
       }
     }
 
-    return parent::export($value);
+    array_map([$this, 'setComponentLayout'], $components);
+    return $components;
   }
 
 }
@@ -172,7 +158,7 @@ class ApplenewsExtraDestinationEmbedWebVideo extends ApplenewsDestinationCompone
    * {@inheritdoc}
    */
   public function label() {
-    return t('Embed Web Video') . ' (' . $this->id . ')';
+    return t('Embed Web Video (%id)', ['%id' => $this->id]);
   }
 
   /**
@@ -218,21 +204,13 @@ class ApplenewsExtraDestinationEmbedWebVideo extends ApplenewsDestinationCompone
   }
 
   /**
-   * Exports to an Apple News Document container object.
-   *
-   * @param mixed $value
-   *   An array of children component objects.
-   *
-   * @return array
-   *   A list of \ChapterThree\AppleNews\Document\Base objects.
+   * {@inheritdoc}
    */
-  public function export($value = NULL) {
-    if (empty($value)) {
-      return [];
-    }
-
-    list($key, $values) = $this->getSourceValues($value,
+  public function export() {
+    list($key, $values) = $this->getSourceValues($this->export->source,
       $this->getSetting('video_url'));
+
+    $components = [];
 
     foreach ($values as $value) {
       if (!empty($value[$key])) {
@@ -240,11 +218,12 @@ class ApplenewsExtraDestinationEmbedWebVideo extends ApplenewsDestinationCompone
         if (!empty($value['caption'])) {
           $component->setCaption($value['caption']);
         }
-        $this->destinations[] = $component;
+        $components[] = $component;
       }
     }
 
-    return parent::export($value);
+    array_map([$this, 'setComponentLayout'], $components);
+    return $components;
   }
 
 }
@@ -258,8 +237,7 @@ class ApplenewsExtraDestinationAudio extends ApplenewsDestinationComponent {
    * {@inheritdoc}
    */
   public function label() {
-    return t('Audio') . ' ' . $this->getSetting('type') .
-      ' (' . $this->id . ')';
+    return t('Audio (%id)', ['%id' => $this->id]);
   }
 
   /**
@@ -324,28 +302,20 @@ class ApplenewsExtraDestinationAudio extends ApplenewsDestinationComponent {
   }
 
   /**
-   * Exports to an Apple News Document container object.
-   *
-   * @param mixed $value
-   *   An array of children component objects.
-   *
-   * @return array
-   *   A list of \ChapterThree\AppleNews\Document\Base objects.
+   * {@inheritdoc}
    */
-  public function export($value = NULL) {
-    if (empty($value)) {
-      return [];
-    }
-
-    list($key, $values) = $this->getSourceValues($value,
+  public function export() {
+    list($key, $values) = $this->getSourceValues($this->export->source,
       $this->getSetting('url'));
-    list($imageurl_key, $imageurl_values) = $this->getSourceValues($value,
-      $this->getSetting('imageURL'));
-    list($caption_key, $caption_value) = $this->getSourceValues($value,
-      $this->getSetting('caption'));
+    list($imageurl_key, $imageurl_values) = $this->getSourceValues(
+      $this->export->source, $this->getSetting('imageURL'));
+    list($caption_key, $caption_value) = $this->getSourceValues(
+      $this->export->source, $this->getSetting('caption'));
     list($explicitcontent_key, $explicitcontent_value)
-      = $this->getSourceValues($value,
-        $this->getSetting('explicitContent'));
+      = $this->getSourceValues($this->export->source,
+          $this->getSetting('explicitContent'));
+
+    $components = [];
 
     foreach ($values as $delta => $value) {
       if (!empty($value[$key])) {
@@ -357,22 +327,24 @@ class ApplenewsExtraDestinationAudio extends ApplenewsDestinationComponent {
             if (!empty($caption_value[$delta][$caption_key])) {
               $component->setCaption($caption_value[$delta][$caption_key]);
             }
-            if (!empty($imageurl_values[$delta][$imageurl_key]) &&
-                is_object($imageurl_values[$delta][$imageurl_key])
-            ) {
-              $component->setImageURL($this->export->addAsset($imageurl_values[$delta]['file']->uri));
+            if (!empty($imageurl_values[$delta][$imageurl_key])) {
+              $url = $this->export->addAsset($imageurl_values[$delta][$imageurl_key]);
+              $component->setImageURL($url);
             }
             if (!empty($explicitcontent_value[$delta][$explicitcontent_key])) {
               $component->setExplicitContent(TRUE);
             }
+            $components[] = $component;
             break;
 
         }
-        $this->destinations[] = $component;
+
+        $components[] = $component;
       }
     }
 
-    return parent::export($value);
+    array_map([$this, 'setComponentLayout'], $components);
+    return $components;
   }
 
 }

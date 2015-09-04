@@ -9,32 +9,9 @@ use \ChapterThree\AppleNews\Document\Components;
 use \ChapterThree\AppleNews\Document\Styles;
 
 /**
- * Interface for an Apple News source.
- */
-interface ApplenewsDestinationInterface {
-
-  /**
-   * Administrative label.
-   */
-  public function label();
-
-  /**
-   * Exports to an Apple News Document object.
-   *
-   * @param mixed $value
-   *   Value.
-   *
-   * @return array
-   *   A list of \ChapterThree\AppleNews\Document\Base objects.
-   */
-  public function export($value = NULL);
-
-}
-
-/**
  * Base class for a configurable Apple News destination.
  */
-abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
+abstract class ApplenewsDestination {
 
   /**
    * Settings for this destination.
@@ -98,7 +75,7 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
   }
 
   /**
-   * {@inheritdoc}
+   * Administrative label.
    */
   public function label() {
     if ($this->id === NULL) {
@@ -108,9 +85,12 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
   }
 
   /**
-   * {@inheritdoc}
+   * Exports to an Apple News Document object.
+   *
+   * @return array
+   *   A list of \ChapterThree\AppleNews\Document\Base objects.
    */
-  abstract public function export($value = NULL);
+  abstract public function export();
 
   /**
    * Root-only -- can not be a child.
@@ -175,6 +155,7 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
     ];
     // Textarea for literal value sources.
     if (!empty($metadata['types']['value'])) {
+      $visible_states = [];
       foreach ($metadata['types']['value'] as $source_key) {
         $visible_states[][':input[name="' . $key . '[source]"]']
           = ['value' => $source_key];
@@ -383,7 +364,8 @@ abstract class ApplenewsDestination implements ApplenewsDestinationInterface {
       }
       $key = array_pop($args);
       // @todo this needs to be configurable in the class.
-      if (apple_news_validate_class($implementations[$id]['class'], 'ApplenewsSourceValue')) {
+      $reflection = new ReflectionClass($implementations[$id]['class']);
+      if ($reflection->isSubclassOf('ApplenewsSourceValue')) {
         // Add literal.
         $args[] = $key_settings[$key];
       }

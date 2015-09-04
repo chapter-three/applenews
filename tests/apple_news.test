@@ -16,21 +16,21 @@ abstract class ApplenewsWebTestCase extends DrupalWebTestCase {
 
   protected $watchdogSeverityLevel = WATCHDOG_WARNING;
 
-  protected $admin_user;
+  protected $adminUser;
 
   /**
    * {@inheritdoc}
    */
   public function setUp(array $modules = []) {
     parent::setUp(array_merge(['apple_news', 'dblog'], $modules));
-    $this->admin_user = $this->drupalCreateUser([
+    $this->adminUser = $this->drupalCreateUser([
       'access content',
       'access administration pages',
       'administer site configuration', 'administer content types', 'administer nodes',
       'create article content', 'edit any article content', 'delete any article content',
       'administer apple news',
     ]);
-    $this->drupalLogin($this->admin_user);
+    $this->drupalLogin($this->adminUser);
   }
 
   /**
@@ -39,6 +39,7 @@ abstract class ApplenewsWebTestCase extends DrupalWebTestCase {
    * @see http://dcycleproject.org/blog/96/catching-watchdog-errors-your-simpletests
    */
   public function tearDown() {
+    /** @var SelectQuery $query */
     $query = db_select('watchdog')
       ->fields(NULL, ['wid'])
       ->condition('severity', $this->watchdogSeverityLevel, '<=')
@@ -111,10 +112,14 @@ class ApplenewsExportTestCase extends ApplenewsWebTestCase {
         'body' => [LANGUAGE_NONE => [['value' => $content['body']]]],
       ];
       if (isset($content['image'])) {
-        $settings['field_image'] = [LANGUAGE_NONE => [[
-          'fid' => $content['image']->fid,
-          'title' => $content['image_title'],
-        ]]];
+        $settings['field_image'] = [
+          LANGUAGE_NONE => [
+            [
+              'fid' => $content['image']->fid,
+              'title' => $content['image_title'],
+            ],
+          ],
+        ];
       }
       $node = $this->drupalCreateNode($settings);
       $this->assert($node->nid > 0, "Node \"${content['_desc']}\" created.");
@@ -145,9 +150,9 @@ class ApplenewsExportTestCase extends ApplenewsWebTestCase {
     );
     // Configure component.
     $this->drupalPost(
-      'admin/config/content/apple-news/exports/apple_news::node/components/1',
+      'admin/config/content/apple-news/exports/apple_news::node/component/1',
       [
-        'text' => '::::apple_news::field::node::body::value',
+        'text[source]' => '::::apple_news::field::node::body::value',
       ],
       t('Save changes')
     );
@@ -168,10 +173,10 @@ class ApplenewsExportTestCase extends ApplenewsWebTestCase {
     );
     // Configure component.
     $this->drupalPost(
-      'admin/config/content/apple-news/exports/apple_news::node/components/2',
+      'admin/config/content/apple-news/exports/apple_news::node/component/2',
       [
-        'file' => '::::apple_news::file::node::field_image::uri',
-        'caption' => '::::apple_news::file::node::field_image::title',
+        'file[source]' => '::::apple_news::file::node::field_image::uri',
+        'caption[source]' => '::::apple_news::file::node::field_image::title',
         'type' => 'photo',
       ],
       t('Save changes')
@@ -196,7 +201,7 @@ class ApplenewsExportTestCase extends ApplenewsWebTestCase {
     foreach (array_keys($result['node']) as $nid) {
       $content = $contents[$map[$nid]];
 
-      $document = $export->export(node_load($nid));
+      $document = $export->setSource(node_load($nid))->export();
       $this->assert($document instanceof \ChapterThree\AppleNews\Document,
         "Export document for node \"${content['_desc']}\" loaded.");
       $json = $document->json();
@@ -263,9 +268,12 @@ class ApplenewsExportTestCase extends ApplenewsWebTestCase {
 <img src="${file_url}"/>
 <p>a well-formed paragraph.</p>
 <p>a paragraph with a nested image: <img src="${file_url_relative}"/></p>
+<p>a paragraph with several: <img src="${file_url}"/> and another <img src="${file_url_relative}"/></p>
 <p>a well-formed paragraph.</p>
 EOD
         ,
+        'body_expected' => "a well\\-formed paragraph.\n\na well\\-formed paragraph.\n\na well\\-formed paragraph.\n\n\n\na well\\-formed paragraph.\n\na paragraph with a nested image: \n\na paragraph with several:  and another \n\na well\\-formed paragraph.",
+
       ],
     ];
 
@@ -309,9 +317,9 @@ EOD
     );
     // Configure component.
     $this->drupalPost(
-      'admin/config/content/apple-news/exports/apple_news::node/components/1',
+      'admin/config/content/apple-news/exports/apple_news::node/component/1',
       [
-        'text' => '::::apple_news::field::node::body::value',
+        'text[source]' => '::::apple_news::field::node::body::value',
       ],
       t('Save changes')
     );
@@ -339,7 +347,7 @@ EOD
     foreach (array_keys($result['node']) as $nid) {
       $content = $contents[$map[$nid]];
 
-      $document = $export->export(node_load($nid));
+      $document = $export->setSource(node_load($nid))->export();
       $this->assert($document instanceof \ChapterThree\AppleNews\Document,
         "Export document for node \"${content['_desc']}\" loaded.");
       $json = $document->json();
@@ -358,13 +366,7 @@ EOD
         'Export body component role.');
       $this->assertEqual('markdown', $item->format,
         'Export body component format.');
-      $expected = <<<'EOD'
-<p>a well-formed paragraph.</p>
-<p>a well-formed paragraph.</p>
-<p>a well-formed paragraph.</p>
-EOD;
-      $expected = $markdown->convert($expected);
-      $this->assertEqual($expected, $item->text,
+      $this->assertEqual($content['body_expected'], $item->text,
         'Export body fragment -> component 1 body text.');
 
       $item = $data->components[1];
@@ -375,17 +377,11 @@ EOD;
         'Export body fragment -> component 2 image URL.');
 
       $item = $data->components[2];
-      $this->assertEqual('body', $item->role,
-        'Export body component role.');
-      $this->assertEqual('markdown', $item->format,
-        'Export body component format.');
-      $expected = <<<'EOD'
-<p>a well-formed paragraph.</p>
-<p>a paragraph with a nested image: </p>
-EOD;
-      $expected = $markdown->convert($expected);
-      $this->assertEqual($expected, $item->text,
-        'Export body fragment -> component 3 body text.');
+      $this->assertEqual('photo', $item->role,
+        'Export inline image component role.');
+      $this->assertEqual(drupal_realpath($file->uri),
+        @$export->getAssets()[$item->URL],
+        'Export body fragment -> component 3 image URL.');
 
       $item = $data->components[3];
       $this->assertEqual('photo', $item->role,
@@ -395,16 +391,11 @@ EOD;
         'Export body fragment -> component 4 image URL.');
 
       $item = $data->components[4];
-      $this->assertEqual('body', $item->role,
-        'Export body component role.');
-      $this->assertEqual('markdown', $item->format,
-        'Export body component format.');
-      $expected = <<<'EOD'
-<p>a well-formed paragraph.</p>
-EOD;
-      $expected = $markdown->convert($expected);
-      $this->assertEqual($expected, $item->text,
-        'Export body fragment -> component 5 body text.');
+      $this->assertEqual('photo', $item->role,
+        'Export inline image component role.');
+      $this->assertEqual(drupal_realpath($file->uri),
+        @$export->getAssets()[$item->URL],
+        'Export body fragment -> component 5 image URL.');
 
     }
   }

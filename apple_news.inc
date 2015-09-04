@@ -385,7 +385,7 @@ function apple_news_get_module_apis($class = NULL, $type = NULL, $reset = FALSE)
           $class_type = 'field';
         }
         else {
-          $msg = 'Class %class is not a subclass of ApplenewsSourceEntity or ApplenewsSourceField.';
+          $msg = 'Class %class is not a subclass of ApplenewsSourceValue, ApplenewsSourceEntity or ApplenewsSourceField.';
           $args = ['%class' => $source['class']];
           watchdog('apple_news', $msg, $args, WATCHDOG_WARNING);
           return FALSE;
@@ -427,6 +427,12 @@ function apple_news_get_module_apis($class = NULL, $type = NULL, $reset = FALSE)
           $reflection->isSubclassOf('ApplenewsDestinationComponentLayout')
         ) {
           $class_type = 'componentLayout';
+        }
+        else {
+          $msg = 'Class %class is not a subclass of ApplenewsDestinationComponent.';
+          $args = ['%class' => $destination['class']];
+          watchdog('apple_news', $msg, $args, WATCHDOG_WARNING);
+          return FALSE;
         }
         $implementations['destination'][$key] = array_merge([
           'name'        => '',
@@ -477,7 +483,7 @@ function apple_news_entity_get_export($entity_type, $entity_id) {
   // Has the entity been assigned an export?
   $post = new ApplenewsDatabase();
   $post->setPostId($entity_type, $entity_id, $entity_id);
-  if ($article = $post->getArticle() &&
+  if (($article = $post->getArticle()) ||
       !empty($article['module']) && !empty($article['machine_name'])
   ) {
     $export = apple_news_get_export($article['module'], $article['machine_name']);
@@ -520,7 +526,7 @@ function apple_news_entity_export_valid(ApplenewsExport $export, $entity_type, $
 function apple_news_entity_export(ApplenewsExport $export, $entity_type, $entity_id) {
   $entity = entity_load_single($entity_type, $entity_id);
   return [
-    'json'  => $export->export($entity)->json(),
+    'json'  => $export->setSource($entity)->export()->json(),
     'files' => $export->getAssets(),
   ];
 }

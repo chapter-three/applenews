@@ -335,21 +335,35 @@ function apple_news_update_7100(&$sandbox) {
     if (!$export instanceof ApplenewsExportConfigurable) {
       continue;
     }
-    foreach (['componentLayouts'] as $key) {
-      $export->destinations[$key] = [];
-    }
     foreach ($export->getComponents() as $component) {
       foreach ($component->settings as $key => &$value) {
         if (!is_array($value) &&
-            substr($value, 0, 4) == '::::'
+          substr($value, 0, 4) == '::::'
         ) {
           $value = ['source' => $value];
         }
       }
     }
     apple_news_export_save($export);
-    // Re-run init().
-    $export = apple_news_get_export($export->getModule(), $export->getMachineName());
+  }
+}
+
+/**
+ * Add layouts.
+ */
+function apple_news_update_7101(&$sandbox) {
+  module_load_include('inc', 'apple_news');
+  $query = db_select('apple_news_status', 'a')
+    ->fields('a');
+  foreach ($query->execute() as $row) {
+    /** @var ApplenewsExportConfigurable $export */
+    $export = unserialize($row->instance);
+    if (!$export instanceof ApplenewsExportConfigurable) {
+      continue;
+    }
+    foreach (['componentLayouts'] as $key) {
+      $export->destinations[$key] = [];
+    }
     apple_news_export_save($export);
   }
 }

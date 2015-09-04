@@ -279,9 +279,9 @@ class ApplenewsSourceField implements ApplenewsSourceInterface {
    */
   static public function attributes() {
     return [
-      'value' => 'Raw Value',
-      'value_sanitized' => 'Sanitized Value',
-      'value_decoded' => 'Decoded Value',
+      'value_sanitized' => 'Value',
+      'value' => 'Raw value (as entered by user, not sanitized)',
+      'value_decoded' => 'Decoded value (tags stripped and entities decoded)',
     ];
   }
 

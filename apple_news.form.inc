@@ -188,6 +188,14 @@ function _apple_news_form_alter_node_form(&$form, &$form_state) {
       '#default_value' => empty($default_export) ? NULL : apple_news_export_id(
         $default_export->getModule(), $default_export->getMachineName()),
     ];
+    // When new content show export dropdown when the checkbox is selected.
+    if (empty($article_id)) {
+      $form['apple_news']['exports']['#states'] = [
+        'invisible' => [
+          ':input[name="apple_news[apple_news_publish_flag]"]' => ['checked' => FALSE],
+        ]
+      ];
+    }
     // Get configuration form for the AppleNews exportable entity.
     $export_form = $default_export->getConfigForm([], $form_state);
     if (isset($export_form['channels'])) {

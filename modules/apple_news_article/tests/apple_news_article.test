@@ -96,7 +96,7 @@ class ApplenewsArticleExportTestCase extends ApplenewsWebTestCase {
     foreach (array_keys($result['node']) as $nid) {
       $content = $contents[$map[$nid]];
 
-      $document = $export->export(node_load($nid));
+      $document = $export->setSource(node_load($nid))->export();
       $this->assert($document instanceof \ChapterThree\AppleNews\Document,
         "Export document for node \"${content['_desc']}\" loaded.");
       $json = $document->json();
@@ -190,7 +190,7 @@ class ApplenewsArticleExportTestCase extends ApplenewsWebTestCase {
     foreach (array_keys($result['node']) as $nid) {
       $content = $contents[$map[$nid]];
 
-      $document = $export->export(node_load($nid));
+      $document = $export->setSource(node_load($nid))->export();
       $this->assert($document instanceof \ChapterThree\AppleNews\Document,
         "Export document for node \"${content['_desc']}\" loaded.");
       $json = $document->json();
