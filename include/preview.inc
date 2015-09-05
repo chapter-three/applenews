@@ -6,24 +6,86 @@
  */
 
 /**
- * This class generate downloadable AppleNews formatted documents with
- * it's assets.
+ * This class generate downloadable Apple News Native formatted
+ * documents with it's assets.
  */
 class ApplenewsPreview {
 
-  private $entity_dir = '';
-  private $entity_realpath = '';
-  private $realpath = '';
+  /**
+   * URI to individual entity export directory.
+   *
+   * @var string
+   */
+  private $entity_dir;
+
+  /**
+   * Real path to individual entity export directory.
+   *
+   * @var string
+   */
+  private $entity_realpath;
+
+  /**
+   * Apple News article assets.
+   *
+   * @var array
+   */
   private $files = [];
-  private $article_json = '';
-  private $archive_file = '';
-  private $archive_url = '';
-  private $archive_realpath = '';
 
-  private $entity_id = '';
-  private $entity_archive = FALSE;
+  /**
+   * Apple News Native document formatted JSON string.
+   *
+   * @var int|string
+   */
+  private $article_json;
 
-  private $directory = '';
+  /**
+   * Real path to the batch preview export archive file.
+   *
+   * @var string
+   */
+  private $archive_file;
+
+  /**
+   * URL to the archive file.
+   *
+   * @var int|string
+   */
+  private $archive_url;
+
+  /**
+   * Real path to the batch preview directory.
+   *
+   * @var string
+   */
+  private $archive_realpath;
+
+  /**
+   * Entity ID of the current preview object.
+   *
+   * @var int
+   */
+  private $entity_id;
+
+  /**
+   * Indicates whether this is an individual entity export or not.
+   *
+   * @var boolean
+   */
+  private $entity_archive;
+
+  /**
+   * URI to the main Apple News export directory.
+   *
+   * @var string
+   */
+  private $directory;
+
+  /**
+   * Batch preview export archive file name.
+   *
+   * @var string
+   */
   private $archive = '';
 
   /**
