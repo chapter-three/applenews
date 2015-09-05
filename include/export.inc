@@ -250,7 +250,7 @@ abstract class ApplenewsExport {
 
     $tab['channels'] = [
       '#type' => 'container',
-      '#prefix' => '<strong>' . t('Channels') . '</strong>',
+      '#prefix' => '<strong>' . t('Default channels and sections') . '</strong>',
       '#weight' => 9,
     ];
 
@@ -282,6 +282,9 @@ abstract class ApplenewsExport {
           ];
         }
       }
+      $tab['channels'][] = [
+        '#markup' => '<div class="description">' . t('Default Apple News channels and sections where selected content types will be published. This can be overridden on individual entity edit pages.') . '</div>',
+      ];
     }
     else {
       $tab['channels']['info'] = [
@@ -848,11 +851,12 @@ class ApplenewsExportNode extends ApplenewsExportConfigurable {
     }, $options);
     $tab['bundles'] = [
       '#required'      => TRUE,
-      '#title'         => t('Content Types'),
+      '#title'         => t('Content types'),
       '#type'          => 'checkboxes',
       '#multiple'      => TRUE,
       '#options'       => $options,
       '#default_value' => $this->bundles,
+      '#description'   => t('Please select content types that will be available for Apple News export.'),
     ];
 
     return $form;
