@@ -517,17 +517,16 @@ function _apple_news_form_alter_node_form_submit(&$form, &$form_state) {
       !empty($values['exports'])
   ) {
 
+    /*
     $entity = $form['#node'];
     $entity_type = 'node';
     $revision_id = $entity_id = $entity->nid;
 
-    module_load_include('inc', 'apple_news');
-    list($module, $machine_name) = apple_news_export_id_extract(
-      $form_state['values']['apple_news']['exports']);
-
+    // Don't do this, save somewhere else.
     $post = new ApplenewsDatabase();
     $post->setPostId($entity_type, $entity_id, $revision_id);
-    $post->setExport($module, $machine_name);
+    $post->setExport($form_state['values']['apple_news']['exports']);
+    */
 
   }
 }
