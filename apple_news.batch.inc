@@ -15,13 +15,13 @@ function apple_news_batch_run_export(ApplenewsExport $export, $op) {
 
   switch ($op) {
 
-    case 'export-to-file' :
+    case 'export-to-file':
       $op_function = 'apple_news_batch_preview_generate';
       $op_finish = 'apple_news_batch_export_to_file_finished';
       break;
 
-    case 'export' :
-    default :
+    case 'export':
+    default:
       $op_function = 'apple_news_batch_post';
       $op_finish = 'apple_news_batch_run_export_finished';
       break;
@@ -84,7 +84,8 @@ function apple_news_batch_post($export_id, $entity_type, $entity, $total_count, 
 
   $count = !empty($context['results']['info']['step_count']) ? $context['results']['info']['step_count'] : 0;
 
-  // Save batch progress status. Export status indicator visible in the Status column.
+  // Save batch progress status. Export status indicator visible in the Status
+  // column.
   $status = [
     'count'     => $count,
     'starttime' => !empty($context['results']['info']['starttime']) ? $context['results']['info']['starttime'] : 0,
@@ -131,7 +132,8 @@ function apple_news_batch_post($export_id, $entity_type, $entity, $total_count, 
         $success = apple_news_op('insert', $channel_id, $entity, $entity_type, $export);
       }
       else {
-        // Update an article only if the entity was updated since the last export.
+        // Update an article only if the entity was updated since the last
+        // export.
         if ($export_log['postdate'] < $entity->changed) {
           $success = apple_news_op('update', $channel_id, $entity, $entity_type, $export);
         }

@@ -230,7 +230,7 @@ abstract class ApplenewsDestination {
     // Top-level-only.
     if (!$ancestors) {
       $options += [
-        '' => '- ' . t('none') . ' -',
+        '' => t('- none -'),
       ];
       // Each value source.
       foreach ($value_sources() as $source_info) {
@@ -342,6 +342,8 @@ abstract class ApplenewsDestination {
     if (empty($key)) {
       return NULL;
     }
+
+    $source = NULL;
 
     // Parse key.
     // @see self::getSourceOptions()

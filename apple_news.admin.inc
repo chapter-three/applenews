@@ -147,17 +147,12 @@ function apple_news_settings_api_credentials_form_submit($form, &$form_state) {
   $api_channels = variable_get('apple_news_variable_api_channels', []);
   $channel_msg = '';
   if (empty($api_channels)) {
-    $channel_msg = t('Please <a href="!link">add Channel ID</a> to verify connection and start posting content to Apple News.',
-      [
-        '!link' => url('admin/config/content/apple-news/settings/channels')
-      ]
-    );
+    $link = l(t('add Channel ID'),
+      'admin/config/content/apple-news/settings/channels');
+    $channel_msg = t('Please !link to verify connection and start posting content to Apple News.', ['!link' => $link]);
   }
-  drupal_set_message(
-    t('The configuration options have been saved.')
-    . ' '
-    . $channel_msg
-  );
+  drupal_set_message(t('The configuration options have been saved. !msg'),
+    ['!msg' => $channel_msg]);
 }
 
 /**
@@ -255,12 +250,9 @@ function apple_news_settings_channels_form() {
   }
   else {
 
+    $link = l(t('credentials'), 'admin/config/content/apple-news/settings');
     $form['requirements'] = [
-      '#markup' => t('Please provide Apple News <a href="!link">credentials</a> in order to be able to see and add channels.',
-        [
-          '!link' => url('admin/config/content/apple-news/settings'),
-        ]
-      ),
+      '#markup' => t('Please provide Apple News !link in order to be able to see and add channels.', ['!link' => $link]),
     ];
 
   }
@@ -475,7 +467,7 @@ function apple_news_settings_exports_form_validate($form, &$form_state) {
 
   $selected = array_filter($form_state['values']['exports']);
   if (empty($selected)) {
-    form_set_error('exports', 'Select at lease one export.');
+    form_set_error('exports', 'Select at least one export.');
   }
 
 }
@@ -679,8 +671,7 @@ function theme_apple_news_export_edit_form($variables) {
   $form = $variables['form'];
 
   // Non-order-able table of destinations.
-  $elements = [
-  ];
+  $elements = [];
   foreach ($elements as $info) {
     $rows = [];
     foreach (element_children($info['element']) as $id) {
@@ -863,7 +854,7 @@ function apple_news_export_destination_edit_form_submit($form, &$form_state) {
   apple_news_export_save($destination->export);
   drupal_set_message(t('Changes have been successfully saved.'));
   $form_state['redirect'] = 'admin/config/content/apple-news/exports/' .
-    apple_news_export_id($destination->export->getModule(), $destination->export->getMachineName());
+    $destination->export->id;
 }
 
 /**
@@ -916,8 +907,9 @@ function apple_news_export_destination_delete_form_submit($form, &$form_state) {
   $export = $form_state['storage']['export'];
   $type = $form_state['storage']['type'];
   $id = $form_state['storage']['id'];
+  /** @var ApplenewsDestination $destination */
   $destination = $form_state['storage']['destination'];
-  $export_id = apple_news_export_id($export->getModule(), $export->getMachineName());
+  $export_id = $export->id;
   $path = 'admin/config/content/apple-news/exports/' . $export_id;
 
   switch ($type) {
@@ -1003,7 +995,7 @@ function apple_news_settings_delete_article_form_submit($form, &$form_state) {
 }
 
 /**
- * Download article.json previable file.
+ * Download article.json preview file.
  */
 function apple_news_download_article_json($entity_type, $entity_id, $revision_id) {
   module_load_include('inc', 'apple_news');
@@ -1035,7 +1027,9 @@ function apple_news_download_article_json($entity_type, $entity_id, $revision_id
   else {
     return t('Entity not found.');
   }
+
   drupal_exit();
+  return NULL;
 }
 
 /**
@@ -1057,11 +1051,9 @@ function apple_news_autoinstall_form($form, &$form_state) {
   }
   // All libraries successfully installed.
   if ($count == 2) {
+    $link = l(t('configure the module'), 'admin/config/content/apple-news/settings');
     $form['info'] = [
-      '#markup' => t('Apple News dependant PHP libraries were successfully installed. Please <a href="!link">configure the module</a> and start posting content to Apple News.', [
-          '!link' => url('admin/config/content/apple-news/settings'),
-        ]
-      ),
+      '#markup' => t('Apple News dependant PHP libraries were successfully installed. Please !link and start posting content to Apple News.', ['!link' => $link]),
     ];
   }
   // Show download button.

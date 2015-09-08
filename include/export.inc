@@ -703,9 +703,6 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
       '#collapsed' => FALSE,
       '#group' => 'main',
     ];
-    // $tab = &$form['additional_settings']['layouts_tab'];
-    // @todo Layout, ComponentLayout.
-
 
     $form['additional_settings']['components_tab'] = [
       '#type' => 'fieldset',

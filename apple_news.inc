@@ -171,7 +171,12 @@ function apple_news_new_source($module, $machine_name, $arg = NULL) {
 }
 
 /**
- * Helper function for validating implementation defined classes.
+ * Helper function for logging/validating of implementation-defined classes.
+ *
+ * @param string $class_name
+ *   Class name.
+ * @param string $is_a
+ *   Optionally validate $class_name isa $is_a.
  *
  * @return ReflectionClass|bool
  *   Valid implementations return ReflectionClass, invalid FALSE.
@@ -258,7 +263,16 @@ function apple_news_new_export($module, $machine_name) {
 }
 
 /**
- * Gets registered exports.
+ * Gets all exports.
+ *
+ * @param bool $reset
+ *   Force fetch from db.
+ *
+ * @return array
+ *   Associative array keyed on export id of info arrays as defined by
+ *   hook_apple_news_api(), with 2 additional keys:
+ *   - #id -- Export ID.
+ *   - #enabled -- Export can be run.
  */
 function apple_news_exports($reset = NULL) {
   $exports = &drupal_static(__FUNCTION__);
@@ -295,6 +309,15 @@ function apple_news_exports($reset = NULL) {
 
 /**
  * Gets registered and enabled exports.
+ *
+ * @param bool $reset
+ *   Force fetch from db.
+ *
+ * @return array
+ *   Associative array keyed on export id of info arrays as defined by
+ *   hook_apple_news_api(), with 2 additional keys:
+ *   - #id -- Export ID.
+ *   - #enabled -- Export can be run.
  */
 function apple_news_exports_enabled($reset = NULL) {
   return array_filter(apple_news_exports($reset), function($info) {
@@ -307,18 +330,20 @@ function apple_news_exports_enabled($reset = NULL) {
  *
  * @param string $class
  *   One of:
- *   - "export"
- *   - "destination"
- *   - "source"
+ *   - "export".
+ *   - "destination".
+ *   - "source".
  * @param string $type
  *   If $class is "destination", one of:
- *   - "component"
+ *   - "component".
+ * @param bool $reset
+ *   Force fetch from db.
  *
  * @return array
  *   List of implementation info arrays. If $class is NULL, the arrays are
  *   nested in an associative array keyed on $class.
  *
- * @see hook_apple_news_api().
+ * @see hook_apple_news_api()
  */
 function apple_news_get_module_apis($class = NULL, $type = NULL, $reset = FALSE) {
   $implementations = &drupal_static(__FUNCTION__);
@@ -528,6 +553,13 @@ function apple_news_entity_export_valid(ApplenewsExport $export, $entity_type, $
 /**
  * Export an individual drupal entity.
  *
+ * @param ApplenewsExport $export
+ *   Export to test.
+ * @param string $entity_type
+ *   Entity type.
+ * @param string $entity_id
+ *   Entity ID.
+ *
  * @return array
  *   With keys:
  *   - json: The apple news document JSON.
@@ -545,7 +577,7 @@ function apple_news_entity_export(ApplenewsExport $export, $entity_type, $entity
  * Set export status.
  */
 function apple_news_batch_export_set_status($name, $info) {
-  $status = variable_set('apple_news_batch_export_status', []);
+  $status = variable_get('apple_news_batch_export_status', []);
   $status[$name] = $info;
   variable_set('apple_news_batch_export_status', $status);
 }
@@ -569,8 +601,23 @@ function apple_news_batch_export_get_status($batch_name) {
  * Post Article to Apple News.
  *
  * @todo Add Revision support.
+ *
+ * @param string $channel_id
+ *   News channel id.
+ * @param string $entity_type
+ *   Drupal entity type.
+ * @param \EntityDrupalWrapper $entity_wrapper
+ *   Entity metadata wrapper for the entity to post.
+ * @param array $data
+ *   Associative array with keys:
+ *   - json - News document json.
+ *   - files - Bundled files.
+ *   - metadata - News metadata.
+ *
+ * @return bool
+ *   Success.
  */
-function apple_news_post($channel_id, $entity_type, $entity_wrapper, $data) {
+function apple_news_post($channel_id, $entity_type, EntityDrupalWrapper $entity_wrapper, array $data) {
   module_load_include('inc', 'apple_news', 'apple_news.publisher_api');
   // Make POST request to Apple News via PublisherAPI.
   $response = apple_news_post_article($channel_id, $data);
@@ -629,8 +676,23 @@ function apple_news_post($channel_id, $entity_type, $entity_wrapper, $data) {
  * Post Article to Apple News.
  *
  * @todo Add Revision support.
+ *
+ * @param string $channel_id
+ *   News channel id.
+ * @param string $entity_type
+ *   Drupal entity type.
+ * @param \EntityDrupalWrapper $entity_wrapper
+ *   Entity metadata wrapper for the entity to post.
+ * @param array $data
+ *   Associative array with keys:
+ *   - json - News document json.
+ *   - files - Bundled files.
+ *   - metadata - News metadata.
+ *
+ * @return bool
+ *   Success.
  */
-function apple_news_update($channel_id, $entity_type, $entity_wrapper, $data) {
+function apple_news_update($channel_id, $entity_type, EntityDrupalWrapper $entity_wrapper, array $data) {
   module_load_include('inc', 'apple_news', 'apple_news.publisher_api');
 
   $query = db_select('apple_news_entities', 'e');
@@ -656,9 +718,11 @@ function apple_news_update($channel_id, $entity_type, $entity_wrapper, $data) {
       // This will override previous revisions.
       $apple_news_revision_id = $apple_news_article->data->revision;
     }
-    // else {
-      // $apple_news_revision_id = $article->article_revision_id;
-    // }
+    /*
+    else {
+      $apple_news_revision_id = $article->article_revision_id;
+    }
+    */
 
     $data['metadata']['data']['revision'] = $apple_news_revision_id;
     $data['metadata'] = json_encode($data['metadata']);
@@ -705,10 +769,10 @@ function apple_news_update($channel_id, $entity_type, $entity_wrapper, $data) {
       return TRUE;
     }
     else {
-      watchdog('apple_news', "Could not update Apple News article @id (entity ID: @etid). You could try delete the article from Apple News and re-publish it.",
+      watchdog('apple_news', "Could not update Apple News article @id (entity ID: @eid). You could try delete the article from Apple News and re-publish it.",
         [
           '@id'   => $article->article_id,
-          '@etid' => $entity_wrapper->getIdentifier(),
+          '@eid' => $entity_wrapper->getIdentifier(),
         ],
         WATCHDOG_NOTICE
       );
@@ -723,8 +787,18 @@ function apple_news_update($channel_id, $entity_type, $entity_wrapper, $data) {
 
 /**
  * Delete Article from Apple News.
+ *
+ * @param string $channel_id
+ *   News channel id.
+ * @param string $entity_type
+ *   Drupal entity type.
+ * @param \EntityDrupalWrapper $entity_wrapper
+ *   Entity metadata wrapper for the entity to post.
+ *
+ * @return bool
+ *   Success.
  */
-function apple_news_delete($channel_id, $entity_type, $entity_wrapper) {
+function apple_news_delete($channel_id, $entity_type, EntityDrupalWrapper $entity_wrapper) {
   module_load_include('inc', 'apple_news', 'apple_news.publisher_api');
 
   // Get article ID.
@@ -765,39 +839,37 @@ function apple_news_delete($channel_id, $entity_type, $entity_wrapper) {
  *   Entity object.
  * @param string $entity_type
  *   Entity type.
+ * @param ApplenewsExport $export
+ *   Export object.
+ *
+ * @return bool
+ *   Success.
  */
-function apple_news_op($operation, $channel_id, $entity, $entity_type, $export = NULL, array $settings = []) {
+function apple_news_op($operation, $channel_id, $entity, $entity_type, ApplenewsExport $export = NULL) {
   $result = FALSE;
-  $data = [];
-  // Entity object wrapper.
+  /** @var EntityDrupalWrapper $entity_wrapper */
   $entity_wrapper = entity_metadata_wrapper($entity_type, $entity);
   // Generate Apple News Document formatted JSON string.
-  if (is_object($export)) {
-    $document = $export->export($entity);
-    if (count($settings)) {
-      // Merge export settings with custom fields from the entity add/edit form.
-      // @see apple_news_form_alter().
-      $export->settings = array_merge($export->settings, $settings);
-    }
-    $data = [
-      'json'              => $document->json(),
-      'files'             => $export->getAssets(),
-      'metadata'          => !empty($settings['metadata']) ? json_encode($settings['metadata']) : '',
-    ];
-  }
+  $document = $export->setSource($entity)->export();
+  $data = [
+    'json'              => $document->json(),
+    'files'             => $export->getAssets(),
+    'metadata'          => !empty($settings['metadata']) ? json_encode($settings['metadata']) : '',
+  ];
 
   switch ($operation) {
-    case 'insert' :
-     // Create new article in Apple News.
+
+    case 'insert':
+      // Create new article in Apple News.
       $result = apple_news_post($channel_id, $entity_type, $entity_wrapper, $data);
       break;
 
-    case 'update' :
+    case 'update':
       // Update existing Apple News article.
       $result = apple_news_update($channel_id, $entity_type, $entity_wrapper, $data);
       break;
 
-    case 'delete' :
+    case 'delete':
       // Delete article from Apple News.
       $result = apple_news_delete($channel_id, $entity_type, $entity_wrapper);
       break;
@@ -807,6 +879,12 @@ function apple_news_op($operation, $channel_id, $entity, $entity_type, $export =
 
 /**
  * Converts drupal language code to appropriate Apples News value.
+ *
+ * @param string $language_code
+ *   Drupal language code.
+ *
+ * @return string
+ *   Apple news document language code.
  */
 function apple_news_language_code($language_code) {
   // @todo
@@ -961,6 +1039,7 @@ function apple_news_section($section_id) {
  * @see apple_news_get_sections()
  */
 function apple_news_channel($channel_id) {
+  $channel = NULL;
   if ($cache = cache_get('channel_' . $channel_id, 'cache_apple_news')) {
     $channel = $cache->data;
   }
@@ -993,6 +1072,7 @@ function apple_news_channel($channel_id) {
  */
 function apple_news_load_article_channels($entity, $type) {
   $post = new ApplenewsDatabase();
+  /** @var EntityDrupalWrapper $entity_wrapper */
   $entity_wrapper = entity_metadata_wrapper($type, $entity);
   $post->setPostId($type, $entity_wrapper->getIdentifier(), $entity_wrapper->getIdentifier());
   $channels_all = apple_news_channels();
@@ -1032,6 +1112,9 @@ function apple_news_is_exported($channel_id, $entity_wrapper, $entity_type) {
 /**
  * Get section URL.
  *
+ * @param string $section_id
+ *   Apple news section id.
+ *
  * @return string
  *   URL
  */
@@ -1044,13 +1127,14 @@ function apple_news_section_url($section_id) {
 }
 
 /**
- * Export to the Apple News previewable format documents.
+ * Export to the Apple News preview-able format documents.
  */
 function apple_news_export_to_file($entity_id, $entity_ids = [], $filename = NULL, $entity_archive = FALSE, $data = []) {
   $preview = new ApplenewsPreview($entity_id, $filename, $entity_archive, $data);
   if (!empty($entity_id)) {
     $preview->toFile();
     $preview->archive($entity_ids);
+    return NULL;
   }
   else {
     $file_url = $preview->getArchiveFilePath();
@@ -1072,7 +1156,7 @@ function apple_news_export_file_path($entity_id) {
  */
 function apple_news_export_file_delete($entity_id) {
   $preview = new ApplenewsPreview(NULL, '', FALSE, []);
-  return $preview->entityArchiveDelete($entity_id);
+  $preview->entityArchiveDelete($entity_id);
 }
 
 /**
@@ -1107,9 +1191,9 @@ function apple_news_libraries_installed() {
   if ($count_installed != count($libraries)) {
     return [
       'info' => [
-        '#markup' => t('Please install all required PHP libraries. See <a href="!link" target="_blank">README</a> file for instructions.',
+        '#markup' => t('Please install all required PHP libraries. See !link file for instructions.',
           [
-            '!link' => url(drupal_get_path('module', 'apple_news') . '/README.md'),
+            '!link' => l(t('README'), drupal_get_path('module', 'apple_news') . '/README.md', ['attributes' => ['target' => '_blank']]),
           ]
         ),
       ]
