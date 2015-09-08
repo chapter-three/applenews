@@ -48,7 +48,7 @@ function _apple_news_form_alter_node_form(&$form, &$form_state) {
   $export_options = [];
   if (count($exports)) {
     foreach ($exports as $key => $info) {
-      $export = apple_news_get_export($info['module'], $info['machine_name']);
+      $export = apple_news_export_load($key);
       $valid = $export->showOnEdit($entity_type, $bundle) && (
           !isset($entity_id) ||
           apple_news_entity_export_valid($export, $entity_type, $entity_id)
@@ -59,7 +59,7 @@ function _apple_news_form_alter_node_form(&$form, &$form_state) {
       if (empty($default_export)) {
         $default_export = $export;
       }
-      $export_options[$key] = $info['name'] . ' (' . $info['module'] . ')';
+      $export_options[$key] = $export->title;
     }
     if (!empty($entity_id)) {
       $default_export = apple_news_entity_get_export($entity_type, $entity_id);
@@ -185,8 +185,7 @@ function _apple_news_form_alter_node_form(&$form, &$form_state) {
       '#type' => 'select',
       '#title' => t('Export'),
       '#options' => $export_options,
-      '#default_value' => empty($default_export) ? NULL : apple_news_export_id(
-        $default_export->getModule(), $default_export->getMachineName()),
+      '#default_value' => empty($default_export) ? NULL : $default_export->id,
     ];
     // When new content show export dropdown when the checkbox is selected.
     if (empty($article_id)) {

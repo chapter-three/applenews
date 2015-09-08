@@ -18,6 +18,27 @@ abstract class ApplenewsExport {
   protected $arguments;
 
   /**
+   * Export id.
+   *
+   * @var int
+   */
+  public $id;
+
+  /**
+   * Administrative title.
+   *
+   * @var string
+   */
+  public $title;
+
+  /**
+   * Administrative description.
+   *
+   * @var string
+   */
+  public $description;
+
+  /**
    * Export is enabled.
    *
    * @var bool
@@ -78,13 +99,15 @@ abstract class ApplenewsExport {
   /**
    * Implements __sleep().
    *
-   * Exclude $this->document.
+   * Note excluded attributes, $this->id, $this->document, etc.
    */
   public function __sleep() {
     return [
       'module',
       'machineName',
       'arguments',
+      'title',
+      'description',
       'enabled',
       'settings',
     ];
@@ -220,6 +243,19 @@ abstract class ApplenewsExport {
    */
   public function getConfigForm(array $form, array &$form_state) {
 
+    $form['title'] = [
+      '#type' => 'textfield',
+      '#title' => t('Administrative Title'),
+      '#default_value' => $this->title,
+      '#required' => TRUE,
+    ];
+
+    $form['description'] = [
+      '#type' => 'textfield',
+      '#title' => t('Administrative Description'),
+      '#default_value' => $this->description,
+    ];
+
     $form['enabled'] = [
       '#title' => t('Enable this export'),
       '#type' => 'checkbox',
@@ -313,6 +349,9 @@ abstract class ApplenewsExport {
    *   FAPI $form_state.
    */
   public function submitConfigForm(array $form, array &$form_state) {
+    $this->title = $form_state['values']['title'];
+    $this->description = $form_state['values']['description'];
+
     $this->enabled = $form_state['values']['enabled'];
     $channels = [];
     $sections = [];
@@ -538,6 +577,20 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
   }
 
   /**
+   * Adds a component.
+   *
+   * @param \ApplenewsDestinationComponent $component
+   *   The component.
+   * @param int $index
+   *   ID of the component.
+   *
+   * @return $this
+   */
+  public function addComponent(ApplenewsDestinationComponent $component, $index = NULL) {
+    return $this->addDestination('components', $component, $index);
+  }
+
+  /**
    * Deletes the component with id $index.
    *
    * @param int $index
@@ -670,7 +723,7 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
     ];
     /** @var ApplenewsDestinationComponent $destination */
     foreach ($this->getdestinations('components') as $destination) {
-      $edit = 'admin/config/content/apple-news/exports/' . apple_news_export_id($this->module, $this->machineName) . '/component/' . $destination->id;
+      $edit = 'admin/config/content/apple-news/exports/' . $this->id . '/component/' . $destination->id;
       if (!$destination->validateSettings()) {
         drupal_set_message(t('The !label component needs to be !link.',
           [
@@ -688,7 +741,7 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
           '#markup' => l(t('edit'), $edit),
         ],
         'delete' => [
-          '#markup' => l(t('delete'), 'admin/config/content/apple-news/exports/' . apple_news_export_id($this->module, $this->machineName) . '/component/' . $destination->id . '/delete'),
+          '#markup' => l(t('delete'), 'admin/config/content/apple-news/exports/' . $this->id . '/component/' . $destination->id . '/delete'),
         ],
         'id' => [
           '#type' => 'hidden',
@@ -781,15 +834,14 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
     if ($components['_new']['destination']) {
       $destinations = apple_news_get_module_apis('destination');
       $info = $destinations[$components['_new']['destination']];
-      $destination = apple_news_get_destination($info['module'], $info['machine_name']);
+      $destination = apple_news_new_destination($info['module'], $info['machine_name']);
       $destination->weight = (int) $components['_new']['weight'];
       $destination->pid = $components['_new']['pid'] == '' ? NULL : (int) $components['_new']['pid'];
       $destination->id = empty($this->destinations['components']) ? 1 :
         max(array_keys($this->destinations['components'])) + 1;
       $this->destinations['components'][$destination->id] = $destination;
       $form_state['redirect'][] = 'admin/config/content/apple-news/exports/' .
-        apple_news_export_id($this->module, $this->machineName) .
-        '/component/' . $destination->id;
+        $this->id . '/component/' . $destination->id;
     }
 
     parent::submitConfigForm($form, $form_state);

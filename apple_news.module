@@ -227,11 +227,29 @@ function apple_news_menu() {
     'weight' => 0,
   ];
 
+  $items['admin/config/content/apple-news/exports-add'] = [
+    'title' => 'Add Export',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['apple_news_export_add_form'],
+    'access arguments' => ['administer apple news'],
+    'file' => 'apple_news.admin.inc',
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 1,
+  ];
+
   $items['admin/config/content/apple-news/exports/%apple_news_export'] = [
     'title' => 'Edit Export',
     'description' => t('Apple News Export configuration.'),
     'page callback' => 'drupal_get_form',
     'page arguments' => ['apple_news_export_edit_form', 5],
+    'access arguments' => ['administer apple news'],
+    'file' => 'apple_news.admin.inc',
+  ];
+
+  $items['admin/config/content/apple-news/exports/%apple_news_export/delete'] = [
+    'title' => 'Delete Export',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['apple_news_export_delete_form', 5],
     'access arguments' => ['administer apple news'],
     'file' => 'apple_news.admin.inc',
   ];
@@ -354,12 +372,28 @@ function apple_news_menu() {
 /**
  * Implements OBJECT_load().
  *
- * @see menu_get_item()
+ * @param int $id
+ *   ID of export.
+ *
+ * @return ApplenewsExport
+ *   Fully-loaded export object.
  */
 function apple_news_export_load($id) {
-  module_load_include('inc', 'apple_news');
-  list($module, $machine_name) = apple_news_export_id_extract($id);
-  return apple_news_get_export($module, $machine_name);
+  $query = db_select('apple_news_status', 's')
+    ->fields('s', ['instance'])
+    ->condition('s.id', $id);
+  if ($row = $query->execute()->fetchObject()) {
+    if ($export = unserialize($row->instance)) {
+      $export->id = $id;
+      return $export;
+    }
+    $msg = t('Export class id %id could not be unserialized');
+    $var = [
+      '%id' => $id,
+    ];
+    watchdog('apple_news', $msg, $var, WATCHDOG_ERROR);
+    return NULL;
+  }
 }
 
 /**
@@ -385,6 +419,7 @@ function apple_news_apple_news_api() {
         'class' => 'ApplenewsExportNode',
         'name' => t('Nodes'),
         'description' => t('Configurable node export.'),
+        'default' => 'apple_news_apple_news_api_export_default_node',
       ],
     ],
     'sources' => [
@@ -444,6 +479,32 @@ function apple_news_apple_news_api() {
       ],
     ],
   ];
+}
+
+/**
+ * Callback to define default node export.
+ */
+function apple_news_apple_news_api_export_default_node(ApplenewsExportNode $export) {
+  $component = new ApplenewsDestinationText();
+  $component->weight = '0';
+  $component
+    ->setSetting('text', [
+      'source' => '::::apple_news::node::label',
+      'value' => '',
+    ])
+    ->setSetting('component', 'title')
+    ->setSetting('heading', '')
+    ->setSetting('format', '');
+  $export->addComponent($component);
+  $component = new ApplenewsDestinationBodyPhoto();
+  $component->weight = '1';
+  $component
+    ->setSetting('text', [
+      'source' => '::::apple_news::field::node::body::value_sanitized',
+      'value' => '',
+    ])
+    ->setSetting('format', 'markdown');
+  $export->addComponent($component);
 }
 
 /**

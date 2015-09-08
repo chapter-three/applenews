@@ -7,15 +7,29 @@
 
 /**
  * Defines an export unique key.
+ *
+ * @param string $module
+ *   Module machine name.
+ * @param string $machine_name
+ *   Export machine name.
+ *
+ * @return string
+ *   Key.
  */
-function apple_news_export_id($module, $machine_name) {
+function _apple_news_export_id($module, $machine_name) {
   return "${module}::${machine_name}";
 }
 
 /**
  * Decodes an export id.
+ *
+ * @param string $id
+ *   Key.
+ *
+ * @return array
+ *   Module machine name, export machine name.
  */
-function apple_news_export_id_extract($id) {
+function _apple_news_export_id_extract($id) {
   return explode('::', $id);
 }
 
@@ -23,7 +37,7 @@ function apple_news_export_id_extract($id) {
  * Implements OBJECT_save().
  *
  * @param ApplenewsExport $export
- *   Object as returned by apple_news_export_load() or apple_news_get_export().
+ *   Object as returned by apple_news_export_load().
  *
  * @return bool
  *   Success.
@@ -36,22 +50,18 @@ function apple_news_export_save(ApplenewsExport $export) {
     '%module'       => $export->getModule(),
   ];
   try {
-    $update = db_select('apple_news_status', 's')
-      ->condition('s.module', $export->getModule())
-      ->condition('s.machine_name', $export->getMachineName())
-      ->countQuery()->execute()->fetchField();
+    $update = !empty($export->id);
     if ($update) {
       db_update('apple_news_status')
         ->fields([
           'enabled'  => (int) $export->enabled,
           'instance' => serialize($export),
         ])
-        ->condition('module', $export->getModule())
-        ->condition('machine_name', $export->getMachineName())
+        ->condition('id', $export->id)
         ->execute();
     }
     else {
-      db_insert('apple_news_status')
+      $export->id = db_insert('apple_news_status')
         ->fields([
           'module'       => $export->getModule(),
           'machine_name' => $export->getMachineName(),
@@ -61,7 +71,6 @@ function apple_news_export_save(ApplenewsExport $export) {
         ->execute();
     }
     // @todo just need to flush cache.
-    apple_news_get_export($export->getModule(), $export->getMachineName(), TRUE);
     return TRUE;
   }
   catch (Exception $e) {
@@ -72,7 +81,43 @@ function apple_news_export_save(ApplenewsExport $export) {
 }
 
 /**
- * Gets an instantiated destination object.
+ * Implements OBJECT_delete().
+ *
+ * @param ApplenewsExport $export
+ *   Object as returned by apple_news_export_load().
+ *
+ * @return bool
+ *   Success.
+ */
+function apple_news_export_delete(ApplenewsExport $export) {
+  $transaction = db_transaction();
+  $msg = t('Could not delete export %id.');
+  $var = [
+    '%id' => $export->id,
+  ];
+  try {
+    db_delete('apple_news_status')
+      ->condition('id', $export->id)
+      ->execute();
+    db_delete('apple_news_log')
+      ->condition('exid', $export->id)
+      ->execute();
+    db_update('apple_news_entities')
+      ->fields(['exid' => NULL])
+      ->condition('exid', $export->id)
+      ->execute();
+    return TRUE;
+  }
+  catch (Exception $e) {
+    $transaction->rollback();
+    watchdog_exception('apple_news', $e, $msg, $var, WATCHDOG_ERROR);
+  }
+  return FALSE;
+}
+
+
+/**
+ * Instantiates a new destination object.
  *
  * @param string $module
  *   Module machine name.
@@ -82,9 +127,9 @@ function apple_news_export_save(ApplenewsExport $export) {
  * @return ApplenewsDestination
  *   The instantiated class specified by the implementation..
  */
-function apple_news_get_destination($module, $machine_name) {
+function apple_news_new_destination($module, $machine_name) {
   $implementations = apple_news_get_module_apis('destination');
-  $key = apple_news_export_id($module, $machine_name);
+  $key = _apple_news_export_id($module, $machine_name);
   if (isset($implementations[$key])) {
     $info = $implementations[$key];
     $reflection = apple_news_validate_class($info['class'],
@@ -97,7 +142,7 @@ function apple_news_get_destination($module, $machine_name) {
 }
 
 /**
- * Gets an instantiated source object.
+ * Instantiates a new source object.
  *
  * @param string $module
  *   Module machine name.
@@ -109,9 +154,9 @@ function apple_news_get_destination($module, $machine_name) {
  * @return ApplenewsSourceInterface
  *   The instantiated class specified by the implementation..
  */
-function apple_news_get_source($module, $machine_name, $arg = NULL) {
+function apple_news_new_source($module, $machine_name, $arg = NULL) {
   $implementations = apple_news_get_module_apis('source');
-  $key = apple_news_export_id($module, $machine_name);
+  $key = _apple_news_export_id($module, $machine_name);
   if (isset($implementations[$key])) {
     $info = $implementations[$key];
     $reflection = apple_news_validate_class($info['class'],
@@ -167,16 +212,11 @@ function apple_news_validate_class($class_name, $is_a = NULL) {
  *
  * @see apple_news_exports()
  */
-function apple_news_get_export($module, $machine_name, $reset = NULL) {
-  $key = apple_news_export_id($module, $machine_name);
+function apple_news_new_export($module, $machine_name) {
+  $key = _apple_news_export_id($module, $machine_name);
 
-  $exports = &drupal_static(__FUNCTION__);
-  if (!empty($exports[$key]) && empty($reset)) {
-    return $exports[$key];
-  }
-
-  $info = apple_news_exports();
-  if (empty($info[$key])) {
+  $implementations = apple_news_get_module_apis('export');
+  if (empty($implementations[$key])) {
     $msg = t('No export %machine_name defined by %module.');
     $var = [
       '%machine_name' => $machine_name,
@@ -185,28 +225,11 @@ function apple_news_get_export($module, $machine_name, $reset = NULL) {
     watchdog('apple_news', $msg, $var, WATCHDOG_ERROR);
     return NULL;
   }
-  $info = $info[$key];
+  $info = $implementations[$key];
   if (!class_exists($info['class'])) {
     $msg = 'No export class %class found.';
     $var = [
       '%class' => $info['class']
-    ];
-    watchdog('apple_news', $msg, $var, WATCHDOG_ERROR);
-    return NULL;
-  }
-
-  // Load saved.
-  $query = db_select('apple_news_status', 's')
-    ->fields('s', ['instance'])
-    ->condition('s.module', $module)
-    ->condition('s.machine_name', $machine_name);
-  if ($row = $query->execute()->fetchObject()) {
-    if ($exports[$key] = unserialize($row->instance)) {
-      return $exports[$key];
-    }
-    $msg = t('Export class %class could not be unserialized');
-    $var = [
-      '%class'   => $info['class'],
     ];
     watchdog('apple_news', $msg, $var, WATCHDOG_ERROR);
     return NULL;
@@ -217,8 +240,11 @@ function apple_news_get_export($module, $machine_name, $reset = NULL) {
     if (!isset($info['arguments']) || !is_array($info['arguments'])) {
       $info['arguments'] = [];
     }
-    $exports[$key] = new $info['class']($module, $machine_name, $info['arguments']);
-    return $exports[$key];
+    $export = new $info['class']($module, $machine_name, $info['arguments']);
+    if (!empty($info['default']) && function_exists($info['default'])) {
+      $info['default']($export);
+    }
+    return $export;
   }
   catch (Exception $e) {
     $msg = t('Export class %class could not be constructed: %message');
@@ -240,29 +266,29 @@ function apple_news_exports($reset = NULL) {
     return $exports;
   }
 
-  $exports = apple_news_get_module_apis('export');
+  $implementations = apple_news_get_module_apis('export');
 
+  $exports = [];
   $result = db_select('apple_news_status', 's')
-    ->fields('s', ['module', 'machine_name', 'enabled'])
+    ->fields('s')
+    ->orderBy('module')
+    ->orderBy('machine_name')
     ->execute();
-  while ($row = $result->fetchAssoc()) {
-    $key = apple_news_export_id($row['module'], $row['machine_name']);
+  foreach ($result as $row) {
     // Module still enabled and export still defined.
-    if (!isset($exports[$key])) {
+    $key = _apple_news_export_id($row->module, $row->machine_name);
+    if (!isset($implementations[$key])) {
       $msg = 'Export %machine_name defined by %module no longer defined.';
       $args = [
-        '%machine_name' => $row['machine_name'],
-        '%module'       => $row['module'],
+        '%machine_name' => $row->machine_name,
+        '%module'       => $row->module,
       ];
       watchdog('apple_news', $msg, $args, WATCHDOG_INFO);
       continue;
     }
     // Good to go.
-    $exports[$key]['#enabled'] = !empty($row['enabled']) ? $row['enabled'] : NULL;
-    // Validate class.
-    if (!apple_news_validate_class($exports[$key]['class'], 'ApplenewsExport')) {
-      continue;
-    }
+    $exports[$row->id]['#id'] = $row->id;
+    $exports[$row->id]['#enabled'] = !empty($row->enabled) ? $row->enabled : NULL;
   }
   return $exports;
 }
@@ -343,7 +369,7 @@ function apple_news_get_module_apis($class = NULL, $type = NULL, $reset = FALSE)
         if (!$validate('Export', $module, $machine_name, $export)) {
           continue;
         }
-        $key = apple_news_export_id($module, $machine_name);
+        $key = _apple_news_export_id($module, $machine_name);
         $implementations['export'][$key] = array_merge([
           'name'        => '',
           'description' => '',
@@ -362,7 +388,7 @@ function apple_news_get_module_apis($class = NULL, $type = NULL, $reset = FALSE)
         if (!$validate('Source', $module, $machine_name, $source)) {
           continue;
         }
-        $key = apple_news_export_id($module, $machine_name);
+        $key = _apple_news_export_id($module, $machine_name);
         // Set "type" to classify source -- each type will take different
         // different parameters in its constructor.
         // @see ApplenewsDestination::getSource()
@@ -406,7 +432,7 @@ function apple_news_get_module_apis($class = NULL, $type = NULL, $reset = FALSE)
         if (!$validate('Destination', $module, $machine_name, $destination)) {
           continue;
         }
-        $key = apple_news_export_id($module, $machine_name);
+        $key = _apple_news_export_id($module, $machine_name);
         // Set "type" to classify destination.
         // @see ApplenewsExportConfigurable::getConfigForm()
         $reflection = apple_news_validate_class($destination['class'],
@@ -472,19 +498,15 @@ function apple_news_entity_get_export($entity_type, $entity_id) {
   $post = new ApplenewsDatabase();
   $post->setPostId($entity_type, $entity_id, $entity_id);
   if (($article = $post->getArticle()) ||
-      !empty($article['module']) && !empty($article['machine_name'])
+      !empty($article['exid'])
   ) {
-    $export = apple_news_get_export($article['module'], $article['machine_name']);
-    if ($export) {
+    if ($export = apple_news_export_load($article['exid'])) {
       return $export;
     }
   }
   // Grab first matching export.
-  foreach (apple_news_exports() as $info) {
-    if (!@$info['#enabled']) {
-      continue;
-    }
-    $export = apple_news_get_export($info['module'], $info['machine_name']);
+  foreach (apple_news_exports_enabled() as $id => $info) {
+    $export = apple_news_export_load($id);
     if (apple_news_entity_export_valid($export, $entity_type, $entity_id)) {
       return $export;
     }

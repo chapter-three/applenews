@@ -180,6 +180,7 @@ abstract class ApplenewsDestination {
    *   Internal use.
    */
   public function getSourceOptions($ancestors = '', $entity_type = NULL) {
+    module_load_include('inc', 'apple_news');
 
     // Source implementations.
     $sources = apple_news_get_module_apis('source');
@@ -352,7 +353,7 @@ abstract class ApplenewsDestination {
       // Verify implementation still defined.
       $module = $args[0];
       $machine_name = $args[1];
-      $id = apple_news_export_id($module, $machine_name);
+      $id = _apple_news_export_id($module, $machine_name);
       if (empty($implementations[$id])) {
         $msg = t('Could not load source %machine_name defined by %module.');
         $var = [
@@ -374,7 +375,7 @@ abstract class ApplenewsDestination {
         $args[] = $value;
       }
       // Instantiate.
-      $source = call_user_func_array('apple_news_get_source', $args);
+      $source = call_user_func_array('apple_news_new_source', $args);
     }
 
     return $source;

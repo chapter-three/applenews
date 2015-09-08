@@ -392,7 +392,7 @@ function apple_news_settings_exports_form($form, &$form_state) {
   }
 
   $header = [
-    'name'        => ['data' => t('Name')],
+    'title'       => ['data' => t('Title')],
     'description' => ['data' => t('Description')],
     'module'      => ['data' => t('Module')],
     'enabled'     => ['data' => t('Enabled')],
@@ -403,33 +403,34 @@ function apple_news_settings_exports_form($form, &$form_state) {
 
   $rows = [];
   foreach (apple_news_exports() as $key => $info) {
+    $export = apple_news_export_load($key);
 
     // Get current export status.
-    $export_id = apple_news_export_id($info['module'], $info['machine_name']);
-    $status = apple_news_batch_export_get_status($export_id);
+    $status = apple_news_batch_export_get_status($export->id);
 
+    /** @var SelectQuery $query */
     $query = db_select('apple_news_log', 'l')
       ->fields('l', ['starttime', 'endtime'])
-      ->condition('l.module', $info['module'])
-      ->condition('l.machine_name', $info['machine_name'])
-      ->orderBy('l.starttime', 'DESC');
+      ->condition('l.exid', $export->id)
+      ->orderBy('l.starttime', 'DESC')
+      ->range(0, 1);
+    $log = $query->execute()->fetchAssoc();
 
-    $log = $query->range(0, 1)->execute()->fetchAssoc();
-
-    $name = empty($info['name']) ? $info['machine_name'] : $info['name'];
-    $module = system_get_info('module', $info['module']);
-    $module = $module['name'];
-    $enabled = empty($info['#enabled']) ? t('no') : t('yes');
+    $title = $export->title;
+    $module = system_get_info('module', $export->getModule());
+    $module = $module['name'] . ' (' . $export->getMachineName() . ')';
+    $enabled = empty($export->enabled) ? t('no') : t('yes');
     $lastexport = empty($log['starttime']) ? t('never') : format_date($log['starttime'], 'short');
     $edit = l(t('edit'), 'admin/config/content/apple-news/exports/' . $key . '/edit');
+    $delete = l(t('delete'), 'admin/config/content/apple-news/exports/' . $key . '/delete');
     $rows[$key] = [
-      'name'        => $name,
-      'description' => $info['description'],
+      'title'       => $title,
+      'description' => $export->description,
       'module'      => $module,
       'enabled'     => $enabled,
       'status'      => !empty($status['status']) ? $status['status'] : '',
       'lastexport'  => $lastexport,
-      'edit'        => $edit,
+      'edit'        => $edit . ' ' . $delete,
     ];
   }
 
@@ -492,71 +493,155 @@ function apple_news_settings_exports_form_submit($form, &$form_state) {
     return $exports[$key];
   }, array_filter($form_state['values']['exports']));
 
-  switch ($form_state['values']['action']) {
+  foreach (array_keys($selected) as $id) {
+    $export = apple_news_export_load($id);
 
-    case 'enable':
-      foreach ($selected as $info) {
-        $export = apple_news_get_export($info['module'], $info['machine_name']);
+    switch ($form_state['values']['action']) {
+
+      case 'enable':
         $export->enabled = TRUE;
         apple_news_export_save($export);
         drupal_set_message(
-          t('<em>@name</em> export sucessfully <strong>enabled</strong>.',
-          ['@name' => $info['name']]));
-      }
-      break;
+          t('Export %title sucessfully <strong>enabled</strong>.',
+            ['%title' => $export->title]));
+        break;
 
-    case 'disable':
-      foreach ($selected as $info) {
-        $export = apple_news_get_export($info['module'], $info['machine_name']);
+      case 'disable':
         $export->enabled = FALSE;
         apple_news_export_save($export);
         drupal_set_message(
-          t('<em>@name</em> export sucessfully <strong>disabled</strong>.',
-          ['@name' => $info['name']]));
-      }
-      break;
+          t('%title export sucessfully <strong>disabled</strong>.',
+            ['%title' => $export->title]));
+        break;
 
-    case 'export':
-      foreach ($selected as $info) {
+      case 'export':
         // Batch entity export to Apple News.
-        $export = apple_news_get_export($info['module'], $info['machine_name']);
         if ($export->enabled) {
-          $batch = apple_news_batch_run_export($info, $export, 'export');
+          $batch = apple_news_batch_run_export($export, 'export');
           batch_set($batch);
         }
         else {
           drupal_set_message(
-            t('<em>@name</em> export is disabled.',
-              [
-                '@name' => $info['name']
-              ]),
-              'warning'
+            t('%title export is disabled.',
+              ['%title' => $export->title]),
+            'warning'
           );
         }
-      }
-      break;
+        break;
 
-    case 'export-to-file':
-      foreach ($selected as $info) {
+      case 'export-to-file':
         // Export entities as Apple News previewable files.
-        $export = apple_news_get_export($info['module'], $info['machine_name']);
         if ($export->enabled) {
-          $batch = apple_news_batch_run_export($info, $export, 'export-to-file');
+          $batch = apple_news_batch_run_export($export, 'export-to-file');
           batch_set($batch);
         }
         else {
           drupal_set_message(
-            t('<em>@name</em> export is disabled.',
-              [
-                '@name' => $info['name']
-              ]),
-              'warning'
+            t('%title export is disabled.',
+              ['%title' => $export->title]),
+            'warning'
           );
         }
-      }
-      break;
+        break;
 
+    }
   }
+}
+
+/**
+ * Form builder for a new export.
+ */
+function apple_news_export_add_form($form) {
+  module_load_include('inc', 'apple_news');
+
+  $form['type'] = [
+    '#type' => 'radios',
+    '#title' => t('Type'),
+  ];
+  $implementations = apple_news_get_module_apis('export');
+  array_walk($implementations, function($info, $key) use(&$form) {
+    $form['type']['#options'][$key] = $info['name'] . ' - ' .
+      $info['description'];
+  });
+  $options = array_keys($form['type']['#options']);
+  $form['type']['#default_value'] = reset($options);
+
+  $form['title'] = [
+    '#type' => 'textfield',
+    '#title' => t('Administrative Title'),
+    '#required' => TRUE,
+  ];
+
+  $form['actions'] = [
+    '#type' => 'actions',
+    'submit' => [
+      '#type' => 'submit',
+      '#value' => t('Submit'),
+    ],
+  ];
+
+  return $form;
+}
+
+/**
+ * Form validatation handler.
+ */
+function apple_news_export_add_form_validate($form, &$form_state) {
+  if (empty($form_state['values']['type'])) {
+    form_set_error('exports', 'Select a type.');
+  }
+}
+
+/**
+ * Form submit handler.
+ */
+function apple_news_export_add_form_submit($form, &$form_state) {
+  list($module, $machine_name) = _apple_news_export_id_extract(
+    $form_state['values']['type']);
+  $export = apple_news_new_export($module, $machine_name);
+  $export->title = $form_state['values']['title'];
+  apple_news_export_save($export);
+  drupal_goto('admin/config/content/apple-news/exports/' . $export->id);
+}
+
+/**
+ * Form builder for export delete.
+ *
+ * @param ApplenewsExportConfigurable $export
+ *   Export object.
+ */
+function apple_news_export_delete_form($form, &$form_state, ApplenewsExportConfigurable $export) {
+
+  $form_state['storage'] = [
+    'export'      => $export,
+  ];
+
+  return confirm_form(
+    $form,
+    t("Do you really want delete the export !title?",
+      ['!title' => $export->title]),
+    'admin/config/content/apple-news/exports/' . $export->id . '/edit',
+    t("This action cannot be undone."),
+    t("Yes, delete")
+  );
+}
+
+/**
+ * Form submit handler.
+ */
+function apple_news_export_delete_form_submit($form, &$form_state) {
+  module_load_include('inc', 'apple_news');
+
+  /** @var ApplenewsExportConfigurable $export */
+  $export = $form_state['storage']['export'];
+  $path = 'admin/config/content/apple-news/exports';
+
+  if (apple_news_export_delete($export)) {
+    drupal_set_message(t('%name successfully deleted.',
+      ['%name' => $export->title]));
+  }
+  drupal_goto($path);
+
 }
 
 /**
@@ -566,6 +651,7 @@ function apple_news_settings_exports_form_submit($form, &$form_state) {
  *   Export object.
  */
 function apple_news_export_edit_form($form, &$form_state, ApplenewsExport $export) {
+  module_load_include('inc', 'apple_news');
   $form = $export->getConfigForm($form, $form_state);
 
   $form['#apple_news_export'] = $export;
@@ -750,7 +836,7 @@ function apple_news_export_destination_edit_form($form, &$form_state, ApplenewsE
       '#value' => t('Save changes'),
     ],
     'cancel' => [
-      '#markup' => l(t('Back'), 'admin/config/content/apple-news/exports/' . apple_news_export_id($export->getModule(), $export->getMachineName())),
+      '#markup' => l(t('Back'), 'admin/config/content/apple-news/exports/' . $export->id),
     ],
   ];
 
@@ -789,19 +875,18 @@ function apple_news_export_destination_edit_form_submit($form, &$form_state) {
 function apple_news_export_destination_delete_form($form, &$form_state, ApplenewsExportConfigurable $export, $type, $id) {
   module_load_include('inc', 'apple_news');
 
+  $path = 'admin/config/content/apple-news/exports/' . $export->id . '/edit';
+
   switch ($type) {
 
     case 'component':
       $destination = $export->getComponent($id);
       break;
 
-  }
+    default:
+      drupal_goto($path);
+      return NULL;
 
-  $export_id = apple_news_export_id($export->getModule(), $export->getMachineName());
-  $path = 'admin/config/content/apple-news/exports/' . $export_id . '/edit';
-
-  if (empty($destination)) {
-    drupal_goto($path);
   }
 
   $form_state['storage'] = [

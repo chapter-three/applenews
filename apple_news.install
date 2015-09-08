@@ -16,6 +16,12 @@ function apple_news_schema() {
   $schema['apple_news_status'] = [
     'description' => 'Status information for Apple News exports',
     'fields' => [
+      'id' => array(
+        'description' => 'The primary identifier for an export.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
       'module' => [
         'type' => 'varchar',
         'length' => 255,
@@ -44,8 +50,10 @@ function apple_news_schema() {
         'description' => 'A serialized export object.',
       ],
     ],
-    'primary key' => ['module', 'machine_name'],
-    'indexes' => [],
+    'primary key' => ['id'],
+    'indexes' => [
+      'module' => ['module', 'machine_name'],
+    ],
   ];
 
   $schema['apple_news_log'] = [
@@ -57,18 +65,11 @@ function apple_news_schema() {
         'not null' => TRUE,
         'description' => 'Primary key for apple_news_log table',
       ],
-      'module' => [
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => TRUE,
-        'description' => '{apple_news_status}.module',
-      ],
-      'machine_name' => [
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => TRUE,
-        'description' => '{apple_news_status}.machine_name',
-      ],
+      'exid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'description' => 'The {apple_news_status}.id of the export used.',
+      ),
       'starttime' => [
         'type' => 'int',
         'size' => 'big',
@@ -92,7 +93,7 @@ function apple_news_schema() {
     ],
     'primary key' => ['exlid'],
     'indexes' => [
-      'status' => ['module', 'machine_name'],
+      'status' => ['exid'],
       'starttime' => ['starttime'],
       'endtime' => ['endtime'],
     ],
@@ -136,18 +137,11 @@ function apple_news_schema() {
         'not null' => TRUE,
         'description' => 'Revision ID',
       ],
-      'module' => [
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => TRUE,
-        'description' => 'Export used.',
-      ],
-      'machine_name' => [
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => TRUE,
-        'description' => 'Export used.',
-      ],
+      'exid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'description' => 'The {apple_news_status}.id of the export used.',
+      ),
       'article_id' => [
         'type' => 'varchar',
         'length' => 255,
@@ -179,8 +173,7 @@ function apple_news_schema() {
       'node_revision' => [
         'table' => 'apple_news_status',
         'columns' => [
-          'module' => 'module',
-          'machine_name' => 'machine_name',
+          'exid' => 'id',
         ],
       ],
     ],
@@ -320,30 +313,4 @@ function apple_news_uninstall() {
   variable_del('apple_news_export_directory');
   variable_del('apple_news_help_format');
   variable_del('apple_news_batch_export_status');
-}
-
-/**
- * Source key format change.
- */
-function apple_news_update_7100(&$sandbox) {
-  module_load_include('inc', 'apple_news');
-  $query = db_select('apple_news_status', 'a')
-    ->fields('a');
-  foreach ($query->execute() as $row) {
-    /** @var ApplenewsExportConfigurable $export */
-    $export = unserialize($row->instance);
-    if (!$export instanceof ApplenewsExportConfigurable) {
-      continue;
-    }
-    foreach ($export->getComponents() as $component) {
-      foreach ($component->settings as $key => &$value) {
-        if (!is_array($value) &&
-            substr($value, 0, 4) == '::::'
-        ) {
-          $value = ['source' => $value];
-        }
-      }
-    }
-    apple_news_export_save($export);
-  }
 }

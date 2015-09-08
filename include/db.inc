@@ -83,8 +83,7 @@ class ApplenewsDatabase implements ApplenewsDatabaseInterface {
   private $entity_id = NULL;
   private $revision_id = NULL;
   private $channel_id = NULL;
-  private $module = NULL;
-  private $machine_name = NULL;
+  private $exid = NULL;
 
   /**
    * Save Apple News post information.
@@ -96,8 +95,7 @@ class ApplenewsDatabase implements ApplenewsDatabaseInterface {
     $entity['entity_type'] = $this->entity_type;
     $entity['entity_id'] = $this->entity_id;
     $entity['revision_id'] = $this->revision_id;
-    $entity['module'] = $this->module;
-    $entity['machine_name'] = $this->machine_name;
+    $entity['exid'] = $this->exid;
     if (!empty($primary_key)) {
       drupal_write_record('apple_news_entities', $entity, $primary_key);
     }
@@ -111,13 +109,11 @@ class ApplenewsDatabase implements ApplenewsDatabaseInterface {
   /**
    * Save export for an entity.
    */
-  public function setExport($module, $machine_name) {
-    $this->module = $module;
-    $this->machine_name = $machine_name;
+  public function setExport($exid) {
+    $this->exid = $exid;
     $entity = [
       'post_id' => $this->post_id,
-      'module' => $module,
-      'machine_name' => $machine_name,
+      'exid' => $exid,
     ];
     drupal_write_record('apple_news_entities', $entity, 'post_id');
   }
@@ -216,8 +212,7 @@ class ApplenewsDatabase implements ApplenewsDatabaseInterface {
       $article = [
         'article_id'     => $row->article_id,
         'share_url'      => $row->share_url,
-        'module'         => $row->module,
-        'machine_name'   => $row->machine_name,
+        'exid'           => $row->exid,
         'entity_id'      => $row->entity_id,
         'revision_id'    => $row->revision_id,
         'entity_type'    => $row->entity_type,
@@ -297,7 +292,7 @@ class ApplenewsDatabase implements ApplenewsDatabaseInterface {
 
     $query = db_select('apple_news_entities', 'e');
     $query->join('apple_news_channels', 'c', 'c.post_id = e.post_id');
-    $query->fields('e', ['post_id', 'module', 'machine_name']);
+    $query->fields('e', ['post_id', 'exid']);
     $query->condition('e.entity_type', $entity_type);
     $query->condition('e.entity_id', $entity_id);
     $query->condition('e.revision_id', $revision_id);
@@ -311,8 +306,7 @@ class ApplenewsDatabase implements ApplenewsDatabaseInterface {
     }
     if ($result = $query->execute()->fetchAssoc()) {
       $this->post_id = $result['post_id'];
-      $this->module = $result['module'];
-      $this->machine_name = $result['machine_name'];
+      $this->exid = $result['exid'];
     }
     return $this->post_id;
   }

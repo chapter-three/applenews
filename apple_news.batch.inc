@@ -9,7 +9,7 @@
  *
  * @see apple_news_settings_exports_form_submit()
  */
-function apple_news_batch_run_export($info, ApplenewsExport $export, $op) {
+function apple_news_batch_run_export(ApplenewsExport $export, $op) {
 
   $operations = [];
 
@@ -38,8 +38,7 @@ function apple_news_batch_run_export($info, ApplenewsExport $export, $op) {
       $operations[] = [
         $op_function,
         [
-          $info,
-          $export,
+          $export->id,
           $entity_type,
           $entity,
           count($result[$entity_type])
@@ -59,8 +58,10 @@ function apple_news_batch_run_export($info, ApplenewsExport $export, $op) {
  *
  * This is the function that is called on each operation in Apple News export.
  */
-function apple_news_batch_post($info, $export, $entity_type, $entity, $total_count, &$context) {
+function apple_news_batch_post($export_id, $entity_type, $entity, $total_count, &$context) {
   module_load_include('inc', 'apple_news');
+
+  $export = apple_news_export_load($export_id);
 
   $export_settings = $export->settings;
 
@@ -68,9 +69,8 @@ function apple_news_batch_post($info, $export, $entity_type, $entity, $total_cou
   if (!isset($context['results']['info']['starttime'])) {
     $context['results']['info']['starttime'] = REQUEST_TIME;
   }
-  $context['results']['info']['name'] = $info['name'];
-  $context['results']['info']['module'] = $info['module'];
-  $context['results']['info']['machine_name'] = $info['machine_name'];
+  $context['results']['info']['name'] = $export->title;
+  $context['results']['info']['export_id'] = $export_id;
   $context['results']['info']['default_channels'] = !empty($export_settings['channels'])
     ? array_keys($export_settings['channels']) : [];
 
@@ -90,12 +90,12 @@ function apple_news_batch_post($info, $export, $entity_type, $entity, $total_cou
     'starttime' => !empty($context['results']['info']['starttime']) ? $context['results']['info']['starttime'] : 0,
     'status'    => 'in progress ' . $count . '/' . $total_count,
   ];
-  $export_id = apple_news_export_id($info['module'], $info['machine_name']);
   apple_news_batch_export_set_status($export_id, $status);
 
   // Successull request.
   $success = FALSE;
 
+  /** @var EntityDrupalWrapper $wrapper */
   $wrapper = entity_metadata_wrapper($entity_type, $entity);
 
   // Check default channel settings for each export.
@@ -118,7 +118,7 @@ function apple_news_batch_post($info, $export, $entity_type, $entity, $total_cou
       $context['results'][] = $wrapper->getIdentifier() . ' : ' . check_plain($wrapper->label());
       $context['message'] = t('<strong>@export</strong>: Posting "@title" entity to <em>@channel</em> channel.',
         [
-          '@export'  => $info['name'],
+          '@export'  => $export->title,
           '@title'   => $wrapper->label(),
           '@channel' => filter_xss($channel->name)
         ]
@@ -128,12 +128,12 @@ function apple_news_batch_post($info, $export, $entity_type, $entity, $total_cou
       // Process only non-published articles.
       if (!$export_log) {
         // Post an article to Apple News.
-        $success = apple_news_op('insert', $channel_id, $entity, $entity_type, $export, $settings);
+        $success = apple_news_op('insert', $channel_id, $entity, $entity_type, $export);
       }
       else {
         // Update an article only if the entity was updated since the last export.
         if ($export_log['postdate'] < $entity->changed) {
-          $success = apple_news_op('update', $channel_id, $entity, $entity_type, $export, $settings);
+          $success = apple_news_op('update', $channel_id, $entity, $entity_type, $export);
         }
       }
       if ($success) {
@@ -162,11 +162,7 @@ function apple_news_batch_run_export_finished($success, $results, $operations) {
   if ($success) {
     if (empty($results['info']['default_channels'])) {
       drupal_set_message(
-        t('Please configure default channel settings for <strong>@export_name</strong> export.',
-          [
-            '@export_name' => !empty($results['info']['name']) ? $results['info']['name'] : ''
-          ]
-        ),
+        t('Please configure default channel settings for <strong>@export_name</strong> export.', ['@export_name' => !empty($results['info']['name']) ? $results['info']['name'] : '']),
         'warning'
       );
     }
@@ -175,8 +171,7 @@ function apple_news_batch_run_export_finished($success, $results, $operations) {
       if ($count > 0) {
         // Save export information in logs.
         $record = [
-          'module'       => $results['info']['module'],
-          'machine_name' => $results['info']['machine_name'],
+          'exid'         => $results['info']['export_id'],
           'starttime'    => $results['info']['starttime'],
           'endtime'      => REQUEST_TIME,
           'numprocessed' => $count,
@@ -190,8 +185,8 @@ function apple_news_batch_run_export_finished($success, $results, $operations) {
           'endtime'   => REQUEST_TIME,
           'status'    => 'complete',
         ];
-        $export_id = apple_news_export_id($results['info']['module'], $results['info']['machine_name']);
-        apple_news_batch_export_set_status($export_id, $status);
+        apple_news_batch_export_set_status($results['info']['export_id'],
+          $status);
 
         $plural_message = format_plural(
           $count,
@@ -214,8 +209,8 @@ function apple_news_batch_run_export_finished($success, $results, $operations) {
           'endtime'   => REQUEST_TIME,
           'status'    => 'complete',
         ];
-        $export_id = apple_news_export_id($results['info']['module'], $results['info']['machine_name']);
-        apple_news_batch_export_set_status($export_id, $status);
+        apple_news_batch_export_set_status($results['info']['export_id'],
+          $status);
 
         drupal_set_message(t('There is no content for export to Apple News.'));
       }
@@ -229,19 +224,14 @@ function apple_news_batch_run_export_finished($success, $results, $operations) {
       'endtime'   => REQUEST_TIME,
       'status'    => 'error occured',
     ];
-    $export_id = apple_news_export_id($results['info']['module'], $results['info']['machine_name']);
-    apple_news_batch_export_set_status($export_id, $status);
+    apple_news_batch_export_set_status($results['info']['export_id'], $status);
     // An error occurred.
     // $operations contains the operations that remained unprocessed.
     $error_operation = reset($operations);
-    drupal_set_message(
-      t('An error occurred while processing @operation with arguments : @args',
-        [
-          '@operation' => $error_operation[0],
-          '@args'      => print_r($error_operation[0], TRUE),
-        ]
-      )
-    );
+    drupal_set_message(t('An error occurred while processing @operation with arguments : @args', [
+      '@operation' => $error_operation[0],
+      '@args'      => print_r($error_operation[0], TRUE),
+    ]));
   }
 }
 
@@ -250,29 +240,32 @@ function apple_news_batch_run_export_finished($success, $results, $operations) {
  *
  * This is the function that is called on each operation in Export to File.
  */
-function apple_news_batch_preview_generate($info, $export, $entity_type, $entity, $total_count, &$context) {
+function apple_news_batch_preview_generate($export_id, $entity_type, $entity, $total_count, &$context) {
   module_load_include('inc', 'apple_news');
+
+  $export = apple_news_export_load($export_id);
 
   if (!isset($context['results']['count'])) {
     $context['results']['count'] = 0;
   }
 
+  /** @var EntityDrupalWrapper $entity_wrapper */
   $entity_wrapper = entity_metadata_wrapper($entity_type, $entity);
   $context['results'][] = $entity_wrapper->getIdentifier() . ' : ' . check_plain($entity_wrapper->label());
   $context['message'] = t('<strong>@export</strong>: Exporting "@title" entity to a file.',
     [
-      '@export' => $info['name'],
+      '@export' => $export->title,
       '@title'  => $entity_wrapper->label(),
     ]
   );
 
-  $document = $export->export($entity);
+  $document = $export->setSource($entity)->export();
   $data = [
     'json'  => $document->json(),
     'files' => $export->getAssets(),
   ];
 
-  $context['results']['info'] = $info;
+  $context['results']['export_id'] = $export->id;
   $context['results']['entity_ids'][] = $entity_wrapper->getIdentifier();
 
   // Generate article files for an entity.
@@ -290,17 +283,15 @@ function apple_news_batch_export_to_file_finished($success, $results, $operation
   $count = isset($results['count']) ? $results['count'] : 0;
   if ($success) {
     if ($count > 0) {
-      // Archive exported artciles and generate a link to the archive.
-      $file_url = apple_news_export_to_file(NULL, $results['entity_ids'], $results['info']['module'] . '-' . $results['info']['machine_name'], FALSE, []);
+      // Archive exported entities and generate a link to the archive.
+      $file_url = apple_news_export_to_file(NULL, $results['entity_ids'], 'export-' . $results['export_id'], FALSE, []);
       // Remove exported entity directories.
       apple_news_export_dir_cleanup($results['entity_ids']);
       // Show message.
       if (!empty($file_url)) {
-        $download = t('<strong><a href="!link">Download</a></strong> the file and preview articles in the Apple News Preview Tool.',
-          [
-            '!link' => $file_url,
-          ]
-        );
+        $download = t('<strong>!link</strong> the file and preview articles in the Apple News Preview Tool.', [
+          '!link' => l(t('Download'), $file_url),
+        ]);
         $plural_message = format_plural(
           $count,
           '1 entity successfully exported to a file. ' . $download,
@@ -314,13 +305,9 @@ function apple_news_batch_export_to_file_finished($success, $results, $operation
     // An error occurred.
     // $operations contains the operations that remained unprocessed.
     $error_operation = reset($operations);
-    drupal_set_message(
-      t('An error occurred while processing @operation with arguments : @args',
-        [
-          '@operation' => $error_operation[0],
-          '@args'      => print_r($error_operation[0], TRUE),
-        ]
-      )
-    );
+    drupal_set_message(t('An error occurred while processing @operation with arguments : @args', [
+      '@operation' => $error_operation[0],
+      '@args' => print_r($error_operation[0], TRUE),
+    ]));
   }
 }
