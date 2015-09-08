@@ -621,7 +621,7 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
    */
   protected function addDestination($key, ApplenewsDestination $destination, $index = NULL) {
     if (!isset($index)) {
-      $index = count($this->destinations[$key]);
+      $index = count($this->destinations[$key]) + 1;
       while (isset($this->destinations[$key][$index])) {
         $index++;
       }
