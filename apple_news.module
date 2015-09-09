@@ -486,6 +486,10 @@ function apple_news_apple_news_api() {
  * Callback to define default node export.
  */
 function apple_news_apple_news_api_export_default_node(ApplenewsExportNode $export) {
+  $entities_info = entity_get_info('node');
+  if (isset($entities_info['bundles']['article'])) {
+    $export->bundles = ['article'];
+  }
   /** @var ApplenewsDestinationText $component */
   $component = apple_news_new_destination('apple_news', 'text');
   $component->weight = '0';
