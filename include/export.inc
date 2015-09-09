@@ -256,18 +256,12 @@ abstract class ApplenewsExport {
       '#default_value' => $this->description,
     ];
 
-    $form['enabled'] = [
-      '#title' => t('Enable this export'),
-      '#type' => 'checkbox',
-      '#default_value' => $this->enabled,
-      '#description' => t('This export will not publish to Apple News until enabled.'),
-      '#prefix' => '<strong>' . t('Status') . '</strong>',
-      '#weight' => 10,
-    ];
-
     $form['additional_settings'] = [
       '#type' => 'vertical_tabs',
       '#weight' => 99,
+      '#attached' => [
+        'js' => [drupal_get_path('module', 'apple_news') . '/js/export-settings.js']
+      ]
     ];
 
     $form['additional_settings']['general'] = [
@@ -278,11 +272,21 @@ abstract class ApplenewsExport {
       '#group' => 'main',
       '#weight' => -10,
     ];
+
+    $form['additional_settings']['general']['enabled'] = [
+      '#title' => t('Enable this export'),
+      '#type' => 'checkbox',
+      '#default_value' => $this->enabled,
+      '#description' => t('This export will not publish to Apple News until enabled.'),
+      '#prefix' => '<br/><hr/><br/><strong>' . t('Status') . '</strong>',
+      '#weight' => 10,
+    ];
+
     $tab = &$form['additional_settings']['general'];
 
     $tab['channels'] = [
       '#type' => 'container',
-      '#prefix' => '<strong>' . t('Channels') . '</strong>',
+      '#prefix' => '<strong>' . t('Default channels and sections') . '</strong>',
       '#weight' => 9,
     ];
 
@@ -314,6 +318,9 @@ abstract class ApplenewsExport {
           ];
         }
       }
+      $tab['channels'][] = [
+        '#markup' => '<div class="description">' . t('Default Apple News channels and sections where selected content types will be published. This can be overridden on individual entity edit pages.') . '</div>',
+      ];
     }
     else {
       $tab['channels']['info'] = [
@@ -856,7 +863,7 @@ class ApplenewsExportNode extends ApplenewsExportConfigurable {
    *
    * @var array
    */
-  public $bundles;
+  public $bundles = [];
 
   /**
    * Implements __sleep().
@@ -893,11 +900,11 @@ class ApplenewsExportNode extends ApplenewsExportConfigurable {
     }, $options);
     $tab['bundles'] = [
       '#required'      => TRUE,
-      '#title'         => t('Content Types'),
-      '#type'          => 'select',
-      '#multiple'      => TRUE,
+      '#title'         => t('Content types'),
+      '#type'          => 'checkboxes',
       '#options'       => $options,
       '#default_value' => $this->bundles,
+      '#description'   => t('Please select content types that will be available for Apple News export.'),
     ];
 
     return $form;
