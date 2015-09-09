@@ -184,6 +184,7 @@ abstract class ApplenewsDestination {
 
     // Source implementations.
     $sources = apple_news_get_module_apis('source');
+    // Filters for sources.
     $value_sources = function() use(&$sources) {
       return array_filter($sources, function($info) {
         return $info['type'] == 'value';
@@ -191,36 +192,38 @@ abstract class ApplenewsDestination {
     };
     $entity_sources = function($entity_type) use(&$sources) {
       return array_filter($sources, function($info) use($entity_type) {
+        /** @var ApplenewsSourceEntity $class */
+        $class = $info['class'];
         return $info['type'] == 'entity' &&
-          in_array($entity_type, $info['class']::types());
+          in_array($entity_type, $class::types());
       });
     };
     $field_sources = function($field_type) use(&$sources) {
       return array_filter($sources, function($info) use($field_type) {
+        /** @var ApplenewsSourceField $class */
+        $class = $info['class'];
         return $info['type'] == 'field' &&
-          in_array($field_type, $info['class']::types());
+          in_array($field_type, $class::types());
       });
     };
 
     // Array of field type keyed on field name.
     $field_types = function($entity_type, $bundles = FALSE) {
-      $field_info = field_info_instances($entity_type);
-      if (is_array($bundles)) {
-        foreach (array_keys($field_info) as $bundle) {
-          if (!in_array($bundle, $bundles)) {
-            unset($field_info[$bundle]);
-          }
-          else {
-            $field_info[$bundle] = array_map(function($info) {
-              $info = field_info_field($info['field_name']);
-              return $info['type'];
-            }, $field_info[$bundle]);
+      $field_names = [];
+      foreach (field_info_field_map() as $field_name => $field_info) {
+        if (empty($field_info['bundles'][$entity_type])) {
+          continue;
+        }
+        if (is_array($bundles)) {
+          foreach (array_keys($field_info['bundles'][$entity_type]) as $bundle) {
+            if (in_array($bundle, $bundles)) {
+              $field_names[$field_name] = $field_info['type'];
+            }
           }
         }
-      }
-      $field_names = [];
-      foreach ($field_info as $fields) {
-        $field_names += $fields;
+        else {
+          $field_names[$field_name] = $field_info['type'];
+        }
       }
       return $field_names;
     };
@@ -234,7 +237,9 @@ abstract class ApplenewsDestination {
       ];
       // Each value source.
       foreach ($value_sources() as $source_info) {
-        foreach ($source_info['class']::attributes() as $key => $attr_info) {
+        /** @var ApplenewsSourceValue $class */
+        $class = $source_info['class'];
+        foreach ($class::attributes() as $key => $attr_info) {
           $id = implode('::', [
             $ancestors . '::',
             $source_info['module'],
@@ -259,7 +264,9 @@ abstract class ApplenewsDestination {
     // Each entity source that applies to $entity_type.
     foreach ($entity_sources($entity_type) as $source_info) {
       // Entity attributes.
-      foreach ($source_info['class']::attributes() as $key => $attr_info) {
+      /** @var ApplenewsSourceEntity $class */
+      $class = $source_info['class'];
+      foreach ($class::attributes() as $key => $attr_info) {
         $id = implode('::', [
           $ancestors . '::',
           $source_info['module'],
@@ -292,7 +299,8 @@ abstract class ApplenewsDestination {
       // Each field source that applies to $field_type.
       foreach ($field_sources($field_type) as $source_info) {
         // Field attributes.
-        foreach ($source_info['class']::attributes() as $key => $attr_info) {
+        $class = $source_info['class'];
+        foreach ($class::attributes() as $key => $attr_info) {
           $id = implode('::', [
             $ancestors . '::',
             $source_info['module'],
