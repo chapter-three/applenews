@@ -13,6 +13,11 @@ use \ChapterThree\AppleNews\Document\Styles;
  */
 abstract class ApplenewsDestination {
 
+  // @see __construct().
+  protected $module;
+  protected $machineName;
+  protected $arguments;
+
   /**
    * Settings for this destination.
    *
@@ -20,6 +25,11 @@ abstract class ApplenewsDestination {
    *   Associative array keyed on setting key.
    */
   public $settings = [];
+
+  /**
+   * Administrative title.
+   */
+  public $title;
 
   /**
    * Weight among a set of destinations.
@@ -47,7 +57,11 @@ abstract class ApplenewsDestination {
    */
   public function __sleep() {
     return [
+      'module',
+      'machineName',
+      'arguments',
       'settings',
+      'title',
       'weight',
       'id',
       'pid',
@@ -70,18 +84,37 @@ abstract class ApplenewsDestination {
 
   /**
    * Implements __construct().
+   *
+   * @param string $module
+   *   The defining module.
+   * @param string $machine_name
+   *   The machine name of this object.
+   * @param array $arguments
+   *   Defined in hook_apple_news_api(), altered by hook_apple_news_api_alter().
    */
-  public function __construct() {
+  public function __construct($module, $machine_name, array $arguments) {
+    $this->module = $module;
+    $this->machineName = $machine_name;
+    $this->arguments = $arguments;
   }
 
   /**
    * Administrative label.
    */
   public function label() {
-    if ($this->id === NULL) {
-      return '';
-    }
-    return '(' . $this->id . ')';
+    return empty($this->title) ? '(' . $this->id . ')' : $this->title;
+  }
+
+  /**
+   * Gets the implementation name.
+   *
+   * @see hook_apple_news_api()
+   */
+  public function name() {
+    module_load_include('inc', 'apple_news');
+    $id = _apple_news_export_id($this->module, $this->machineName);
+    $implementation = apple_news_get_module_apis('destination')[$id];
+    return $implementation['name'];
   }
 
   /**
@@ -480,11 +513,20 @@ abstract class ApplenewsDestination {
    * Provides a configuration form for this destination.
    */
   public function getConfigForm($form, &$form_state) {
+
+    $form['title'] = [
+      '#type' => 'textfield',
+      '#title' => t('Administrative Title'),
+      '#default_value' => $this->title,
+      '#weight' => -10,
+    ];
+
     $form['weight'] = [
       '#type' => 'weight',
       '#title' => t('Weight'),
       '#default_value' => $this->weight,
       '#delta' => 50,
+      '#weight' => 0,
     ];
 
     return $form;
@@ -500,6 +542,7 @@ abstract class ApplenewsDestination {
    * Submit handler for the configuration form for this export.
    */
   public function submitConfigForm($form, &$form_state) {
+    $this->title = $form_state['values']['title'];
     foreach (array_keys($this->settings()) as $key) {
       if (isset($form_state['values'][$key])) {
         $this->setSetting($key, $form_state['values'][$key]);

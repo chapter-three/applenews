@@ -115,6 +115,20 @@ function apple_news_export_delete(ApplenewsExport $export) {
   return FALSE;
 }
 
+/**
+ * Instantiates a new destination object.
+ *
+ * @param string $module
+ *   Module machine name.
+ * @param string $machine_name
+ *   Export machine name.
+ *
+ * @return ApplenewsExport
+ *   The instantiated class configured for the export.
+ */
+function apple_news_new_export($module, $machine_name) {
+  return _apple_news_new('export', $module, $machine_name);
+}
 
 /**
  * Instantiates a new destination object.
@@ -128,17 +142,7 @@ function apple_news_export_delete(ApplenewsExport $export) {
  *   The instantiated class specified by the implementation..
  */
 function apple_news_new_destination($module, $machine_name) {
-  $implementations = apple_news_get_module_apis('destination');
-  $key = _apple_news_export_id($module, $machine_name);
-  if (isset($implementations[$key])) {
-    $info = $implementations[$key];
-    $reflection = apple_news_validate_class($info['class'],
-      'ApplenewsDestination');
-    if ($reflection) {
-      return $reflection->newInstanceArgs(func_get_args());
-    }
-  }
-  return NULL;
+  return _apple_news_new('destination', $module, $machine_name);
 }
 
 /**
@@ -148,8 +152,6 @@ function apple_news_new_destination($module, $machine_name) {
  *   Module machine name.
  * @param string $machine_name
  *   Source machine name.
- * @param mixed $arg,...
- *   Any additional parameters as defined by the implementation constructor.
  *
  * @return ApplenewsSourceInterface
  *   The instantiated class specified by the implementation..
@@ -217,13 +219,14 @@ function apple_news_validate_class($class_name, $is_a = NULL) {
  *
  * @see apple_news_exports()
  */
-function apple_news_new_export($module, $machine_name) {
+function _apple_news_new($type, $module, $machine_name) {
   $key = _apple_news_export_id($module, $machine_name);
 
-  $implementations = apple_news_get_module_apis('export');
+  $implementations = apple_news_get_module_apis($type);
   if (empty($implementations[$key])) {
-    $msg = t('No export %machine_name defined by %module.');
+    $msg = t('No !type %machine_name defined by %module.');
     $var = [
+      '!type'         => $type,
       '%machine_name' => $machine_name,
       '%module'       => $module,
     ];
@@ -232,28 +235,30 @@ function apple_news_new_export($module, $machine_name) {
   }
   $info = $implementations[$key];
   if (!class_exists($info['class'])) {
-    $msg = 'No export class %class found.';
+    $msg = 'No !type class %class found.';
     $var = [
+      '!type'  => $type,
       '%class' => $info['class']
     ];
     watchdog('apple_news', $msg, $var, WATCHDOG_ERROR);
     return NULL;
   }
 
-  // Instantiate new export.
+  // Instantiate.
   try {
     if (!isset($info['arguments']) || !is_array($info['arguments'])) {
       $info['arguments'] = [];
     }
-    $export = new $info['class']($module, $machine_name, $info['arguments']);
+    $object = new $info['class']($module, $machine_name, $info['arguments']);
     if (!empty($info['default']) && function_exists($info['default'])) {
-      $info['default']($export);
+      $info['default']($object);
     }
-    return $export;
+    return $object;
   }
   catch (Exception $e) {
-    $msg = t('Export class %class could not be constructed: %message');
+    $msg = t('!type class %class could not be constructed: %message');
     $var = [
+      '!type'    => $type,
       '%class'   => $info['class'],
       '%message' => $e->getMessage(),
     ];

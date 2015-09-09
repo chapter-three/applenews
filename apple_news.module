@@ -393,8 +393,8 @@ function apple_news_export_load($id) {
       '%id' => $id,
     ];
     watchdog('apple_news', $msg, $var, WATCHDOG_ERROR);
-    return NULL;
   }
+  return NULL;
 }
 
 /**
@@ -486,8 +486,10 @@ function apple_news_apple_news_api() {
  * Callback to define default node export.
  */
 function apple_news_apple_news_api_export_default_node(ApplenewsExportNode $export) {
-  $component = new ApplenewsDestinationText();
+  /** @var ApplenewsDestinationText $component */
+  $component = apple_news_new_destination('apple_news', 'text');
   $component->weight = '0';
+  $component->title = 'Title';
   $component
     ->setSetting('text', [
       'source' => '::::apple_news::node::label',
@@ -497,8 +499,10 @@ function apple_news_apple_news_api_export_default_node(ApplenewsExportNode $expo
     ->setSetting('heading', '')
     ->setSetting('format', '');
   $export->addComponent($component);
-  $component = new ApplenewsDestinationBodyPhoto();
+  /** @var ApplenewsDestinationBodyPhoto $component */
+  $component = apple_news_new_destination('apple_news', 'bodyphoto');
   $component->weight = '1';
+  $component->title = 'Body';
   $component
     ->setSetting('text', [
       'source' => '::::apple_news::field::node::body::value_sanitized',
@@ -517,11 +521,11 @@ function _apple_news_form_alter_node_form_submit(&$form, &$form_state) {
       !empty($values['exports'])
   ) {
 
-    /*
     $entity = $form['#node'];
     $entity_type = 'node';
     $revision_id = $entity_id = $entity->nid;
 
+    /*
     // Don't do this, save somewhere else.
     $post = new ApplenewsDatabase();
     $post->setPostId($entity_type, $entity_id, $revision_id);

@@ -25,6 +25,7 @@
  *     -  description
  *   - destinations:
  *     -  class (required): Class name to instantiate for the source.
+ *     -  arguments: Array of arguments to pass to class constructor.
  *     -  name
  *     -  description
  *

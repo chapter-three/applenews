@@ -15,19 +15,23 @@ use \ChapterThree\AppleNews\Document\Styles;
  * Base class for component destinations.
  */
 abstract class ApplenewsDestinationComponent extends ApplenewsDestination {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function label() {
+    if (empty($this->title)) {
+      return t('!name (!id)', ['!name' => $this->name(), '!id' => $this->id]);
+    }
+    return $this->title;
+  }
+
 }
 
 /**
  * Body component.
  */
 class ApplenewsDestinationBody extends ApplenewsDestinationComponent {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function label() {
-    return t('Body (%id)', ['%id' => $this->id]);
-  }
 
   /**
    * {@inheritdoc}
@@ -115,14 +119,7 @@ class ApplenewsDestinationBody extends ApplenewsDestinationComponent {
  */
 class ApplenewsDestinationBodyPhoto extends ApplenewsDestinationBody {
 
-  /**
-   * {@inheritdoc}
-   */
-  public function label() {
-    return t('Body and Photos (%id)', ['%id' => $this->id]);
-  }
-
-  /**
+   /**
    * Create image object for inline images.
    *
    * @param string $path
@@ -223,13 +220,6 @@ class ApplenewsDestinationImages extends ApplenewsDestinationComponent {
   /**
    * {@inheritdoc}
    */
-  public function label() {
-    return t('Image Series (Gallery or Mosaic) (%id)', ['%id' => $this->id]);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function settings() {
     return [
       'type'    => 'gallery',
@@ -326,13 +316,6 @@ class ApplenewsDestinationAd extends ApplenewsDestinationComponent {
   /**
    * {@inheritdoc}
    */
-  public function label() {
-    return t('Advertisement (%id)', ['%id' => $this->id]);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function settings() {
     return [
       'type'        => 'banner',
@@ -405,13 +388,6 @@ class ApplenewsDestinationAd extends ApplenewsDestinationComponent {
  * Image component.
  */
 class ApplenewsDestinationImage extends ApplenewsDestinationComponent {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function label() {
-    return t('Image (%id)', ['%id' => $this->id]);
-  }
 
   /**
    * {@inheritdoc}
@@ -499,13 +475,6 @@ class ApplenewsDestinationImage extends ApplenewsDestinationComponent {
  * Scalable Image component.
  */
 class ApplenewsDestinationScalableImage extends ApplenewsDestinationComponent {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function label() {
-    return t('Scalable Image (%id)', ['%id' => $this->id]);
-  }
 
   /**
    * {@inheritdoc}
@@ -636,13 +605,6 @@ class ApplenewsDestinationScalableImage extends ApplenewsDestinationComponent {
  * Text component.
  */
 class ApplenewsDestinationText extends ApplenewsDestinationComponent {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function label() {
-    return t('Text (%id)', ['%id' => $this->id]);
-  }
 
   /**
    * {@inheritdoc}
@@ -819,13 +781,6 @@ class ApplenewsDestinationText extends ApplenewsDestinationComponent {
  * Divider component.
  */
 class ApplenewsDestinationDivider extends ApplenewsDestinationComponent {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function label() {
-    return t('Divider (%id)', ['%id' => $this->id]);
-  }
 
   /**
    * {@inheritdoc}
