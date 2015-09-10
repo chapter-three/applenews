@@ -26,7 +26,7 @@ class ApplenewsexampleExportNode extends ApplenewsExportNode {
   /**
    * {@inheritdoc}
    */
-  public function getConfigForm(array $form, array &$form_state) {
+  public function getConfigForm(array $form = NULL, array &$form_state = NULL) {
     $form = parent::getConfigForm($form, $form_state);
 
     // Hide parent layout elements.

@@ -235,16 +235,8 @@ abstract class ApplenewsExport {
 
   /**
    * Provides a configuration form for this export.
-   *
-   * @param array $form
-   *   FAPI $form.
-   * @param array $form_state
-   *   FAPI $form_state.
-   *
-   * @return array
-   *   FAPI $form.
    */
-  public function getConfigForm(array $form, array &$form_state) {
+  public function getConfigForm(array $form = NULL, array &$form_state = NULL) {
 
     $form['title'] = [
       '#type' => 'textfield',
@@ -724,7 +716,7 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
   /**
    * {@inheritdoc}
    */
-  public function getConfigForm(array $form, array &$form_state) {
+  public function getConfigForm(array $form = NULL, array &$form_state = NULL) {
     $form = parent::getConfigForm($form, $form_state);
 
     $form['additional_settings']['layouts_tab'] = [
@@ -905,7 +897,7 @@ class ApplenewsExportNode extends ApplenewsExportConfigurable {
   /**
    * {@inheritdoc}
    */
-  public function getConfigForm(array $form, array &$form_state) {
+  public function getConfigForm(array $form = NULL, array &$form_state = NULL) {
     $form = parent::getConfigForm($form, $form_state);
 
     $tab = &$form['additional_settings']['general'];

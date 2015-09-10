@@ -28,6 +28,7 @@ function apple_news_entity_update($entity, $type) {
 function _apple_news_entity_push($op, $entity, $type) {
   module_load_include('inc', 'apple_news');
 
+  /** @var EntityDrupalWrapper $wrapper */
   $wrapper = entity_metadata_wrapper($type, $entity);
   $export = apple_news_entity_get_export($type, $wrapper->getIdentifier());
 
@@ -40,7 +41,7 @@ function _apple_news_entity_push($op, $entity, $type) {
           $settings['metadata']['data']['links']['sections'][] = apple_news_section_url($section_id);
         }
       }
-      if (!apple_news_op($op, $channel_id, $entity, $type, $export, $settings)) {
+      if (!apple_news_op($op, $channel_id, $entity, $type, $export)) {
         drupal_set_message(
           t('Unable to push %title to %channel',
             [

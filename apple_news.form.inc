@@ -191,27 +191,26 @@ function _apple_news_form_alter_node_form(&$form, &$form_state) {
       ];
     }
     // Get configuration form for the AppleNews exportable entity.
-    $export_form = $default_export->getConfigForm([], $form_state);
-    if (isset($export_form['channels'])) {
-      foreach (element_children($export_form['channels']) as $key) {
-        unset($export_form['channels'][$key]['#default_value']);
+    $channels_element = $default_export
+      ->getConfigForm()['additional_settings']['general']['channels'];
+    // Set Apple News default values for current entity.
+    if (!empty($article) && !empty($article_id) && count($api_channels)) {
+      foreach (element_children($channels_element) as $key) {
+        unset($channels_element[$key]['#default_value']);
       }
-      // Set Apple News default values for current entity.
-      if (!empty($article) && !empty($article_id) && count($api_channels)) {
-        foreach ($article['sections'] as $section_id => $channel_id) {
-          $key = 'channel-' . $channel_id;
-          if (!empty($export_form['channels'][$key])) {
-            $export_form['channels'][$key]['#default_value'] = TRUE;
-          }
-          $key = 'section-' . $channel_id . '-' . $section_id;
-          if (!empty($export_form['channels'][$key])) {
-            $export_form['channels'][$key]['#default_value'] = TRUE;
-          }
+      foreach ($article['sections'] as $section_id => $channel_id) {
+        $key = 'channel-' . $channel_id;
+        if (!empty($channels_element[$key])) {
+          $channels_element[$key]['#default_value'] = TRUE;
+        }
+        $key = 'section-' . $channel_id . '-' . $section_id;
+        if (!empty($channels_element[$key])) {
+          $channels_element[$key]['#default_value'] = TRUE;
         }
       }
-      $form['apple_news']['channels'] = $export_form['channels'];
-      unset($form['apple_news']['channels']['#weight']);
     }
+    $form['apple_news']['channels'] = &$channels_element;
+    unset($form['apple_news']['channels']['#weight']);
     // Preview.
     if (@$default_export->enabled && !empty($entity_id) && !empty($revision_id)) {
       $link = l(t('Download'), 'admin/config/content/apple-news/' . $entity_type . '/' . $entity_id . '/' . $revision_id . '/download');
