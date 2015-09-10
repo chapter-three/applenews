@@ -170,8 +170,11 @@ abstract class ApplenewsExport {
    *   Show if true.
    */
   public function showOnEdit($entity_type, $bundle) {
-    return $entity_type == $this->entityType() &&
-      @$this->bundles()[$bundle];
+    $bundles = $this->bundles();
+    return $entity_type == $this->entityType() && (
+      $bundles === NULL ||
+      in_array($bundle, $bundles)
+    );
   }
 
   /**
