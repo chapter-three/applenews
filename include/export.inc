@@ -615,6 +615,27 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
   }
 
   /**
+   * Calls drupal_set_message() for any components missing required config.
+   */
+  public function validateComponents() {
+    /** @var ApplenewsDestinationComponent $destination */
+    foreach ($this->getdestinations('components') as $destination) {
+      if (!$destination->validateSettings()) {
+        $label = $this->title ? $this->title :
+          t('Export (!id)', ['!id' => $this->id]);
+        $edit = 'admin/config/content/apple-news/exports/' . $this->id .
+          '/component/' . $destination->id;
+        $msg = t('%export component %label needs to be !link.', [
+          '%export' => $label,
+          '%label' => $destination->label(),
+          '!link' => l(t('configured'), $edit)
+        ]);
+        drupal_set_message($msg, 'error', FALSE);
+      }
+    }
+  }
+
+  /**
    * Sets the destination to id $index.
    *
    * @param string $key
@@ -728,14 +749,6 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
     /** @var ApplenewsDestinationComponent $destination */
     foreach ($this->getdestinations('components') as $destination) {
       $edit = 'admin/config/content/apple-news/exports/' . $this->id . '/component/' . $destination->id;
-      if (!$destination->validateSettings()) {
-        drupal_set_message(t('The !label component needs to be !link.',
-          [
-            '!label' => $destination->label(),
-            '!link' => l(t('configured'), $edit)
-          ]),
-          'error');
-      }
       $tab['components'][$destination->id] = [
         '#apple_news_destination' => $destination,
         'destination' => [

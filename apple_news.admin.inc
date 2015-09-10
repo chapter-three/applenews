@@ -397,6 +397,10 @@ function apple_news_settings_exports_form($form, &$form_state) {
   foreach (apple_news_exports() as $key => $info) {
     $export = apple_news_export_load($key);
 
+    if ($export instanceof ApplenewsExportConfigurable) {
+      $export->validateComponents();
+    }
+
     // Get current export status.
     $status = apple_news_batch_export_get_status($export->id);
 
@@ -644,6 +648,11 @@ function apple_news_export_delete_form_submit($form, &$form_state) {
  */
 function apple_news_export_edit_form($form, &$form_state, ApplenewsExport $export) {
   module_load_include('inc', 'apple_news');
+
+  if ($export instanceof ApplenewsExportConfigurable) {
+    $export->validateComponents();
+  }
+
   $form = $export->getConfigForm($form, $form_state);
 
   $form['#apple_news_export'] = $export;
