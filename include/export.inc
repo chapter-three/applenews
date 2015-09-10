@@ -623,7 +623,7 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
       if (!$destination->validateSettings()) {
         $label = $this->title ? $this->title :
           t('Export (!id)', ['!id' => $this->id]);
-        $edit = 'admin/config/content/apple-news/exports/' . $this->id .
+        $edit = 'admin/config/content/apple-news/exports/export/' . $this->id .
           '/component/' . $destination->id;
         $msg = t('%export component %label needs to be !link.', [
           '%export' => $label,
@@ -748,7 +748,7 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
     ];
     /** @var ApplenewsDestinationComponent $destination */
     foreach ($this->getdestinations('components') as $destination) {
-      $edit = 'admin/config/content/apple-news/exports/' . $this->id . '/component/' . $destination->id;
+      $edit = 'admin/config/content/apple-news/exports/export/' . $this->id . '/component/' . $destination->id;
       $tab['components'][$destination->id] = [
         '#apple_news_destination' => $destination,
         'destination' => [
@@ -758,7 +758,7 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
           '#markup' => l(t('edit'), $edit),
         ],
         'delete' => [
-          '#markup' => l(t('delete'), 'admin/config/content/apple-news/exports/' . $this->id . '/component/' . $destination->id . '/delete'),
+          '#markup' => l(t('delete'), 'admin/config/content/apple-news/exports/export/' . $this->id . '/component/' . $destination->id . '/delete'),
         ],
         'id' => [
           '#type' => 'hidden',
@@ -857,7 +857,7 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
       $destination->id = empty($this->destinations['components']) ? 1 :
         max(array_keys($this->destinations['components'])) + 1;
       $this->destinations['components'][$destination->id] = $destination;
-      $form_state['redirect'][] = 'admin/config/content/apple-news/exports/' .
+      $form_state['redirect'][] = 'admin/config/content/apple-news/exports/export/' .
         $this->id . '/component/' . $destination->id;
     }
 

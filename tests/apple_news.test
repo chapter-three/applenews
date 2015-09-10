@@ -128,7 +128,7 @@ class ApplenewsExportTestCase extends ApplenewsWebTestCase {
 
     // Configure export.
     $this->drupalPost(
-      'admin/config/content/apple-news/exports-add',
+      'admin/config/content/apple-news/exports/add',
       [
         'type' => 'apple_news::node',
         'title' => 'admin title',
@@ -136,7 +136,7 @@ class ApplenewsExportTestCase extends ApplenewsWebTestCase {
       t('Submit')
     );
     $this->drupalPost(
-      'admin/config/content/apple-news/exports/1/edit',
+      'admin/config/content/apple-news/exports/export/1/edit',
       [
         'enabled' => TRUE,
         'bundles[article]' => TRUE,
@@ -277,7 +277,7 @@ EOD
 
     // Configure export.
     $this->drupalPost(
-      'admin/config/content/apple-news/exports-add',
+      'admin/config/content/apple-news/exports/add',
       [
         'type' => 'apple_news::node',
         'title' => 'admin title',
@@ -285,7 +285,7 @@ EOD
       t('Submit')
     );
     $this->drupalPost(
-      'admin/config/content/apple-news/exports/1/edit',
+      'admin/config/content/apple-news/exports/export/1/edit',
       [
         'enabled' => TRUE,
         'bundles[article]' => TRUE,
@@ -305,7 +305,7 @@ EOD
     // Replace default components with body+image type.
     for ($cid = 1; $cid <= count($export->getComponents()); $cid++) {
       $this->drupalPost(
-        "admin/config/content/apple-news/exports/1/component/${cid}/delete",
+        "admin/config/content/apple-news/exports/export/1/component/${cid}/delete",
         [],
         t('Yes, delete')
       );
@@ -314,7 +314,7 @@ EOD
     $this->assertEqual(0, count($export->getComponents()),
       'Default components deleted.');
     $this->drupalPost(
-      "admin/config/content/apple-news/exports/1",
+      "admin/config/content/apple-news/exports/export/1",
       [
         'components[_new][destination]' => 'apple_news::bodyphoto',
       ],
@@ -329,7 +329,7 @@ EOD
     $this->assert($component instanceof ApplenewsDestinationBodyPhoto,
       'Destination object loaded.');
     $this->drupalPost(
-      "admin/config/content/apple-news/exports/1/component/${cid}",
+      "admin/config/content/apple-news/exports/export/1/component/${cid}",
       [
         'title' => 'body',
         'text[source]' => '::::apple_news::field::node::body::value_sanitized',
