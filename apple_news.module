@@ -504,12 +504,28 @@ function apple_news_apple_news_api_export_default_node(ApplenewsExportNode $expo
     ->setSetting('format', '');
   $export->addComponent($component);
   /** @var ApplenewsDestinationBodyPhoto $component */
-  $component = apple_news_new_destination('apple_news', 'bodyphoto');
+  $component = apple_news_new_destination('apple_news', 'body');
   $component->weight = '1';
   $component->title = 'Body';
   $component
     ->setSetting('text', [
       'source' => '::::apple_news::field::node::body::value_sanitized',
+      'value' => '',
+    ])
+    ->setSetting('format', 'markdown');
+  $export->addComponent($component);
+  /** @var ApplenewsDestinationScalableImage $component */
+  $component = apple_news_new_destination('apple_news', 'scalable_image');
+  $component->weight = '2';
+  $component->title = 'Image';
+  $component
+    ->setSetting('type', 'photo')
+    ->setSetting('file', [
+      'source' => '::::apple_news::file::node::field_image::uri',
+      'value' => '',
+    ])
+    ->setSetting('caption', [
+      'source' => '::::apple_news::file::node::field_image::alt',
       'value' => '',
     ])
     ->setSetting('format', 'markdown');
