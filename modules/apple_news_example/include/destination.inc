@@ -16,14 +16,7 @@ use \ChapterThree\AppleNews\Document\Markdown;
 /**
  * Body component.
  */
-class Applenewsstyle1DestinationBody extends ApplenewsDestinationBodyPhoto {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function label() {
-    return t('Body (%id)', ['%id' => $this->id]);
-  }
+class ApplenewsexampleDestinationBody extends ApplenewsDestinationBodyPhoto {
 
   /**
    * {@inheritdoc}
@@ -122,14 +115,7 @@ class Applenewsstyle1DestinationBody extends ApplenewsDestinationBodyPhoto {
 /**
  * Image header component.
  */
-class Applenewsstyle1DestinationHeaderImage extends ApplenewsDestinationComponent {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function label() {
-    return t('Header Image (%id)', ['%id' => $this->id]);
-  }
+class ApplenewsexampleDestinationHeaderImage extends ApplenewsDestinationComponent {
 
   /**
    * {@inheritdoc}
@@ -211,14 +197,7 @@ class Applenewsstyle1DestinationHeaderImage extends ApplenewsDestinationComponen
 /**
  * Gradient header container component.
  */
-class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestinationComponent {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function label() {
-    return t('Header with Credits (%id)', ['%id' => $this->id]);
-  }
+class ApplenewsexampleDestinationHeaderGradContainer extends ApplenewsDestinationComponent {
 
   /**
    * {@inheritdoc}
@@ -358,6 +337,7 @@ class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination
       $container->addComponent($intro);
     }
 
+    /** @var EntityDrupalWrapper $wrapper */
     $wrapper = entity_metadata_wrapper('node', $this->export->source);
     $language = $wrapper->language->value();
 
@@ -370,8 +350,9 @@ class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination
     list($key, $values) = $this->getSourceValues($this->export->source,
       $this->getSetting('author'));
     if (!empty($values[0][$key])) {
-      $author = new Components\Author(
-        t('By', ['langcode' => $language]) . ' ' . $values[0][$key]);
+      $author = t('By !author', ['!author' => $values[0][$key]],
+        ['langcode' => $language]);
+      $author = new Components\Author($author);
       $layout = new Layouts\ComponentLayout();
       $layout->setColumnStart(0)->setColumnSpan(7)
         ->setMargin(new Margin(10, 5));
@@ -382,14 +363,16 @@ class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination
     list($key, $values) = $this->getSourceValues($this->export->source,
       $this->getSetting('photographer'));
     if (!empty($values[0][$key])) {
-      $photog = new Components\Photographer(
-        t('Photos', ['langcode' => $language]) . ': ' . $values[0][$key]);
+      $photographer = t('Photos: !photographer',
+        ['!photographer' => $values[0][$key]],
+        ['langcode' => $language]);
+      $photographer = new Components\Photographer($photographer);
       $layout = new Layouts\ComponentLayout();
       $layout->setColumnStart(0)->setColumnSpan(7)
         ->setMargin(new Margin(NULL, 15));
-      $photog->setLayout($layout);
-      $photog->setTextStyle($text_style);
-      $container->addComponent($photog);
+      $photographer->setLayout($layout);
+      $photographer->setTextStyle($text_style);
+      $container->addComponent($photographer);
     }
 
     // Parent container.
@@ -440,14 +423,7 @@ class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination
 /**
  * Animated pullquote component.
  */
-class Applenewsstyle1DestinationPullQuote extends ApplenewsDestinationComponent {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function label() {
-    return t('Pull Quote (%id)', ['%id' => $this->id]);
-  }
+class ApplenewsexampleDestinationPullQuote extends ApplenewsDestinationComponent {
 
   /**
    * {@inheritdoc}
@@ -676,7 +652,7 @@ class Applenewsstyle1DestinationPullQuote extends ApplenewsDestinationComponent 
 /**
  * Mosaic or Gallery component.
  */
-class Applenewsstyle1DestinationImages extends ApplenewsDestinationImages {
+class ApplenewsexampleDestinationImages extends ApplenewsDestinationImages {
 
   /**
    * {@inheritdoc}
@@ -719,14 +695,7 @@ class Applenewsstyle1DestinationImages extends ApplenewsDestinationImages {
 /**
  * Banner Ad.
  */
-class Applenewsstyle1DestinationAd extends ApplenewsDestinationAd {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function label() {
-    return t('Banner Ad (%id)', ['%id' => $this->id]);
-  }
+class ApplenewsexampleDestinationAd extends ApplenewsDestinationAd {
 
   /**
    * {@inheritdoc}

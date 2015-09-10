@@ -1,6 +1,6 @@
-name = Apple News Style 1
+name = Apple News Example
 package = Apple News
-description = Apple news style 1.
+description = Example module with a styled node export.
 core = 7.x
 
 files[] = include/export.inc

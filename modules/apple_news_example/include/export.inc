@@ -12,7 +12,7 @@ use \ChapterThree\AppleNews\Document\Components;
 /**
  * A configurable node export.
  */
-class Applenewsstyle1ExportNode extends ApplenewsExportNode {
+class ApplenewsexampleExportNode extends ApplenewsExportNode {
 
   /**
    * {@inheritdoc}

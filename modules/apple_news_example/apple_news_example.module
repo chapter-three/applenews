@@ -1,0 +1,122 @@
+<?php
+
+/**
+ * @file
+ * Main module file.
+ */
+
+/**
+ * Implements hook_help().
+ */
+function apple_news_example_help($path, $arg) {
+  switch ($path) {
+    case 'admin/help#apple_news_example':
+      return '<p>' . t('Example module with a styled node export.') . '</p>';
+  }
+  return '';
+}
+
+/**
+ * Implements hook_apple_news_api().
+ */
+function apple_news_example_apple_news_api() {
+  return [
+    'api' => 1,
+    'exports' => [
+      'node' => [
+        'class' => 'ApplenewsexampleExportNode',
+        'name' => t('Nodes'),
+        'description' => t('Example styled node export.'),
+        'default' => 'apple_news_example_apple_news_api_export_default_node',
+      ],
+    ],
+    'destinations' => [
+      'body' => [
+        'class' => 'ApplenewsexampleDestinationBody',
+        'name' => 'Body',
+      ],
+      'header_image' => [
+        'class' => 'ApplenewsexampleDestinationHeaderImage',
+        'name' => 'Header Image',
+      ],
+      'header_container' => [
+        'class' => 'ApplenewsexampleDestinationHeaderGradContainer',
+        'name' => 'Header with Credits',
+      ],
+      'pullquote' => [
+        'class' => 'ApplenewsexampleDestinationPullQuote',
+        'name' => 'Pull Quote',
+      ],
+      'images' => [
+        'class' => 'ApplenewsexampleDestinationImages',
+        'name' => 'Mosaic/Gallery',
+      ],
+      'ad' => [
+        'class' => 'ApplenewsexampleDestinationAd',
+        'name' => 'Banner Ad',
+      ],
+    ],
+  ];
+}
+
+/**
+ * Callback to define default node export.
+ */
+function apple_news_example_apple_news_api_export_default_node(ApplenewsexampleExportNode $export) {
+  $entities_info = entity_get_info('node');
+  if (isset($entities_info['bundles']['article'])) {
+    $export->bundles = ['article'];
+  }
+  /** @var ApplenewsDestinationText $component */
+  $component = apple_news_new_destination('apple_news_example', 'header_image');
+  $component->weight = '0';
+  $component->title = 'Header Image';
+  $component
+    ->setSetting('file', [
+      'source' => '::::apple_news::file::node::field_image::uri',
+      'value' => '',
+    ]);
+  $export->addComponent($component);
+  /** @var ApplenewsexampleDestinationHeaderGradContainer $component */
+  $component = apple_news_new_destination('apple_news_example', 'header_container');
+  $component->weight = '1';
+  $component->title = 'Title/Credits';
+  $component
+    ->setSetting('title', [
+      'source' => '::::apple_news::node::label',
+      'value' => '',
+    ])
+    ->setSetting('author', [
+      'source' => '::::apple_news::node::author::::apple_news::user::label',
+      'value' => '',
+    ]);
+  $export->addComponent($component);
+  /** @var ApplenewsexampleDestinationAd $component */
+  $component = apple_news_new_destination('apple_news_example', 'ad');
+  $component->weight = '3';
+  $component->title = 'Ad';
+  $export->addComponent($component);
+  /** @var ApplenewsexampleDestinationBody $component */
+  $component = apple_news_new_destination('apple_news_example', 'body');
+  $component->weight = '3';
+  $component->title = 'Body';
+  $component
+    ->setSetting('text', [
+      'source' => '::::apple_news::field::node::body::value_sanitized',
+      'value' => '',
+    ])
+    ->setSetting('format', 'markdown');
+  $export->addComponent($component);
+  /** @var ApplenewsexampleDestinationPullQuote $component */
+  $component = apple_news_new_destination('apple_news_example', 'pullquote');
+  $component->weight = '4';
+  $component->title = 'Pull Quote';
+  $export->addComponent($component);
+  /** @var ApplenewsexampleDestinationImages $component */
+  $component = apple_news_new_destination('apple_news_example', 'images');
+  $component->weight = '5';
+  $component->title = 'Gallery';
+  $export->addComponent($component);
+  $component
+    ->setSetting('type', 'gallery');
+}
