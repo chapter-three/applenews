@@ -25,14 +25,8 @@ class ApplenewsExtraDestinationInstagram extends ApplenewsDestinationComponent {
    * {@inheritdoc}
    */
   public function validateSettings() {
-    foreach (['source'] as $key) {
-      if (@$this->getSetting($key) === NULL ||
-          !$this->sourceOptionValid($this->getSetting($key)['source'])
-      ) {
-        return FALSE;
-      }
-    }
-    return parent::validateSettings();
+    return $this->validateSettingsSources(['source']) &&
+      parent::validateSettings();
   }
 
   /**
@@ -88,14 +82,8 @@ class ApplenewsExtraDestinationTweet extends ApplenewsDestinationComponent {
    * {@inheritdoc}
    */
   public function validateSettings() {
-    foreach (['source'] as $key) {
-      if (@$this->getSetting($key) === NULL ||
-          !$this->sourceOptionValid($this->getSetting($key)['source'])
-      ) {
-        return FALSE;
-      }
-    }
-    return parent::validateSettings();
+    return $this->validateSettingsSources(['source']) &&
+      parent::validateSettings();
   }
 
   /**
@@ -152,14 +140,8 @@ class ApplenewsExtraDestinationEmbedWebVideo extends ApplenewsDestinationCompone
    * {@inheritdoc}
    */
   public function validateSettings() {
-    foreach (['video_url'] as $key) {
-      if (@$this->getSetting($key) === NULL ||
-          !$this->sourceOptionValid($this->getSetting($key)['source'])
-      ) {
-        return FALSE;
-      }
-    }
-    return parent::validateSettings();
+    return $this->validateSettingsSources(['video_url']) &&
+      parent::validateSettings();
   }
 
   /**
@@ -226,14 +208,8 @@ class ApplenewsExtraDestinationAudio extends ApplenewsDestinationComponent {
    * {@inheritdoc}
    */
   public function validateSettings() {
-    foreach (['url'] as $key) {
-      if (@$this->getSetting($key) === NULL ||
-          !$this->sourceOptionValid($this->getSetting($key)['source'])
-      ) {
-        return FALSE;
-      }
-    }
-    return parent::validateSettings();
+    return $this->validateSettingsSources(['url']) &&
+      parent::validateSettings();
   }
 
   /**

@@ -26,6 +26,21 @@ abstract class ApplenewsDestinationComponent extends ApplenewsDestination {
     return $this->title;
   }
 
+  /**
+   * Validates source type settings.
+   */
+  protected function validateSettingsSources($keys) {
+    foreach ($keys as $key) {
+      $value = @$this->getSetting($key);
+      if (empty($value['source']) ||
+          !$this->sourceOptionValid($this->getSetting($key)['source'])
+      ) {
+        return FALSE;
+      }
+    }
+    return TRUE;
+  }
+
 }
 
 /**
@@ -47,14 +62,8 @@ class ApplenewsDestinationBody extends ApplenewsDestinationComponent {
    * {@inheritdoc}
    */
   public function validateSettings() {
-    foreach (['text'] as $key) {
-      if (@$this->getSetting($key) === NULL ||
-          !$this->sourceOptionValid($this->getSetting($key)['source'])
-      ) {
-        return FALSE;
-      }
-    }
-    return parent::validateSettings();
+    return $this->validateSettingsSources(['text']) &&
+      parent::validateSettings();
   }
 
   /**
@@ -232,14 +241,8 @@ class ApplenewsDestinationImages extends ApplenewsDestinationComponent {
    * {@inheritdoc}
    */
   public function validateSettings() {
-    foreach (['items'] as $key) {
-      if (@$this->getSetting($key) === NULL ||
-          !$this->sourceOptionValid($this->getSetting($key)['source'])
-      ) {
-        return FALSE;
-      }
-    }
-    return parent::validateSettings();
+    return $this->validateSettingsSources(['items']) &&
+      parent::validateSettings();
   }
 
   /**
@@ -404,14 +407,8 @@ class ApplenewsDestinationImage extends ApplenewsDestinationComponent {
    * {@inheritdoc}
    */
   public function validateSettings() {
-    foreach (['source'] as $key) {
-      if (@$this->getSetting($key) === NULL ||
-          !$this->sourceOptionValid($this->getSetting($key)['source'])
-      ) {
-        return FALSE;
-      }
-    }
-    return parent::validateSettings();
+    return $this->validateSettingsSources(['source']) &&
+      parent::validateSettings();
   }
 
   /**
@@ -493,19 +490,9 @@ class ApplenewsDestinationScalableImage extends ApplenewsDestinationComponent {
    * {@inheritdoc}
    */
   public function validateSettings() {
-    foreach ([
-        'caption',
-        'accessibilityCaption',
-        'explicitContent',
-      ] as $key
-    ) {
-      if (@$this->getSetting($key) === NULL ||
-          !$this->sourceOptionValid($this->getSetting($key)['source'])
-      ) {
-        return FALSE;
-      }
-    }
-    return parent::validateSettings();
+    return $this->validateSettingsSources([
+      'file',
+    ]) && parent::validateSettings();
   }
 
   /**
@@ -622,14 +609,8 @@ class ApplenewsDestinationText extends ApplenewsDestinationComponent {
    * {@inheritdoc}
    */
   public function validateSettings() {
-    foreach (['text'] as $key) {
-      if (@$this->getSetting($key) === NULL ||
-          !$this->sourceOptionValid($this->getSetting($key)['source'])
-      ) {
-        return FALSE;
-      }
-    }
-    return parent::validateSettings();
+    return $this->validateSettingsSources(['text']) &&
+      parent::validateSettings();
   }
 
   /**
