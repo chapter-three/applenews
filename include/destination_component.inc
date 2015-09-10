@@ -128,7 +128,7 @@ class ApplenewsDestinationBody extends ApplenewsDestinationComponent {
  */
 class ApplenewsDestinationBodyPhoto extends ApplenewsDestinationBody {
 
-   /**
+  /**
    * Create image object for inline images.
    *
    * @param string $path
@@ -422,7 +422,7 @@ class ApplenewsDestinationImage extends ApplenewsDestinationComponent {
       '#title'         => t('Type'),
       '#type'          => 'select',
       '#options'       => [
-        'logo' => t('Logo')
+        'logo' => t('Logo'),
       ],
       '#default_value' => $this->getSetting('type'),
     ];
