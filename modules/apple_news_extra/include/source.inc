@@ -44,6 +44,7 @@ class ApplenewsExtraSourceFieldLink extends ApplenewsSourceField {
     ];
     if (!isset($value)) {
       try {
+        /** @var EntityMetadataWrapper $value */
         $value = $this->wrapper->{$this->fieldName};
       }
       catch (EntityMetadataWrapperException $e) {
@@ -100,6 +101,7 @@ class ApplenewsExtraSourceFieldVideoEmbedField extends ApplenewsSourceField {
     ];
     if (!isset($value)) {
       try {
+        /** @var EntityMetadataWrapper $value */
         $value = $this->wrapper->{$this->fieldName};
       }
       catch (EntityMetadataWrapperException $e) {

@@ -15,13 +15,6 @@ class ApplenewsExtraDestinationInstagram extends ApplenewsDestinationComponent {
   /**
    * {@inheritdoc}
    */
-  public function label() {
-    return t('Instagram (%id)', ['%id' => $this->id]);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function settings() {
     return [
       'source' => NULL,
@@ -85,13 +78,6 @@ class ApplenewsExtraDestinationTweet extends ApplenewsDestinationComponent {
   /**
    * {@inheritdoc}
    */
-  public function label() {
-    return t('Tweet (%id)', ['%id' => $this->id]);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function settings() {
     return [
       'source' => NULL,
@@ -151,13 +137,6 @@ class ApplenewsExtraDestinationTweet extends ApplenewsDestinationComponent {
  * Embed Web Video component.
  */
 class ApplenewsExtraDestinationEmbedWebVideo extends ApplenewsDestinationComponent {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function label() {
-    return t('Embed Web Video (%id)', ['%id' => $this->id]);
-  }
 
   /**
    * {@inheritdoc}
@@ -229,13 +208,6 @@ class ApplenewsExtraDestinationEmbedWebVideo extends ApplenewsDestinationCompone
  * Audio component.
  */
 class ApplenewsExtraDestinationAudio extends ApplenewsDestinationComponent {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function label() {
-    return t('Audio (%id)', ['%id' => $this->id]);
-  }
 
   /**
    * {@inheritdoc}
