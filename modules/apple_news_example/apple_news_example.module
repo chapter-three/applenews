@@ -6,17 +6,6 @@
  */
 
 /**
- * Implements hook_help().
- */
-function apple_news_example_help($path, $arg) {
-  switch ($path) {
-    case 'admin/help#apple_news_example':
-      return '<p>' . t('Example module with a styled node export.') . '</p>';
-  }
-  return '';
-}
-
-/**
  * Implements hook_apple_news_api().
  */
 function apple_news_example_apple_news_api() {
