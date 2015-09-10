@@ -74,12 +74,10 @@ function apple_news_batch_post($export_id, $entity_type, $entity, $total_count, 
   $context['results']['info']['default_channels'] = !empty($export_settings['channels'])
     ? array_keys($export_settings['channels']) : [];
 
-  if (!isset($context['results']['info']['count'])) {
-    $context['results']['info']['count'] = 0;
-  }
-
-  if (!isset($context['results']['info']['step_count'])) {
-    $context['results']['info']['step_count'] = 0;
+  foreach (['count', 'insert', 'update', 'skip', 'step_count'] as $key) {
+    if (!isset($context['results']['info'][$key])) {
+      $context['results']['info'][$key] = 0;
+    }
   }
 
   $count = !empty($context['results']['info']['step_count']) ? $context['results']['info']['step_count'] : 0;
@@ -92,9 +90,6 @@ function apple_news_batch_post($export_id, $entity_type, $entity, $total_count, 
     'status'    => 'in progress ' . $count . '/' . $total_count,
   ];
   apple_news_batch_export_set_status($export_id, $status);
-
-  // Successull request.
-  $success = FALSE;
 
   /** @var EntityDrupalWrapper $wrapper */
   $wrapper = entity_metadata_wrapper($entity_type, $entity);
@@ -129,19 +124,24 @@ function apple_news_batch_post($export_id, $entity_type, $entity, $total_count, 
       // Process only non-published articles.
       if (!$export_log) {
         // Post an article to Apple News.
-        $success = apple_news_op('insert', $channel_id, $entity, $entity_type, $export);
+        if ($success = apple_news_op('insert', $channel_id, $entity, $entity_type, $export)) {
+          $context['results']['info']['insert']++;
+        };
       }
       else {
         // Update an article only if the entity was updated since the last
         // export.
         if ($export_log['postdate'] < $entity->changed) {
-          $success = apple_news_op('update', $channel_id, $entity, $entity_type, $export);
+          if ($success = apple_news_op('update', $channel_id, $entity, $entity_type, $export)) {
+            $context['results']['info']['update']++;
+          }
+        }
+        else {
+          $success = TRUE;
+          $context['results']['info']['skip']++;
         }
       }
-      if ($success) {
-        $context['results']['info']['count']++;
-      }
-      else {
+      if (!$success) {
         drupal_set_message(
           t('Unable to push %title to %channel',
             [
@@ -151,6 +151,10 @@ function apple_news_batch_post($export_id, $entity_type, $entity, $total_count, 
         );
       }
     }
+    $context['results']['info']['count']
+      = $context['results']['info']['insert'] +
+        $context['results']['info']['update'] +
+        $context['results']['info']['skip'];
     $context['results']['info']['step_count']++;
   }
 
@@ -170,52 +174,41 @@ function apple_news_batch_run_export_finished($success, $results, $operations) {
     }
     else {
       $count = $results['info']['count'];
-      if ($count > 0) {
-        // Save export information in logs.
-        $record = [
-          'exid'         => $results['info']['export_id'],
-          'starttime'    => $results['info']['starttime'],
-          'endtime'      => REQUEST_TIME,
-          'numprocessed' => $count,
-        ];
-        drupal_write_record('apple_news_log', $record);
+      // Save export information in logs.
+      $record = [
+        'exid'         => $results['info']['export_id'],
+        'starttime'    => $results['info']['starttime'],
+        'endtime'      => REQUEST_TIME,
+        'numprocessed' => $count,
+      ];
+      drupal_write_record('apple_news_log', $record);
 
-        // Save batch progress status.
-        $status = [
-          'count'     => $count,
-          'starttime' => !empty($results['info']['starttime']) ? $results['info']['starttime'] : 0,
-          'endtime'   => REQUEST_TIME,
-          'status'    => 'complete',
-        ];
-        apple_news_batch_export_set_status($results['info']['export_id'],
-          $status);
+      // Save batch progress status.
+      $status = [
+        'count'     => $count,
+        'starttime' => !empty($results['info']['starttime']) ? $results['info']['starttime'] : 0,
+        'endtime'   => REQUEST_TIME,
+        'status'    => 'complete',
+      ];
+      apple_news_batch_export_set_status($results['info']['export_id'],
+        $status);
 
-        $plural_message = format_plural(
-          $count,
-          '1 entity successfully posted to Apple News.',
-          '@count entities were successfully posted to Apple News.'
-        );
-        drupal_set_message($plural_message);
-        $msg = t('Batch export: %count entities successfully posted to Apple News.');
-        $args = [
-          '%count'   => $count,
-        ];
-        watchdog('apple_news', $msg, $args, WATCHDOG_NOTICE);
-      }
-      else {
-
-        // Save batch progress status.
-        $status = [
-          'count'     => 0,
-          'starttime' => !empty($results['info']['starttime']) ? $results['info']['starttime'] : 0,
-          'endtime'   => REQUEST_TIME,
-          'status'    => 'complete',
-        ];
-        apple_news_batch_export_set_status($results['info']['export_id'],
-          $status);
-
-        drupal_set_message(t('There is no content for export to Apple News.'));
-      }
+      $plural_message = format_plural(
+        $count,
+        '1 entity successfully processed (!insert created, !update updated, !skip unchanged).',
+        '@count entities were successfully processed (!insert created, !update updated, !skip unchanged).',
+        [
+          '!insert' => $results['info']['insert'],
+          '!update' => $results['info']['update'],
+          '!skip' => $results['info']['skip'],
+        ]
+      );
+      drupal_set_message($plural_message);
+      $msg = t('Batch export: %count entities successfully posted to Apple News.');
+      $args = [
+        '%count'   => $count,
+      ];
+      watchdog('apple_news', $msg, $args, WATCHDOG_NOTICE);
     }
   }
   else {
