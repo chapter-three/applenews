@@ -854,13 +854,15 @@ function apple_news_op($operation, $channel_id, $entity, $entity_type, Applenews
   $result = FALSE;
   /** @var EntityDrupalWrapper $entity_wrapper */
   $entity_wrapper = entity_metadata_wrapper($entity_type, $entity);
-  // Generate Apple News Document formatted JSON string.
-  $document = $export->setSource($entity)->export();
-  $data = [
-    'json'              => $document->json(),
-    'files'             => $export->getAssets(),
-    'metadata'          => !empty($settings['metadata']) ? json_encode($settings['metadata']) : '',
-  ];
+  if ($operation != 'delete') {
+    // Generate Apple News Document formatted JSON string.
+    $document = $export->setSource($entity)->export();
+    $data = [
+      'json'              => $document->json(),
+      'files'             => $export->getAssets(),
+      'metadata'          => !empty($settings['metadata']) ? json_encode($settings['metadata']) : '',
+    ];
+  }
 
   switch ($operation) {
 
