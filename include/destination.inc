@@ -176,7 +176,7 @@ abstract class ApplenewsDestination {
    */
   protected function getConfigFormSourceElement(&$form, &$form_state, $key) {
     list($options, $metadata) = $this->getSourceOptions();
-    $form[$key] = [
+    $form['settings'][$key] = [
       '#type'  => 'fieldset',
       '#tree'  => TRUE,
       'source' => [
@@ -190,10 +190,10 @@ abstract class ApplenewsDestination {
     if (!empty($metadata['types']['value'])) {
       $visible_states = [];
       foreach ($metadata['types']['value'] as $source_key) {
-        $visible_states[][':input[name="' . $key . '[source]"]']
+        $visible_states[][':input[name="settings[' . $key . '][source]"]']
           = ['value' => $source_key];
       }
-      $form[$key]['value'] = [
+      $form['settings'][$key]['value'] = [
         '#title'         => t('Value'),
         '#type'          => 'textarea',
         '#default_value' => @$this->getSetting($key)['value'],
@@ -529,6 +529,10 @@ abstract class ApplenewsDestination {
       '#weight' => 0,
     ];
 
+    $form['settings'] = [
+      '#tree' => TRUE,
+    ];
+
     return $form;
   }
 
@@ -544,8 +548,8 @@ abstract class ApplenewsDestination {
   public function submitConfigForm($form, &$form_state) {
     $this->title = $form_state['values']['title'];
     foreach (array_keys($this->settings()) as $key) {
-      if (isset($form_state['values'][$key])) {
-        $this->setSetting($key, $form_state['values'][$key]);
+      if (isset($form_state['values']['settings'][$key])) {
+        $this->setSetting($key, $form_state['values']['settings'][$key]);
       }
     }
   }

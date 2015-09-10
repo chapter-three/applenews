@@ -37,7 +37,7 @@ class ApplenewsexampleDestinationBody extends ApplenewsDestinationBodyPhoto {
    */
   public function getConfigForm($form, &$form_state) {
     $form = parent::getConfigForm($form, $form_state);
-    $form['format']['#type'] = 'value';
+    $form['settings']['format']['#type'] = 'value';
     return $form;
   }
 
@@ -142,8 +142,8 @@ class ApplenewsexampleDestinationHeaderImage extends ApplenewsDestinationCompone
     $form = parent::getConfigForm($form, $form_state);
 
     parent::getConfigFormSourceElement($form, $form_state, 'file');
-    $form['file']['#title'] = t('File');
-    $form['file']['#required'] = TRUE;
+    $form['settings']['file']['#title'] = t('File');
+    $form['settings']['file']['#required'] = TRUE;
 
     return $form;
   }
@@ -223,22 +223,22 @@ class ApplenewsexampleDestinationHeaderGradContainer extends ApplenewsDestinatio
     $form = parent::getConfigForm($form, $form_state);
 
     parent::getConfigFormSourceElement($form, $form_state, 'title');
-    $form['title']['#title'] = t('Title');
-    $form['title']['#required'] = TRUE;
+    $form['settings']['title']['#title'] = t('Title');
+    $form['settings']['title']['#required'] = TRUE;
 
     parent::getConfigFormSourceElement($form, $form_state, 'intro');
-    $form['intro']['#title'] = t('Intro');
+    $form['settings']['intro']['#title'] = t('Intro');
 
     parent::getConfigFormSourceElement($form, $form_state, 'author');
-    $form['author']['#title'] = t('Author');
+    $form['settings']['author']['#title'] = t('Author');
 
     parent::getConfigFormSourceElement($form, $form_state, 'photographer');
-    $form['photographer']['#title'] = t('Photographer');
+    $form['settings']['photographer']['#title'] = t('Photographer');
 
     parent::getConfigFormSourceElement($form, $form_state, 'image');
-    $form['image']['#title'] = t('Background Image');
+    $form['settings']['image']['#title'] = t('Background Image');
 
-    $form['gradient'] = [
+    $form['settings']['gradient'] = [
       '#type' => 'checkbox',
       '#title' => t('Gradient'),
       '#default_value' => $this->getSetting('gradient'),
@@ -440,13 +440,13 @@ class ApplenewsexampleDestinationPullQuote extends ApplenewsDestinationComponent
     $form = parent::getConfigForm($form, $form_state);
 
     parent::getConfigFormSourceElement($form, $form_state, 'image');
-    $form['image']['#title'] = t('Image');
+    $form['settings']['image']['#title'] = t('Image');
 
     parent::getConfigFormSourceElement($form, $form_state, 'quote');
-    $form['quote']['#title'] = t('Quote');
-    $form['quote']['#required'] = TRUE;
+    $form['settings']['quote']['#title'] = t('Quote');
+    $form['settings']['quote']['#required'] = TRUE;
 
-    $form['format'] = [
+    $form['settings']['format'] = [
       '#title'         => t('Quote Format'),
       '#type'          => 'select',
       '#options'       => [
@@ -701,8 +701,8 @@ class ApplenewsexampleDestinationAd extends ApplenewsDestinationAd {
    */
   public function getConfigForm($form, &$form_state) {
     $form = parent::getConfigForm($form, $form_state);
-    $form['type']['#type'] = 'value';
-    $form['banner_type']['#type'] = 'value';
+    $form['settings']['type']['#type'] = 'value';
+    $form['settings']['banner_type']['#type'] = 'value';
     return $form;
   }
 

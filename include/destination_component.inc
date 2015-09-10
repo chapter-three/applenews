@@ -74,10 +74,10 @@ class ApplenewsDestinationBody extends ApplenewsDestinationComponent {
     $form = parent::getConfigForm($form, $form_state);
 
     parent::getConfigFormSourceElement($form, $form_state, 'text');
-    $form['text']['#title'] = t('Text');
-    $form['text']['#required'] = TRUE;
+    $form['settings']['text']['#title'] = t('Text');
+    $form['settings']['text']['#required'] = TRUE;
 
-    $form['format'] = [
+    $form['settings']['format'] = [
       '#title'         => t('Format'),
       '#type'          => 'select',
       '#options'       => [
@@ -252,7 +252,7 @@ class ApplenewsDestinationImages extends ApplenewsDestinationComponent {
 
     $form = parent::getConfigForm($form, $form_state);
 
-    $form['type'] = [
+    $form['settings']['type'] = [
       '#title'         => t('Type'),
       '#required'      => TRUE,
       '#type'          => 'select',
@@ -264,11 +264,11 @@ class ApplenewsDestinationImages extends ApplenewsDestinationComponent {
     ];
 
     parent::getConfigFormSourceElement($form, $form_state, 'items');
-    $form['items']['#title'] = t('Items');
-    $form['items']['#required'] = TRUE;
+    $form['settings']['items']['#title'] = t('Items');
+    $form['settings']['items']['#required'] = TRUE;
 
     parent::getConfigFormSourceElement($form, $form_state, 'caption');
-    $form['caption']['#title'] = t('Caption');
+    $form['settings']['caption']['#title'] = t('Caption');
     return $form;
   }
 
@@ -333,7 +333,7 @@ class ApplenewsDestinationAd extends ApplenewsDestinationComponent {
 
     $form = parent::getConfigForm($form, $form_state);
 
-    $form['type'] = [
+    $form['settings']['type'] = [
       '#title'         => t('Type'),
       '#required'      => TRUE,
       '#type'          => 'select',
@@ -344,7 +344,7 @@ class ApplenewsDestinationAd extends ApplenewsDestinationComponent {
       '#default_value' => $this->getSetting('type'),
     ];
 
-    $form['banner_type'] = [
+    $form['settings']['banner_type'] = [
       '#title'         => t('Banner Type'),
       '#type'          => 'select',
       '#options'       => [
@@ -418,7 +418,7 @@ class ApplenewsDestinationImage extends ApplenewsDestinationComponent {
 
     $form = parent::getConfigForm($form, $form_state);
 
-    $form['type'] = [
+    $form['settings']['type'] = [
       '#title'         => t('Type'),
       '#type'          => 'select',
       '#options'       => [
@@ -428,11 +428,11 @@ class ApplenewsDestinationImage extends ApplenewsDestinationComponent {
     ];
 
     parent::getConfigFormSourceElement($form, $form_state, 'source');
-    $form['source']['#title'] = t('Value');
-    $form['source']['#required'] = TRUE;
+    $form['settings']['source']['#title'] = t('Value');
+    $form['settings']['source']['#required'] = TRUE;
 
     parent::getConfigFormSourceElement($form, $form_state, 'caption');
-    $form['caption']['#title'] = t('Caption');
+    $form['settings']['caption']['#title'] = t('Caption');
 
     return $form;
   }
@@ -502,7 +502,7 @@ class ApplenewsDestinationScalableImage extends ApplenewsDestinationComponent {
 
     $form = parent::getConfigForm($form, $form_state);
 
-    $form['type'] = [
+    $form['settings']['type'] = [
       '#title'         => t('Type'),
       '#type'          => 'select',
       '#options'       => [
@@ -515,17 +515,17 @@ class ApplenewsDestinationScalableImage extends ApplenewsDestinationComponent {
     ];
 
     parent::getConfigFormSourceElement($form, $form_state, 'file');
-    $form['file']['#title'] = t('Value');
+    $form['settings']['file']['#title'] = t('Value');
 
     parent::getConfigFormSourceElement($form, $form_state, 'caption');
-    $form['caption']['#title'] = t('Caption');
+    $form['settings']['caption']['#title'] = t('Caption');
 
     parent::getConfigFormSourceElement($form, $form_state,
       'accessibilityCaption');
-    $form['accessibilityCaption']['#title'] = t('Accessibility Caption');
+    $form['settings']['accessibilityCaption']['#title'] = t('Accessibility Caption');
 
     parent::getConfigFormSourceElement($form, $form_state, 'explicitContent');
-    $form['explicitContent']['#title'] = t('Explicit Content');
+    $form['settings']['explicitContent']['#title'] = t('Explicit Content');
 
     return $form;
   }
@@ -621,10 +621,10 @@ class ApplenewsDestinationText extends ApplenewsDestinationComponent {
     $form = parent::getConfigForm($form, $form_state);
 
     parent::getConfigFormSourceElement($form, $form_state, 'text');
-    $form['text']['#title'] = t('Text');
-    $form['text']['#required'] = TRUE;
+    $form['settings']['text']['#title'] = t('Text');
+    $form['settings']['text']['#required'] = TRUE;
 
-    $form['component'] = [
+    $form['settings']['component'] = [
       '#title'         => t('Component'),
       '#required'      => TRUE,
       '#type'          => 'select',
@@ -644,7 +644,7 @@ class ApplenewsDestinationText extends ApplenewsDestinationComponent {
       '#default_value' => $this->getSetting('component'),
     ];
 
-    $form['heading'] = [
+    $form['settings']['heading'] = [
       '#title'         => t('Heading'),
       '#type'          => 'select',
       '#options'       => [
@@ -664,7 +664,7 @@ class ApplenewsDestinationText extends ApplenewsDestinationComponent {
       ],
     ];
 
-    $form['format'] = [
+    $form['settings']['format'] = [
       '#title'         => t('Format'),
       '#type'          => 'select',
       '#options'       => [
@@ -781,21 +781,21 @@ class ApplenewsDestinationDivider extends ApplenewsDestinationComponent {
 
     $form = parent::getConfigForm($form, $form_state);
 
-    $form['color'] = [
+    $form['settings']['color'] = [
       '#title' => t('Color'),
       '#type' => 'textfield',
       '#default_value' => $this->getSetting('color'),
       '#description'   => t('The stroke color, defined as a 3- to 8-character RGBA hexadecimal string; e.g., #000 for black or #FF00007F for red with an alpha (opacity) of 50%. Defaults to #000 (black).')
     ];
 
-    $form['width'] = [
+    $form['settings']['width'] = [
       '#title' => t('Width'),
       '#type' => 'textfield',
       '#default_value' => $this->getSetting('width'),
       '#description'   => t('The width of the stroke line. Can be either an integer value in points, or a string (10pt). Defaults to 1 point.'),
     ];
 
-    $form['style'] = [
+    $form['settings']['style'] = [
       '#title' => t('Style'),
       '#type' => 'select',
       '#options' => [

@@ -37,9 +37,9 @@ class ApplenewsExtraDestinationInstagram extends ApplenewsDestinationComponent {
     $form = parent::getConfigForm($form, $form_state);
 
     parent::getConfigFormSourceElement($form, $form_state, 'source');
-    $form['source']['#title'] = t('Link');
-    $form['source']['#required'] = TRUE;
-    $form['source']['#description'] = t('URL format <em>https://instagram.com/p/6Lg1xVkNjJ</em>');
+    $form['settings']['source']['#title'] = t('Link');
+    $form['settings']['source']['#required'] = TRUE;
+    $form['settings']['source']['#description'] = t('URL format <em>https://instagram.com/p/6Lg1xVkNjJ</em>');
 
     return $form;
   }
@@ -94,9 +94,9 @@ class ApplenewsExtraDestinationTweet extends ApplenewsDestinationComponent {
     $form = parent::getConfigForm($form, $form_state);
 
     parent::getConfigFormSourceElement($form, $form_state, 'source');
-    $form['source']['#title'] = t('Link');
-    $form['source']['#required'] = TRUE;
-    $form['source']['#description'] = t('URL format <em>https://twitter.com/chapter_three/status/623547179563495424</em>');
+    $form['settings']['source']['#title'] = t('Link');
+    $form['settings']['source']['#required'] = TRUE;
+    $form['settings']['source']['#description'] = t('URL format <em>https://twitter.com/chapter_three/status/623547179563495424</em>');
 
     return $form;
   }
@@ -152,12 +152,12 @@ class ApplenewsExtraDestinationEmbedWebVideo extends ApplenewsDestinationCompone
     $form = parent::getConfigForm($form, $form_state);
 
     parent::getConfigFormSourceElement($form, $form_state, 'video_url');
-    $form['video_url']['#title'] = t('Video URL');
-    $form['video_url']['#required'] = TRUE;
-    $form['video_url']['#description'] = t('URL format <em>https://www.youtube.com/embed/r4DQKtYL62Q</em> (Youtube) or <em>https://player.vimeo.com/video/121450839</em> (Vimeo)');
+    $form['settings']['video_url']['#title'] = t('Video URL');
+    $form['settings']['video_url']['#required'] = TRUE;
+    $form['settings']['video_url']['#description'] = t('URL format <em>https://www.youtube.com/embed/r4DQKtYL62Q</em> (Youtube) or <em>https://player.vimeo.com/video/121450839</em> (Vimeo)');
 
     parent::getConfigFormSourceElement($form, $form_state, 'caption');
-    $form['caption']['#title'] = t('Caption');
+    $form['settings']['caption']['#title'] = t('Caption');
 
     return $form;
   }
@@ -219,7 +219,7 @@ class ApplenewsExtraDestinationAudio extends ApplenewsDestinationComponent {
 
     $form = parent::getConfigForm($form, $form_state);
 
-    $form['type'] = [
+    $form['settings']['type'] = [
       '#title'         => t('Type'),
       '#required'      => TRUE,
       '#type'          => 'select',
@@ -231,17 +231,17 @@ class ApplenewsExtraDestinationAudio extends ApplenewsDestinationComponent {
     ];
 
     parent::getConfigFormSourceElement($form, $form_state, 'url');
-    $form['url']['#title'] = t('Audio URL');
-    $form['url']['#required'] = TRUE;
+    $form['settings']['url']['#title'] = t('Audio URL');
+    $form['settings']['url']['#required'] = TRUE;
 
     parent::getConfigFormSourceElement($form, $form_state, 'imageURL');
-    $form['imageURL']['#title'] = t('Image URL');
+    $form['settings']['imageURL']['#title'] = t('Image URL');
 
     parent::getConfigFormSourceElement($form, $form_state, 'caption');
-    $form['caption']['#title'] = t('Caption');
+    $form['settings']['caption']['#title'] = t('Caption');
 
     parent::getConfigFormSourceElement($form, $form_state, 'explicitContent');
-    $form['explicitContent']['#title'] = t('Explicit Content');
+    $form['settings']['explicitContent']['#title'] = t('Explicit Content');
 
     return $form;
   }
