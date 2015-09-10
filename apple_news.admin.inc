@@ -151,8 +151,8 @@ function apple_news_settings_api_credentials_form_submit($form, &$form_state) {
       'admin/config/content/apple-news/settings/channels');
     $channel_msg = t('Please !link to verify connection and start posting content to Apple News.', ['!link' => $link]);
   }
-  drupal_set_message(t('The configuration options have been saved. !msg'),
-    ['!msg' => $channel_msg]);
+  drupal_set_message(t('The configuration options have been saved. !msg',
+    ['!msg' => $channel_msg]));
 }
 
 /**
