@@ -417,8 +417,8 @@ function apple_news_settings_exports_form($form, &$form_state) {
     $module = $module['name'] . ' (' . $export->getMachineName() . ')';
     $enabled = empty($export->enabled) ? t('no') : t('yes');
     $lastexport = empty($log['starttime']) ? t('never') : format_date($log['starttime'], 'short');
-    $edit = l(t('edit'), 'admin/config/content/apple-news/exports/export/' . $key . '/edit');
-    $delete = l(t('delete'), 'admin/config/content/apple-news/exports/export/' . $key . '/delete');
+    $edit = l(t('edit'), 'admin/config/content/apple-news/export/' . $key . '/edit');
+    $delete = l(t('delete'), 'admin/config/content/apple-news/export/' . $key . '/delete');
     $rows[$key] = [
       'title'       => $title,
       'description' => $export->description,
@@ -600,7 +600,7 @@ function apple_news_export_add_form_submit($form, &$form_state) {
   $export = apple_news_new_export($module, $machine_name);
   $export->title = $form_state['values']['title'];
   apple_news_export_save($export);
-  drupal_goto('admin/config/content/apple-news/exports/export/' . $export->id);
+  drupal_goto('admin/config/content/apple-news/export/' . $export->id);
 }
 
 /**
@@ -619,7 +619,7 @@ function apple_news_export_delete_form($form, &$form_state, ApplenewsExportConfi
     $form,
     t("Do you really want delete the export !title?",
       ['!title' => $export->title]),
-    'admin/config/content/apple-news/exports/export/' . $export->id . '/edit',
+    'admin/config/content/apple-news/export/' . $export->id . '/edit',
     t("This action cannot be undone."),
     t("Yes, delete")
   );
@@ -837,7 +837,7 @@ function apple_news_export_destination_edit_form($form, &$form_state, ApplenewsE
       '#value' => t('Save changes'),
     ],
     'cancel' => [
-      '#markup' => l(t('Back'), 'admin/config/content/apple-news/exports/export/' . $export->id, [
+      '#markup' => l(t('Back'), 'admin/config/content/apple-news/export/' . $export->id, [
           // Set components tab as Active.
           'fragment' => 'edit-components-tab',
         ]
@@ -868,7 +868,7 @@ function apple_news_export_destination_edit_form_submit($form, &$form_state) {
   apple_news_export_save($destination->export);
   drupal_set_message(t('Changes have been successfully saved.'));
   $form_state['redirect'] = [
-    'admin/config/content/apple-news/exports/export/' . $destination->export->id, [
+    'admin/config/content/apple-news/export/' . $destination->export->id, [
       // Set components tab as Active.
       'fragment' => 'edit-components-tab',
     ]
@@ -884,7 +884,7 @@ function apple_news_export_destination_edit_form_submit($form, &$form_state) {
 function apple_news_export_destination_delete_form($form, &$form_state, ApplenewsExportConfigurable $export, $type, $id) {
   module_load_include('inc', 'apple_news');
 
-  $path = 'admin/config/content/apple-news/exports/export/' . $export->id . '/edit';
+  $path = 'admin/config/content/apple-news/export/' . $export->id . '/edit';
 
   switch ($type) {
 
@@ -937,7 +937,7 @@ function apple_news_export_destination_delete_form_submit($form, &$form_state) {
   $id = $form_state['storage']['id'];
   /** @var ApplenewsDestination $destination */
   $destination = $form_state['storage']['destination'];
-  $path = 'admin/config/content/apple-news/exports/export/' . $export->id;
+  $path = 'admin/config/content/apple-news/export/' . $export->id;
 
   switch ($type) {
 
