@@ -574,6 +574,9 @@ function apple_news_export_add_form($form) {
       '#type' => 'submit',
       '#value' => t('Submit'),
     ],
+    'cancel' => [
+      '#markup' => l(t('Back'), 'admin/config/content/apple-news'),
+    ],
   ];
 
   return $form;
