@@ -572,7 +572,7 @@ class ApplenewsexampleDestinationPullQuote extends ApplenewsDestinationComponent
     $text_style = new Styles\ComponentTextStyle();
     $text_style->setTextTransform('uppercase')
       ->setFontName('AvenirNext-Bold')
-      ->setFontSize(16)
+      ->setFontSize(48)
       ->setLineHeight(20)
       ->setTextColor('#FFF');
     $quote->setTextStyle($text_style);
