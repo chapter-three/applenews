@@ -385,7 +385,6 @@ function apple_news_settings_exports_form($form, &$form_state) {
 
   $header = [
     'title'       => ['data' => t('Title')],
-    'description' => ['data' => t('Description')],
     'module'      => ['data' => t('Module')],
     'enabled'     => ['data' => t('Enabled')],
     'status'      => ['data' => t('Status')],
@@ -420,8 +419,9 @@ function apple_news_settings_exports_form($form, &$form_state) {
     $edit = l(t('edit'), 'admin/config/content/apple-news/export/' . $key . '/edit');
     $delete = l(t('delete'), 'admin/config/content/apple-news/export/' . $key . '/delete');
     $rows[$key] = [
-      'title'       => $title,
-      'description' => $export->description,
+      'title'       => '<div class="title">' . $title . '</div>' 
+                          . (!empty($export->description) ? '<div class="description">'
+                          . $export->description . '</div>' : ''),
       'module'      => $module,
       'enabled'     => $enabled,
       'status'      => !empty($status['status']) ? $status['status'] : '',
