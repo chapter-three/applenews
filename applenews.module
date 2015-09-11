@@ -37,13 +37,13 @@ function applenews_init() {
     }
     else {
       $error_message = !empty($library['error message']) ? $library['error message'] : '';
-      $msg = t('Please <a href="!link" target="_blank"><strong>download @name</strong> (version <strong>@v</strong>)</a> library to <strong><em>@path</em></strong> directory or <a href="!install">try autoinstall</a>.',
+      $msg = t('Please <strong>!link</strong> (version <strong>@v</strong>)</a> library to <strong><em>@path</em></strong> directory or !install.',
         [
-          '!link'    => $library['download url'],
+          '!link'    => l(t('download @name', ['@name' => $library['name']]), $library['download url']),
           '@name'    => $library['name'],
           '@path'    => $info['path'],
           '@v'       => $info['version'],
-          '!install' => url('admin/applenews/install'),
+          '!install' => l(t('try auto-install'), 'admin/applenews/install'),
         ]
       );
       // Display message in command line.
@@ -381,6 +381,7 @@ function applenews_menu() {
  *   Fully-loaded export object.
  */
 function applenews_export_load($id) {
+  /** @var SelectQuery $query */
   $query = db_select('applenews_status', 's')
     ->fields('s', ['instance'])
     ->condition('s.id', $id);
