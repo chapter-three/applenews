@@ -107,49 +107,6 @@ function applenews_libraries_info() {
 }
 
 /**
- * Implements hook_requirements().
- */
-function applenews_requirements($phase) {
-  $requirements = [];
-  if ($phase == 'runtime') {
-    $libraries = [
-      'php-curl-class' => APPLENEWS_CURL_SUPPORTED_VERSION,
-      'AppleNewsAPI'      => APPLENEWS_APPLENEWSAPI_SUPPORTED_VERSION,
-    ];
-    foreach ($libraries as $name => $version) {
-      if ($library = libraries_detect($name)) {
-        $msg = '';
-        $lib_version = !empty($library['version']) ? $library['version'] : '';
-        $severity = REQUIREMENT_OK;
-        if ($lib_version != $version) {
-          $msg = t("You're using unsupported version of the <em>@name</em> library.",
-              [
-                '@name' => $library['name']
-              ]
-            )
-           . ' '
-           . t('Please <a href="!link" target="_blank">download version (@v)</a>. to <em>@path</em>',
-              [
-                '!link' => $library['download url'],
-                '@v'    => $version,
-                '@path' => !empty($library['library path']) ? $library['library path'] : t('See README.md'),
-              ]
-            );
-          $severity = REQUIREMENT_ERROR;
-        }
-        $requirements[$name] = [
-          'title'       => !empty($library['name']) ? $library['name'] : 'N/A',
-          'value'       => !empty($library['version']) ? $library['version'] : 'N/A',
-          'severity'    => $severity,
-          'description' => $msg,
-        ];
-      }
-    }
-  }
-  return $requirements;
-}
-
-/**
  * Implements hook_hook_info().
  */
 function applenews_hook_info() {
