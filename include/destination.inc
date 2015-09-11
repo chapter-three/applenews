@@ -13,6 +13,11 @@ use \ChapterThree\AppleNews\Document\Styles;
  */
 abstract class ApplenewsDestination {
 
+  // @see __construct().
+  protected $module;
+  protected $machineName;
+  protected $arguments;
+
   /**
    * Settings for this destination.
    *
@@ -20,6 +25,11 @@ abstract class ApplenewsDestination {
    *   Associative array keyed on setting key.
    */
   public $settings = [];
+
+  /**
+   * Administrative title.
+   */
+  public $title;
 
   /**
    * Weight among a set of destinations.
@@ -47,7 +57,11 @@ abstract class ApplenewsDestination {
    */
   public function __sleep() {
     return [
+      'module',
+      'machineName',
+      'arguments',
       'settings',
+      'title',
       'weight',
       'id',
       'pid',
@@ -70,18 +84,37 @@ abstract class ApplenewsDestination {
 
   /**
    * Implements __construct().
+   *
+   * @param string $module
+   *   The defining module.
+   * @param string $machine_name
+   *   The machine name of this object.
+   * @param array $arguments
+   *   Defined in hook_apple_news_api(), altered by hook_apple_news_api_alter().
    */
-  public function __construct() {
+  public function __construct($module, $machine_name, array $arguments) {
+    $this->module = $module;
+    $this->machineName = $machine_name;
+    $this->arguments = $arguments;
   }
 
   /**
    * Administrative label.
    */
   public function label() {
-    if ($this->id === NULL) {
-      return '';
-    }
-    return '(' . $this->id . ')';
+    return empty($this->title) ? '(' . $this->id . ')' : $this->title;
+  }
+
+  /**
+   * Gets the implementation name.
+   *
+   * @see hook_apple_news_api()
+   */
+  public function name() {
+    module_load_include('inc', 'apple_news');
+    $id = _apple_news_export_id($this->module, $this->machineName);
+    $implementation = apple_news_get_module_apis('destination')[$id];
+    return $implementation['name'];
   }
 
   /**
@@ -143,7 +176,7 @@ abstract class ApplenewsDestination {
    */
   protected function getConfigFormSourceElement(&$form, &$form_state, $key) {
     list($options, $metadata) = $this->getSourceOptions();
-    $form[$key] = [
+    $form['settings'][$key] = [
       '#type'  => 'fieldset',
       '#tree'  => TRUE,
       'source' => [
@@ -157,10 +190,10 @@ abstract class ApplenewsDestination {
     if (!empty($metadata['types']['value'])) {
       $visible_states = [];
       foreach ($metadata['types']['value'] as $source_key) {
-        $visible_states[][':input[name="' . $key . '[source]"]']
+        $visible_states[][':input[name="settings[' . $key . '][source]"]']
           = ['value' => $source_key];
       }
-      $form[$key]['value'] = [
+      $form['settings'][$key]['value'] = [
         '#title'         => t('Value'),
         '#type'          => 'textarea',
         '#default_value' => @$this->getSetting($key)['value'],
@@ -180,9 +213,11 @@ abstract class ApplenewsDestination {
    *   Internal use.
    */
   public function getSourceOptions($ancestors = '', $entity_type = NULL) {
+    module_load_include('inc', 'apple_news');
 
     // Source implementations.
     $sources = apple_news_get_module_apis('source');
+    // Filters for sources.
     $value_sources = function() use(&$sources) {
       return array_filter($sources, function($info) {
         return $info['type'] == 'value';
@@ -190,36 +225,38 @@ abstract class ApplenewsDestination {
     };
     $entity_sources = function($entity_type) use(&$sources) {
       return array_filter($sources, function($info) use($entity_type) {
+        /** @var ApplenewsSourceEntity $class */
+        $class = $info['class'];
         return $info['type'] == 'entity' &&
-          in_array($entity_type, $info['class']::types());
+          in_array($entity_type, $class::types());
       });
     };
     $field_sources = function($field_type) use(&$sources) {
       return array_filter($sources, function($info) use($field_type) {
+        /** @var ApplenewsSourceField $class */
+        $class = $info['class'];
         return $info['type'] == 'field' &&
-          in_array($field_type, $info['class']::types());
+          in_array($field_type, $class::types());
       });
     };
 
     // Array of field type keyed on field name.
     $field_types = function($entity_type, $bundles = FALSE) {
-      $field_info = field_info_instances($entity_type);
-      if (is_array($bundles)) {
-        foreach (array_keys($field_info) as $bundle) {
-          if (!in_array($bundle, $bundles)) {
-            unset($field_info[$bundle]);
-          }
-          else {
-            $field_info[$bundle] = array_map(function($info) {
-              $info = field_info_field($info['field_name']);
-              return $info['type'];
-            }, $field_info[$bundle]);
+      $field_names = [];
+      foreach (field_info_field_map() as $field_name => $field_info) {
+        if (empty($field_info['bundles'][$entity_type])) {
+          continue;
+        }
+        if (is_array($bundles)) {
+          foreach (array_keys($field_info['bundles'][$entity_type]) as $bundle) {
+            if (in_array($bundle, $bundles)) {
+              $field_names[$field_name] = $field_info['type'];
+            }
           }
         }
-      }
-      $field_names = [];
-      foreach ($field_info as $fields) {
-        $field_names += $fields;
+        else {
+          $field_names[$field_name] = $field_info['type'];
+        }
       }
       return $field_names;
     };
@@ -229,11 +266,13 @@ abstract class ApplenewsDestination {
     // Top-level-only.
     if (!$ancestors) {
       $options += [
-        '' => '- ' . t('none') . ' -',
+        '' => t('- none -'),
       ];
       // Each value source.
       foreach ($value_sources() as $source_info) {
-        foreach ($source_info['class']::attributes() as $key => $attr_info) {
+        /** @var ApplenewsSourceValue $class */
+        $class = $source_info['class'];
+        foreach ($class::attributes() as $key => $attr_info) {
           $id = implode('::', [
             $ancestors . '::',
             $source_info['module'],
@@ -258,7 +297,9 @@ abstract class ApplenewsDestination {
     // Each entity source that applies to $entity_type.
     foreach ($entity_sources($entity_type) as $source_info) {
       // Entity attributes.
-      foreach ($source_info['class']::attributes() as $key => $attr_info) {
+      /** @var ApplenewsSourceEntity $class */
+      $class = $source_info['class'];
+      foreach ($class::attributes() as $key => $attr_info) {
         $id = implode('::', [
           $ancestors . '::',
           $source_info['module'],
@@ -291,7 +332,8 @@ abstract class ApplenewsDestination {
       // Each field source that applies to $field_type.
       foreach ($field_sources($field_type) as $source_info) {
         // Field attributes.
-        foreach ($source_info['class']::attributes() as $key => $attr_info) {
+        $class = $source_info['class'];
+        foreach ($class::attributes() as $key => $attr_info) {
           $id = implode('::', [
             $ancestors . '::',
             $source_info['module'],
@@ -342,6 +384,8 @@ abstract class ApplenewsDestination {
       return NULL;
     }
 
+    $source = NULL;
+
     // Parse key.
     // @see self::getSourceOptions()
     // Source classes may have a parent -- delineated by '::::'.
@@ -352,7 +396,7 @@ abstract class ApplenewsDestination {
       // Verify implementation still defined.
       $module = $args[0];
       $machine_name = $args[1];
-      $id = apple_news_export_id($module, $machine_name);
+      $id = _apple_news_export_id($module, $machine_name);
       if (empty($implementations[$id])) {
         $msg = t('Could not load source %machine_name defined by %module.');
         $var = [
@@ -374,7 +418,7 @@ abstract class ApplenewsDestination {
         $args[] = $value;
       }
       // Instantiate.
-      $source = call_user_func_array('apple_news_get_source', $args);
+      $source = call_user_func_array('apple_news_new_source', $args);
     }
 
     return $source;
@@ -469,11 +513,24 @@ abstract class ApplenewsDestination {
    * Provides a configuration form for this destination.
    */
   public function getConfigForm($form, &$form_state) {
+
+    $form['title'] = [
+      '#type' => 'textfield',
+      '#title' => t('Administrative Title'),
+      '#default_value' => $this->title,
+      '#weight' => -10,
+    ];
+
     $form['weight'] = [
       '#type' => 'weight',
       '#title' => t('Weight'),
       '#default_value' => $this->weight,
       '#delta' => 50,
+      '#weight' => 0,
+    ];
+
+    $form['settings'] = [
+      '#tree' => TRUE,
     ];
 
     return $form;
@@ -489,9 +546,10 @@ abstract class ApplenewsDestination {
    * Submit handler for the configuration form for this export.
    */
   public function submitConfigForm($form, &$form_state) {
+    $this->title = $form_state['values']['title'];
     foreach (array_keys($this->settings()) as $key) {
-      if (isset($form_state['values'][$key])) {
-        $this->setSetting($key, $form_state['values'][$key]);
+      if (isset($form_state['values']['settings'][$key])) {
+        $this->setSetting($key, $form_state['values']['settings'][$key]);
       }
     }
   }

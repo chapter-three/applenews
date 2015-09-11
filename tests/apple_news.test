@@ -63,8 +63,8 @@ class ApplenewsExportTestCase extends ApplenewsWebTestCase {
    */
   public static function getInfo() {
     return [
-      'name' => t('Export article using configurable export.'),
-      'description' => t('Export to Apple News Format, articles as defined by default profile, using configurable export.'),
+      'name' => t('Export nodes using configurable export.'),
+      'description' => t('Export to Apple News Format, articles and pages as defined by default profile, using configurable export.'),
       'group' => t('Apple News'),
     ];
   }
@@ -73,7 +73,7 @@ class ApplenewsExportTestCase extends ApplenewsWebTestCase {
    * {@inheritdoc}
    */
   public function setUp(array $modules = []) {
-    parent::setUp(array_merge(['apple_news_article'], $modules));
+    parent::setUp(array_merge(['apple_news'], $modules));
   }
 
   /**
@@ -93,7 +93,7 @@ class ApplenewsExportTestCase extends ApplenewsWebTestCase {
         'title' => $this->randomName(32),
         'body' => $this->randomName(64),
         'image' => $file,
-        'image_title' => $this->randomName(32),
+        'image_alt' => $this->randomName(32),
       ],
       [
         '_desc' => 'page',
@@ -116,7 +116,7 @@ class ApplenewsExportTestCase extends ApplenewsWebTestCase {
           LANGUAGE_NONE => [
             [
               'fid' => $content['image']->fid,
-              'title' => $content['image_title'],
+              'alt' => $content['image_alt'],
             ],
           ],
         ];
@@ -126,67 +126,35 @@ class ApplenewsExportTestCase extends ApplenewsWebTestCase {
       $map[$node->nid] = $i;
     }
 
-    // Enable, configure export.
+    // Configure export.
     $this->drupalPost(
-      'admin/config/content/apple-news/exports/apple_news::node/edit',
+      'admin/config/content/apple-news/exports/add',
+      [
+        'type' => 'apple_news::node',
+        'title' => 'admin title',
+      ],
+      t('Submit')
+    );
+    $this->drupalPost(
+      'admin/config/content/apple-news/export/1/edit',
       [
         'enabled' => TRUE,
-        'bundles[]' => ['article', 'page'],
+        'bundles[article]' => TRUE,
+        'bundles[page]' => TRUE,
       ],
       t('Save changes')
     );
     /** @var ApplenewsExportNode $export */
-    $export = apple_news_get_export('apple_news', 'node');
+    $export = apple_news_export_load(1);
     $this->assert($export instanceof ApplenewsExportNode,
-      "Export object loaded.");
-    // Add component.
-    $this->drupalPost(
-      'admin/config/content/apple-news/exports/apple_news::node/edit',
-      [
-        'components[_new][destination]' => 'apple_news::body',
-        'components[_new][weight]' => '1',
-      ],
-      t('Save changes')
-    );
-    // Configure component.
-    $this->drupalPost(
-      'admin/config/content/apple-news/exports/apple_news::node/component/1',
-      [
-        'text[source]' => '::::apple_news::field::node::body::value',
-      ],
-      t('Save changes')
-    );
-    /** @var ApplenewsExportNode $export */
-    $export = apple_news_get_export('apple_news', 'node', TRUE);
-    /** @var ApplenewsDestinationBodyPhoto $component */
-    $component = $export->getComponent(1);
-    $this->assert($component instanceof ApplenewsDestinationBody,
-      "Destination object loaded.");
-    // Add component.
-    $this->drupalPost(
-      'admin/config/content/apple-news/exports/apple_news::node/edit',
-      [
-        'components[_new][destination]' => 'apple_news::scalable_image',
-        'components[_new][weight]' => '2',
-      ],
-      t('Save changes')
-    );
-    // Configure component.
-    $this->drupalPost(
-      'admin/config/content/apple-news/exports/apple_news::node/component/2',
-      [
-        'file[source]' => '::::apple_news::file::node::field_image::uri',
-        'caption[source]' => '::::apple_news::file::node::field_image::title',
-        'type' => 'photo',
-      ],
-      t('Save changes')
-    );
-    /** @var ApplenewsExportNode $export */
-    $export = apple_news_get_export('apple_news', 'node', TRUE);
-    /** @var ApplenewsDestinationBodyPhoto $component */
-    $component = $export->getComponent(2);
-    $this->assert($component instanceof ApplenewsDestinationScalableImage,
-      "Destination object loaded.");
+      'Export object loaded.');
+    $this->assertEqual('admin title', $export->title,
+      'Export title.');
+    $this->assertEqual(TRUE, $export->enabled,
+      'Export enabled.');
+    $this->assert(
+      in_array('article', $export->bundles()) && in_array('page', $export->bundles()),
+      'Export bundles.');
 
     // Run query to get source ids.
     /** @var EntityFieldQuery $query */
@@ -215,7 +183,16 @@ class ApplenewsExportTestCase extends ApplenewsWebTestCase {
       $this->assertEqual($content['title'], $data->title,
         'Export node title -> title.');
 
-      $item = $data->components[0];
+      $cid = 1;
+      $item = $data->components[$cid - 1];
+      $this->assertEqual('title', $item->role,
+        'Export title component role.');
+      $expected = $content['title'];
+      $this->assertEqual(trim($expected), trim($item->text),
+        "Export title component text -> component ${cid} text.");
+
+      $cid = 2;
+      $item = $data->components[$cid - 1];
       $this->assertEqual('body', $item->role,
         'Export body component role.');
       $this->assertEqual('markdown', $item->format,
@@ -223,21 +200,22 @@ class ApplenewsExportTestCase extends ApplenewsWebTestCase {
       $markdown = new \ChapterThree\AppleNews\Document\Markdown();
       $expected = $markdown->convert($content['body']);
       $this->assertEqual(trim($expected), trim($item->text),
-        'Export body component text -> component 1 text.');
+        "Export body component text -> component ${cid} text.");
 
       if (isset($content['image'])) {
-        $item = $data->components[1];
+        $cid = 3;
+        $item = $data->components[$cid - 1];
         $this->assertEqual('photo', $item->role,
           'Export scalable_image component role.');
         $this->assertEqual(drupal_realpath($file->uri),
           @$export->getAssets()[$item->URL],
           'Export image -> component 2 image URL.');
-        $this->assertEqual($content['image_title'],
+        $this->assertEqual($content['image_alt'],
           $item->caption,
           'Export image -> component 2 image caption.');
       }
       else {
-        $this->assertEqual(1, count($data->components),
+        $this->assertEqual($cid, count($data->components),
           'Export image missing -> no component');
       }
 
@@ -279,7 +257,7 @@ EOD
 
     // Create nodes.
     $map = [];
-    foreach ($contents as $i => $content) {
+    foreach ($contents as $cid => $content) {
       $settings = [
         'type' => $content['type'],
         'title' => $content['title'],
@@ -294,43 +272,80 @@ EOD
       ];
       $node = $this->drupalCreateNode($settings);
       $this->assert($node->nid > 0, "Node \"${content['_desc']}\" created.");
-      $map[$node->nid] = $i;
+      $map[$node->nid] = $cid;
     }
 
-    // Enable, configure export.
+    // Configure export.
     $this->drupalPost(
-      'admin/config/content/apple-news/exports/apple_news::node/edit',
+      'admin/config/content/apple-news/exports/add',
+      [
+        'type' => 'apple_news::node',
+        'title' => 'admin title',
+      ],
+      t('Submit')
+    );
+    $this->drupalPost(
+      'admin/config/content/apple-news/export/1/edit',
       [
         'enabled' => TRUE,
-        'bundles[]' => ['article'],
-      ],
-      t('Save changes')
-    );
-    // Add component.
-    $this->drupalPost(
-      'admin/config/content/apple-news/exports/apple_news::node/edit',
-      [
-        'components[_new][destination]' => 'apple_news::bodyphoto',
-        'components[_new][weight]' => '0',
-      ],
-      t('Save changes')
-    );
-    // Configure component.
-    $this->drupalPost(
-      'admin/config/content/apple-news/exports/apple_news::node/component/1',
-      [
-        'text[source]' => '::::apple_news::field::node::body::value',
+        'bundles[article]' => TRUE,
       ],
       t('Save changes')
     );
     /** @var ApplenewsExportNode $export */
-    $export = apple_news_get_export('apple_news', 'node');
+    $export = apple_news_export_load(1);
     $this->assert($export instanceof ApplenewsExportNode,
-      "Export object loaded.");
+      'Export object loaded.');
+    $this->assertEqual('admin title', $export->title,
+      'Export title.');
+    $this->assertEqual(TRUE, $export->enabled,
+      'Export enabled.');
+    $this->assert(in_array('article', $export->bundles()),
+      'Export bundles.');
+    // Replace default components with body+image type.
+    for ($cid = 1; $cid <= count($export->getComponents()); $cid++) {
+      $this->drupalPost(
+        "admin/config/content/apple-news/export/1/component/${cid}/delete",
+        [],
+        t('Yes, delete')
+      );
+    }
+    $export = apple_news_export_load(1);
+    $this->assertEqual(0, count($export->getComponents()),
+      'Default components deleted.');
+    $this->drupalPost(
+      "admin/config/content/apple-news/export/1",
+      [
+        'components[_new][destination]' => 'apple_news::bodyphoto',
+      ],
+      t('Save changes')
+    );
+    $export = apple_news_export_load(1);
+    $this->assertEqual(1, count($export->getComponents()),
+      'New component added.');
+    $cid = 1;
     /** @var ApplenewsDestinationBodyPhoto $component */
-    $component = $export->getComponent(1);
+    $component = $export->getComponent($cid);
     $this->assert($component instanceof ApplenewsDestinationBodyPhoto,
-      "Destination object loaded.");
+      'Destination object loaded.');
+    $this->drupalPost(
+      "admin/config/content/apple-news/export/1/component/${cid}",
+      [
+        'title' => 'body',
+        'settings[text][source]' => '::::apple_news::field::node::body::value_sanitized',
+      ],
+      t('Save changes')
+    );
+    $export = apple_news_export_load(1);
+    /** @var ApplenewsDestinationBodyPhoto $component */
+    $component = $export->getComponent($cid);
+    $this->assert($component instanceof ApplenewsDestinationBodyPhoto,
+      'Destination object loaded.');
+    $this->assertEqual('body', $component->title,
+      'Destination title.');
+    $this->assertEqual('::::apple_news::field::node::body::value_sanitized',
+      $component->getSetting('text')['source'],
+      'Destination "text" source.');
 
     // Run query to get source ids.
     /** @var EntityFieldQuery $query */
@@ -340,8 +355,6 @@ EOD
     $a = array_keys($map);
     $b = array_keys($result['node']);
     $this->assert(!array_diff($a, $b) && !array_diff($b, $a), 'Query result.');
-
-    $markdown = new \ChapterThree\AppleNews\Document\Markdown();
 
     // Export each.
     foreach (array_keys($result['node']) as $nid) {
@@ -361,41 +374,46 @@ EOD
       $this->assertEqual($content['title'], $data->title,
         'Export node title -> title.');
 
-      $item = $data->components[0];
+      $cid = 1;
+      $item = $data->components[$cid - 1];
       $this->assertEqual('body', $item->role,
-        'Export body component role.');
+        "Export component ${cid} role.");
       $this->assertEqual('markdown', $item->format,
-        'Export body component format.');
+        "Export component ${cid} format.");
       $this->assertEqual($content['body_expected'], $item->text,
-        'Export body fragment -> component 1 body text.');
+        "Export body fragment -> component ${cid} body text.");
 
-      $item = $data->components[1];
+      $cid++;
+      $item = $data->components[$cid - 1];
       $this->assertEqual('photo', $item->role,
-        'Export inline image component role.');
+        "Export component ${cid} role.");
       $this->assertEqual(drupal_realpath($file->uri),
         @$export->getAssets()[$item->URL],
-        'Export body fragment -> component 2 image URL.');
+        "Export body fragment -> component ${cid} image URL.");
 
-      $item = $data->components[2];
+      $cid++;
+      $item = $data->components[$cid - 1];
       $this->assertEqual('photo', $item->role,
-        'Export inline image component role.');
+        "Export component ${cid} role.");
       $this->assertEqual(drupal_realpath($file->uri),
         @$export->getAssets()[$item->URL],
-        'Export body fragment -> component 3 image URL.');
+        "Export body fragment -> component ${cid} image URL.");
 
-      $item = $data->components[3];
+      $cid++;
+      $item = $data->components[$cid - 1];
       $this->assertEqual('photo', $item->role,
-        'Export inline image component role.');
+        "Export component ${cid} role.");
       $this->assertEqual(drupal_realpath($file->uri),
         @$export->getAssets()[$item->URL],
-        'Export body fragment -> component 4 image URL.');
+        "Export body fragment -> component ${cid} image URL.");
 
-      $item = $data->components[4];
+      $cid++;
+      $item = $data->components[$cid - 1];
       $this->assertEqual('photo', $item->role,
-        'Export inline image component role.');
+        "Export component ${cid} role.");
       $this->assertEqual(drupal_realpath($file->uri),
         @$export->getAssets()[$item->URL],
-        'Export body fragment -> component 5 image URL.');
+        "Export body fragment -> component ${cid} image URL.");
 
     }
   }

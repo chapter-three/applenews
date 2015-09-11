@@ -16,14 +16,7 @@ use \ChapterThree\AppleNews\Document\Markdown;
 /**
  * Body component.
  */
-class Applenewsstyle1DestinationBody extends ApplenewsDestinationBodyPhoto {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function label() {
-    return t('Body (%id)', ['%id' => $this->id]);
-  }
+class ApplenewsexampleDestinationBody extends ApplenewsDestinationBodyPhoto {
 
   /**
    * {@inheritdoc}
@@ -44,7 +37,7 @@ class Applenewsstyle1DestinationBody extends ApplenewsDestinationBodyPhoto {
    */
   public function getConfigForm($form, &$form_state) {
     $form = parent::getConfigForm($form, $form_state);
-    $form['format']['#type'] = 'value';
+    $form['settings']['format']['#type'] = 'value';
     return $form;
   }
 
@@ -122,14 +115,7 @@ class Applenewsstyle1DestinationBody extends ApplenewsDestinationBodyPhoto {
 /**
  * Image header component.
  */
-class Applenewsstyle1DestinationHeaderImage extends ApplenewsDestinationComponent {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function label() {
-    return t('Header Image (%id)', ['%id' => $this->id]);
-  }
+class ApplenewsexampleDestinationHeaderImage extends ApplenewsDestinationComponent {
 
   /**
    * {@inheritdoc}
@@ -144,14 +130,8 @@ class Applenewsstyle1DestinationHeaderImage extends ApplenewsDestinationComponen
    * {@inheritdoc}
    */
   public function validateSettings() {
-    foreach (['file'] as $key) {
-      if (@$this->getSetting($key) === NULL ||
-          !$this->sourceOptionValid($this->getSetting($key)['source'])
-      ) {
-        return FALSE;
-      }
-    }
-    return parent::validateSettings();
+    return $this->validateSettingsSources(['file']) &&
+      parent::validateSettings();
   }
 
   /**
@@ -162,8 +142,8 @@ class Applenewsstyle1DestinationHeaderImage extends ApplenewsDestinationComponen
     $form = parent::getConfigForm($form, $form_state);
 
     parent::getConfigFormSourceElement($form, $form_state, 'file');
-    $form['file']['#title'] = t('File');
-    $form['file']['#required'] = TRUE;
+    $form['settings']['file']['#title'] = t('File');
+    $form['settings']['file']['#required'] = TRUE;
 
     return $form;
   }
@@ -211,14 +191,7 @@ class Applenewsstyle1DestinationHeaderImage extends ApplenewsDestinationComponen
 /**
  * Gradient header container component.
  */
-class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestinationComponent {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function label() {
-    return t('Header with Credits (%id)', ['%id' => $this->id]);
-  }
+class ApplenewsexampleDestinationHeaderGradContainer extends ApplenewsDestinationComponent {
 
   /**
    * {@inheritdoc}
@@ -238,14 +211,8 @@ class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination
    * {@inheritdoc}
    */
   public function validateSettings() {
-    foreach (['title'] as $key) {
-      if (@$this->getSetting($key) === NULL ||
-          !$this->sourceOptionValid($this->getSetting($key)['source'])
-      ) {
-        return FALSE;
-      }
-    }
-    return parent::validateSettings();
+    return $this->validateSettingsSources(['title']) &&
+      parent::validateSettings();
   }
 
   /**
@@ -256,22 +223,22 @@ class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination
     $form = parent::getConfigForm($form, $form_state);
 
     parent::getConfigFormSourceElement($form, $form_state, 'title');
-    $form['title']['#title'] = t('Title');
-    $form['title']['#required'] = TRUE;
+    $form['settings']['title']['#title'] = t('Title');
+    $form['settings']['title']['#required'] = TRUE;
 
     parent::getConfigFormSourceElement($form, $form_state, 'intro');
-    $form['intro']['#title'] = t('Intro');
+    $form['settings']['intro']['#title'] = t('Intro');
 
     parent::getConfigFormSourceElement($form, $form_state, 'author');
-    $form['author']['#title'] = t('Author');
+    $form['settings']['author']['#title'] = t('Author');
 
     parent::getConfigFormSourceElement($form, $form_state, 'photographer');
-    $form['photographer']['#title'] = t('Photographer');
+    $form['settings']['photographer']['#title'] = t('Photographer');
 
     parent::getConfigFormSourceElement($form, $form_state, 'image');
-    $form['image']['#title'] = t('Background Image');
+    $form['settings']['image']['#title'] = t('Background Image');
 
-    $form['gradient'] = [
+    $form['settings']['gradient'] = [
       '#type' => 'checkbox',
       '#title' => t('Gradient'),
       '#default_value' => $this->getSetting('gradient'),
@@ -358,6 +325,7 @@ class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination
       $container->addComponent($intro);
     }
 
+    /** @var EntityDrupalWrapper $wrapper */
     $wrapper = entity_metadata_wrapper('node', $this->export->source);
     $language = $wrapper->language->value();
 
@@ -370,8 +338,9 @@ class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination
     list($key, $values) = $this->getSourceValues($this->export->source,
       $this->getSetting('author'));
     if (!empty($values[0][$key])) {
-      $author = new Components\Author(
-        t('By', ['langcode' => $language]) . ' ' . $values[0][$key]);
+      $author = t('By !author', ['!author' => $values[0][$key]],
+        ['langcode' => $language]);
+      $author = new Components\Author($author);
       $layout = new Layouts\ComponentLayout();
       $layout->setColumnStart(0)->setColumnSpan(7)
         ->setMargin(new Margin(10, 5));
@@ -382,14 +351,16 @@ class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination
     list($key, $values) = $this->getSourceValues($this->export->source,
       $this->getSetting('photographer'));
     if (!empty($values[0][$key])) {
-      $photog = new Components\Photographer(
-        t('Photos', ['langcode' => $language]) . ': ' . $values[0][$key]);
+      $photographer = t('Photos: !photographer',
+        ['!photographer' => $values[0][$key]],
+        ['langcode' => $language]);
+      $photographer = new Components\Photographer($photographer);
       $layout = new Layouts\ComponentLayout();
       $layout->setColumnStart(0)->setColumnSpan(7)
         ->setMargin(new Margin(NULL, 15));
-      $photog->setLayout($layout);
-      $photog->setTextStyle($text_style);
-      $container->addComponent($photog);
+      $photographer->setLayout($layout);
+      $photographer->setTextStyle($text_style);
+      $container->addComponent($photographer);
     }
 
     // Parent container.
@@ -440,14 +411,7 @@ class Applenewsstyle1DestinationHeaderGradContainer extends ApplenewsDestination
 /**
  * Animated pullquote component.
  */
-class Applenewsstyle1DestinationPullQuote extends ApplenewsDestinationComponent {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function label() {
-    return t('Pull Quote (%id)', ['%id' => $this->id]);
-  }
+class ApplenewsexampleDestinationPullQuote extends ApplenewsDestinationComponent {
 
   /**
    * {@inheritdoc}
@@ -464,14 +428,8 @@ class Applenewsstyle1DestinationPullQuote extends ApplenewsDestinationComponent 
    * {@inheritdoc}
    */
   public function validateSettings() {
-    foreach (['quote'] as $key) {
-      if (@$this->getSetting($key) === NULL ||
-          !$this->sourceOptionValid($this->getSetting($key)['source'])
-      ) {
-        return FALSE;
-      }
-    }
-    return parent::validateSettings();
+    return $this->validateSettingsSources(['quote']) &&
+      parent::validateSettings();
   }
 
   /**
@@ -482,13 +440,13 @@ class Applenewsstyle1DestinationPullQuote extends ApplenewsDestinationComponent 
     $form = parent::getConfigForm($form, $form_state);
 
     parent::getConfigFormSourceElement($form, $form_state, 'image');
-    $form['image']['#title'] = t('Image');
+    $form['settings']['image']['#title'] = t('Image');
 
     parent::getConfigFormSourceElement($form, $form_state, 'quote');
-    $form['quote']['#title'] = t('Quote');
-    $form['quote']['#required'] = TRUE;
+    $form['settings']['quote']['#title'] = t('Quote');
+    $form['settings']['quote']['#required'] = TRUE;
 
-    $form['format'] = [
+    $form['settings']['format'] = [
       '#title'         => t('Quote Format'),
       '#type'          => 'select',
       '#options'       => [
@@ -617,7 +575,7 @@ class Applenewsstyle1DestinationPullQuote extends ApplenewsDestinationComponent 
     $text_style = new Styles\ComponentTextStyle();
     $text_style->setTextTransform('uppercase')
       ->setFontName('AvenirNext-Bold')
-      ->setFontSize(16)
+      ->setFontSize(48)
       ->setLineHeight(20)
       ->setTextColor('#FFF');
     $quote->setTextStyle($text_style);
@@ -679,7 +637,7 @@ class Applenewsstyle1DestinationPullQuote extends ApplenewsDestinationComponent 
 /**
  * Mosaic or Gallery component.
  */
-class Applenewsstyle1DestinationImages extends ApplenewsDestinationImages {
+class ApplenewsexampleDestinationImages extends ApplenewsDestinationImages {
 
   /**
    * {@inheritdoc}
@@ -722,14 +680,7 @@ class Applenewsstyle1DestinationImages extends ApplenewsDestinationImages {
 /**
  * Banner Ad.
  */
-class Applenewsstyle1DestinationAd extends ApplenewsDestinationAd {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function label() {
-    return t('Banner Ad (%id)', ['%id' => $this->id]);
-  }
+class ApplenewsexampleDestinationAd extends ApplenewsDestinationAd {
 
   /**
    * {@inheritdoc}
@@ -753,8 +704,8 @@ class Applenewsstyle1DestinationAd extends ApplenewsDestinationAd {
    */
   public function getConfigForm($form, &$form_state) {
     $form = parent::getConfigForm($form, $form_state);
-    $form['type']['#type'] = 'value';
-    $form['banner_type']['#type'] = 'value';
+    $form['settings']['type']['#type'] = 'value';
+    $form['settings']['banner_type']['#type'] = 'value';
     return $form;
   }
 

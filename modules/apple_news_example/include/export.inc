@@ -12,7 +12,7 @@ use \ChapterThree\AppleNews\Document\Components;
 /**
  * A configurable node export.
  */
-class Applenewsstyle1ExportNode extends ApplenewsExportNode {
+class ApplenewsexampleExportNode extends ApplenewsExportNode {
 
   /**
    * {@inheritdoc}
@@ -26,7 +26,7 @@ class Applenewsstyle1ExportNode extends ApplenewsExportNode {
   /**
    * {@inheritdoc}
    */
-  public function getConfigForm(array $form, array &$form_state) {
+  public function getConfigForm(array $form = NULL, array &$form_state = NULL) {
     $form = parent::getConfigForm($form, $form_state);
 
     // Hide parent layout elements.
@@ -75,12 +75,14 @@ class Applenewsstyle1ExportNode extends ApplenewsExportNode {
             $anchor = $comp instanceof Components\Image ||
               $comp instanceof Components\ScalableImage ||
               $comp instanceof Components\Pullquote;
+            $range_start = 0;
             // Or contains pullquote.
             if (!$anchor && $comp instanceof Components\ComponentNested) {
               $class_pullquote = '\ChapterThree\AppleNews\Document\Components\Pullquote';
               /** @var \ChapterThree\AppleNews\Document\Components\ComponentNested $comp */
               if ($comp->hasComponentType($class_pullquote)) {
                 $anchor = TRUE;
+                $range_start = floor(strlen($prev->getText()) / 2);
               }
             }
             if ($anchor) {
@@ -91,7 +93,7 @@ class Applenewsstyle1ExportNode extends ApplenewsExportNode {
               $anchor = new Anchor('bottom');
               $anchor->setOriginAnchorPosition('bottom')
                 ->setTargetComponentIdentifier($id)
-                ->setRangeStart(0)
+                ->setRangeStart($range_start)
                 ->setRangeLength(1);
               $comp->setAnchor($anchor);
             }

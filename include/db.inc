@@ -8,6 +8,9 @@
  * related database tables.
  */
 
+/**
+ * Interface ApplenewsDatabaseInterface.
+ */
 interface ApplenewsDatabaseInterface {
 
   /**
@@ -42,6 +45,7 @@ interface ApplenewsDatabaseInterface {
 
   /**
    * Set post ID (primary key value).
+   *
    * Returns post ID by entity type, entity ID, entity revision ID.
    */
   public function setPostId($entity_type, $entity_id, $revision_id);
@@ -69,7 +73,7 @@ interface ApplenewsDatabaseInterface {
   /**
    * Delete Apple News related records by Entity ID and Entity Type.
    */
-  public function deleteByEntity($entity_id, $entity_type);
+  public function deleteByEntity(EntityDrupalWrapper $entity_id, $entity_type);
 
 }
 
@@ -78,46 +82,43 @@ interface ApplenewsDatabaseInterface {
  */
 class ApplenewsDatabase implements ApplenewsDatabaseInterface {
 
-  private $post_id = NULL;
-  private $entity_type = '';
-  private $entity_id = NULL;
-  private $revision_id = NULL;
-  private $channel_id = NULL;
-  private $module = NULL;
-  private $machine_name = NULL;
+  private $postId = NULL;
+  private $entityType = '';
+  private $entityId = NULL;
+  private $revisionId = NULL;
+  private $channelId = NULL;
+  private $exid = NULL;
 
   /**
    * Save Apple News post information.
    */
-  private function save_entities(array $entity = [], $primary_key = '') {
+  private function saveEntities(array $entity = [], $primary_key = '') {
     if (!empty($primary_key)) {
-      $entity['post_id'] = $this->setPostId($this->entity_type, $this->entity_id,  $this->revision_id);
+      $entity['post_id'] = $this
+        ->setPostId($this->entityType, $this->entityId, $this->revisionId);
     }
-    $entity['entity_type'] = $this->entity_type;
-    $entity['entity_id'] = $this->entity_id;
-    $entity['revision_id'] = $this->revision_id;
-    $entity['module'] = $this->module;
-    $entity['machine_name'] = $this->machine_name;
+    $entity['entity_type'] = $this->entityType;
+    $entity['entity_id'] = $this->entityId;
+    $entity['revision_id'] = $this->revisionId;
+    $entity['exid'] = $this->exid;
     if (!empty($primary_key)) {
       drupal_write_record('apple_news_entities', $entity, $primary_key);
     }
     else {
       drupal_write_record('apple_news_entities', $entity);
     }
-    $this->post_id = !empty($entity['post_id']) ? $entity['post_id'] : NULL;
-    return $this->post_id;
+    $this->postId = !empty($entity['post_id']) ? $entity['post_id'] : NULL;
+    return $this->postId;
   }
 
   /**
    * Save export for an entity.
    */
-  public function setExport($module, $machine_name) {
-    $this->module = $module;
-    $this->machine_name = $machine_name;
+  public function setExport($exid) {
+    $this->exid = $exid;
     $entity = [
-      'post_id' => $this->post_id,
-      'module' => $module,
-      'machine_name' => $machine_name,
+      'post_id' => $this->postId,
+      'exid' => $exid,
     ];
     drupal_write_record('apple_news_entities', $entity, 'post_id');
   }
@@ -125,10 +126,10 @@ class ApplenewsDatabase implements ApplenewsDatabaseInterface {
   /**
    * Save Apple News channels.
    */
-  private function save_channels(array $channels = []) {
-    $this->delete_channels();
+  private function saveChannels(array $channels = []) {
+    $this->deleteChannels();
     foreach ($channels as $channel) {
-      $channel['post_id'] = $this->post_id;
+      $channel['post_id'] = $this->postId;
       drupal_write_record('apple_news_channels', $channel);
     }
   }
@@ -136,10 +137,10 @@ class ApplenewsDatabase implements ApplenewsDatabaseInterface {
   /**
    * Save Apple News sections.
    */
-  private function save_sections(array $sections = []) {
-    $this->delete_sections();
+  private function saveSections(array $sections = []) {
+    $this->deleteSections();
     foreach ($sections as $section) {
-      $section['post_id'] = $this->post_id;
+      $section['post_id'] = $this->postId;
       drupal_write_record('apple_news_sections', $section);
     }
   }
@@ -147,45 +148,45 @@ class ApplenewsDatabase implements ApplenewsDatabaseInterface {
   /**
    * Save Apple News metadata.
    */
-  private function save_metadata(array $metadata = []) {
-    $this->delete_metadata();
-    $metadata['post_id'] = $this->post_id;
+  private function saveMetadata(array $metadata = []) {
+    $this->deleteMetadata();
+    $metadata['post_id'] = $this->postId;
     drupal_write_record('apple_news_metadata', $metadata);
   }
 
   /**
    * Delete entities.
    */
-  private function delete_entities() {
+  private function deleteEntities() {
     db_delete('apple_news_entities')
-      ->condition('post_id', $this->post_id)
+      ->condition('post_id', $this->postId)
       ->execute();
   }
 
   /**
    * Delete channels.
    */
-  private function delete_channels() {
+  private function deleteChannels() {
     db_delete('apple_news_channels')
-      ->condition('post_id', $this->post_id)
+      ->condition('post_id', $this->postId)
       ->execute();
   }
 
   /**
    * Delete section information.
    */
-  private function delete_sections() {
+  private function deleteSections() {
     db_delete('apple_news_sections')
-      ->condition('post_id', $this->post_id)
+      ->condition('post_id', $this->postId)
       ->execute();
   }
 
   /**
    * Delete post metadata.
    */
-  private function delete_metadata() {
+  private function deleteMetadata() {
     db_delete('apple_news_metadata')
-      ->condition('post_id', $this->post_id)
+      ->condition('post_id', $this->postId)
       ->execute();
   }
 
@@ -202,13 +203,13 @@ class ApplenewsDatabase implements ApplenewsDatabaseInterface {
     $query->fields('c');
     $query->fields('s');
     $query->fields('m');
-    $query->condition('e.post_id', $this->post_id);
-    if (!empty($this->channel_id)) {
-      if (is_array($this->channel_id)) {
-        $query->condition('c.channel_id', $this->channel_id, 'IN');
+    $query->condition('e.post_id', $this->postId);
+    if (!empty($this->channelId)) {
+      if (is_array($this->channelId)) {
+        $query->condition('c.channel_id', $this->channelId, 'IN');
       }
       else {
-        $query->condition('c.channel_id', $this->channel_id);
+        $query->condition('c.channel_id', $this->channelId);
       }
     }
     $query->orderBy('e.postdate', 'DESC');
@@ -216,8 +217,7 @@ class ApplenewsDatabase implements ApplenewsDatabaseInterface {
       $article = [
         'article_id'     => $row->article_id,
         'share_url'      => $row->share_url,
-        'module'         => $row->module,
-        'machine_name'   => $row->machine_name,
+        'exid'           => $row->exid,
         'entity_id'      => $row->entity_id,
         'revision_id'    => $row->revision_id,
         'entity_type'    => $row->entity_type,
@@ -235,28 +235,28 @@ class ApplenewsDatabase implements ApplenewsDatabaseInterface {
    * Set entity id.
    */
   public function setEntityId($id) {
-    $this->entity_id = $id;
+    $this->entityId = $id;
   }
 
   /**
    * Set revision id.
    */
   public function setEntityRevisionId($id) {
-    $this->revision_id = $id;
+    $this->revisionId = $id;
   }
 
   /**
    * Set entity type.
    */
   public function setEntityType($type) {
-    $this->entity_type = $type;
+    $this->entityType = $type;
   }
 
   /**
    * Set channel id.
    */
   public function setChannelId($id) {
-    $this->channel_id = $id;
+    $this->channelId = $id;
   }
 
   /**
@@ -268,16 +268,16 @@ class ApplenewsDatabase implements ApplenewsDatabaseInterface {
     $query = db_select('apple_news_entities', 'e');
     $query->join('apple_news_channels', 'c', 'c.post_id = e.post_id');
     $query->fields('c', ['channel_id']);
-    $query->condition('e.entity_type', $this->entity_type);
-    $query->condition('e.entity_id', $this->entity_id);
-    $query->condition('e.revision_id', $this->revision_id);
+    $query->condition('e.entity_type', $this->entityType);
+    $query->condition('e.entity_id', $this->entityId);
+    $query->condition('e.revision_id', $this->revisionId);
 
-    if (!empty($this->channel_id)) {
-      if (is_array($this->channel_id)) {
-        $query->condition('c.channel_id', $this->channel_id, 'IN');
+    if (!empty($this->channelId)) {
+      if (is_array($this->channelId)) {
+        $query->condition('c.channel_id', $this->channelId, 'IN');
       }
       else {
-        $query->condition('c.channel_id', $this->channel_id);
+        $query->condition('c.channel_id', $this->channelId);
       }
     }
     $result = $query->execute();
@@ -297,31 +297,30 @@ class ApplenewsDatabase implements ApplenewsDatabaseInterface {
 
     $query = db_select('apple_news_entities', 'e');
     $query->join('apple_news_channels', 'c', 'c.post_id = e.post_id');
-    $query->fields('e', ['post_id', 'module', 'machine_name']);
+    $query->fields('e', ['post_id', 'exid']);
     $query->condition('e.entity_type', $entity_type);
     $query->condition('e.entity_id', $entity_id);
     $query->condition('e.revision_id', $revision_id);
-    if (!empty($this->channel_id)) {
-      if (is_array($this->channel_id)) {
-        $query->condition('c.channel_id', $this->channel_id, 'IN');
+    if (!empty($this->channelId)) {
+      if (is_array($this->channelId)) {
+        $query->condition('c.channel_id', $this->channelId, 'IN');
       }
       else {
-        $query->condition('c.channel_id', $this->channel_id);
+        $query->condition('c.channel_id', $this->channelId);
       }
     }
     if ($result = $query->execute()->fetchAssoc()) {
-      $this->post_id = $result['post_id'];
-      $this->module = $result['module'];
-      $this->machine_name = $result['machine_name'];
+      $this->postId = $result['post_id'];
+      $this->exid = $result['exid'];
     }
-    return $this->post_id;
+    return $this->postId;
   }
 
   /**
    * Get article by article ID.
    */
   public function getArticleById($article_id) {
-    $this->post_id = db_select('apple_news_entities', 'e')
+    $this->postId = db_select('apple_news_entities', 'e')
       ->fields('e', ['post_id'])
       ->condition('article_id', $article_id)
       ->execute()
@@ -335,10 +334,10 @@ class ApplenewsDatabase implements ApplenewsDatabaseInterface {
   public function insert($record) {
     $transaction = db_transaction();
     try {
-      $this->save_entities($record['entity']);
-      $this->save_channels($record['channels']);
-      $this->save_sections($record['sections']);
-      $this->save_metadata($record['metadata']);
+      $this->saveEntities($record['entity']);
+      $this->saveChannels($record['channels']);
+      $this->saveSections($record['sections']);
+      $this->saveMetadata($record['metadata']);
     }
     catch (Exception $e) {
       $transaction->rollback();
@@ -358,16 +357,16 @@ class ApplenewsDatabase implements ApplenewsDatabaseInterface {
   public function update($record) {
     $transaction = db_transaction();
     try {
-      $this->save_entities($record['entity'], 'post_id');
-      $this->save_channels($record['channels']);
-      $this->save_sections($record['sections']);
-      $this->save_metadata($record['metadata']);
+      $this->saveEntities($record['entity'], 'post_id');
+      $this->saveChannels($record['channels']);
+      $this->saveSections($record['sections']);
+      $this->saveMetadata($record['metadata']);
     }
     catch (Exception $e) {
       $transaction->rollback();
       $msg = "Couldn't write post ID @id";
       $var = [
-        '@id' => $this->post_id
+        '@id' => $this->postId
       ];
       watchdog_exception('apple_news', $e, $msg, $var, WATCHDOG_ERROR);
     }
@@ -379,16 +378,16 @@ class ApplenewsDatabase implements ApplenewsDatabaseInterface {
   public function delete() {
     $transaction = db_transaction();
     try {
-      $this->delete_entities();
-      $this->delete_channels();
-      $this->delete_sections();
-      $this->delete_metadata();
+      $this->deleteEntities();
+      $this->deleteChannels();
+      $this->deleteSections();
+      $this->deleteMetadata();
     }
     catch (Exception $e) {
       $transaction->rollback();
       $msg = "Couldn't delete post ID @id";
       $var = [
-        '@id' => $this->post_id
+        '@id' => $this->postId
       ];
       watchdog_exception('apple_news', $e, $msg, $var, WATCHDOG_ERROR);
     }
@@ -397,7 +396,7 @@ class ApplenewsDatabase implements ApplenewsDatabaseInterface {
   /**
    * Delete Apple News related records by Entity ID and Entity Type.
    */
-  public function deleteByEntity($entity_wrapper, $entity_type) {
+  public function deleteByEntity(EntityDrupalWrapper $entity_wrapper, $entity_type) {
     $transaction = db_transaction();
     try {
       $entity_id = $entity_wrapper->getIdentifier();
@@ -408,18 +407,18 @@ class ApplenewsDatabase implements ApplenewsDatabaseInterface {
         ->condition('e.entity_type', $entity_type)
         ->execute();
       foreach ($result as $row) {
-        $this->post_id = $row->post_id;
-        $this->delete_entities();
-        $this->delete_channels();
-        $this->delete_sections();
-        $this->delete_metadata();
+        $this->postId = $row->post_id;
+        $this->deleteEntities();
+        $this->deleteChannels();
+        $this->deleteSections();
+        $this->deleteMetadata();
       }
     }
     catch (Exception $e) {
       $transaction->rollback();
       $msg = "Couldn't delete post ID @id";
       $var = [
-        '@id' => $this->post_id
+        '@id' => $this->postId
       ];
       watchdog_exception('apple_news', $e, $msg, $var, WATCHDOG_ERROR);
     }

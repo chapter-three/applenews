@@ -48,7 +48,7 @@ function _apple_news_form_alter_node_form(&$form, &$form_state) {
   $export_options = [];
   if (count($exports)) {
     foreach ($exports as $key => $info) {
-      $export = apple_news_get_export($info['module'], $info['machine_name']);
+      $export = apple_news_export_load($key);
       $valid = $export->showOnEdit($entity_type, $bundle) && (
           !isset($entity_id) ||
           apple_news_entity_export_valid($export, $entity_type, $entity_id)
@@ -59,7 +59,7 @@ function _apple_news_form_alter_node_form(&$form, &$form_state) {
       if (empty($default_export)) {
         $default_export = $export;
       }
-      $export_options[$key] = $info['name'] . ' (' . $info['module'] . ')';
+      $export_options[$key] = $export->title;
     }
     if (!empty($entity_id)) {
       $default_export = apple_news_entity_get_export($entity_type, $entity_id);
@@ -70,7 +70,7 @@ function _apple_news_form_alter_node_form(&$form, &$form_state) {
   $channels_all = apple_news_channels();
 
   // Load existing Apple News article.
-  if (!empty($entity_id)) {
+  if (!empty($entity_id) && !empty($revision_id)) {
     $post = new ApplenewsDatabase();
     if (!empty($channels_all)) {
       $channel_ids = array_keys($channels_all);
@@ -129,7 +129,7 @@ function _apple_news_form_alter_node_form(&$form, &$form_state) {
   }
 
   // Pushed.
-  if (!empty($article_id)) {
+  if (!empty($article_id) && !empty($article) && !empty($entity_id)) {
     // Post date.
     $form['apple_news']['post_date'] = [
       '#markup' => '<div class="apple-news-post-date">' . format_date($article['postdate'], 'short') . '</div><br/>',
@@ -148,19 +148,14 @@ function _apple_news_form_alter_node_form(&$form, &$form_state) {
     ];
     // Delete.
     if (count($api_channels)) {
+      $link = l(t('Delete'), 'admin/config/content/apple-news/'
+        . $entity_type . '/'
+        . $entity_id . '/'
+        . $article['article_id'] . '/'
+        . reset($channel_ids)
+        . '/delete');
       $form['apple_news']['delete'] = [
-        '#markup' => '<div class="apple-news-delete-link">' . t('<a href="!link">Delete</a> this article from Apple News.',
-            [
-              '!link' => url('admin/config/content/apple-news/'
-                . $entity_type . '/'
-                . $entity_id
-                . '/' . $article['article_id'] . '/'
-                . reset($channel_ids)
-                . '/delete'
-              ),
-            ]
-          )
-          . '</div><br/>',
+        '#markup' => '<div class="apple-news-delete-link">' . t('!link this article from Apple News.', ['!link' => $link]) . '</div><br/>',
         '#prefix' => '<div><strong>' . t('Delete') . '</strong></div>',
       ];
     }
@@ -185,8 +180,7 @@ function _apple_news_form_alter_node_form(&$form, &$form_state) {
       '#type' => 'select',
       '#title' => t('Export'),
       '#options' => $export_options,
-      '#default_value' => empty($default_export) ? NULL : apple_news_export_id(
-        $default_export->getModule(), $default_export->getMachineName()),
+      '#default_value' => empty($default_export) ? NULL : $default_export->id,
     ];
     // When new content show export dropdown when the checkbox is selected.
     if (empty($article_id)) {
@@ -197,34 +191,30 @@ function _apple_news_form_alter_node_form(&$form, &$form_state) {
       ];
     }
     // Get configuration form for the AppleNews exportable entity.
-    $export_form = $default_export->getConfigForm([], $form_state);
-    if (isset($export_form['channels'])) {
-      foreach (element_children($export_form['channels']) as $key) {
-        unset($export_form['channels'][$key]['#default_value']);
+    $channels_element = $default_export
+      ->getConfigForm()['additional_settings']['general']['channels'];
+    // Set Apple News default values for current entity.
+    if (!empty($article) && !empty($article_id) && count($api_channels)) {
+      foreach (element_children($channels_element) as $key) {
+        unset($channels_element[$key]['#default_value']);
       }
-      // Set Apple News default values for current entity.
-      if (!empty($article_id) && count($api_channels)) {
-        foreach ($article['sections'] as $section_id => $channel_id) {
-          $key = 'channel-' . $channel_id;
-          if (!empty($export_form['channels'][$key])) {
-            $export_form['channels'][$key]['#default_value'] = TRUE;
-          }
-          $key = 'section-' . $channel_id . '-' . $section_id;
-          if (!empty($export_form['channels'][$key])) {
-            $export_form['channels'][$key]['#default_value'] = TRUE;
-          }
+      foreach ($article['sections'] as $section_id => $channel_id) {
+        $key = 'channel-' . $channel_id;
+        if (!empty($channels_element[$key])) {
+          $channels_element[$key]['#default_value'] = TRUE;
+        }
+        $key = 'section-' . $channel_id . '-' . $section_id;
+        if (!empty($channels_element[$key])) {
+          $channels_element[$key]['#default_value'] = TRUE;
         }
       }
-      $form['apple_news']['channels'] = $export_form['channels'];
-      unset($form['apple_news']['channels']['#weight']);
     }
+    $form['apple_news']['channels'] = &$channels_element;
+    unset($form['apple_news']['channels']['#weight']);
     // Preview.
-    if (@$default_export->enabled && !empty($entity_id)) {
-      $msg = t('<a href="!link">Download</a> the Apple News generated document (use the News Preview app to preview the article).',
-        [
-          '!link' => url('admin/config/content/apple-news/' . $entity_type . '/' . $entity_id . '/' . $revision_id . '/download'),
-        ]
-      );
+    if (@$default_export->enabled && !empty($entity_id) && !empty($revision_id)) {
+      $link = l(t('Download'), 'admin/config/content/apple-news/' . $entity_type . '/' . $entity_id . '/' . $revision_id . '/download');
+      $msg = t('!link the Apple News generated document (use the News Preview app to preview the article).', ['!link' => $link]);
       $form['apple_news']['preview'] = [
         '#markup' => '<div class="apple-news-preview">' . $msg . '</div><br/>',
         '#prefix' => '<div><strong>' . t('Preview') . '</strong></div>',

@@ -34,18 +34,18 @@
 Enable:
 
 -   Apple News (`apple_news`) -- Core module, you will be able to push content but it won't look very appealing.
--   Apple News Style X (`apple_news_styleX`) -- Example implemenation, defines a usable export and style.
+-   Apple News Style X (`apple_news_example`) -- Example implemenation, defines a usable export and style.
 
 Other modules:
 
--   Apple News Article (`apple_news_article`) -- Another example module, used mostly for testing.
 -   Apple News Extras (`apple_news_extras`) -- Extension module with support for various contrib field modules.
 
 Go to `/admin/config/content/apple-news/`:
 
-1.  Enable, configure an export.
-2.  Preview exported content to test your export.
-3.  Configure your connection to the Apple Publisher API and push.
+1.  Configure your connection to the Apple Publisher.
+2.  Add and configure an export.
+3.  Preview exported content to test your export.
+4.  Push.
 
 ## <a name="before"></a>Before You Start
 
@@ -77,8 +77,6 @@ sites/default/settings.php file
 sites/mysite.local/settings.php
 sites/mysuperawesomenewssite.com/settings.php
 ```
-
-
 
 1. Download and enable the module dependencies for this module.
 
@@ -121,6 +119,12 @@ sites/mysuperawesomenewssite.com/settings.php
     $ drush en apple_news -y
     ```
 
+    The apple_news_example module defines a nicely styled export and a few more sophisticated components.
+
+    ```shell
+    $ drush en apple_news_example -y
+    ```
+
 If you enable the module before downloading the required libraries, you will receive error messages telling you download them. Please try re-installing the libraries or check out the [Troubleshooting Section](#troubleshooting).
 
 After installing all modules and libraries, check the status of the installation on your sites Status Report page (`admin/reports/status`). Look for "Apple News" and "PHP Curl Class" and make sure they are green. If green, you are good to go and jump to the [Configuration Section](#configuration). If not, please see the [Troubleshooting section](#troubleshoot).
@@ -145,6 +149,8 @@ To manually install:
     ```
 
 5.  Go to `admin/modules` enable the Apple News module. This will enable the Libraries module and the Entities module, as well as any additional dependencies.
+
+    The Apple News Example module defines a nicely styled export and a few more sophisticated components.
 
 After installing all modules and libraries, check the status on your site's Status Report page (`admin/reports/status`). Make sure that "Apple News" and "PHP Curl Class" are green. If so, you can jump to the [Configuration section](#configuration). If not, see the [Troubleshooting section](#troubleshoot)
 

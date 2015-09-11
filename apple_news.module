@@ -187,11 +187,12 @@ function apple_news_hook_info() {
  * Implements hook_help().
  */
 function apple_news_help($path, $arg) {
+  $help = '';
   switch ($path) {
     case 'admin/help#apple_news':
       $help = check_markup(file_get_contents(dirname(__FILE__) . '/README.md'), variable_get('apple_news_help_format', 'filtered_html'));
-      return $help;
   }
+  return $help;
 }
 
 /**
@@ -213,7 +214,7 @@ function apple_news_menu() {
 
   $items['admin/config/content/apple-news'] = [
     'title' => 'Apple News',
-    'description' => t('Configure content export to Apple News.'),
+    'description' => 'Configure content export to Apple News.',
     'page callback' => 'drupal_get_form',
     'page arguments' => ['apple_news_settings_exports_form'],
     'access arguments' => ['administer apple news'],
@@ -222,21 +223,39 @@ function apple_news_menu() {
 
   $items['admin/config/content/apple-news/exports'] = [
     'title' => 'Exports',
-    'description' => t('List and edit Apple News export configurations.'),
+    'description' => 'List and edit Apple News export configurations.',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 0,
   ];
 
-  $items['admin/config/content/apple-news/exports/%apple_news_export'] = [
+  $items['admin/config/content/apple-news/exports/add'] = [
+    'title' => 'Add Export',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['apple_news_export_add_form'],
+    'access arguments' => ['administer apple news'],
+    'file' => 'apple_news.admin.inc',
+    'type' => MENU_LOCAL_ACTION,
+    'weight' => 1,
+  ];
+
+  $items['admin/config/content/apple-news/export/%apple_news_export'] = [
     'title' => 'Edit Export',
-    'description' => t('Apple News Export configuration.'),
+    'description' => 'Apple News Export configuration.',
     'page callback' => 'drupal_get_form',
     'page arguments' => ['apple_news_export_edit_form', 5],
     'access arguments' => ['administer apple news'],
     'file' => 'apple_news.admin.inc',
   ];
 
-  $items['admin/config/content/apple-news/exports/%apple_news_export/%/%'] = [
+  $items['admin/config/content/apple-news/export/%apple_news_export/delete'] = [
+    'title' => 'Delete Export',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['apple_news_export_delete_form', 5],
+    'access arguments' => ['administer apple news'],
+    'file' => 'apple_news.admin.inc',
+  ];
+
+  $items['admin/config/content/apple-news/export/%apple_news_export/%/%'] = [
     'title' => 'Edit Export Destination',
     'page callback' => 'drupal_get_form',
     'page arguments' => ['apple_news_export_destination_edit_form', 5, 6, 7],
@@ -244,7 +263,7 @@ function apple_news_menu() {
     'file' => 'apple_news.admin.inc',
   ];
 
-  $items['admin/config/content/apple-news/exports/%apple_news_export/%/%/delete'] = [
+  $items['admin/config/content/apple-news/export/%apple_news_export/%/%/delete'] = [
     'title' => 'Delete Export Destination',
     'page callback' => 'drupal_get_form',
     'page arguments' => ['apple_news_export_destination_delete_form', 5, 6, 7],
@@ -254,7 +273,7 @@ function apple_news_menu() {
 
   $items['admin/config/content/apple-news/settings'] = [
     'title' => 'Settings',
-    'description' => t('Apple News Publisher API configuration.'),
+    'description' => 'Apple News Publisher API configuration.',
     'page callback' => 'drupal_get_form',
     'page arguments' => ['apple_news_settings_api_credentials_form'],
     'access arguments' => ['administer apple news'],
@@ -265,14 +284,14 @@ function apple_news_menu() {
 
   $items['admin/config/content/apple-news/settings/default'] = [
     'title' => 'Credentials',
-    'description' => t('Apple News Publisher API credentials.'),
+    'description' => 'Apple News Publisher API credentials.',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 1,
   ];
 
   $items['admin/config/content/apple-news/settings/delete'] = [
     'title' => 'Delete configuration',
-    'description' => t('Delete Apple News configuration.'),
+    'description' => 'Delete Apple News configuration.',
     'page callback' => 'drupal_get_form',
     'page arguments' => ['apple_news_settings_delete_configuration_form'],
     'access arguments' => ['administer apple news'],
@@ -282,7 +301,7 @@ function apple_news_menu() {
 
   $items['admin/config/content/apple-news/settings/channels'] = [
     'title' => 'Channels',
-    'description' => t('Apple News Publisher API channels.'),
+    'description' => 'Apple News Publisher API channels.',
     'page callback' => 'drupal_get_form',
     'page arguments' => ['apple_news_settings_channels_form'],
     'access arguments' => ['administer apple news'],
@@ -294,7 +313,7 @@ function apple_news_menu() {
   // [channel-id]
   $items['admin/config/content/apple-news/settings/channels/%/delete'] = [
     'title' => 'Delete channel',
-    'description' => t('Apple News Publisher API delete channel.'),
+    'description' => 'Apple News Publisher API delete channel.',
     'page callback' => 'drupal_get_form',
     'page arguments' => ['apple_news_settings_delete_channel_form', 6],
     'access arguments' => ['administer apple news'],
@@ -305,7 +324,7 @@ function apple_news_menu() {
   // [channel-id]
   $items['admin/config/content/apple-news/settings/channels/%/sections'] = [
     'title' => 'View Channel Sections',
-    'description' => t('View Apple News channel sections.'),
+    'description' => 'View Apple News channel sections.',
     'page callback' => 'drupal_get_form',
     'page arguments' => ['apple_news_settings_channel_sections_form', 6],
     'access arguments' => ['administer apple news'],
@@ -317,7 +336,7 @@ function apple_news_menu() {
   // [entity-type]/[entity-id]/[article-id]/[channel-id]
   $items['admin/config/content/apple-news/%/%/%/%/delete'] = [
     'title' => 'Delete Apple News article',
-    'description' => t('Apple News Publisher API delete channel.'),
+    'description' => 'Apple News Publisher API delete channel.',
     'page callback' => 'drupal_get_form',
     'page arguments' => ['apple_news_settings_delete_article_form', 4, 5, 6, 7],
     'access arguments' => ['administer apple news'],
@@ -328,7 +347,7 @@ function apple_news_menu() {
   // [entity-type]/[entity-id]/[entity-revision]
   $items['admin/config/content/apple-news/%/%/%/download'] = [
     'title' => 'Download article.json file',
-    'description' => t('Download previewable Apple News formatted document.'),
+    'description' => 'Download previewable Apple News formatted document.',
     'page callback' => 'apple_news_download_article_json',
     'page arguments' => [4, 5, 6],
     'access arguments' => ['administer apple news'],
@@ -340,7 +359,7 @@ function apple_news_menu() {
   // Library autoinstall path.
   $items['admin/apple-news/install'] = [
     'title' => 'Autoinstall Apple News dependant PHP libraries',
-    'description' => t('Download and unzip PHP libraries.'),
+    'description' => 'Download and unzip PHP libraries.',
     'page callback' => 'drupal_get_form',
     'page arguments' => ['apple_news_autoinstall_form'],
     'access arguments' => ['administer apple news'],
@@ -354,12 +373,28 @@ function apple_news_menu() {
 /**
  * Implements OBJECT_load().
  *
- * @see menu_get_item()
+ * @param int $id
+ *   ID of export.
+ *
+ * @return ApplenewsExport
+ *   Fully-loaded export object.
  */
 function apple_news_export_load($id) {
-  module_load_include('inc', 'apple_news');
-  list($module, $machine_name) = apple_news_export_id_extract($id);
-  return apple_news_get_export($module, $machine_name);
+  $query = db_select('apple_news_status', 's')
+    ->fields('s', ['instance'])
+    ->condition('s.id', $id);
+  if ($row = $query->execute()->fetchObject()) {
+    if ($export = unserialize($row->instance)) {
+      $export->id = $id;
+      return $export;
+    }
+    $msg = t('Export class id %id could not be unserialized');
+    $var = [
+      '%id' => $id,
+    ];
+    watchdog('apple_news', $msg, $var, WATCHDOG_ERROR);
+  }
+  return NULL;
 }
 
 /**
@@ -385,6 +420,7 @@ function apple_news_apple_news_api() {
         'class' => 'ApplenewsExportNode',
         'name' => t('Nodes'),
         'description' => t('Configurable node export.'),
+        'default' => 'apple_news_apple_news_api_export_default_node',
       ],
     ],
     'sources' => [
@@ -459,6 +495,56 @@ function apple_news_apple_news_api() {
 }
 
 /**
+ * Callback to define default node export.
+ */
+function apple_news_apple_news_api_export_default_node(ApplenewsExportNode $export) {
+  $entities_info = entity_get_info('node');
+  if (isset($entities_info['bundles']['article'])) {
+    $export->bundles = ['article'];
+  }
+  /** @var ApplenewsDestinationText $component */
+  $component = apple_news_new_destination('apple_news', 'text');
+  $component->weight = '0';
+  $component->title = 'Title';
+  $component
+    ->setSetting('text', [
+      'source' => '::::apple_news::node::label',
+      'value' => '',
+    ])
+    ->setSetting('component', 'title')
+    ->setSetting('heading', '')
+    ->setSetting('format', '');
+  $export->addComponent($component);
+  /** @var ApplenewsDestinationBodyPhoto $component */
+  $component = apple_news_new_destination('apple_news', 'body');
+  $component->weight = '1';
+  $component->title = 'Body';
+  $component
+    ->setSetting('text', [
+      'source' => '::::apple_news::field::node::body::value_sanitized',
+      'value' => '',
+    ])
+    ->setSetting('format', 'markdown');
+  $export->addComponent($component);
+  /** @var ApplenewsDestinationScalableImage $component */
+  $component = apple_news_new_destination('apple_news', 'scalable_image');
+  $component->weight = '2';
+  $component->title = 'Image';
+  $component
+    ->setSetting('type', 'photo')
+    ->setSetting('file', [
+      'source' => '::::apple_news::file::node::field_image::uri',
+      'value' => '',
+    ])
+    ->setSetting('caption', [
+      'source' => '::::apple_news::file::node::field_image::alt',
+      'value' => '',
+    ])
+    ->setSetting('format', 'markdown');
+  $export->addComponent($component);
+}
+
+/**
  * Submit handler for _apple_news_form_alter_node_form().
  */
 function _apple_news_form_alter_node_form_submit(&$form, &$form_state) {
@@ -471,13 +557,12 @@ function _apple_news_form_alter_node_form_submit(&$form, &$form_state) {
     $entity_type = 'node';
     $revision_id = $entity_id = $entity->nid;
 
-    module_load_include('inc', 'apple_news');
-    list($module, $machine_name) = apple_news_export_id_extract(
-      $form_state['values']['apple_news']['exports']);
-
+    /*
+    // Don't do this, save somewhere else.
     $post = new ApplenewsDatabase();
     $post->setPostId($entity_type, $entity_id, $revision_id);
-    $post->setExport($module, $machine_name);
+    $post->setExport($form_state['values']['apple_news']['exports']);
+    */
 
   }
 }

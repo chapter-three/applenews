@@ -1,9 +1,0 @@
-name = Apple News Article
-package = Apple News
-description = Push articles to Apple News.
-core = 7.x
-
-files[] = include/export.inc
-files[] = tests/apple_news_article.test
-
-dependencies[] = apple_news
