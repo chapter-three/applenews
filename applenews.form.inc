@@ -179,6 +179,9 @@ function _applenews_form_alter_node_form(&$form, &$form_state) {
     $form['applenews']['exports'] = [
       '#type' => 'select',
       '#title' => t('Export'),
+      '#description' => t('!link define how content is pushed to Apple News.', [
+        '!link' => l(t('Exports'), 'admin/config/content/applenews')
+      ]),
       '#options' => $export_options,
       '#default_value' => empty($default_export) ? NULL : $default_export->id,
     ];
