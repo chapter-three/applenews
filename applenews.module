@@ -490,26 +490,3 @@ function applenews_applenews_api_export_default_node(ApplenewsExportNode $export
     ->setSetting('format', 'markdown');
   $export->addComponent($component);
 }
-
-/**
- * Submit handler for _applenews_form_alter_node_form().
- */
-function _applenews_form_alter_node_form_submit(&$form, &$form_state) {
-  $values = $form_state['values']['applenews'];
-  if (!empty($form['#node']) && !empty($form['#node']->nid) &&
-      !empty($values['exports'])
-  ) {
-
-    $entity = $form['#node'];
-    $entity_type = 'node';
-    $revision_id = $entity_id = $entity->nid;
-
-    /*
-    // Don't do this, save somewhere else.
-    $post = new ApplenewsDatabase();
-    $post->setPostId($entity_type, $entity_id, $revision_id);
-    $post->setExport($form_state['values']['applenews']['exports']);
-    */
-
-  }
-}

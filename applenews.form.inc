@@ -222,6 +222,4 @@ function _applenews_form_alter_node_form(&$form, &$form_state) {
     }
   }
 
-  $form['#submit'][] = '_applenews_form_alter_node_form_submit';
-
 }
