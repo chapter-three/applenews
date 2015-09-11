@@ -193,9 +193,10 @@ function _applenews_form_alter_node_form(&$form, &$form_state) {
         ]
       ];
     }
+
     // Get configuration form for the AppleNewsAPI exportable entity.
     $channels_element = $default_export
-      ->getConfigForm()['additional_settings']['general']['channels'];
+      ->getConfigForm()['additional_settings']['metadata']['channels'];
     // Set Apple News default values for current entity.
     if (!empty($article) && !empty($article_id) && count($api_channels)) {
       foreach (element_children($channels_element) as $key) {
@@ -214,7 +215,16 @@ function _applenews_form_alter_node_form(&$form, &$form_state) {
     }
     $form['applenews']['channels'] = &$channels_element;
     unset($form['applenews']['channels']['#weight']);
-    // Preview.
+
+    // Is Preview
+    $is_preview = $default_export
+      ->getConfigForm()['additional_settings']['metadata']['is_preview'];
+    unset($is_preview['#description']);
+    $is_preview['#title'] = t('Make this content visbile to members of my channels only.');
+    $is_preview['#description'] = t('Indicates whether this article should be public (live) or should be a preview that is only visible to members of your channel.');
+    $form['applenews']['is_preview'] = &$is_preview;
+
+    // Preview (Downloadable atchives).
     if (@$default_export->enabled && !empty($entity_id) && !empty($revision_id)) {
       $link = l(t('Download'), 'admin/config/content/applenews/' . $entity_type . '/' . $entity_id . '/' . $revision_id . '/download');
       $msg = t('!link the Apple News generated document (use the News Preview app to preview the article).', ['!link' => $link]);
