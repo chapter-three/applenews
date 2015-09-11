@@ -223,6 +223,7 @@ function _applenews_form_alter_node_form(&$form, &$form_state) {
     $is_preview['#title'] = t('Make this content visbile to members of my channels only.');
     $is_preview['#description'] = t('Indicates whether this article should be public (live) or should be a preview that is only visible to members of your channel.');
     $form['applenews']['is_preview'] = &$is_preview;
+    unset($form['applenews']['is_preview']['#weight']);
 
     // Preview (Downloadable atchives).
     if (@$default_export->enabled && !empty($entity_id) && !empty($revision_id)) {
