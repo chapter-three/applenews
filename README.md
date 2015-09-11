@@ -29,18 +29,18 @@
 [Install Libraries](https://www.drupal.org/node/1440066):
 
 -   [php-curl-class 4.6.9](https://github.com/php-curl-class/php-curl-class)
--   [AppleNews (latest)](https://github.com/chapter-three/AppleNews)
+-   [AppleNewsAPI 0.3.4](https://github.com/chapter-three/AppleNewsAPI)
 
 Enable:
 
--   Apple News (`apple_news`) -- Core module, you will be able to push content but it won't look very appealing.
--   Apple News Style X (`apple_news_example`) -- Example implemenation, defines a usable export and style.
+-   Apple News (`applenews`) -- Core module, you will be able to push content but it won't look very appealing.
+-   Apple News Style X (`applenews_example`) -- Example implemenation, defines a usable export and style.
 
 Other modules:
 
--   Apple News Extras (`apple_news_extras`) -- Extension module with support for various contrib field modules.
+-   Apple News Extras (`applenews_extras`) -- Extension module with support for various contrib field modules.
 
-Go to `/admin/config/content/apple-news/`:
+Go to `/admin/config/content/applenews/`:
 
 1.  Configure your connection to the Apple Publisher.
 2.  Add and configure an export.
@@ -95,34 +95,34 @@ sites/mysuperawesomenewssite.com/settings.php
     $ mv php-curl-class-4.6.9 php-curl-class
     ```
 
-    **NOTE: The Apple News library is currently gated in a private repo. The curl command won't work until it is publicly released. You can download from [the Apple News GitHub page](https://github.com/chapter-three/AppleNews/tree/0.3.3), if you have access to it.**
+    **NOTE: The Apple News library is currently gated in a private repo. The curl command won't work until it is publicly released. You can download from [the Apple News GitHub page](https://github.com/chapter-three/AppleNewsAPI/tree/0.3.4), if you have access to it.**
 
 3. While still inside the libraries folder, run the following curl command:
 
     ```shell
-    $ curl -L https://github.com/chapter-three/AppleNews/archive/0.3.3.tar.gz | tar xz
-    $ mv AppleNews-0.3.3 AppleNews
+    $ curl -L https://github.com/chapter-three/AppleNewsAPI/archive/0.3.4.tar.gz | tar xz
+    $ mv AppleNewsAPI-0.3.4 AppleNewsAPI
     ```
 
 4. After the libraries are downloaded, your should have directories matching the following paths. You may need to rename the folders you just downloaded to match):
 
     ```
-    sites/all/libraries/AppleNews/[files start here]
+    sites/all/libraries/AppleNewsAPI/[files start here]
     sites/all/libraries/php-curl-class/[files start here]
     ```
 
-5.  [Add the apple_news module](https://www.drupal.org/documentation/install/modules-themes) to your code base  and enable it using the Drush command:
+5.  [Add the applenews module](https://www.drupal.org/documentation/install/modules-themes) to your code base  and enable it using the Drush command:
 
-    **NOTE: The apple_news module can't be downloaded using [Drush](https://github.com/drush-ops/drush). It must be manually added to the sites/all/modules/contrib directory. If you have access to the repo, you can download the module from [the github page](https://github.com/chapter-three/apple_news)**
+    **NOTE: The applenews module can't be downloaded using [Drush](https://github.com/drush-ops/drush). It must be manually added to the sites/all/modules/contrib directory. If you have access to the repo, you can download the module from [the github page](https://github.com/chapter-three/applenews)**
 
     ```shell
-    $ drush en apple_news -y
+    $ drush en applenews -y
     ```
 
-    The apple_news_example module defines a nicely styled export and a few more sophisticated components.
+    The applenews_example module defines a nicely styled export and a few more sophisticated components.
 
     ```shell
-    $ drush en apple_news_example -y
+    $ drush en applenews_example -y
     ```
 
 If you enable the module before downloading the required libraries, you will receive error messages telling you download them. Please try re-installing the libraries or check out the [Troubleshooting Section](#troubleshooting).
@@ -136,15 +136,15 @@ To manually install:
 1.  Download this module and [its dependencies](https://www.drupal.org/documentation/install/modules-themes):
     -   [Libraries](https://www.drupal.org/project/libraries)
     -   [Entity](https://www.drupal.org/project/entity)
-2.  [Download the Apple News library (version 0.3.3)](https://github.com/chapter-three/AppleNews/archive/0.3.3.zip) into your sites/all/libraries folder. If the libraries folder does not exist, create it before downloading.
+2.  [Download the Apple News library (version 0.3.4)](https://github.com/chapter-three/AppleNewsAPI/archive/0.3.4.zip) into your sites/all/libraries folder. If the libraries folder does not exist, create it before downloading.
 
-    **NOTE: Before the module is added to drupal.org, the apple_news module can't be downloaded using [Drush](https://github.com/drush-ops/drush). It must be manually added to the sites/all/modules/contrib directory. If you have access to the repo, you can download the module from [the github page](https://github.com/chapter-three/apple_news)**
+    **NOTE: Before the module is added to drupal.org, the applenews module can't be downloaded using [Drush](https://github.com/drush-ops/drush). It must be manually added to the sites/all/modules/contrib directory. If you have access to the repo, you can download the module from [the github page](https://github.com/chapter-three/applenews)**
 
 3.  [Download and install the PHP Curl Class library (version 4.6.9)](https://github.com/php-curl-class/php-curl-class/archive/4.6.9.tar.gz) into your libraries folder. **Note: It must be version 4.6.9, not higher or lower.**
 4.  After the libraries are downloaded, your should have directories matching the following paths. (You may need to rename the folders you just downloaded to match):
 
     ```shell
-    sites/all/libraries/AppleNews/[files start here]
+    sites/all/libraries/AppleNewsAPI/[files start here]
     sites/all/libraries/php-curl-class/[files start here]
     ```
 
@@ -163,17 +163,17 @@ Follow these configuration instructions to start publishing your content.
 
 1. Visit [apple.com](http://apple.com) to get your credentials and create a news channel that your Drupal site will use.
 
-2. In your Drupal site, navigate to the "Apple news credentials page" (`admin/config/content/apple-news/settings`) and add your Apple News credentials.
+2. In your Drupal site, navigate to the "Apple news credentials page" (`admin/config/content/applenews/settings`) and add your Apple News credentials.
 
-3. In your Drupal site, navigate to the "Apple news channels page" (`admin/config/content/apple-news/settings/channels`) and add a channel ID from your Apple account. Please add one ID at a time. The channels are validated by the Apple credentials that you added to your Drupal site. If valid, it will fetch the channel information and add them to your site's list of channels.
+3. In your Drupal site, navigate to the "Apple news channels page" (`admin/config/content/applenews/settings/channels`) and add a channel ID from your Apple account. Please add one ID at a time. The channels are validated by the Apple credentials that you added to your Drupal site. If valid, it will fetch the channel information and add them to your site's list of channels.
 
 ### <a name="channel"></a>Export Configuration
 
-An *export* is code that defines how to transform data in a Drupal site so it can be pushed to Apple News. The Apple News module defines a simple export, while the `apple_news_style1` module defines a more usable style.
+An *export* is code that defines how to transform data in a Drupal site so it can be pushed to Apple News. The Apple News module defines a simple export, while the `applenews_style1` module defines a more usable style.
 
-To get started, we suggest enabling the `apple_news_style1` module and using that as a starting point.
+To get started, we suggest enabling the `applenews_style1` module and using that as a starting point.
 
-1. In your Drupal site, navigate to the "Apple news export manager page" (`admin/config/content/apple-news`).
+1. In your Drupal site, navigate to the "Apple news export manager page" (`admin/config/content/applenews`).
 2. Click on the **'edit'** link of the export you would like to connect to an Apple News channel.
 3. On the Edit page, the minimum requirements to properly configure a channel to an Apple News channel are:
     1. Under "Add new component", select a component.
@@ -224,7 +224,7 @@ If you are having trouble installing the module or its dependencies, review the 
 Fatal error: undefined '['
 ```
 
-**Solution:** This means that your version of PHP does not meet minimum standards. Version 5.3 and below are not able to process the bracketed php formatting of the AppleNews library. Updating your version of PHP to 5.4 and above will fix this.
+**Solution:** This means that your version of PHP does not meet minimum standards. Version 5.3 and below are not able to process the bracketed php formatting of the AppleNewsAPI library. Updating your version of PHP to 5.4 and above will fix this.
 
 ---
 
@@ -251,10 +251,10 @@ Please download PHP-Curl-Class (version 4.6.9) library to sites/all/libraries/ph
 **Problem:** I'm getting the error message:
 
 ```shell
-Please download AppleNews (version 0.3.3) library to sites/all/libraries/AppleNews
+Please download AppleNewsAPI (version 0.3.4) library to sites/all/libraries/AppleNewsAPI
 ```
 
-**Solution:** This means that the library has not been downloaded, the wrong version is in place, or the folder for the library is labeled wrong. Double check that the library was downloaded into `sites/all/libraries/AppleNews/[files start here]`. Check that the version is 0.3.3 by opening up the composer.json file and search for "version": "0.3.3". Lastly, if still not resolved, make sure the folder is named `AppleNews` and **NOT** something like `AppleNews-master` or `AppleNews-0.3.3`.
+**Solution:** This means that the library has not been downloaded, the wrong version is in place, or the folder for the library is labeled wrong. Double check that the library was downloaded into `sites/all/libraries/AppleNewsAPI/[files start here]`. Check that the version is 0.3.4 by opening up the composer.json file and search for "version": "0.3.4". Lastly, if still not resolved, make sure the folder is named `AppleNewsAPI` and **NOT** something like `AppleNewsAPI-master` or `AppleNewsAPI-0.3.4`.
 
 ---
 
@@ -262,9 +262,9 @@ Please consult [drupal.org](http://drupal.org) for any issues outside of this sc
 
 ## <a name="developer-api"></a>Developer API
 
-The `apple_news` module defines an API and class structure to make it easy to write code to export Drupal data into arbitrarily structured Apple News documents.
+The `applenews` module defines an API and class structure to make it easy to write code to export Drupal data into arbitrarily structured Apple News documents.
 
-The module defines hooks to register custom export classes, modify existing export classes, and alter insert/update/delete operations on the Apple News Publisher API. See `apple_news.api.php` for details.
+The module defines hooks to register custom export classes, modify existing export classes, and alter insert/update/delete operations on the Apple News Publisher API. See `applenews.api.php` for details.
 
 ### Writing Custom Exports
 

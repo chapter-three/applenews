@@ -5,9 +5,9 @@
  * Export classes.
  */
 
-use ChapterThree\AppleNews\Document;
-use \ChapterThree\AppleNews\Document\Anchor;
-use \ChapterThree\AppleNews\Document\Components;
+use ChapterThree\AppleNewsAPI\Document;
+use \ChapterThree\AppleNewsAPI\Document\Anchor;
+use \ChapterThree\AppleNewsAPI\Document\Components;
 
 /**
  * A configurable node export.
@@ -57,7 +57,7 @@ class ApplenewsexampleExportNode extends ApplenewsExportNode {
     $components = $this->document->getComponents();
     for ($i = 0; $i < count($components); $i++) {
 
-      /** @var \ChapterThree\AppleNews\Document\Components\Component $comp */
+      /** @var \ChapterThree\AppleNewsAPI\Document\Components\Component $comp */
       $comp = $components[$i];
 
       // Associate with previous component.
@@ -66,7 +66,7 @@ class ApplenewsexampleExportNode extends ApplenewsExportNode {
         $prev = $components[$i - 1];
 
         // Previous is a body component.
-        /** @var \ChapterThree\AppleNews\Document\Components\Body $prev */
+        /** @var \ChapterThree\AppleNewsAPI\Document\Components\Body $prev */
         if ($prev instanceof Components\Body) {
 
           // Anchor to previous component if not anchor-ed already.
@@ -79,7 +79,7 @@ class ApplenewsexampleExportNode extends ApplenewsExportNode {
             // Or contains pullquote.
             if (!$anchor && $comp instanceof Components\ComponentNested) {
               $class_pullquote = '\ChapterThree\AppleNews\Document\Components\Pullquote';
-              /** @var \ChapterThree\AppleNews\Document\Components\ComponentNested $comp */
+              /** @var \ChapterThree\AppleNewsAPI\Document\Components\ComponentNested $comp */
               if ($comp->hasComponentType($class_pullquote)) {
                 $anchor = TRUE;
                 $range_start = floor(strlen($prev->getText()) / 2);

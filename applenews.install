@@ -8,12 +8,12 @@
 /**
  * Implements hook_schema().
  */
-function apple_news_schema() {
+function applenews_schema() {
 
   // Custom cache table.
-  $schema['cache_apple_news'] = drupal_get_schema_unprocessed('system', 'cache');
+  $schema['cache_applenews'] = drupal_get_schema_unprocessed('system', 'cache');
 
-  $schema['apple_news_status'] = [
+  $schema['applenews_status'] = [
     'description' => 'Status information for Apple News exports',
     'fields' => [
       'id' => array(
@@ -56,19 +56,19 @@ function apple_news_schema() {
     ],
   ];
 
-  $schema['apple_news_log'] = [
+  $schema['applenews_log'] = [
     'description' => 'History of export processes',
     'fields' => [
       'exlid' => [
         'type' => 'serial',
         'unsigned' => TRUE,
         'not null' => TRUE,
-        'description' => 'Primary key for apple_news_log table',
+        'description' => 'Primary key for applenews_log table',
       ],
       'exid' => array(
         'type' => 'int',
         'unsigned' => TRUE,
-        'description' => 'The {apple_news_status}.id of the export used.',
+        'description' => 'The {applenews_status}.id of the export used.',
       ),
       'starttime' => [
         'type' => 'int',
@@ -98,8 +98,8 @@ function apple_news_schema() {
       'endtime' => ['endtime'],
     ],
     'foreign keys' => [
-      'apple_news_status' => [
-        'table' => 'apple_news_status',
+      'applenews_status' => [
+        'table' => 'applenews_status',
         'columns' => [
           'module' => 'module',
           'machine_name' => 'machine_name',
@@ -108,7 +108,7 @@ function apple_news_schema() {
     ],
   ];
 
-  $schema['apple_news_entities'] = [
+  $schema['applenews_entities'] = [
     'description' => 'Information about entities published to Apple News',
     'fields' => [
       'post_id' => [
@@ -140,7 +140,7 @@ function apple_news_schema() {
       'exid' => array(
         'type' => 'int',
         'unsigned' => TRUE,
-        'description' => 'The {apple_news_status}.id of the export used.',
+        'description' => 'The {applenews_status}.id of the export used.',
       ),
       'article_id' => [
         'type' => 'varchar',
@@ -171,7 +171,7 @@ function apple_news_schema() {
     'primary key' => ['post_id'],
     'foreign keys' => [
       'node_revision' => [
-        'table' => 'apple_news_status',
+        'table' => 'applenews_status',
         'columns' => [
           'exid' => 'id',
         ],
@@ -188,7 +188,7 @@ function apple_news_schema() {
     ],
   ];
 
-  $schema['apple_news_channels'] = [
+  $schema['applenews_channels'] = [
     'description' => 'Information about Apple News channels',
     'fields' => [
       'post_id' => [
@@ -206,8 +206,8 @@ function apple_news_schema() {
       ],
     ],
     'foreign keys' => [
-      'apple_news_entities' => [
-        'table' => 'apple_news_entities',
+      'applenews_entities' => [
+        'table' => 'applenews_entities',
         'columns' => ['post_id' => 'post_id'],
       ],
     ],
@@ -217,7 +217,7 @@ function apple_news_schema() {
     ],
   ];
 
-  $schema['apple_news_sections'] = [
+  $schema['applenews_sections'] = [
     'description' => 'Information about Apple News sections',
     'fields' => [
       'post_id' => [
@@ -241,12 +241,12 @@ function apple_news_schema() {
       ],
     ],
     'foreign keys' => [
-      'apple_news_entities' => [
-        'table' => 'apple_news_entities',
+      'applenews_entities' => [
+        'table' => 'applenews_entities',
         'columns' => ['post_id' => 'post_id'],
       ],
-      'apple_news_channels' => [
-        'table' => 'apple_news_channels',
+      'applenews_channels' => [
+        'table' => 'applenews_channels',
         'columns' => ['channel_id' => 'channel_id'],
       ],
     ],
@@ -257,7 +257,7 @@ function apple_news_schema() {
     ],
   ];
 
-  $schema['apple_news_metadata'] = [
+  $schema['applenews_metadata'] = [
     'description' => 'Information about Apple News metadata',
     'fields' => [
       'post_id' => [
@@ -276,8 +276,8 @@ function apple_news_schema() {
       ],
     ],
     'foreign keys' => [
-      'apple_news_entities' => [
-        'table' => 'apple_news_entities',
+      'applenews_entities' => [
+        'table' => 'applenews_entities',
         'columns' => ['post_id' => 'post_id'],
       ],
     ],
@@ -292,9 +292,9 @@ function apple_news_schema() {
 /**
  * Implements hook_install().
  */
-function apple_news_install() {
-  // Create apple-news directory to dump exportable files.
-  $directory = variable_get('apple_news_export_directory', 'apple-news/');
+function applenews_install() {
+  // Create applenews directory to dump exportable files.
+  $directory = variable_get('applenews_export_directory', 'applenews/');
   $path = file_build_uri($directory);
   file_prepare_directory($path, FILE_CREATE_DIRECTORY);
 }
@@ -302,15 +302,15 @@ function apple_news_install() {
 /**
  * Implements hook_uninstall().
  */
-function apple_news_uninstall() {
+function applenews_uninstall() {
   // Remove variables.
-  variable_del('apple_news_variable_api_endpoint');
-  variable_del('apple_news_variable_api_key');
-  variable_del('apple_news_variable_api_secret');
-  variable_del('apple_news_variable_api_channels');
-  variable_del('apple_news_variable_api_curlopt');
-  variable_del('apple_news_variable_node');
-  variable_del('apple_news_export_directory');
-  variable_del('apple_news_help_format');
-  variable_del('apple_news_batch_export_status');
+  variable_del('applenews_variable_api_endpoint');
+  variable_del('applenews_variable_api_key');
+  variable_del('applenews_variable_api_secret');
+  variable_del('applenews_variable_api_channels');
+  variable_del('applenews_variable_api_curlopt');
+  variable_del('applenews_variable_node');
+  variable_del('applenews_export_directory');
+  variable_del('applenews_help_format');
+  variable_del('applenews_batch_export_status');
 }

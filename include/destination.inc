@@ -5,8 +5,8 @@
  * Destination classes.
  */
 
-use \ChapterThree\AppleNews\Document\Components;
-use \ChapterThree\AppleNews\Document\Styles;
+use \ChapterThree\AppleNewsAPI\Document\Components;
+use \ChapterThree\AppleNewsAPI\Document\Styles;
 
 /**
  * Base class for a configurable Apple News destination.
@@ -90,7 +90,7 @@ abstract class ApplenewsDestination {
    * @param string $machine_name
    *   The machine name of this object.
    * @param array $arguments
-   *   Defined in hook_apple_news_api(), altered by hook_apple_news_api_alter().
+   *   Defined in hook_applenews_api(), altered by hook_applenews_api_alter().
    */
   public function __construct($module, $machine_name, array $arguments) {
     $this->module = $module;
@@ -108,12 +108,12 @@ abstract class ApplenewsDestination {
   /**
    * Gets the implementation name.
    *
-   * @see hook_apple_news_api()
+   * @see hook_applenews_api()
    */
   public function name() {
-    module_load_include('inc', 'apple_news');
-    $id = _apple_news_export_id($this->module, $this->machineName);
-    $implementation = apple_news_get_module_apis('destination')[$id];
+    module_load_include('inc', 'applenews');
+    $id = _applenews_export_id($this->module, $this->machineName);
+    $implementation = applenews_get_module_apis('destination')[$id];
     return $implementation['name'];
   }
 
@@ -121,7 +121,7 @@ abstract class ApplenewsDestination {
    * Exports to an Apple News Document object.
    *
    * @return array
-   *   A list of \ChapterThree\AppleNews\Document\Base objects.
+   *   A list of \ChapterThree\AppleNewsAPI\Document\Base objects.
    */
   abstract public function export();
 
@@ -213,10 +213,10 @@ abstract class ApplenewsDestination {
    *   Internal use.
    */
   public function getSourceOptions($ancestors = '', $entity_type = NULL) {
-    module_load_include('inc', 'apple_news');
+    module_load_include('inc', 'applenews');
 
     // Source implementations.
-    $sources = apple_news_get_module_apis('source');
+    $sources = applenews_get_module_apis('source');
     // Filters for sources.
     $value_sources = function() use(&$sources) {
       return array_filter($sources, function($info) {
@@ -377,7 +377,7 @@ abstract class ApplenewsDestination {
    *   A source object.
    */
   public function getSource(stdClass $value, $key_settings) {
-    $implementations = apple_news_get_module_apis('source');
+    $implementations = applenews_get_module_apis('source');
 
     $key = @$key_settings['source'];
     if (empty($key)) {
@@ -396,14 +396,14 @@ abstract class ApplenewsDestination {
       // Verify implementation still defined.
       $module = $args[0];
       $machine_name = $args[1];
-      $id = _apple_news_export_id($module, $machine_name);
+      $id = _applenews_export_id($module, $machine_name);
       if (empty($implementations[$id])) {
         $msg = t('Could not load source %machine_name defined by %module.');
         $var = [
           '%machine_name' => $machine_name,
           '%module' => $module,
         ];
-        watchdog('apple_news', $msg, $var, WATCHDOG_ERROR);
+        watchdog('applenews', $msg, $var, WATCHDOG_ERROR);
         return NULL;
       }
       $key = array_pop($args);
@@ -418,7 +418,7 @@ abstract class ApplenewsDestination {
         $args[] = $value;
       }
       // Instantiate.
-      $source = call_user_func_array('apple_news_new_source', $args);
+      $source = call_user_func_array('applenews_new_source', $args);
     }
 
     return $source;

@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Definition of views_handler_filter_apple_news_status.
+ * Definition of views_handler_filter_applenews_status.
  */
 
 /**
@@ -10,7 +10,7 @@
  *
  * @ingroup views_filter_handlers
  */
-class views_handler_filter_apple_news_status extends views_handler_filter_boolean_operator {
+class views_handler_filter_applenews_status extends views_handler_filter_boolean_operator {
 
   function construct() {
     parent::construct();

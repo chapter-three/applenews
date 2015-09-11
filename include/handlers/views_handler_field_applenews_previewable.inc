@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Definition of views_handler_field_apple_news_previewable.
+ * Definition of views_handler_field_applenews_previewable.
  */
 
 /**
@@ -10,7 +10,7 @@
  *
  * @ingroup views_field_handlers
  */
-class views_handler_field_apple_news_previewable extends views_handler_field {
+class views_handler_field_applenews_previewable extends views_handler_field {
 
   function option_definition() {
     $options = parent::option_definition();
@@ -29,7 +29,7 @@ class views_handler_field_apple_news_previewable extends views_handler_field {
     $post = new ApplenewsDatabase();
     $article = $post->getArticleById($articleId);
     if (!empty($article['entity_id'])) {
-      return l(t('preview'), 'admin/config/content/apple-news/' . $article['entity_type'] . '/' . $article['entity_id'] . '/' . $article['revision_id'] . '/download',
+      return l(t('preview'), 'admin/config/content/applenews/' . $article['entity_type'] . '/' . $article['entity_id'] . '/' . $article['revision_id'] . '/download',
         [
           'attributes' => [
             'title' => t('Please use News Preview app to preview this article.')

@@ -7,41 +7,41 @@
 /**
  * Implements hook_entity_insert().
  */
-function apple_news_entity_insert($entity, $type) {
-  if (!empty($entity->apple_news['apple_news_publish_flag'])) {
-    _apple_news_entity_push('insert', $entity, $type);
+function applenews_entity_insert($entity, $type) {
+  if (!empty($entity->applenews['applenews_publish_flag'])) {
+    _applenews_entity_push('insert', $entity, $type);
   }
 }
 
 /**
  * Implements hook_entity_update().
  */
-function apple_news_entity_update($entity, $type) {
-  if (!empty($entity->apple_news['apple_news_publish_flag'])) {
-    _apple_news_entity_push('update', $entity, $type);
+function applenews_entity_update($entity, $type) {
+  if (!empty($entity->applenews['applenews_publish_flag'])) {
+    _applenews_entity_push('update', $entity, $type);
   }
 }
 
 /**
  * Push node.
  */
-function _apple_news_entity_push($op, $entity, $type) {
-  module_load_include('inc', 'apple_news');
+function _applenews_entity_push($op, $entity, $type) {
+  module_load_include('inc', 'applenews');
 
   /** @var EntityDrupalWrapper $wrapper */
   $wrapper = entity_metadata_wrapper($type, $entity);
-  $export = apple_news_entity_get_export($type, $wrapper->getIdentifier());
+  $export = applenews_entity_get_export($type, $wrapper->getIdentifier());
 
-  $el = $entity->apple_news;
-  foreach (apple_news_channels(TRUE) as $channel_id => $channel) {
+  $el = $entity->applenews;
+  foreach (applenews_channels(TRUE) as $channel_id => $channel) {
     if (!empty($el['channels']['channel-' . $channel_id])) {
       $settings = [];
       foreach ($channel['sections'] as $section_id => $section) {
         if (!empty($el['channels']['section-' . $channel_id . '-' . $section_id])) {
-          $settings['metadata']['data']['links']['sections'][] = apple_news_section_url($section_id);
+          $settings['metadata']['data']['links']['sections'][] = applenews_section_url($section_id);
         }
       }
-      if (!apple_news_op($op, $channel_id, $entity, $type, $export)) {
+      if (!applenews_op($op, $channel_id, $entity, $type, $export)) {
         drupal_set_message(
           t('Unable to push %title to %channel',
             [
@@ -57,13 +57,13 @@ function _apple_news_entity_push($op, $entity, $type) {
 /**
  * Implements hook_entity_delete().
  */
-function apple_news_entity_delete($entity, $type) {
-  module_load_include('inc', 'apple_news');
-  if ($channel_ids = apple_news_load_article_channels($entity, $type)) {
+function applenews_entity_delete($entity, $type) {
+  module_load_include('inc', 'applenews');
+  if ($channel_ids = applenews_load_article_channels($entity, $type)) {
     foreach ($channel_ids as $channel_id) {
-      if (!apple_news_op('delete', $channel_id, $entity, $type)) {
+      if (!applenews_op('delete', $channel_id, $entity, $type)) {
         $wrapper = entity_metadata_wrapper($type, $entity);
-        $channel = apple_news_channel($channel_id);
+        $channel = applenews_channel($channel_id);
         drupal_set_message(
           t('Unable to delete %title from %channel',
             [

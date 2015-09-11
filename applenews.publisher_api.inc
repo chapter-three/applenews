@@ -8,19 +8,19 @@
 /**
  * Gets a news api object.
  *
- * @return \ChapterThree\AppleNews\PublisherAPI
+ * @return \ChapterThree\AppleNewsAPI\PublisherAPI
  *   An initialized api object.
  */
-function apple_news_publisher_api() {
+function applenews_publisher_api() {
 
-  $key = variable_get('apple_news_variable_api_key', FALSE);
-  $secret = variable_get('apple_news_variable_api_secret', FALSE);
-  $endpoint = variable_get('apple_news_variable_api_endpoint', FALSE);
+  $key = variable_get('applenews_variable_api_key', FALSE);
+  $secret = variable_get('applenews_variable_api_secret', FALSE);
+  $endpoint = variable_get('applenews_variable_api_endpoint', FALSE);
 
-  $PublisherAPI = new ChapterThree\AppleNews\PublisherAPI($key, $secret, $endpoint);
+  $PublisherAPI = new ChapterThree\AppleNewsAPI\PublisherAPI($key, $secret, $endpoint);
 
   // Allow configuring curl for debugging.
-  $opts = variable_get('apple_news_variable_api_curlopt',
+  $opts = variable_get('applenews_variable_api_curlopt',
     [
       'ssl'        => TRUE,
       'proxy'      => '',
@@ -44,8 +44,8 @@ function apple_news_publisher_api() {
 /**
  * Fetches information about a channel.
  */
-function apple_news_get_channel($channel_id) {
-  $PublisherAPI = apple_news_publisher_api();
+function applenews_get_channel($channel_id) {
+  $PublisherAPI = applenews_publisher_api();
   $response = $PublisherAPI->get('/channels/{channel_id}',
     [
       'channel_id' => $channel_id
@@ -53,7 +53,7 @@ function apple_news_get_channel($channel_id) {
   );
   if (!$response) {
     /** @var \Curl\Curl $client */
-    watchdog('apple_news', $PublisherAPI->client->errorMessage, [], WATCHDOG_ERROR);
+    watchdog('applenews', $PublisherAPI->client->errorMessage, [], WATCHDOG_ERROR);
     return FALSE;
   }
   return $response;
@@ -62,8 +62,8 @@ function apple_news_get_channel($channel_id) {
 /**
  * Fetches a list of all sections for a channel.
  */
-function apple_news_get_sections($channel_id) {
-  $PublisherAPI = apple_news_publisher_api();
+function applenews_get_sections($channel_id) {
+  $PublisherAPI = applenews_publisher_api();
   $response = $PublisherAPI->get('/channels/{channel_id}/sections',
     [
       'channel_id' => $channel_id
@@ -71,7 +71,7 @@ function apple_news_get_sections($channel_id) {
   );
   if (!$response) {
     /** @var \Curl\Curl $client */
-    watchdog('apple_news', $PublisherAPI->client->errorMessage, [], WATCHDOG_ERROR);
+    watchdog('applenews', $PublisherAPI->client->errorMessage, [], WATCHDOG_ERROR);
     return FALSE;
   }
   return $response;
@@ -80,8 +80,8 @@ function apple_news_get_sections($channel_id) {
 /**
  * Fetches information about a single section.
  */
-function apple_news_get_section($section_id) {
-  $PublisherAPI = apple_news_publisher_api();
+function applenews_get_section($section_id) {
+  $PublisherAPI = applenews_publisher_api();
   $response = $PublisherAPI->get('/sections/{section_id}',
     [
       'section_id' => $section_id
@@ -89,7 +89,7 @@ function apple_news_get_section($section_id) {
   );
   if (!$response) {
     /** @var \Curl\Curl $client */
-    watchdog('apple_news', $PublisherAPI->client->errorMessage, [], WATCHDOG_ERROR);
+    watchdog('applenews', $PublisherAPI->client->errorMessage, [], WATCHDOG_ERROR);
     return FALSE;
   }
   return $response;
@@ -101,8 +101,8 @@ function apple_news_get_section($section_id) {
  * @return mixed
  *   Response object, FALSE if not found, or NULL if error.
  */
-function apple_news_get_article($article_id) {
-  $PublisherAPI = apple_news_publisher_api();
+function applenews_get_article($article_id) {
+  $PublisherAPI = applenews_publisher_api();
   $response = $PublisherAPI->get('/articles/{article_id}',
     [
       'article_id' => $article_id
@@ -110,7 +110,7 @@ function apple_news_get_article($article_id) {
   );
   if (empty($response)) {
     /** @var \Curl\Curl $client */
-    watchdog('apple_news', $PublisherAPI->client->errorMessage, [], WATCHDOG_ERROR);
+    watchdog('applenews', $PublisherAPI->client->errorMessage, [], WATCHDOG_ERROR);
     return NULL;
   }
   elseif (!empty($response->errors)) {
@@ -119,7 +119,7 @@ function apple_news_get_article($article_id) {
         case 'NOT_FOUND':
           return FALSE;
         default:
-          watchdog('apple_news', $err->code, [], WATCHDOG_ERROR);
+          watchdog('applenews', $err->code, [], WATCHDOG_ERROR);
           return NULL;
       }
     }
@@ -130,8 +130,8 @@ function apple_news_get_article($article_id) {
 /**
  * Update existing article.
  */
-function apple_news_update_article($article_id, $data = []) {
-  $PublisherAPI = apple_news_publisher_api();
+function applenews_update_article($article_id, $data = []) {
+  $PublisherAPI = applenews_publisher_api();
   $response = $PublisherAPI->post('/articles/{article_id}',
     [
       'article_id' => $article_id
@@ -140,7 +140,7 @@ function apple_news_update_article($article_id, $data = []) {
   );
   if (!$response) {
     /** @var \Curl\Curl $client */
-    watchdog('apple_news', $PublisherAPI->client->errorMessage, [], WATCHDOG_ERROR);
+    watchdog('applenews', $PublisherAPI->client->errorMessage, [], WATCHDOG_ERROR);
     return FALSE;
   }
   return $response;
@@ -149,8 +149,8 @@ function apple_news_update_article($article_id, $data = []) {
 /**
  * Publishes a new article to a channel.
  */
-function apple_news_post_article($channel_id, $data = []) {
-  $PublisherAPI = apple_news_publisher_api();
+function applenews_post_article($channel_id, $data = []) {
+  $PublisherAPI = applenews_publisher_api();
   $response = $PublisherAPI->post('/channels/{channel_id}/articles',
     [
       'channel_id' => $channel_id
@@ -159,7 +159,7 @@ function apple_news_post_article($channel_id, $data = []) {
   );
   if (!$response) {
     /** @var \Curl\Curl $client */
-    watchdog('apple_news', $PublisherAPI->client->errorMessage, [], WATCHDOG_ERROR);
+    watchdog('applenews', $PublisherAPI->client->errorMessage, [], WATCHDOG_ERROR);
     return FALSE;
   }
   return $response;
@@ -168,8 +168,8 @@ function apple_news_post_article($channel_id, $data = []) {
 /**
  * Deletes an article.
  */
-function apple_news_delete_article($article_id) {
-  $PublisherAPI = apple_news_publisher_api();
+function applenews_delete_article($article_id) {
+  $PublisherAPI = applenews_publisher_api();
   $response = $PublisherAPI->delete('/articles/{article_id}',
     [
       'article_id' => $article_id
@@ -177,7 +177,7 @@ function apple_news_delete_article($article_id) {
   );
   if (!empty($response)) {
     /** @var \Curl\Curl $client */
-    watchdog('apple_news', $PublisherAPI->client->errorMessage, [], WATCHDOG_ERROR);
+    watchdog('applenews', $PublisherAPI->client->errorMessage, [], WATCHDOG_ERROR);
     return FALSE;
   }
   return $response;

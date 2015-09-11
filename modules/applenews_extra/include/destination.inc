@@ -5,7 +5,7 @@
  * Destination classes.
  */
 
-use \ChapterThree\AppleNews\Document\Components;
+use \ChapterThree\AppleNewsAPI\Document\Components;
 
 /**
  * Instagram component.

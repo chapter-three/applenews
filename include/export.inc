@@ -5,7 +5,7 @@
  * Export classes.
  */
 
-use ChapterThree\AppleNews\Document;
+use ChapterThree\AppleNewsAPI\Document;
 
 /**
  * Base class for exporting Drupal entities.
@@ -55,7 +55,7 @@ abstract class ApplenewsExport {
   /**
    * Apple News document object.
    *
-   * @var \ChapterThree\AppleNews\Document
+   * @var \ChapterThree\AppleNewsAPI\Document
    */
   public $document;
 
@@ -88,7 +88,7 @@ abstract class ApplenewsExport {
    * @param string $machine_name
    *   The machine name of this object.
    * @param array $arguments
-   *   Defined in hook_apple_news_api(), altered by hook_apple_news_api_alter().
+   *   Defined in hook_applenews_api(), altered by hook_applenews_api_alter().
    */
   public function __construct($module, $machine_name, array $arguments) {
     $this->module = $module;
@@ -255,7 +255,7 @@ abstract class ApplenewsExport {
       '#type' => 'vertical_tabs',
       '#weight' => 99,
       '#attached' => [
-        'js' => [drupal_get_path('module', 'apple_news') . '/js/export-settings.js']
+        'js' => [drupal_get_path('module', 'applenews') . '/js/export-settings.js']
       ]
     ];
 
@@ -289,8 +289,8 @@ abstract class ApplenewsExport {
     $saved_sections = $this->getSetting('sections');
 
     // Entity form JS helper (hide/show Apple News entity form options).
-    drupal_add_js(drupal_get_path('module', 'apple_news') . '/js/form.js');
-    $api_channels = apple_news_channels(TRUE);
+    drupal_add_js(drupal_get_path('module', 'applenews') . '/js/form.js');
+    $api_channels = applenews_channels(TRUE);
     if (!empty($api_channels)) {
       foreach ($api_channels as $channel_id => $channel) {
         $tab['channels']['channel-' . $channel_id] = [
@@ -307,7 +307,7 @@ abstract class ApplenewsExport {
             '#title' => $section['name'] . ' ' . (!empty($section['default']) ? t('<em>(default)</em>') : ''),
             '#attributes' => [
               'data-section-of' => $channel_id,
-              'class'           => ['apple-news-sections'],
+              'class'           => ['applenews-sections'],
             ],
             '#default_value' => !empty($saved_sections[$section_id]) ? TRUE : FALSE,
           ];
@@ -321,8 +321,8 @@ abstract class ApplenewsExport {
       $tab['channels']['info'] = [
         '#markup' => t('Please provide Apple News !credentials and add at least one !channel.',
           [
-            '!credentials' => l(t('credentials'), 'admin/config/content/apple-news/settings'),
-            '!channel'     => l(t('channel'), 'admin/config/content/apple-news/settings/channels'),
+            '!credentials' => l(t('credentials'), 'admin/config/content/applenews/settings'),
+            '!channel'     => l(t('channel'), 'admin/config/content/applenews/settings/channels'),
           ]
         )
       ];
@@ -358,7 +358,7 @@ abstract class ApplenewsExport {
     $channels = [];
     $sections = [];
     // Save default channel and section options.
-    $api_channels = apple_news_channels(TRUE);
+    $api_channels = applenews_channels(TRUE);
     foreach ($api_channels as $channel_id => $channel) {
       if (!empty($form_state['values']['channel-' . $channel_id])) {
         $channels[$channel_id] = TRUE;
@@ -402,7 +402,7 @@ abstract class ApplenewsExport {
   /**
    * Exports the entity to an Apple Native Document.
    *
-   * @return NULL|\ChapterThree\AppleNews\Document
+   * @return NULL|\ChapterThree\AppleNewsAPI\Document
    *   A document object, or NULL to skip the export.
    *
    * @todo verify NULL return aborts push.
@@ -618,7 +618,7 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
       if (!$destination->validateSettings()) {
         $label = $this->title ? $this->title :
           t('Export (!id)', ['!id' => $this->id]);
-        $edit = 'admin/config/content/apple-news/export/' . $this->id .
+        $edit = 'admin/config/content/applenews/export/' . $this->id .
           '/component/' . $destination->id;
         $msg = t('%export component %label needs to be !link.', [
           '%export' => $label,
@@ -743,9 +743,9 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
     ];
     /** @var ApplenewsDestinationComponent $destination */
     foreach ($this->getdestinations('components') as $destination) {
-      $edit = 'admin/config/content/apple-news/export/' . $this->id . '/component/' . $destination->id;
+      $edit = 'admin/config/content/applenews/export/' . $this->id . '/component/' . $destination->id;
       $tab['components'][$destination->id] = [
-        '#apple_news_destination' => $destination,
+        '#applenews_destination' => $destination,
         'destination' => [
           '#markup' => $destination->label(),
         ],
@@ -753,7 +753,7 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
           '#markup' => l(t('edit'), $edit),
         ],
         'delete' => [
-          '#markup' => l(t('delete'), 'admin/config/content/apple-news/export/' . $this->id . '/component/' . $destination->id . '/delete'),
+          '#markup' => l(t('delete'), 'admin/config/content/applenews/export/' . $this->id . '/component/' . $destination->id . '/delete'),
         ],
         'id' => [
           '#type' => 'hidden',
@@ -783,13 +783,13 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
         ],
       ];
     }
-    $options = apple_news_get_module_apis('destination', 'component');
+    $options = applenews_get_module_apis('destination', 'component');
     $options = ['' => t('Select...')] +
       array_map(function($destination) {
         return "${destination['name']} (${destination['module']})";
       }, $options);
     $tab['components']['_new'] = [
-      '#apple_news_destination' => FALSE,
+      '#applenews_destination' => FALSE,
       'destination' => [
         '#title' => t('Add new component'),
         '#type' => 'select',
@@ -844,15 +844,15 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
       $component->pid = $components[$component->id]['pid'] == '' ? NULL : (int) $components[$component->id]['pid'];
     }
     if ($components['_new']['destination']) {
-      $destinations = apple_news_get_module_apis('destination');
+      $destinations = applenews_get_module_apis('destination');
       $info = $destinations[$components['_new']['destination']];
-      $destination = apple_news_new_destination($info['module'], $info['machine_name']);
+      $destination = applenews_new_destination($info['module'], $info['machine_name']);
       $destination->weight = (int) $components['_new']['weight'];
       $destination->pid = $components['_new']['pid'] == '' ? NULL : (int) $components['_new']['pid'];
       $destination->id = empty($this->destinations['components']) ? 1 :
         max(array_keys($this->destinations['components'])) + 1;
       $this->destinations['components'][$destination->id] = $destination;
-      $form_state['redirect'][] = 'admin/config/content/apple-news/export/' .
+      $form_state['redirect'][] = 'admin/config/content/applenews/export/' .
         $this->id . '/component/' . $destination->id;
     }
 
@@ -951,7 +951,7 @@ class ApplenewsExportNode extends ApplenewsExportConfigurable {
     }
 
     $this->document = new Document($id, $title,
-      apple_news_language_code($language),
+      applenews_language_code($language),
       // @todo Make these arbitrary values configurable.
       new Document\Layouts\Layout(7, 1024));
 

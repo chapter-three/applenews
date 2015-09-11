@@ -18,13 +18,13 @@
           $('input[data-section-of="' + _channel_id + '"]').parent().toggle();
         });
       });
-      $('.apple-news-sections').parent().css({'margin-left' : '20px'});
+      $('.applenews-sections').parent().css({'margin-left' : '20px'});
 
       // Vertical tab summary.
-      $('fieldset.apple-news-options', context).drupalSetSummary(function (context) {
+      $('fieldset.applenews-options', context).drupalSetSummary(function (context) {
 
-        if ($('.form-item-apple-news-publish-flag input:checked', context).length) {
-          var $postdate = $('.apple-news-post-date', context);
+        if ($('.form-item-applenews-publish-flag input:checked', context).length) {
+          var $postdate = $('.applenews-post-date', context);
           if ($postdate[0]) {
             return Drupal.t('Published on ' + $postdate.html());
           }

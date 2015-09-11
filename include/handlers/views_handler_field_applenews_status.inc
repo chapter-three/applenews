@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Definition of views_handler_field_apple_news_status.
+ * Definition of views_handler_field_applenews_status.
  */
 
 /**
@@ -10,7 +10,7 @@
  *
  * @ingroup views_field_handlers
  */
-class views_handler_field_apple_news_status extends views_handler_field_boolean {
+class views_handler_field_applenews_status extends views_handler_field_boolean {
 
   function render($values) {
     $value = $this->get_value($values);
