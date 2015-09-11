@@ -8,12 +8,12 @@
 /**
  * Form builder for API config.
  */
-function apple_news_settings_api_credentials_form($form, &$form_state) {
-  module_load_include('inc', 'apple_news');
+function applenews_settings_api_credentials_form($form, &$form_state) {
+  module_load_include('inc', 'applenews');
 
   // Check if all required libraries installed, otherwise
   // display message about missing PHP libraries.
-  if ($info = apple_news_libraries_installed()) {
+  if ($info = applenews_libraries_installed()) {
     return $info;
   }
 
@@ -23,10 +23,10 @@ function apple_news_settings_api_credentials_form($form, &$form_state) {
     '#description' => t('You can find your connection information in News Publisher. Go to Channel Info tab to view your API Key and Channel ID.'),
   ];
 
-  $endpoint = variable_get('apple_news_variable_api_endpoint', '');
-  $api_key = variable_get('apple_news_variable_api_key', '');
-  $api_secret = variable_get('apple_news_variable_api_secret', '');
-  $curl_opts = variable_get('apple_news_variable_api_curlopt',
+  $endpoint = variable_get('applenews_variable_api_endpoint', '');
+  $api_key = variable_get('applenews_variable_api_key', '');
+  $api_secret = variable_get('applenews_variable_api_secret', '');
+  $curl_opts = variable_get('applenews_variable_api_curlopt',
     [
       'ssl'        => TRUE,
       'proxy'      => '',
@@ -34,21 +34,21 @@ function apple_news_settings_api_credentials_form($form, &$form_state) {
     ]
   );
 
-  $form['credentials']['apple_news_variable_api_endpoint'] = [
+  $form['credentials']['applenews_variable_api_endpoint'] = [
     '#type' => 'textfield',
     '#title' => t('API Endpoint URL'),
-    '#default_value' => variable_get('apple_news_variable_api_endpoint', ''),
+    '#default_value' => variable_get('applenews_variable_api_endpoint', ''),
     '#description' => t('Publisher API endpoint URL'),
   ];
 
-  $form['credentials']['apple_news_variable_api_key'] = [
+  $form['credentials']['applenews_variable_api_key'] = [
     '#type' => 'textfield',
     '#title' => t('API Key ID'),
     '#default_value' => $api_key,
     '#description' => t('Publisher API Key ID'),
   ];
 
-  $form['credentials']['apple_news_variable_api_secret'] = [
+  $form['credentials']['applenews_variable_api_secret'] = [
     '#type' => 'password',
     '#title' => t('API Secret Key'),
     '#default_value' => $api_secret,
@@ -87,14 +87,14 @@ function apple_news_settings_api_credentials_form($form, &$form_state) {
   $form['save_config'] = [
     '#type' => 'submit',
     '#value' => t('Save configuration'),
-    '#submit' => ['apple_news_settings_api_credentials_form_submit'],
-    '#validate' => ['apple_news_settings_api_credentials_form_validate'],
+    '#submit' => ['applenews_settings_api_credentials_form_submit'],
+    '#validate' => ['applenews_settings_api_credentials_form_validate'],
   ];
 
   // Show delete button only when all the fields are prepopulated.
   if (!empty($endpoint) && !empty($api_key) && !empty($api_secret)) {
     $form['delete_config'] = [
-      '#markup' => l(t('Delete configuration'), 'admin/config/content/apple-news/settings/delete'),
+      '#markup' => l(t('Delete configuration'), 'admin/config/content/applenews/settings/delete'),
     ];
   }
 
@@ -104,9 +104,9 @@ function apple_news_settings_api_credentials_form($form, &$form_state) {
 /**
  * Form validation handler.
  */
-function apple_news_settings_api_credentials_form_validate($form, &$form_state) {
-  module_load_include('inc', 'apple_news');
-  foreach (apple_news_settings_fields() as $key) {
+function applenews_settings_api_credentials_form_validate($form, &$form_state) {
+  module_load_include('inc', 'applenews');
+  foreach (applenews_settings_fields() as $key) {
     if (isset($form['credentials'][$key]['#title'])) {
       $value = trim($form_state['values'][$key]);
       if ($value === '') {
@@ -125,9 +125,9 @@ function apple_news_settings_api_credentials_form_validate($form, &$form_state) 
 /**
  * Form submit handler.
  */
-function apple_news_settings_api_credentials_form_submit($form, &$form_state) {
-  module_load_include('inc', 'apple_news');
-  foreach (apple_news_settings_fields() as $key) {
+function applenews_settings_api_credentials_form_submit($form, &$form_state) {
+  module_load_include('inc', 'applenews');
+  foreach (applenews_settings_fields() as $key) {
     if (isset($form['credentials'][$key]['#title'])) {
       $value = $form_state['values'][$key];
       if (is_array($value) && isset($form_state['values']['array_filter'])) {
@@ -137,18 +137,18 @@ function apple_news_settings_api_credentials_form_submit($form, &$form_state) {
     }
   }
   // SSL Verification.
-  variable_set('apple_news_variable_api_curlopt',
+  variable_set('applenews_variable_api_curlopt',
     [
       'ssl'        => !empty($form_state['values']['ssl_verification']) ? TRUE : FALSE,
       'proxy'      => !empty($form_state['values']['proxy']) ? filter_xss($form_state['values']['proxy']) : '',
       'proxy_port' => !empty($form_state['values']['proxy_port']) ? filter_xss($form_state['values']['proxy_port']) : '',
     ]
   );
-  $api_channels = variable_get('apple_news_variable_api_channels', []);
+  $api_channels = variable_get('applenews_variable_api_channels', []);
   $channel_msg = '';
   if (empty($api_channels)) {
     $link = l(t('add Channel ID'),
-      'admin/config/content/apple-news/settings/channels');
+      'admin/config/content/applenews/settings/channels');
     $channel_msg = t('Please !link to verify connection and start posting content to Apple News.', ['!link' => $link]);
   }
   drupal_set_message(t('The configuration options have been saved. !msg',
@@ -158,11 +158,11 @@ function apple_news_settings_api_credentials_form_submit($form, &$form_state) {
 /**
  * Delete Apple News configuration w/ confirmation.
  */
-function apple_news_settings_delete_configuration_form($form, &$form_state) {
+function applenews_settings_delete_configuration_form($form, &$form_state) {
   return confirm_form(
     $form,
     t("Do you really want to delete current Apple News configuration?"),
-    'admin/config/content/apple-news/settings',
+    'admin/config/content/applenews/settings',
     t("You will no longer be able to publish content to Apple News. This action cannot be undone."),
     t("Yes, delete configuration")
   );
@@ -171,50 +171,50 @@ function apple_news_settings_delete_configuration_form($form, &$form_state) {
 /**
  * Form submit handler.
  */
-function apple_news_settings_delete_configuration_form_submit($form, &$form_state) {
-  module_load_include('inc', 'apple_news');
-  foreach (apple_news_settings_fields() as $key) {
+function applenews_settings_delete_configuration_form_submit($form, &$form_state) {
+  module_load_include('inc', 'applenews');
+  foreach (applenews_settings_fields() as $key) {
     variable_del($key);
   }
   // Remove data from custom cache table.
-  db_truncate('cache_apple_news')->execute();
+  db_truncate('cache_applenews')->execute();
   // Remove associated data.
-  $chnnels_all = apple_news_channels();
+  $chnnels_all = applenews_channels();
   foreach ($chnnels_all as $channel_id => $name) {
-    $channel = apple_news_channel($channel_id);
-    apple_news_cleanup_data($channel);
+    $channel = applenews_channel($channel_id);
+    applenews_cleanup_data($channel);
   }
   // Delete settings.
-  variable_del('apple_news_variable_api_channels');
-  variable_del('apple_news_variable_api_curlopt');
+  variable_del('applenews_variable_api_channels');
+  variable_del('applenews_variable_api_curlopt');
   drupal_set_message(t('The configuration options have been deleted.'));
-  drupal_goto('admin/config/content/apple-news/settings');
+  drupal_goto('admin/config/content/applenews/settings');
 }
 
 /**
  * Form builder for API config.
  */
-function apple_news_settings_channels_form() {
-  module_load_include('inc', 'apple_news');
+function applenews_settings_channels_form() {
+  module_load_include('inc', 'applenews');
 
   // Check if all required libraries installed, otherwise
   // display message about missing PHP libraries.
-  if ($info = apple_news_libraries_installed()) {
+  if ($info = applenews_libraries_installed()) {
     return $info;
   }
 
-  $endpoint = variable_get('apple_news_variable_api_endpoint', '');
-  $api_key = variable_get('apple_news_variable_api_key', '');
-  $api_secret = variable_get('apple_news_variable_api_secret', '');
+  $endpoint = variable_get('applenews_variable_api_endpoint', '');
+  $api_key = variable_get('applenews_variable_api_key', '');
+  $api_secret = variable_get('applenews_variable_api_secret', '');
 
   $channels = [];
-  $api_channels = variable_get('apple_news_variable_api_channels', []);
+  $api_channels = variable_get('applenews_variable_api_channels', []);
   foreach ($api_channels as $channel_id) {
-    $channel = apple_news_channel($channel_id);
+    $channel = applenews_channel($channel_id);
     $channels[] = [
-      'name' => l(filter_xss($channel->name), 'admin/config/content/apple-news/settings/channels/' . $channel->id . '/sections'),
+      'name' => l(filter_xss($channel->name), 'admin/config/content/applenews/settings/channels/' . $channel->id . '/sections'),
       'id' => $channel->id,
-      'operations' => l(t('Delete'), 'admin/config/content/apple-news/settings/channels/' . $channel->id . '/delete')
+      'operations' => l(t('Delete'), 'admin/config/content/applenews/settings/channels/' . $channel->id . '/delete')
     ];
   }
 
@@ -235,7 +235,7 @@ function apple_news_settings_channels_form() {
       )
     ];
 
-    $form['apple_news_channel_id'] = [
+    $form['applenews_channel_id'] = [
       '#type' => 'textfield',
       '#title' => t('Channel ID'),
       '#description' => t("You can find your Channel ID in News Publisher. Go to Channel Info tab to view your API Key and Channel ID."),
@@ -250,7 +250,7 @@ function apple_news_settings_channels_form() {
   }
   else {
 
-    $link = l(t('credentials'), 'admin/config/content/apple-news/settings');
+    $link = l(t('credentials'), 'admin/config/content/applenews/settings');
     $form['requirements'] = [
       '#markup' => t('Please provide Apple News !link in order to be able to see and add channels.', ['!link' => $link]),
     ];
@@ -263,20 +263,20 @@ function apple_news_settings_channels_form() {
 /**
  * Form submit handler.
  */
-function apple_news_settings_channels_form_submit($form, &$form_state) {
-  module_load_include('inc', 'apple_news');
+function applenews_settings_channels_form_submit($form, &$form_state) {
+  module_load_include('inc', 'applenews');
 
-  $channel_id = trim($form_state['values']['apple_news_channel_id']);
-  $channels = variable_get('apple_news_variable_api_channels', []);
+  $channel_id = trim($form_state['values']['applenews_channel_id']);
+  $channels = variable_get('applenews_variable_api_channels', []);
 
-  if ($channel = apple_news_channel($channel_id)) {
+  if ($channel = applenews_channel($channel_id)) {
     // Save settings.
     if (!isset($channel->errors)) {
       // Get sections.
-      apple_news_sections($channel->id);
+      applenews_sections($channel->id);
       // Save new channel ID.
       $channels[] = $channel->id;
-      variable_set('apple_news_variable_api_channels', $channels);
+      variable_set('applenews_variable_api_channels', $channels);
       $msg = t('Successfully connected to the "@channel" channel.', [
         '@channel' => filter_xss($channel->name),
       ]);
@@ -299,11 +299,11 @@ function apple_news_settings_channels_form_submit($form, &$form_state) {
 /**
  * View Apple News channel sections.
  */
-function apple_news_settings_channel_sections_form($form, &$form_state, $channel_id) {
-  module_load_include('inc', 'apple_news');
+function applenews_settings_channel_sections_form($form, &$form_state, $channel_id) {
+  module_load_include('inc', 'applenews');
 
   $sections = [];
-  $channel_sections = apple_news_sections($channel_id);
+  $channel_sections = applenews_sections($channel_id);
   if (!empty($channel_sections)) {
     foreach ($channel_sections as $section) {
       $default = ($section->isDefault) ? ' ' . t('<em>(default)</em>') : '';
@@ -327,7 +327,7 @@ function apple_news_settings_channel_sections_form($form, &$form_state, $channel
   ];
 
   $form['back'] = [
-    '#markup' => l(t('Back to channels'), 'admin/config/content/apple-news/settings/channels'),
+    '#markup' => l(t('Back to channels'), 'admin/config/content/applenews/settings/channels'),
   ];
 
   return $form;
@@ -336,14 +336,14 @@ function apple_news_settings_channel_sections_form($form, &$form_state, $channel
 /**
  * Delete channel ID with confirmation.
  */
-function apple_news_settings_delete_channel_form($form, &$form_state, $channel_id) {
-  module_load_include('inc', 'apple_news');
-  $channel = apple_news_channel($channel_id);
+function applenews_settings_delete_channel_form($form, &$form_state, $channel_id) {
+  module_load_include('inc', 'applenews');
+  $channel = applenews_channel($channel_id);
   $form_state['storage'] = ['channel' => $channel];
   return confirm_form(
     $form,
     t("Do you really want to delete this channel?"),
-    'admin/config/content/apple-news/settings/channels',
+    'admin/config/content/applenews/settings/channels',
     t("You will no long be able to publish content to <em>@name</em> channel. This action cannot be undone.",
       [
         '@name' => $channel->name
@@ -355,8 +355,8 @@ function apple_news_settings_delete_channel_form($form, &$form_state, $channel_i
 /**
  * Form submit handler.
  */
-function apple_news_settings_delete_channel_form_submit($form, &$form_state) {
-  module_load_include('inc', 'apple_news');
+function applenews_settings_delete_channel_form_submit($form, &$form_state) {
+  module_load_include('inc', 'applenews');
   $channel = $form_state['storage']['channel'];
   if (empty($channel->id)) {
     drupal_set_message(t('You are trying to remove non-existing channel.'), 'warning');
@@ -364,22 +364,22 @@ function apple_news_settings_delete_channel_form_submit($form, &$form_state) {
   else {
 
     // Remove all channel ID related data.
-    apple_news_cleanup_data($channel);
+    applenews_cleanup_data($channel);
     drupal_set_message(t('<em>@name</em> channel successfully removed.', ['@name' => filter_xss($channel->name)]));
 
-    drupal_goto('admin/config/content/apple-news/settings/channels');
+    drupal_goto('admin/config/content/applenews/settings/channels');
   }
 }
 
 /**
  * Form builder for export config.
  */
-function apple_news_settings_exports_form($form, &$form_state) {
-  module_load_include('inc', 'apple_news');
+function applenews_settings_exports_form($form, &$form_state) {
+  module_load_include('inc', 'applenews');
 
   // Check if all required libraries installed, otherwise
   // display message about missing PHP libraries.
-  if ($info = apple_news_libraries_installed()) {
+  if ($info = applenews_libraries_installed()) {
     return $info;
   }
 
@@ -393,18 +393,18 @@ function apple_news_settings_exports_form($form, &$form_state) {
   ];
 
   $rows = [];
-  foreach (apple_news_exports() as $key => $info) {
-    $export = apple_news_export_load($key);
+  foreach (applenews_exports() as $key => $info) {
+    $export = applenews_export_load($key);
 
     if ($export instanceof ApplenewsExportConfigurable) {
       $export->validateComponents();
     }
 
     // Get current export status.
-    $status = apple_news_batch_export_get_status($export->id);
+    $status = applenews_batch_export_get_status($export->id);
 
     /** @var SelectQuery $query */
-    $query = db_select('apple_news_log', 'l')
+    $query = db_select('applenews_log', 'l')
       ->fields('l', ['starttime', 'endtime'])
       ->condition('l.exid', $export->id)
       ->orderBy('l.starttime', 'DESC')
@@ -416,10 +416,10 @@ function apple_news_settings_exports_form($form, &$form_state) {
     $module = $module['name'] . ' (' . $export->getMachineName() . ')';
     $enabled = empty($export->enabled) ? t('no') : t('yes');
     $lastexport = empty($log['starttime']) ? t('never') : format_date($log['starttime'], 'short');
-    $edit = l(t('edit'), 'admin/config/content/apple-news/export/' . $key . '/edit');
-    $delete = l(t('delete'), 'admin/config/content/apple-news/export/' . $key . '/delete');
+    $edit = l(t('edit'), 'admin/config/content/applenews/export/' . $key . '/edit');
+    $delete = l(t('delete'), 'admin/config/content/applenews/export/' . $key . '/delete');
     $rows[$key] = [
-      'title'       => '<div class="title">' . $title . '</div>' 
+      'title'       => '<div class="title">' . $title . '</div>'
                           . (!empty($export->description) ? '<div class="description">'
                           . $export->description . '</div>' : ''),
       'module'      => $module,
@@ -458,7 +458,7 @@ function apple_news_settings_exports_form($form, &$form_state) {
     ],
   ];
 
-  $form['#submit'][] = 'apple_news_settings_exports_form_submit';
+  $form['#submit'][] = 'applenews_settings_exports_form_submit';
   $form['#theme'] = 'system_settings_form';
 
   return $form;
@@ -467,7 +467,7 @@ function apple_news_settings_exports_form($form, &$form_state) {
 /**
  * Form validatation handler.
  */
-function apple_news_settings_exports_form_validate($form, &$form_state) {
+function applenews_settings_exports_form_validate($form, &$form_state) {
 
   $selected = array_filter($form_state['values']['exports']);
   if (empty($selected)) {
@@ -479,24 +479,24 @@ function apple_news_settings_exports_form_validate($form, &$form_state) {
 /**
  * Form submit handler.
  */
-function apple_news_settings_exports_form_submit($form, &$form_state) {
+function applenews_settings_exports_form_submit($form, &$form_state) {
 
-  module_load_include('inc', 'apple_news', 'apple_news.publisher_api');
-  module_load_include('inc', 'apple_news');
+  module_load_include('inc', 'applenews', 'applenews.publisher_api');
+  module_load_include('inc', 'applenews');
 
-  $exports = apple_news_exports();
+  $exports = applenews_exports();
   $selected = array_map(function($key) use(&$exports) {
     return $exports[$key];
   }, array_filter($form_state['values']['exports']));
 
   foreach (array_keys($selected) as $id) {
-    $export = apple_news_export_load($id);
+    $export = applenews_export_load($id);
 
     switch ($form_state['values']['action']) {
 
       case 'enable':
         $export->enabled = TRUE;
-        apple_news_export_save($export);
+        applenews_export_save($export);
         drupal_set_message(
           t('Export %title sucessfully <strong>enabled</strong>.',
             ['%title' => $export->title]));
@@ -504,7 +504,7 @@ function apple_news_settings_exports_form_submit($form, &$form_state) {
 
       case 'disable':
         $export->enabled = FALSE;
-        apple_news_export_save($export);
+        applenews_export_save($export);
         drupal_set_message(
           t('%title export sucessfully <strong>disabled</strong>.',
             ['%title' => $export->title]));
@@ -513,7 +513,7 @@ function apple_news_settings_exports_form_submit($form, &$form_state) {
       case 'export':
         // Batch entity export to Apple News.
         if ($export->enabled) {
-          $batch = apple_news_batch_run_export($export, 'export');
+          $batch = applenews_batch_run_export($export, 'export');
           batch_set($batch);
         }
         else {
@@ -528,7 +528,7 @@ function apple_news_settings_exports_form_submit($form, &$form_state) {
       case 'export-to-file':
         // Export entities as Apple News previewable files.
         if ($export->enabled) {
-          $batch = apple_news_batch_run_export($export, 'export-to-file');
+          $batch = applenews_batch_run_export($export, 'export-to-file');
           batch_set($batch);
         }
         else {
@@ -547,14 +547,14 @@ function apple_news_settings_exports_form_submit($form, &$form_state) {
 /**
  * Form builder for a new export.
  */
-function apple_news_export_add_form($form) {
-  module_load_include('inc', 'apple_news');
+function applenews_export_add_form($form) {
+  module_load_include('inc', 'applenews');
 
   $form['type'] = [
     '#type' => 'radios',
     '#title' => t('Type'),
   ];
-  $implementations = apple_news_get_module_apis('export');
+  $implementations = applenews_get_module_apis('export');
   array_walk($implementations, function($info, $key) use(&$form) {
     $form['type']['#options'][$key] = $info['name'] . ' - ' .
       $info['description'];
@@ -575,7 +575,7 @@ function apple_news_export_add_form($form) {
       '#value' => t('Submit'),
     ],
     'cancel' => [
-      '#markup' => l(t('Back'), 'admin/config/content/apple-news'),
+      '#markup' => l(t('Back'), 'admin/config/content/applenews'),
     ],
   ];
 
@@ -585,7 +585,7 @@ function apple_news_export_add_form($form) {
 /**
  * Form validatation handler.
  */
-function apple_news_export_add_form_validate($form, &$form_state) {
+function applenews_export_add_form_validate($form, &$form_state) {
   if (empty($form_state['values']['type'])) {
     form_set_error('exports', 'Select a type.');
   }
@@ -594,13 +594,13 @@ function apple_news_export_add_form_validate($form, &$form_state) {
 /**
  * Form submit handler.
  */
-function apple_news_export_add_form_submit($form, &$form_state) {
-  list($module, $machine_name) = _apple_news_export_id_extract(
+function applenews_export_add_form_submit($form, &$form_state) {
+  list($module, $machine_name) = _applenews_export_id_extract(
     $form_state['values']['type']);
-  $export = apple_news_new_export($module, $machine_name);
+  $export = applenews_new_export($module, $machine_name);
   $export->title = $form_state['values']['title'];
-  apple_news_export_save($export);
-  drupal_goto('admin/config/content/apple-news/export/' . $export->id);
+  applenews_export_save($export);
+  drupal_goto('admin/config/content/applenews/export/' . $export->id);
 }
 
 /**
@@ -609,7 +609,7 @@ function apple_news_export_add_form_submit($form, &$form_state) {
  * @param ApplenewsExportConfigurable $export
  *   Export object.
  */
-function apple_news_export_delete_form($form, &$form_state, ApplenewsExportConfigurable $export) {
+function applenews_export_delete_form($form, &$form_state, ApplenewsExportConfigurable $export) {
 
   $form_state['storage'] = [
     'export'      => $export,
@@ -619,7 +619,7 @@ function apple_news_export_delete_form($form, &$form_state, ApplenewsExportConfi
     $form,
     t("Do you really want delete the export !title?",
       ['!title' => $export->title]),
-    'admin/config/content/apple-news/export/' . $export->id . '/edit',
+    'admin/config/content/applenews/export/' . $export->id . '/edit',
     t("This action cannot be undone."),
     t("Yes, delete")
   );
@@ -628,14 +628,14 @@ function apple_news_export_delete_form($form, &$form_state, ApplenewsExportConfi
 /**
  * Form submit handler.
  */
-function apple_news_export_delete_form_submit($form, &$form_state) {
-  module_load_include('inc', 'apple_news');
+function applenews_export_delete_form_submit($form, &$form_state) {
+  module_load_include('inc', 'applenews');
 
   /** @var ApplenewsExportConfigurable $export */
   $export = $form_state['storage']['export'];
-  $path = 'admin/config/content/apple-news/exports';
+  $path = 'admin/config/content/applenews/exports';
 
-  if (apple_news_export_delete($export)) {
+  if (applenews_export_delete($export)) {
     drupal_set_message(t('%name successfully deleted.',
       ['%name' => $export->title]));
   }
@@ -649,8 +649,8 @@ function apple_news_export_delete_form_submit($form, &$form_state) {
  * @param ApplenewsExport $export
  *   Export object.
  */
-function apple_news_export_edit_form($form, &$form_state, ApplenewsExport $export) {
-  module_load_include('inc', 'apple_news');
+function applenews_export_edit_form($form, &$form_state, ApplenewsExport $export) {
+  module_load_include('inc', 'applenews');
 
   if ($export instanceof ApplenewsExportConfigurable) {
     $export->validateComponents();
@@ -658,7 +658,7 @@ function apple_news_export_edit_form($form, &$form_state, ApplenewsExport $expor
 
   $form = $export->getConfigForm($form, $form_state);
 
-  $form['#apple_news_export'] = $export;
+  $form['#applenews_export'] = $export;
 
   $form['actions'] = [
     '#type' => 'actions',
@@ -667,7 +667,7 @@ function apple_news_export_edit_form($form, &$form_state, ApplenewsExport $expor
       '#value' => t('Save changes'),
     ],
     'cancel' => [
-      '#markup' => l(t('Back'), 'admin/config/content/apple-news'),
+      '#markup' => l(t('Back'), 'admin/config/content/applenews'),
     ],
   ];
 
@@ -675,11 +675,11 @@ function apple_news_export_edit_form($form, &$form_state, ApplenewsExport $expor
 }
 
 /**
- * Theme callback for the apple_news_export_edit_form().
+ * Theme callback for the applenews_export_edit_form().
  *
  * @see theme_tabledrag_example_parent_form()
  */
-function theme_apple_news_export_edit_form($variables) {
+function theme_applenews_export_edit_form($variables) {
   $form = $variables['form'];
 
   // Non-order-able table of destinations.
@@ -721,7 +721,7 @@ function theme_apple_news_export_edit_form($variables) {
     ],
   ];
   foreach ($elements as $key => $info) {
-    $css_prefix = "apple-news-${key}-";
+    $css_prefix = "applenews-${key}-";
 
     $rows = [];
     foreach (element_children($info['element']) as $id) {
@@ -729,9 +729,9 @@ function theme_apple_news_export_edit_form($variables) {
       $info['element'][$id]['id']['#attributes']['class'] = [$css_prefix . 'id'];
       $info['element'][$id]['pid']['#attributes']['class'] = [$css_prefix . 'pid'];
       $class = ['draggable'];
-      if (@$info['element'][$id]['#apple_news_destination']) {
+      if (@$info['element'][$id]['#applenews_destination']) {
         /** @var ApplenewsDestination $destination */
-        $destination = $info['element'][$id]['#apple_news_destination'];
+        $destination = $info['element'][$id]['#applenews_destination'];
         if ($destination->isRoot()) {
           $class[] = 'tabledrag-root';
         }
@@ -788,21 +788,21 @@ function theme_apple_news_export_edit_form($variables) {
 /**
  * Form validatation handler.
  */
-function apple_news_export_edit_form_validate($form, &$form_state) {
+function applenews_export_edit_form_validate($form, &$form_state) {
   /** @var ApplenewsExport $export */
-  $export = $form['#apple_news_export'];
+  $export = $form['#applenews_export'];
   $export->validateConfigForm($form, $form_state);
 }
 
 /**
  * Form submit handler.
  */
-function apple_news_export_edit_form_submit($form, &$form_state) {
-  module_load_include('inc', 'apple_news');
+function applenews_export_edit_form_submit($form, &$form_state) {
+  module_load_include('inc', 'applenews');
   /** @var ApplenewsExport $export */
-  $export = $form['#apple_news_export'];
+  $export = $form['#applenews_export'];
   $export->submitConfigForm($form, $form_state);
-  apple_news_export_save($export);
+  applenews_export_save($export);
   if (empty($form_state['redirect'])) {
     drupal_set_message(t('Changes have been successfully saved.'));
   }
@@ -814,7 +814,7 @@ function apple_news_export_edit_form_submit($form, &$form_state) {
  * @param ApplenewsExportConfigurable $export
  *   Export object.
  */
-function apple_news_export_destination_edit_form($form, &$form_state, ApplenewsExportConfigurable $export, $type, $id) {
+function applenews_export_destination_edit_form($form, &$form_state, ApplenewsExportConfigurable $export, $type, $id) {
 
   switch ($type) {
 
@@ -852,7 +852,7 @@ function apple_news_export_destination_edit_form($form, &$form_state, ApplenewsE
 
   $form = $destination->getConfigForm($form, $form_state);
 
-  $form['#apple_news_destination'] = $destination;
+  $form['#applenews_destination'] = $destination;
 
   $form['actions'] = [
     '#type' => 'actions',
@@ -861,7 +861,7 @@ function apple_news_export_destination_edit_form($form, &$form_state, ApplenewsE
       '#value' => t('Save changes'),
     ],
     'cancel' => [
-      '#markup' => l(t('Back'), 'admin/config/content/apple-news/export/' . $export->id, [
+      '#markup' => l(t('Back'), 'admin/config/content/applenews/export/' . $export->id, [
           // Set components tab as Active.
           'fragment' => 'edit-components-tab',
         ]
@@ -875,24 +875,24 @@ function apple_news_export_destination_edit_form($form, &$form_state, ApplenewsE
 /**
  * Form validatation handler.
  */
-function apple_news_export_destination_edit_form_validate($form, &$form_state) {
+function applenews_export_destination_edit_form_validate($form, &$form_state) {
   /** @var ApplenewsDestination $destination */
-  $destination = $form['#apple_news_destination'];
+  $destination = $form['#applenews_destination'];
   $destination->validateConfigForm($form, $form_state);
 }
 
 /**
  * Form submit handler.
  */
-function apple_news_export_destination_edit_form_submit($form, &$form_state) {
-  module_load_include('inc', 'apple_news');
+function applenews_export_destination_edit_form_submit($form, &$form_state) {
+  module_load_include('inc', 'applenews');
   /** @var ApplenewsDestination $destination */
-  $destination = $form['#apple_news_destination'];
+  $destination = $form['#applenews_destination'];
   $destination->submitConfigForm($form, $form_state);
-  apple_news_export_save($destination->export);
+  applenews_export_save($destination->export);
   drupal_set_message(t('Changes have been successfully saved.'));
   $form_state['redirect'] = [
-    'admin/config/content/apple-news/export/' . $destination->export->id, [
+    'admin/config/content/applenews/export/' . $destination->export->id, [
       // Set components tab as Active.
       'fragment' => 'edit-components-tab',
     ]
@@ -905,10 +905,10 @@ function apple_news_export_destination_edit_form_submit($form, &$form_state) {
  * @param ApplenewsExportConfigurable $export
  *   Export object.
  */
-function apple_news_export_destination_delete_form($form, &$form_state, ApplenewsExportConfigurable $export, $type, $id) {
-  module_load_include('inc', 'apple_news');
+function applenews_export_destination_delete_form($form, &$form_state, ApplenewsExportConfigurable $export, $type, $id) {
+  module_load_include('inc', 'applenews');
 
-  $path = 'admin/config/content/apple-news/export/' . $export->id . '/edit';
+  $path = 'admin/config/content/applenews/export/' . $export->id . '/edit';
 
   switch ($type) {
 
@@ -960,8 +960,8 @@ function apple_news_export_destination_delete_form($form, &$form_state, Applenew
 /**
  * Form submit handler.
  */
-function apple_news_export_destination_delete_form_submit($form, &$form_state) {
-  module_load_include('inc', 'apple_news');
+function applenews_export_destination_delete_form_submit($form, &$form_state) {
+  module_load_include('inc', 'applenews');
 
   /** @var ApplenewsExportConfigurable $export */
   $export = $form_state['storage']['export'];
@@ -969,7 +969,7 @@ function apple_news_export_destination_delete_form_submit($form, &$form_state) {
   $id = $form_state['storage']['id'];
   /** @var ApplenewsDestination $destination */
   $destination = $form_state['storage']['destination'];
-  $path = 'admin/config/content/apple-news/export/' . $export->id;
+  $path = 'admin/config/content/applenews/export/' . $export->id;
 
   switch ($type) {
 
@@ -988,7 +988,7 @@ function apple_news_export_destination_delete_form_submit($form, &$form_state) {
 
   }
 
-  apple_news_export_save($export);
+  applenews_export_save($export);
   drupal_set_message(t('!name successfully deleted.',
     ['!name' => $destination->label()]));
   $form_state['redirect'] = [
@@ -1004,10 +1004,10 @@ function apple_news_export_destination_delete_form_submit($form, &$form_state) {
 /**
  * Delete Apple News article w/ confirmation.
  */
-function apple_news_settings_delete_article_form($form, &$form_state, $entity_type, $entity_id, $article_id, $channel_id) {
-  module_load_include('inc', 'apple_news');
+function applenews_settings_delete_article_form($form, &$form_state, $entity_type, $entity_id, $article_id, $channel_id) {
+  module_load_include('inc', 'applenews');
   // Load channel information.
-  $channel = apple_news_channel($channel_id);
+  $channel = applenews_channel($channel_id);
   // Load entity.
   $entity = entity_load_single($entity_type, $entity_id);
   $wrapper = entity_metadata_wrapper($entity_type, $entity);
@@ -1041,12 +1041,12 @@ function apple_news_settings_delete_article_form($form, &$form_state, $entity_ty
 /**
  * Form submit handler.
  */
-function apple_news_settings_delete_article_form_submit($form, &$form_state) {
-  module_load_include('inc', 'apple_news', 'apple_news.publisher_api');
+function applenews_settings_delete_article_form_submit($form, &$form_state) {
+  module_load_include('inc', 'applenews', 'applenews.publisher_api');
 
   // Delete an Apple News article.
   $entity = entity_load_single($form_state['storage']['entity_type'], $form_state['storage']['entity_id']);
-  $success = apple_news_op('delete', $form_state['storage']['channel_id'], $entity, $form_state['storage']['entity_type']);
+  $success = applenews_op('delete', $form_state['storage']['channel_id'], $entity, $form_state['storage']['entity_type']);
   // If successful request.
   if ($success) {
     drupal_set_message(
@@ -1071,22 +1071,22 @@ function apple_news_settings_delete_article_form_submit($form, &$form_state) {
 /**
  * Download article.json preview file.
  */
-function apple_news_download_article_json($entity_type, $entity_id, $revision_id) {
-  module_load_include('inc', 'apple_news');
+function applenews_download_article_json($entity_type, $entity_id, $revision_id) {
+  module_load_include('inc', 'applenews');
   if (!empty($entity_id)) {
 
-    if ($export = apple_news_entity_get_export($entity_type, $entity_id)) {
-      $data = apple_news_entity_export($export, $entity_type, $entity_id);
-      apple_news_export_to_file($entity_id, [$entity_id], NULL, TRUE, $data);
-      $archive_path = apple_news_export_file_path($entity_id);
+    if ($export = applenews_entity_get_export($entity_type, $entity_id)) {
+      $data = applenews_entity_export($export, $entity_type, $entity_id);
+      applenews_export_to_file($entity_id, [$entity_id], NULL, TRUE, $data);
+      $archive_path = applenews_export_file_path($entity_id);
 
       $archive = $archive_path . '.zip';
       $output = file_get_contents($archive, FILE_USE_INCLUDE_PATH);
 
       // Remove individual entity archive.
-      apple_news_export_file_delete($entity_id);
+      applenews_export_file_delete($entity_id);
       // Remove individual entity directory.
-      apple_news_export_dir_cleanup([$entity_id]);
+      applenews_export_dir_cleanup([$entity_id]);
 
       drupal_add_http_header('Content-Type', 'application/zip');
       drupal_add_http_header('Content-Disposition', 'attachment; filename=' . $entity_id . '.zip');
@@ -1109,10 +1109,10 @@ function apple_news_download_article_json($entity_type, $entity_id, $revision_id
 /**
  * Autoinstall form.
  */
-function apple_news_autoinstall_form($form, &$form_state) {
+function applenews_autoinstall_form($form, &$form_state) {
   $libraries = [
-    'php-curl-class' => CURL_SUPPORTED_VERSION,
-    'AppleNews'      => APPLE_NEWS_SUPPORTED_VERSION,
+    'php-curl-class' => APPLENEWS_CURL_SUPPORTED_VERSION,
+    'AppleNewsAPI'      => APPLENEWS_APPLENEWSAPI_SUPPORTED_VERSION,
   ];
   $count = 0;
   foreach ($libraries as $name => $version) {
@@ -1125,7 +1125,7 @@ function apple_news_autoinstall_form($form, &$form_state) {
   }
   // All libraries successfully installed.
   if ($count == 2) {
-    $link = l(t('configure the module'), 'admin/config/content/apple-news/settings');
+    $link = l(t('configure the module'), 'admin/config/content/applenews/settings');
     $form['info'] = [
       '#markup' => t('Apple News dependant PHP libraries were successfully installed. Please !link and start posting content to Apple News.', ['!link' => $link]),
     ];
@@ -1144,9 +1144,9 @@ function apple_news_autoinstall_form($form, &$form_state) {
 /**
  * Form submit handler.
  */
-function apple_news_autoinstall_form_submit($form, &$form_state) {
-  module_load_include('inc', 'apple_news');
+function applenews_autoinstall_form_submit($form, &$form_state) {
+  module_load_include('inc', 'applenews');
   // Download and unzip PHP libraries.
-  // @see apple_news.inc file.
-  apple_news_autoinstall_libraries();
+  // @see applenews.inc file.
+  applenews_autoinstall_libraries();
 }

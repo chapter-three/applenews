@@ -94,8 +94,8 @@ class ApplenewsPreview {
    */
   public function __construct($entity_id, $filename, $entity_archive = FALSE, array $data = []) {
 
-    $this->directory = variable_get('apple_news_export_directory', 'apple-news/');
-    $this->archive = !empty($filename) ? 'apple-news-' . $filename . '.zip' : 'apple-news.zip';
+    $this->directory = variable_get('applenews_export_directory', 'applenews/');
+    $this->archive = !empty($filename) ? 'applenews-' . $filename . '.zip' : 'applenews.zip';
     $this->archive_realpath = drupal_realpath(file_build_uri($this->directory));
     $this->archive_file = drupal_realpath(file_build_uri($this->directory . $this->archive));
     $this->archive_url = file_create_url(file_build_uri($this->directory . $this->archive));
@@ -164,7 +164,7 @@ class ApplenewsPreview {
         file_unmanaged_delete($entity_archive);
       }
 
-      // Open archive 
+      // Open archive
       if ($zip->open($entity_archive, \ZipArchive::OVERWRITE) !== TRUE) {
         die ("Could not open archive");
       }
@@ -176,7 +176,7 @@ class ApplenewsPreview {
     }
     else {
 
-      // Open archive 
+      // Open archive
       if ($zip->open($this->archive_file, \ZipArchive::OVERWRITE) !== TRUE) {
         die ("Could not open archive");
       }

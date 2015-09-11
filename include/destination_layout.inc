@@ -5,8 +5,8 @@
  * Layout Destination classes.
  */
 
-use \ChapterThree\AppleNews\Document\Layouts\Layout;
-use \ChapterThree\AppleNews\Document\Layouts\ComponentLayout;
+use \ChapterThree\AppleNewsAPI\Document\Layouts\Layout;
+use \ChapterThree\AppleNewsAPI\Document\Layouts\ComponentLayout;
 
 /**
  * Base class for layout destinations.
@@ -18,17 +18,10 @@ class ApplenewsDestinationLayout extends ApplenewsDestination {
   /**
    * Destination object(s), to be returned by export().
    *
-   * @var \ChapterThree\AppleNews\Document\Layouts\Layout
+   * @var \ChapterThree\AppleNewsAPI\Document\Layouts\Layout
    *   Layout object.
    */
   public $destination;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function label() {
-    return t('Configurable Layout') . ' ' . parent::label();
-  }
 
   /**
    * {@inheritdoc}
@@ -49,27 +42,27 @@ class ApplenewsDestinationLayout extends ApplenewsDestination {
 
     $form = parent::getConfigForm($form, $form_state);
 
-    $form['columns'] = [
+    $form['settings']['columns'] = [
       '#title'         => t('Columns'),
       '#type'          => 'textfield',
       '#default_value' => $this->getSetting('columns'),
       '#required'      => TRUE,
     ];
 
-    $form['width'] = [
+    $form['settings']['width'] = [
       '#title'         => t('Width'),
       '#type'          => 'textfield',
       '#default_value' => $this->getSetting('width'),
       '#required'      => TRUE,
     ];
 
-    $form['margin'] = [
+    $form['settings']['margin'] = [
       '#title'         => t('Margin'),
       '#type'          => 'textfield',
       '#default_value' => $this->getSetting('margin'),
     ];
 
-    $form['gutter'] = [
+    $form['settings']['gutter'] = [
       '#title'         => t('Gutter'),
       '#type'          => 'textfield',
       '#default_value' => $this->getSetting('gutter'),
@@ -120,17 +113,10 @@ class ApplenewsDestinationComponentLayout extends ApplenewsDestination {
   /**
    * Destination object(s), to be returned by export().
    *
-   * @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout
+   * @var \ChapterThree\AppleNewsAPI\Document\Layouts\ComponentLayout
    *   ComponentLayout object.
    */
   public $destination;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function label() {
-    return t('Configurable Component Layout') . ' ' . parent::label();
-  }
 
   /**
    * {@inheritdoc}

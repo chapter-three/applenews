@@ -5,25 +5,26 @@
  * Apple News module file.
  */
 
-define('APPLE_NEWS_API_VERSION', 1);
-define('CURL_SUPPORTED_VERSION', '4.6.9');
-define('APPLE_NEWS_SUPPORTED_VERSION', '0.3.3');
+// This module's API version.
+define('APPLENEWS_API_VERSION', 1);
+define('APPLENEWS_CURL_SUPPORTED_VERSION', '4.6.9');
+define('APPLENEWS_APPLENEWSAPI_SUPPORTED_VERSION', '0.3.4');
 
 // Load Batch API helper functions.
-module_load_include('inc', 'apple_news', 'apple_news.batch');
+module_load_include('inc', 'applenews', 'applenews.batch');
 
 /**
  * Implements hook_init().
  */
-function apple_news_init() {
+function applenews_init() {
   $libraries = [
     'php-curl-class' => [
-      'version' => CURL_SUPPORTED_VERSION,
+      'version' => APPLENEWS_CURL_SUPPORTED_VERSION,
       'path'    => 'sites/all/libraries/php-curl-class'
     ],
-    'AppleNews'      => [
-      'version' => APPLE_NEWS_SUPPORTED_VERSION,
-      'path'    => 'sites/all/libraries/AppleNews'
+    'AppleNewsAPI'      => [
+      'version' => APPLENEWS_APPLENEWSAPI_SUPPORTED_VERSION,
+      'path'    => 'sites/all/libraries/AppleNewsAPI'
     ]
   ];
   foreach ($libraries as $name => $info) {
@@ -36,13 +37,13 @@ function apple_news_init() {
     }
     else {
       $error_message = !empty($library['error message']) ? $library['error message'] : '';
-      $msg = t('Please <a href="!link" target="_blank"><strong>download @name</strong> (version <strong>@v</strong>)</a> library to <strong><em>@path</em></strong> directory or <a href="!install">try autoinstall</a>.',
+      $msg = t('Please <strong>!link</strong> (version <strong>@v</strong>)</a> library to <strong><em>@path</em></strong> directory or !install.',
         [
-          '!link'    => $library['download url'],
+          '!link'    => l(t('download @name', ['@name' => $library['name']]), $library['download url']),
           '@name'    => $library['name'],
           '@path'    => $info['path'],
           '@v'       => $info['version'],
-          '!install' => url('admin/apple-news/install'),
+          '!install' => l(t('try auto-install'), 'admin/applenews/install'),
         ]
       );
       // Display message in command line.
@@ -59,12 +60,12 @@ function apple_news_init() {
 /**
  * Implements hook_libraries_info().
  */
-function apple_news_libraries_info() {
+function applenews_libraries_info() {
 
-  $libraries['AppleNews'] = [
+  $libraries['AppleNewsAPI'] = [
     'name' => 'Apple News',
-    'vendor url' => 'https://github.com/chapter-three/AppleNews',
-    'download url' => 'https://github.com/chapter-three/AppleNews/archive/' . APPLE_NEWS_SUPPORTED_VERSION . '.zip',
+    'vendor url' => 'https://github.com/chapter-three/AppleNewsAPI',
+    'download url' => 'https://github.com/chapter-three/AppleNewsAPI/archive/' . APPLENEWS_APPLENEWSAPI_SUPPORTED_VERSION . '.zip',
     'files' => [
       'php' => [
         'autoload.php',
@@ -77,14 +78,14 @@ function apple_news_libraries_info() {
       'cols' => 200,
     ],
     'versions' => [
-      (string) APPLE_NEWS_SUPPORTED_VERSION => [],
+      (string) APPLENEWS_APPLENEWSAPI_SUPPORTED_VERSION => [],
     ],
   ];
 
   $libraries['php-curl-class'] = [
     'name' => 'PHP Curl Class',
     'vendor url' => 'https://github.com/php-curl-class/php-curl-class',
-    'download url' => 'https://github.com/php-curl-class/php-curl-class/archive/' . CURL_SUPPORTED_VERSION . '.zip',
+    'download url' => 'https://github.com/php-curl-class/php-curl-class/archive/' . APPLENEWS_CURL_SUPPORTED_VERSION . '.zip',
     'files' => [
       'php' => [
         'src/Curl/Curl.php',
@@ -98,7 +99,7 @@ function apple_news_libraries_info() {
       'cols' => 10,
     ],
     'versions' => [
-      (string) CURL_SUPPORTED_VERSION => [],
+      (string) APPLENEWS_CURL_SUPPORTED_VERSION => [],
     ],
   ];
 
@@ -106,52 +107,9 @@ function apple_news_libraries_info() {
 }
 
 /**
- * Implements hook_requirements().
- */
-function apple_news_requirements($phase) {
-  $requirements = [];
-  if ($phase == 'runtime') {
-    $libraries = [
-      'php-curl-class' => CURL_SUPPORTED_VERSION,
-      'AppleNews'      => APPLE_NEWS_SUPPORTED_VERSION,
-    ];
-    foreach ($libraries as $name => $version) {
-      if ($library = libraries_detect($name)) {
-        $msg = '';
-        $lib_version = !empty($library['version']) ? $library['version'] : '';
-        $severity = REQUIREMENT_OK;
-        if ($lib_version != $version) {
-          $msg = t("You're using unsupported version of the <em>@name</em> library.",
-              [
-                '@name' => $library['name']
-              ]
-            )
-           . ' '
-           . t('Please <a href="!link" target="_blank">download version (@v)</a>. to <em>@path</em>',
-              [
-                '!link' => $library['download url'],
-                '@v'    => $version,
-                '@path' => !empty($library['library path']) ? $library['library path'] : t('See README.md'),
-              ]
-            );
-          $severity = REQUIREMENT_ERROR;
-        }
-        $requirements[$name] = [
-          'title'       => !empty($library['name']) ? $library['name'] : 'N/A',
-          'value'       => !empty($library['version']) ? $library['version'] : 'N/A',
-          'severity'    => $severity,
-          'description' => $msg,
-        ];
-      }
-    }
-  }
-  return $requirements;
-}
-
-/**
  * Implements hook_hook_info().
  */
-function apple_news_hook_info() {
+function applenews_hook_info() {
 
   // Form hooks see {module_name}.form.inc
   $form = ['group' => 'form'];
@@ -171,13 +129,13 @@ function apple_news_hook_info() {
   $hooks['views_data'] = $views;
   $hooks['views_default_views'] = $views;
 
-  // Apple News hooks see {module_name}.apple_news.inc
-  $apple_news = ['group' => 'apple_news'];
-  $hooks['apple_news_insert'] = $apple_news;
-  $hooks['apple_news_update'] = $apple_news;
-  $hooks['apple_news_delete'] = $apple_news;
-  $hooks['apple_news_api_alter'] = $apple_news;
-  $hooks['apple_news_api'] = $apple_news;
+  // Apple News hooks see {module_name}.applenews.inc
+  $applenews = ['group' => 'applenews'];
+  $hooks['applenews_insert'] = $applenews;
+  $hooks['applenews_update'] = $applenews;
+  $hooks['applenews_delete'] = $applenews;
+  $hooks['applenews_api_alter'] = $applenews;
+  $hooks['applenews_api'] = $applenews;
 
   return $hooks;
 
@@ -186,11 +144,11 @@ function apple_news_hook_info() {
 /**
  * Implements hook_help().
  */
-function apple_news_help($path, $arg) {
+function applenews_help($path, $arg) {
   $help = '';
   switch ($path) {
-    case 'admin/help#apple_news':
-      $help = check_markup(file_get_contents(dirname(__FILE__) . '/README.md'), variable_get('apple_news_help_format', 'filtered_html'));
+    case 'admin/help#applenews':
+      $help = check_markup(file_get_contents(dirname(__FILE__) . '/README.md'), variable_get('applenews_help_format', 'filtered_html'));
   }
   return $help;
 }
@@ -198,7 +156,7 @@ function apple_news_help($path, $arg) {
 /**
  * Implements hook_permission().
  */
-function apple_news_permission() {
+function applenews_permission() {
   return [
     'administer apple news' => [
       'title' => t('Administer Apple News'),
@@ -210,160 +168,160 @@ function apple_news_permission() {
 /**
  * Implements hook_menu().
  */
-function apple_news_menu() {
+function applenews_menu() {
 
-  $items['admin/config/content/apple-news'] = [
+  $items['admin/config/content/applenews'] = [
     'title' => 'Apple News',
     'description' => 'Configure content export to Apple News.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => ['apple_news_settings_exports_form'],
+    'page arguments' => ['applenews_settings_exports_form'],
     'access arguments' => ['administer apple news'],
-    'file' => 'apple_news.admin.inc',
+    'file' => 'applenews.admin.inc',
   ];
 
-  $items['admin/config/content/apple-news/exports'] = [
+  $items['admin/config/content/applenews/exports'] = [
     'title' => 'Exports',
     'description' => 'List and edit Apple News export configurations.',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 0,
   ];
 
-  $items['admin/config/content/apple-news/exports/add'] = [
+  $items['admin/config/content/applenews/exports/add'] = [
     'title' => 'Add Export',
     'page callback' => 'drupal_get_form',
-    'page arguments' => ['apple_news_export_add_form'],
+    'page arguments' => ['applenews_export_add_form'],
     'access arguments' => ['administer apple news'],
-    'file' => 'apple_news.admin.inc',
+    'file' => 'applenews.admin.inc',
     'type' => MENU_LOCAL_ACTION,
     'weight' => 1,
   ];
 
-  $items['admin/config/content/apple-news/export/%apple_news_export'] = [
+  $items['admin/config/content/applenews/export/%applenews_export'] = [
     'title' => 'Edit Export',
     'description' => 'Apple News Export configuration.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => ['apple_news_export_edit_form', 5],
+    'page arguments' => ['applenews_export_edit_form', 5],
     'access arguments' => ['administer apple news'],
-    'file' => 'apple_news.admin.inc',
+    'file' => 'applenews.admin.inc',
   ];
 
-  $items['admin/config/content/apple-news/export/%apple_news_export/delete'] = [
+  $items['admin/config/content/applenews/export/%applenews_export/delete'] = [
     'title' => 'Delete Export',
     'page callback' => 'drupal_get_form',
-    'page arguments' => ['apple_news_export_delete_form', 5],
+    'page arguments' => ['applenews_export_delete_form', 5],
     'access arguments' => ['administer apple news'],
-    'file' => 'apple_news.admin.inc',
+    'file' => 'applenews.admin.inc',
   ];
 
-  $items['admin/config/content/apple-news/export/%apple_news_export/%/%'] = [
+  $items['admin/config/content/applenews/export/%applenews_export/%/%'] = [
     'title' => 'Edit Export Destination',
     'page callback' => 'drupal_get_form',
-    'page arguments' => ['apple_news_export_destination_edit_form', 5, 6, 7],
+    'page arguments' => ['applenews_export_destination_edit_form', 5, 6, 7],
     'access arguments' => ['administer apple news'],
-    'file' => 'apple_news.admin.inc',
+    'file' => 'applenews.admin.inc',
   ];
 
-  $items['admin/config/content/apple-news/export/%apple_news_export/%/%/delete'] = [
+  $items['admin/config/content/applenews/export/%applenews_export/%/%/delete'] = [
     'title' => 'Delete Export Destination',
     'page callback' => 'drupal_get_form',
-    'page arguments' => ['apple_news_export_destination_delete_form', 5, 6, 7],
+    'page arguments' => ['applenews_export_destination_delete_form', 5, 6, 7],
     'access arguments' => ['administer apple news'],
-    'file' => 'apple_news.admin.inc',
+    'file' => 'applenews.admin.inc',
   ];
 
-  $items['admin/config/content/apple-news/settings'] = [
+  $items['admin/config/content/applenews/settings'] = [
     'title' => 'Settings',
     'description' => 'Apple News Publisher API configuration.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => ['apple_news_settings_api_credentials_form'],
+    'page arguments' => ['applenews_settings_api_credentials_form'],
     'access arguments' => ['administer apple news'],
-    'file' => 'apple_news.admin.inc',
+    'file' => 'applenews.admin.inc',
     'type' => MENU_LOCAL_TASK,
     'weight' => 1,
   ];
 
-  $items['admin/config/content/apple-news/settings/default'] = [
+  $items['admin/config/content/applenews/settings/default'] = [
     'title' => 'Credentials',
     'description' => 'Apple News Publisher API credentials.',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 1,
   ];
 
-  $items['admin/config/content/apple-news/settings/delete'] = [
+  $items['admin/config/content/applenews/settings/delete'] = [
     'title' => 'Delete configuration',
     'description' => 'Delete Apple News configuration.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => ['apple_news_settings_delete_configuration_form'],
+    'page arguments' => ['applenews_settings_delete_configuration_form'],
     'access arguments' => ['administer apple news'],
-    'file' => 'apple_news.admin.inc',
+    'file' => 'applenews.admin.inc',
     'weight' => 1,
   ];
 
-  $items['admin/config/content/apple-news/settings/channels'] = [
+  $items['admin/config/content/applenews/settings/channels'] = [
     'title' => 'Channels',
     'description' => 'Apple News Publisher API channels.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => ['apple_news_settings_channels_form'],
+    'page arguments' => ['applenews_settings_channels_form'],
     'access arguments' => ['administer apple news'],
-    'file' => 'apple_news.admin.inc',
+    'file' => 'applenews.admin.inc',
     'type' => MENU_LOCAL_TASK,
     'weight' => 2,
   ];
 
   // [channel-id]
-  $items['admin/config/content/apple-news/settings/channels/%/delete'] = [
+  $items['admin/config/content/applenews/settings/channels/%/delete'] = [
     'title' => 'Delete channel',
     'description' => 'Apple News Publisher API delete channel.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => ['apple_news_settings_delete_channel_form', 6],
+    'page arguments' => ['applenews_settings_delete_channel_form', 6],
     'access arguments' => ['administer apple news'],
-    'file' => 'apple_news.admin.inc',
+    'file' => 'applenews.admin.inc',
     'weight' => 1,
   ];
 
   // [channel-id]
-  $items['admin/config/content/apple-news/settings/channels/%/sections'] = [
+  $items['admin/config/content/applenews/settings/channels/%/sections'] = [
     'title' => 'View Channel Sections',
     'description' => 'View Apple News channel sections.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => ['apple_news_settings_channel_sections_form', 6],
+    'page arguments' => ['applenews_settings_channel_sections_form', 6],
     'access arguments' => ['administer apple news'],
-    'file' => 'apple_news.admin.inc',
+    'file' => 'applenews.admin.inc',
     'weight' => 1,
   ];
 
   // Delete an article from Apple News channel
   // [entity-type]/[entity-id]/[article-id]/[channel-id]
-  $items['admin/config/content/apple-news/%/%/%/%/delete'] = [
+  $items['admin/config/content/applenews/%/%/%/%/delete'] = [
     'title' => 'Delete Apple News article',
     'description' => 'Apple News Publisher API delete channel.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => ['apple_news_settings_delete_article_form', 4, 5, 6, 7],
+    'page arguments' => ['applenews_settings_delete_article_form', 4, 5, 6, 7],
     'access arguments' => ['administer apple news'],
-    'file' => 'apple_news.admin.inc',
+    'file' => 'applenews.admin.inc',
     'weight' => 1,
   ];
 
   // [entity-type]/[entity-id]/[entity-revision]
-  $items['admin/config/content/apple-news/%/%/%/download'] = [
+  $items['admin/config/content/applenews/%/%/%/download'] = [
     'title' => 'Download article.json file',
     'description' => 'Download previewable Apple News formatted document.',
-    'page callback' => 'apple_news_download_article_json',
+    'page callback' => 'applenews_download_article_json',
     'page arguments' => [4, 5, 6],
     'access arguments' => ['administer apple news'],
-    'file' => 'apple_news.admin.inc',
+    'file' => 'applenews.admin.inc',
     'type' => MENU_CALLBACK,
     'weight' => 1,
   ];
 
   // Library autoinstall path.
-  $items['admin/apple-news/install'] = [
+  $items['admin/applenews/install'] = [
     'title' => 'Autoinstall Apple News dependant PHP libraries',
     'description' => 'Download and unzip PHP libraries.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => ['apple_news_autoinstall_form'],
+    'page arguments' => ['applenews_autoinstall_form'],
     'access arguments' => ['administer apple news'],
-    'file' => 'apple_news.admin.inc',
+    'file' => 'applenews.admin.inc',
     'type' => MENU_CALLBACK,
   ];
 
@@ -379,8 +337,9 @@ function apple_news_menu() {
  * @return ApplenewsExport
  *   Fully-loaded export object.
  */
-function apple_news_export_load($id) {
-  $query = db_select('apple_news_status', 's')
+function applenews_export_load($id) {
+  /** @var SelectQuery $query */
+  $query = db_select('applenews_status', 's')
     ->fields('s', ['instance'])
     ->condition('s.id', $id);
   if ($row = $query->execute()->fetchObject()) {
@@ -392,7 +351,7 @@ function apple_news_export_load($id) {
     $var = [
       '%id' => $id,
     ];
-    watchdog('apple_news', $msg, $var, WATCHDOG_ERROR);
+    watchdog('applenews', $msg, $var, WATCHDOG_ERROR);
   }
   return NULL;
 }
@@ -400,27 +359,27 @@ function apple_news_export_load($id) {
 /**
  * Implements hook_theme().
  */
-function apple_news_theme($existing, $type, $theme, $path) {
+function applenews_theme($existing, $type, $theme, $path) {
   return [
-    'apple_news_export_edit_form' => [
+    'applenews_export_edit_form' => [
       'render element' => 'form',
-      'file'           => 'apple_news.admin.inc',
+      'file'           => 'applenews.admin.inc',
     ],
   ];
 }
 
 /**
- * Implements hook_apple_news_api().
+ * Implements hook_applenews_api().
  */
-function apple_news_apple_news_api() {
+function applenews_applenews_api() {
   return [
-    'api' => APPLE_NEWS_API_VERSION,
+    'api' => APPLENEWS_API_VERSION,
     'exports' => [
       'node' => [
         'class' => 'ApplenewsExportNode',
         'name' => t('Nodes'),
         'description' => t('Configurable node export.'),
-        'default' => 'apple_news_apple_news_api_export_default_node',
+        'default' => 'applenews_applenews_api_export_default_node',
       ],
     ],
     'sources' => [
@@ -497,18 +456,18 @@ function apple_news_apple_news_api() {
 /**
  * Callback to define default node export.
  */
-function apple_news_apple_news_api_export_default_node(ApplenewsExportNode $export) {
+function applenews_applenews_api_export_default_node(ApplenewsExportNode $export) {
   $entities_info = entity_get_info('node');
   if (isset($entities_info['bundles']['article'])) {
     $export->bundles = ['article'];
   }
   /** @var ApplenewsDestinationText $component */
-  $component = apple_news_new_destination('apple_news', 'text');
+  $component = applenews_new_destination('applenews', 'text');
   $component->weight = '0';
   $component->title = 'Title';
   $component
     ->setSetting('text', [
-      'source' => '::::apple_news::node::label',
+      'source' => '::::applenews::node::label',
       'value' => '',
     ])
     ->setSetting('component', 'title')
@@ -516,53 +475,30 @@ function apple_news_apple_news_api_export_default_node(ApplenewsExportNode $expo
     ->setSetting('format', '');
   $export->addComponent($component);
   /** @var ApplenewsDestinationBodyPhoto $component */
-  $component = apple_news_new_destination('apple_news', 'body');
+  $component = applenews_new_destination('applenews', 'body');
   $component->weight = '1';
   $component->title = 'Body';
   $component
     ->setSetting('text', [
-      'source' => '::::apple_news::field::node::body::value_sanitized',
+      'source' => '::::applenews::field::node::body::value_sanitized',
       'value' => '',
     ])
     ->setSetting('format', 'markdown');
   $export->addComponent($component);
   /** @var ApplenewsDestinationScalableImage $component */
-  $component = apple_news_new_destination('apple_news', 'scalable_image');
+  $component = applenews_new_destination('applenews', 'scalable_image');
   $component->weight = '2';
   $component->title = 'Image';
   $component
     ->setSetting('type', 'photo')
     ->setSetting('file', [
-      'source' => '::::apple_news::file::node::field_image::uri',
+      'source' => '::::applenews::file::node::field_image::uri',
       'value' => '',
     ])
     ->setSetting('caption', [
-      'source' => '::::apple_news::file::node::field_image::alt',
+      'source' => '::::applenews::file::node::field_image::alt',
       'value' => '',
     ])
     ->setSetting('format', 'markdown');
   $export->addComponent($component);
-}
-
-/**
- * Submit handler for _apple_news_form_alter_node_form().
- */
-function _apple_news_form_alter_node_form_submit(&$form, &$form_state) {
-  $values = $form_state['values']['apple_news'];
-  if (!empty($form['#node']) && !empty($form['#node']->nid) &&
-      !empty($values['exports'])
-  ) {
-
-    $entity = $form['#node'];
-    $entity_type = 'node';
-    $revision_id = $entity_id = $entity->nid;
-
-    /*
-    // Don't do this, save somewhere else.
-    $post = new ApplenewsDatabase();
-    $post->setPostId($entity_type, $entity_id, $revision_id);
-    $post->setExport($form_state['values']['apple_news']['exports']);
-    */
-
-  }
 }

@@ -7,9 +7,9 @@
 /**
  * Implements hook_drush_command().
  */
-function apple_news_drush_command() {
+function applenews_drush_command() {
 
-  $items['apple-news'] = [
+  $items['applenews'] = [
     'description' => 'Export entities to Apple News.',
     'arguments' => [
       'op'           => 'Operation export/preview',
@@ -17,15 +17,15 @@ function apple_news_drush_command() {
       'machine_name' => 'Apple News Export machine name',
     ],
     'examples' => [
-      'apple-news export apple_news_style1 node'
+      'applenews export applenews_style1 node'
         => 'Run export.',
-      'apple-news preview apple_news_style1 node'
+      'applenews preview applenews_style1 node'
         => 'Run export to file.',
     ],
     'aliases' => ['an'],
   ];
 
-  $items['apple-news-libraries'] = [
+  $items['applenews-libraries'] = [
     'description' => 'Download Apple News dependency PHP libraries.',
     'aliases' => ['an-dl'],
   ];
@@ -35,16 +35,16 @@ function apple_news_drush_command() {
 }
 
 /**
- * Callback for the "apple-news" command.
+ * Callback for the "applenews" command.
  */
-function drush_apple_news($operation, $module, $machine_name) {
+function drush_applenews($operation, $module, $machine_name) {
 
-  module_load_include('inc', 'apple_news');
-  module_load_include('inc', 'apple_news', 'apple_news.batch');
+  module_load_include('inc', 'applenews');
+  module_load_include('inc', 'applenews', 'applenews.batch');
 
-  $key = apple_news_export_id($module, $machine_name);
-  $info = apple_news_exports()[$key];
-  $export = apple_news_get_export($module, $machine_name);
+  $key = applenews_export_id($module, $machine_name);
+  $info = applenews_exports()[$key];
+  $export = applenews_get_export($module, $machine_name);
 
   if ($export->enabled) {
 
@@ -52,7 +52,7 @@ function drush_apple_news($operation, $module, $machine_name) {
 
       // Run branch entity export to Apple News.
       case 'export' :
-        $batch = apple_news_batch_run_export($info, $export, 'export');
+        $batch = applenews_batch_run_export($info, $export, 'export');
         $batch['progressive'] = FALSE;
         batch_set($batch);
         drush_log('Entities successfully exported to Apple News.', 'ok');
@@ -60,10 +60,10 @@ function drush_apple_news($operation, $module, $machine_name) {
 
       // Download News Preview compatible files.
       case 'preview' :
-        $batch = apple_news_batch_run_export($info, $export, 'export-to-file');
+        $batch = applenews_batch_run_export($info, $export, 'export-to-file');
         $batch['progressive'] = FALSE;
         batch_set($batch);
-        drush_log('Apple News Native formatted entities successfully exported. The file archive file can be downloaded from `files/apple-news/` directory.', 'ok');
+        drush_log('Apple News Native formatted entities successfully exported. The file archive file can be downloaded from `files/applenews/` directory.', 'ok');
         break;
 
     }
@@ -76,13 +76,13 @@ function drush_apple_news($operation, $module, $machine_name) {
 }
 
 /**
- * Callback for the "apple-news-libraries" command.
+ * Callback for the "applenews-libraries" command.
  * Downloads remote ZIP archive, extracts the file and
  * create library specific directory.
  */
-function drush_apple_news_libraries() {
-  module_load_include('inc', 'apple_news');
+function drush_applenews_libraries() {
+  module_load_include('inc', 'applenews');
   // Download and unzip PHP libraries.
-  // @see apple_news.inc file.
-  apple_news_autoinstall_libraries();
+  // @see applenews.inc file.
+  applenews_autoinstall_libraries();
 }

@@ -29,9 +29,9 @@
  *     -  name
  *     -  description
  *
- * @see hook_apple_news_api_alter()
+ * @see hook_applenews_api_alter()
  */
-function hook_apple_news_api() {
+function hook_applenews_api() {
   return [
     'api' => 1,
     'exports' => [
@@ -46,17 +46,17 @@ function hook_apple_news_api() {
 }
 
 /**
- * Alter information from all implementations of hook_apple_news_api().
+ * Alter information from all implementations of hook_applenews_api().
  *
  * @param array $info
- *   An array of results from hook_apple_news_api(), keyed by module name.
+ *   An array of results from hook_applenews_api(), keyed by module name.
  *
- * @see hook_apple_news_api()
+ * @see hook_applenews_api()
  */
-function hook_apple_news_api_alter(array &$info) {
+function hook_applenews_api_alter(array &$info) {
   // Override the class for another module's migration - say, to add some
   // additional preprocessing in prepareRow().
-  $key = apple_news_export_id('MODULE_NAME', 'MACHINE_NAME');
+  $key = applenews_export_id('MODULE_NAME', 'MACHINE_NAME');
   if (isset($info['exports'][$key]['key'])) {
     $info['exports'][$key]['key'] = 'new value';
   }
@@ -78,9 +78,9 @@ function hook_apple_news_api_alter(array &$info) {
  * @param array $data
  *   An array of article assets, used in insert and update operations.
  *
- * @see apple_news_op()
+ * @see applenews_op()
  */
-function hook_apple_news_insert($article_id, $article_revision_id, $channel_id, EntityDrupalWrapper $entity_wrapper, $entity_type, array $data) {
+function hook_applenews_insert($article_id, $article_revision_id, $channel_id, EntityDrupalWrapper $entity_wrapper, $entity_type, array $data) {
 }
 
 /**
@@ -99,9 +99,9 @@ function hook_apple_news_insert($article_id, $article_revision_id, $channel_id, 
  * @param array $data
  *   An array of article assets, used in insert and update operations.
  *
- * @see apple_news_op()
+ * @see applenews_op()
  */
-function hook_apple_news_update($article_id, $article_revision_id, $channel_id, EntityDrupalWrapper $entity_wrapper, $entity_type, array $data) {
+function hook_applenews_update($article_id, $article_revision_id, $channel_id, EntityDrupalWrapper $entity_wrapper, $entity_type, array $data) {
 }
 
 /**
@@ -116,7 +116,7 @@ function hook_apple_news_update($article_id, $article_revision_id, $channel_id, 
  * @param string $entity_type
  *   Entity type.
  *
- * @see apple_news_op()
+ * @see applenews_op()
  */
-function hook_apple_news_delete($article_id, $channel_id, EntityDrupalWrapper $entity_wrapper, $entity_type) {
+function hook_applenews_delete($article_id, $channel_id, EntityDrupalWrapper $entity_wrapper, $entity_type) {
 }

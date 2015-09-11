@@ -5,13 +5,13 @@
  * Destination classes.
  */
 
-use \ChapterThree\AppleNews\Document\Margin;
-use \ChapterThree\AppleNews\Document\Components;
-use \ChapterThree\AppleNews\Document\Styles;
-use \ChapterThree\AppleNews\Document\Layouts;
-use \ChapterThree\AppleNews\Document\Behaviors;
-use \ChapterThree\AppleNews\Document\Animations;
-use \ChapterThree\AppleNews\Document\Markdown;
+use \ChapterThree\AppleNewsAPI\Document\Margin;
+use \ChapterThree\AppleNewsAPI\Document\Components;
+use \ChapterThree\AppleNewsAPI\Document\Styles;
+use \ChapterThree\AppleNewsAPI\Document\Layouts;
+use \ChapterThree\AppleNewsAPI\Document\Behaviors;
+use \ChapterThree\AppleNewsAPI\Document\Animations;
+use \ChapterThree\AppleNewsAPI\Document\Markdown;
 
 /**
  * Body component.
@@ -89,7 +89,7 @@ class ApplenewsexampleDestinationBody extends ApplenewsDestinationBodyPhoto {
     for ($i = 0; $i < count($components); $i++) {
       $component = $components[$i];
       if ($component instanceof Components\Body) {
-        /** @var \ChapterThree\AppleNews\Document\Components\Body $component */
+        /** @var \ChapterThree\AppleNewsAPI\Document\Components\Body $component */
         if ($component->getFormat() != 'markdown') {
           $component->addInlineTextStyles($body_inline_text_style);
         }
@@ -102,7 +102,7 @@ class ApplenewsexampleDestinationBody extends ApplenewsDestinationBodyPhoto {
         }
       }
       elseif ($component instanceof Components\ScalableImage) {
-        /** @var \ChapterThree\AppleNews\Document\Components\ScalableImage $component */
+        /** @var \ChapterThree\AppleNewsAPI\Document\Components\ScalableImage $component */
         $component->setLayout($image_layout);
       }
     }
@@ -509,30 +509,30 @@ class ApplenewsexampleDestinationPullQuote extends ApplenewsDestinationComponent
 
         case 'left':
           // Quote.
-          /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
+          /** @var \ChapterThree\AppleNewsAPI\Document\Layouts\ComponentLayout $layout */
           $layout = $quote->getLayout();
           $layout->setColumnStart(3)->setColumnSpan(4);
-          /** @var \ChapterThree\AppleNews\Document\Styles\ComponentTextStyle $text_style */
+          /** @var \ChapterThree\AppleNewsAPI\Document\Styles\ComponentTextStyle $text_style */
           $text_style = $quote->getTextStyle();
           $text_style->setTextAlignment('left');
           break;
 
         case 'center':
           // Quote.
-          /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
+          /** @var \ChapterThree\AppleNewsAPI\Document\Layouts\ComponentLayout $layout */
           $layout = $quote->getLayout();
           $layout->setColumnStart(1)->setColumnSpan(7);
-          /** @var \ChapterThree\AppleNews\Document\Styles\ComponentTextStyle $text_style */
+          /** @var \ChapterThree\AppleNewsAPI\Document\Styles\ComponentTextStyle $text_style */
           $text_style = $quote->getTextStyle();
           $text_style->setTextAlignment('center');
           break;
 
         case 'right':
           // Quote.
-          /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
+          /** @var \ChapterThree\AppleNewsAPI\Document\Layouts\ComponentLayout $layout */
           $layout = $quote->getLayout();
           $layout->setColumnStart(0)->setColumnSpan(4);
-          /** @var \ChapterThree\AppleNews\Document\Styles\ComponentTextStyle $text_style */
+          /** @var \ChapterThree\AppleNewsAPI\Document\Styles\ComponentTextStyle $text_style */
           $text_style = $quote->getTextStyle();
           $text_style->setTextAlignment('left');
           break;
@@ -587,42 +587,42 @@ class ApplenewsexampleDestinationPullQuote extends ApplenewsDestinationComponent
 
       case 'left':
         // Quote.
-        /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
+        /** @var \ChapterThree\AppleNewsAPI\Document\Layouts\ComponentLayout $layout */
         $layout = $quote->getLayout();
         $layout->setColumnStart(1);
-        /** @var \ChapterThree\AppleNews\Document\Styles\ComponentTextStyle $text_style */
+        /** @var \ChapterThree\AppleNewsAPI\Document\Styles\ComponentTextStyle $text_style */
         $text_style = $quote->getTextStyle();
         $text_style->setTextAlignment('left');
         // Section.
-        /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
+        /** @var \ChapterThree\AppleNewsAPI\Document\Layouts\ComponentLayout $layout */
         $layout = $section->getLayout();
         $layout->setColumnStart(3)->setColumnSpan(4);
         break;
 
       case 'center':
         // Quote.
-        /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
+        /** @var \ChapterThree\AppleNewsAPI\Document\Layouts\ComponentLayout $layout */
         $layout = $quote->getLayout();
         $layout->setColumnStart(1)->setColumnSpan(5);
-        /** @var \ChapterThree\AppleNews\Document\Styles\ComponentTextStyle $text_style */
+        /** @var \ChapterThree\AppleNewsAPI\Document\Styles\ComponentTextStyle $text_style */
         $text_style = $quote->getTextStyle();
         $text_style->setTextAlignment('center');
         // Section.
-        /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
+        /** @var \ChapterThree\AppleNewsAPI\Document\Layouts\ComponentLayout $layout */
         $layout = $section->getLayout();
         $layout->setColumnStart(1)->setColumnSpan(7);
         break;
 
       case 'right':
         // Quote.
-        /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
+        /** @var \ChapterThree\AppleNewsAPI\Document\Layouts\ComponentLayout $layout */
         $layout = $quote->getLayout();
         $layout->setColumnSpan(6);
-        /** @var \ChapterThree\AppleNews\Document\Styles\ComponentTextStyle $text_style */
+        /** @var \ChapterThree\AppleNewsAPI\Document\Styles\ComponentTextStyle $text_style */
         $text_style = $quote->getTextStyle();
         $text_style->setTextAlignment('left');
         // Section.
-        /** @var \ChapterThree\AppleNews\Document\Layouts\ComponentLayout $layout */
+        /** @var \ChapterThree\AppleNewsAPI\Document\Layouts\ComponentLayout $layout */
         $layout = $section->getLayout();
         $layout->setColumnStart(0)->setColumnSpan(4);
         break;
@@ -648,7 +648,7 @@ class ApplenewsexampleDestinationImages extends ApplenewsDestinationImages {
       return [];
     }
 
-    /** @var \ChapterThree\AppleNews\Document\Components\Mosaic|\ChapterThree\AppleNews\Document\Components\Gallery $component */
+    /** @var \ChapterThree\AppleNewsAPI\Document\Components\Mosaic|\ChapterThree\AppleNewsAPI\Document\Components\Gallery $component */
     $component = $components[0];
     $animation = new Animations\ComponentAnimations\MoveInAnimation();
     $animation->setPreferredStartingPosition('right');
@@ -717,7 +717,7 @@ class ApplenewsexampleDestinationAd extends ApplenewsDestinationAd {
     if (empty($components)) {
       return [];
     }
-    /** @var \ChapterThree\AppleNews\Document\Components\Advertisements\BannerAdvertisement $component */
+    /** @var \ChapterThree\AppleNewsAPI\Document\Components\Advertisements\BannerAdvertisement $component */
     $component = $components[0];
 
     $layout = new Layouts\ComponentLayout();

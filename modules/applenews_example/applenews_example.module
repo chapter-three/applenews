@@ -6,9 +6,9 @@
  */
 
 /**
- * Implements hook_apple_news_api().
+ * Implements hook_applenews_api().
  */
-function apple_news_example_apple_news_api() {
+function applenews_example_applenews_api() {
   return [
     'api' => 1,
     'exports' => [
@@ -16,7 +16,7 @@ function apple_news_example_apple_news_api() {
         'class' => 'ApplenewsexampleExportNode',
         'name' => t('Nodes'),
         'description' => t('Example styled node export.'),
-        'default' => 'apple_news_example_apple_news_api_export_default_node',
+        'default' => 'applenews_example_applenews_api_export_default_node',
       ],
     ],
     'destinations' => [
@@ -51,8 +51,8 @@ function apple_news_example_apple_news_api() {
 /**
  * Callback to define default node export.
  */
-function apple_news_example_apple_news_api_export_default_node(ApplenewsexampleExportNode $export) {
-  
+function applenews_example_applenews_api_export_default_node(ApplenewsexampleExportNode $export) {
+
   // If we have an article content type, set it.
   $entities_info = entity_get_info('node');
   if (isset($entities_info['bundles']['article'])) {
@@ -61,47 +61,47 @@ function apple_news_example_apple_news_api_export_default_node(ApplenewsexampleE
 
   // Header.
   /** @var ApplenewsDestinationText $component */
-  $component = apple_news_new_destination('apple_news_example', 'header_image');
+  $component = applenews_new_destination('applenews_example', 'header_image');
   $component->weight = '0';
   $component->title = 'Header Image';
   $component
     ->setSetting('file', [
-      'source' => '::::apple_news::file::node::field_image::uri',
+      'source' => '::::applenews::file::node::field_image::uri',
       'value' => '',
     ]);
   $export->addComponent($component);
 
   // Title/Credits.
   /** @var ApplenewsexampleDestinationHeaderGradContainer $component */
-  $component = apple_news_new_destination('apple_news_example', 'header_container');
+  $component = applenews_new_destination('applenews_example', 'header_container');
   $component->weight = '1';
   $component->title = 'Title/Credits';
   $component
     ->setSetting('title', [
-      'source' => '::::apple_news::node::label',
+      'source' => '::::applenews::node::label',
       'value' => '',
     ])
     ->setSetting('author', [
-      'source' => '::::apple_news::node::author::::apple_news::user::label',
+      'source' => '::::applenews::node::author::::applenews::user::label',
       'value' => '',
     ]);
   $export->addComponent($component);
 
   // Ad.
   /** @var ApplenewsexampleDestinationAd $component */
-  $component = apple_news_new_destination('apple_news_example', 'ad');
+  $component = applenews_new_destination('applenews_example', 'ad');
   $component->weight = '2';
   $component->title = 'Ad';
   $export->addComponent($component);
 
   // Body.
   /** @var ApplenewsexampleDestinationBody $component */
-  $component = apple_news_new_destination('apple_news_example', 'body');
+  $component = applenews_new_destination('applenews_example', 'body');
   $component->weight = '3';
   $component->title = 'Body';
   $component
     ->setSetting('text', [
-      'source' => '::::apple_news::field::node::body::value_sanitized',
+      'source' => '::::applenews::field::node::body::value_sanitized',
       'value' => '',
     ])
     ->setSetting('format', 'markdown');
@@ -109,14 +109,14 @@ function apple_news_example_apple_news_api_export_default_node(ApplenewsexampleE
 
   // Pull Quote.
   /** @var ApplenewsexampleDestinationPullQuote $component */
-  $component = apple_news_new_destination('apple_news_example', 'pullquote');
+  $component = applenews_new_destination('applenews_example', 'pullquote');
   $component->weight = '4';
   $component->title = 'Pull Quote';
   $export->addComponent($component);
 
   // Gallery.
   /** @var ApplenewsexampleDestinationImages $component */
-  $component = apple_news_new_destination('apple_news_example', 'images');
+  $component = applenews_new_destination('applenews_example', 'images');
   $component->weight = '5';
   $component->title = 'Gallery';
   $export->addComponent($component);

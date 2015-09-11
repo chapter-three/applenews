@@ -7,23 +7,23 @@
 /**
  * Batch Apple News export.
  *
- * @see apple_news_settings_exports_form_submit()
+ * @see applenews_settings_exports_form_submit()
  */
-function apple_news_batch_run_export(ApplenewsExport $export, $op) {
+function applenews_batch_run_export(ApplenewsExport $export, $op) {
 
   $operations = [];
 
   switch ($op) {
 
     case 'export-to-file':
-      $op_function = 'apple_news_batch_preview_generate';
-      $op_finish = 'apple_news_batch_export_to_file_finished';
+      $op_function = 'applenews_batch_preview_generate';
+      $op_finish = 'applenews_batch_export_to_file_finished';
       break;
 
     case 'export':
     default:
-      $op_function = 'apple_news_batch_post';
-      $op_finish = 'apple_news_batch_run_export_finished';
+      $op_function = 'applenews_batch_post';
+      $op_finish = 'applenews_batch_run_export_finished';
       break;
 
   }
@@ -58,10 +58,10 @@ function apple_news_batch_run_export(ApplenewsExport $export, $op) {
  *
  * This is the function that is called on each operation in Apple News export.
  */
-function apple_news_batch_post($export_id, $entity_type, $entity, $total_count, &$context) {
-  module_load_include('inc', 'apple_news');
+function applenews_batch_post($export_id, $entity_type, $entity, $total_count, &$context) {
+  module_load_include('inc', 'applenews');
 
-  $export = apple_news_export_load($export_id);
+  $export = applenews_export_load($export_id);
 
   $export_settings = $export->settings;
 
@@ -89,7 +89,7 @@ function apple_news_batch_post($export_id, $entity_type, $entity, $total_count, 
     'starttime' => !empty($context['results']['info']['starttime']) ? $context['results']['info']['starttime'] : 0,
     'status'    => 'in progress ' . $count . '/' . $total_count,
   ];
-  apple_news_batch_export_set_status($export_id, $status);
+  applenews_batch_export_set_status($export_id, $status);
 
   /** @var EntityDrupalWrapper $wrapper */
   $wrapper = entity_metadata_wrapper($entity_type, $entity);
@@ -100,7 +100,7 @@ function apple_news_batch_post($export_id, $entity_type, $entity, $total_count, 
   if (isset($export_settings['sections'])) {
     foreach ($export_settings['sections'] as $section_id => $checked) {
       if ($checked) {
-        $settings['metadata']['data']['links']['sections'][] = apple_news_section_url($section_id);
+        $settings['metadata']['data']['links']['sections'][] = applenews_section_url($section_id);
       }
     }
   }
@@ -110,7 +110,7 @@ function apple_news_batch_post($export_id, $entity_type, $entity, $total_count, 
       if (!$checked) {
         continue;
       }
-      $channel = apple_news_channel($channel_id);
+      $channel = applenews_channel($channel_id);
       $context['results'][] = $wrapper->getIdentifier() . ' : ' . check_plain($wrapper->label());
       $context['message'] = t('<strong>@export</strong>: Posting "@title" entity to <em>@channel</em> channel.',
         [
@@ -120,11 +120,11 @@ function apple_news_batch_post($export_id, $entity_type, $entity, $total_count, 
         ]
       );
       // Check if the article had already been exported.
-      $export_log = apple_news_is_exported($channel_id, $wrapper, $entity_type);
+      $export_log = applenews_is_exported($channel_id, $wrapper, $entity_type);
       // Process only non-published articles.
       if (!$export_log) {
         // Post an article to Apple News.
-        if ($success = apple_news_op('insert', $channel_id, $entity, $entity_type, $export)) {
+        if ($success = applenews_op('insert', $channel_id, $entity, $entity_type, $export)) {
           $context['results']['info']['insert']++;
         };
       }
@@ -132,7 +132,7 @@ function apple_news_batch_post($export_id, $entity_type, $entity, $total_count, 
         // Update an article only if the entity was updated since the last
         // export.
         if ($export_log['postdate'] < $entity->changed) {
-          if ($success = apple_news_op('update', $channel_id, $entity, $entity_type, $export)) {
+          if ($success = applenews_op('update', $channel_id, $entity, $entity_type, $export)) {
             $context['results']['info']['update']++;
           }
         }
@@ -163,8 +163,8 @@ function apple_news_batch_post($export_id, $entity_type, $entity, $total_count, 
 /**
  * Batch 'finished' callback used by batch Apple News export.
  */
-function apple_news_batch_run_export_finished($success, $results, $operations) {
-  module_load_include('inc', 'apple_news');
+function applenews_batch_run_export_finished($success, $results, $operations) {
+  module_load_include('inc', 'applenews');
   if ($success) {
     if (empty($results['info']['default_channels'])) {
       drupal_set_message(
@@ -181,7 +181,7 @@ function apple_news_batch_run_export_finished($success, $results, $operations) {
         'endtime'      => REQUEST_TIME,
         'numprocessed' => $count,
       ];
-      drupal_write_record('apple_news_log', $record);
+      drupal_write_record('applenews_log', $record);
 
       // Save batch progress status.
       $status = [
@@ -190,7 +190,7 @@ function apple_news_batch_run_export_finished($success, $results, $operations) {
         'endtime'   => REQUEST_TIME,
         'status'    => 'complete',
       ];
-      apple_news_batch_export_set_status($results['info']['export_id'],
+      applenews_batch_export_set_status($results['info']['export_id'],
         $status);
 
       $plural_message = format_plural(
@@ -208,7 +208,7 @@ function apple_news_batch_run_export_finished($success, $results, $operations) {
       $args = [
         '%count'   => $count,
       ];
-      watchdog('apple_news', $msg, $args, WATCHDOG_NOTICE);
+      watchdog('applenews', $msg, $args, WATCHDOG_NOTICE);
     }
   }
   else {
@@ -219,7 +219,7 @@ function apple_news_batch_run_export_finished($success, $results, $operations) {
       'endtime'   => REQUEST_TIME,
       'status'    => 'error occured',
     ];
-    apple_news_batch_export_set_status($results['info']['export_id'], $status);
+    applenews_batch_export_set_status($results['info']['export_id'], $status);
     // An error occurred.
     // $operations contains the operations that remained unprocessed.
     $error_operation = reset($operations);
@@ -235,10 +235,10 @@ function apple_news_batch_run_export_finished($success, $results, $operations) {
  *
  * This is the function that is called on each operation in Export to File.
  */
-function apple_news_batch_preview_generate($export_id, $entity_type, $entity, $total_count, &$context) {
-  module_load_include('inc', 'apple_news');
+function applenews_batch_preview_generate($export_id, $entity_type, $entity, $total_count, &$context) {
+  module_load_include('inc', 'applenews');
 
-  $export = apple_news_export_load($export_id);
+  $export = applenews_export_load($export_id);
 
   if (!isset($context['results']['count'])) {
     $context['results']['count'] = 0;
@@ -264,7 +264,7 @@ function apple_news_batch_preview_generate($export_id, $entity_type, $entity, $t
   $context['results']['entity_ids'][] = $entity_wrapper->getIdentifier();
 
   // Generate article files for an entity.
-  apple_news_export_to_file($entity_wrapper->getIdentifier(), [], NULL, FALSE, $data);
+  applenews_export_to_file($entity_wrapper->getIdentifier(), [], NULL, FALSE, $data);
 
   $context['results']['count']++;
 
@@ -273,15 +273,15 @@ function apple_news_batch_preview_generate($export_id, $entity_type, $entity, $t
 /**
  * Batch 'finished' callback used by batch Apple News export to file.
  */
-function apple_news_batch_export_to_file_finished($success, $results, $operations) {
-  module_load_include('inc', 'apple_news');
+function applenews_batch_export_to_file_finished($success, $results, $operations) {
+  module_load_include('inc', 'applenews');
   $count = isset($results['count']) ? $results['count'] : 0;
   if ($success) {
     if ($count > 0) {
       // Archive exported entities and generate a link to the archive.
-      $file_url = apple_news_export_to_file(NULL, $results['entity_ids'], 'export-' . $results['export_id'], FALSE, []);
+      $file_url = applenews_export_to_file(NULL, $results['entity_ids'], 'export-' . $results['export_id'], FALSE, []);
       // Remove exported entity directories.
-      apple_news_export_dir_cleanup($results['entity_ids']);
+      applenews_export_dir_cleanup($results['entity_ids']);
       // Show message.
       if (!empty($file_url)) {
         $download = t('<strong>!link</strong> the file and preview articles in the Apple News Preview Tool.', [

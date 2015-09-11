@@ -7,14 +7,14 @@
 /**
  * Implements hook_form_alter().
  */
-function apple_news_form_alter(&$form, &$form_state, $form_id) {
+function applenews_form_alter(&$form, &$form_state, $form_id) {
 
   $menu_item = menu_get_item();
   switch ($menu_item['page_callback']) {
 
     case 'node_page_edit':
     case 'node_add':
-      _apple_news_form_alter_node_form($form, $form_state);
+      _applenews_form_alter_node_form($form, $form_state);
       break;
 
   }
@@ -23,15 +23,15 @@ function apple_news_form_alter(&$form, &$form_state, $form_id) {
 /**
  * Entity edit form alter callback.
  */
-function _apple_news_form_alter_node_form(&$form, &$form_state) {
-  module_load_include('inc', 'apple_news');
+function _applenews_form_alter_node_form(&$form, &$form_state) {
+  module_load_include('inc', 'applenews');
   $entity_type = 'node';
   $bundle = $form['#bundle'];
 
   // Check if all required libraries installed, otherwise
   // display message about missing PHP libraries.
-  if ($info = apple_news_libraries_installed()) {
-    $form['apple_news'] += $info;
+  if ($info = applenews_libraries_installed()) {
+    $form['applenews'] += $info;
     return;
   }
 
@@ -44,14 +44,14 @@ function _apple_news_form_alter_node_form(&$form, &$form_state) {
   };
 
   // Exports.
-  $exports = apple_news_exports_enabled();
+  $exports = applenews_exports_enabled();
   $export_options = [];
   if (count($exports)) {
     foreach ($exports as $key => $info) {
-      $export = apple_news_export_load($key);
+      $export = applenews_export_load($key);
       $valid = $export->showOnEdit($entity_type, $bundle) && (
           !isset($entity_id) ||
-          apple_news_entity_export_valid($export, $entity_type, $entity_id)
+          applenews_entity_export_valid($export, $entity_type, $entity_id)
         );
       if (!$valid) {
         continue;
@@ -62,12 +62,12 @@ function _apple_news_form_alter_node_form(&$form, &$form_state) {
       $export_options[$key] = $export->title;
     }
     if (!empty($entity_id)) {
-      $default_export = apple_news_entity_get_export($entity_type, $entity_id);
+      $default_export = applenews_entity_get_export($entity_type, $entity_id);
     }
   }
 
-  $api_channels = apple_news_channels(TRUE);
-  $channels_all = apple_news_channels();
+  $api_channels = applenews_channels(TRUE);
+  $channels_all = applenews_channels();
 
   // Load existing Apple News article.
   if (!empty($entity_id) && !empty($revision_id)) {
@@ -87,10 +87,10 @@ function _apple_news_form_alter_node_form(&$form, &$form_state) {
     count($api_channels);
 
   // Entity form JS helper (hide/show Apple News entity form options).
-  $form['#attached']['js'][] = drupal_get_path('module', 'apple_news') . '/js/form.js';
+  $form['#attached']['js'][] = drupal_get_path('module', 'applenews') . '/js/form.js';
 
   // Add Apple News vertical tab.
-  $form['apple_news'] = [
+  $form['applenews'] = [
     '#type' => 'fieldset',
     '#title' => t('Apple News'),
     '#collapsible' => TRUE,
@@ -99,7 +99,7 @@ function _apple_news_form_alter_node_form(&$form, &$form_state) {
     '#weight' => -10,
     '#tree' => TRUE,
     '#attributes' => [
-      'class' => ['apple-news-options'],
+      'class' => ['applenews-options'],
     ]
   ];
 
@@ -118,25 +118,25 @@ function _apple_news_form_alter_node_form(&$form, &$form_state) {
       $label = t('Publish new content to Apple News');
       $description = '';
     }
-    $form['apple_news']['apple_news_publish_flag'] = [
+    $form['applenews']['applenews_publish_flag'] = [
       '#type' => 'checkbox',
       '#title' => $label,
       '#prefix' => '<div><strong>' . $description . '</strong></div>',
       '#description' => t('Check this option if you would like to post this content to Apple News.'),
     ];
-    $form['apple_news']['apple_news_publish_flag']['#default_value']
+    $form['applenews']['applenews_publish_flag']['#default_value']
       = !empty($article_id) ? TRUE : FALSE;
   }
 
   // Pushed.
   if (!empty($article_id) && !empty($article) && !empty($entity_id)) {
     // Post date.
-    $form['apple_news']['post_date'] = [
-      '#markup' => '<div class="apple-news-post-date">' . format_date($article['postdate'], 'short') . '</div><br/>',
+    $form['applenews']['post_date'] = [
+      '#markup' => '<div class="applenews-post-date">' . format_date($article['postdate'], 'short') . '</div><br/>',
       '#prefix' => '<div><strong>' . t('Apple News post date') . '</strong></div>',
     ];
-    $form['apple_news']['share-url'] = [
-      '#markup' => '<div class="apple-news-share-url">' . l($article['share_url'], $article['share_url'],
+    $form['applenews']['share-url'] = [
+      '#markup' => '<div class="applenews-share-url">' . l($article['share_url'], $article['share_url'],
           [
             'attributes' => [
               'target' => '_blank'
@@ -148,14 +148,14 @@ function _apple_news_form_alter_node_form(&$form, &$form_state) {
     ];
     // Delete.
     if (count($api_channels)) {
-      $link = l(t('Delete'), 'admin/config/content/apple-news/'
+      $link = l(t('Delete'), 'admin/config/content/applenews/'
         . $entity_type . '/'
         . $entity_id . '/'
         . $article['article_id'] . '/'
         . reset($channel_ids)
         . '/delete');
-      $form['apple_news']['delete'] = [
-        '#markup' => '<div class="apple-news-delete-link">' . t('!link this article from Apple News.', ['!link' => $link]) . '</div><br/>',
+      $form['applenews']['delete'] = [
+        '#markup' => '<div class="applenews-delete-link">' . t('!link this article from Apple News.', ['!link' => $link]) . '</div><br/>',
         '#prefix' => '<div><strong>' . t('Delete') . '</strong></div>',
       ];
     }
@@ -165,32 +165,35 @@ function _apple_news_form_alter_node_form(&$form, &$form_state) {
   if (empty($default_export)) {
     if (count($exports)) {
       $msg = t('No exports are !link for this node.',
-        ['!link' => l(t('configured'), 'admin/config/content/apple-news')]);
+        ['!link' => l(t('configured'), 'admin/config/content/applenews')]);
     }
     else {
       $msg = t('No exports are !link.',
-        ['!link' => l(t('enabled'), 'admin/config/content/apple-news')]);
+        ['!link' => l(t('enabled'), 'admin/config/content/applenews')]);
     }
-    $form['apple_news']['exports'] = [
-      '#markup' => '<div class="apple-news-preview">' . $msg . '</div><br/>',
+    $form['applenews']['exports'] = [
+      '#markup' => '<div class="applenews-preview">' . $msg . '</div><br/>',
     ];
   }
   else {
-    $form['apple_news']['exports'] = [
+    $form['applenews']['exports'] = [
       '#type' => 'select',
       '#title' => t('Export'),
+      '#description' => t('!link define how content is pushed to Apple News.', [
+        '!link' => l(t('Exports'), 'admin/config/content/applenews')
+      ]),
       '#options' => $export_options,
       '#default_value' => empty($default_export) ? NULL : $default_export->id,
     ];
     // When new content show export dropdown when the checkbox is selected.
     if (empty($article_id)) {
-      $form['apple_news']['exports']['#states'] = [
+      $form['applenews']['exports']['#states'] = [
         'invisible' => [
-          ':input[name="apple_news[apple_news_publish_flag]"]' => ['checked' => FALSE],
+          ':input[name="applenews[applenews_publish_flag]"]' => ['checked' => FALSE],
         ]
       ];
     }
-    // Get configuration form for the AppleNews exportable entity.
+    // Get configuration form for the AppleNewsAPI exportable entity.
     $channels_element = $default_export
       ->getConfigForm()['additional_settings']['general']['channels'];
     // Set Apple News default values for current entity.
@@ -209,19 +212,17 @@ function _apple_news_form_alter_node_form(&$form, &$form_state) {
         }
       }
     }
-    $form['apple_news']['channels'] = &$channels_element;
-    unset($form['apple_news']['channels']['#weight']);
+    $form['applenews']['channels'] = &$channels_element;
+    unset($form['applenews']['channels']['#weight']);
     // Preview.
     if (@$default_export->enabled && !empty($entity_id) && !empty($revision_id)) {
-      $link = l(t('Download'), 'admin/config/content/apple-news/' . $entity_type . '/' . $entity_id . '/' . $revision_id . '/download');
+      $link = l(t('Download'), 'admin/config/content/applenews/' . $entity_type . '/' . $entity_id . '/' . $revision_id . '/download');
       $msg = t('!link the Apple News generated document (use the News Preview app to preview the article).', ['!link' => $link]);
-      $form['apple_news']['preview'] = [
-        '#markup' => '<div class="apple-news-preview">' . $msg . '</div><br/>',
+      $form['applenews']['preview'] = [
+        '#markup' => '<div class="applenews-preview">' . $msg . '</div><br/>',
         '#prefix' => '<div><strong>' . t('Preview') . '</strong></div>',
       ];
     }
   }
-
-  $form['#submit'][] = '_apple_news_form_alter_node_form_submit';
 
 }

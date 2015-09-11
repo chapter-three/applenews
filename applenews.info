@@ -4,11 +4,11 @@ description = Push content to Apple News.
 core = 7.x
 php = 5.4
 
-configure = admin/config/content/apple-news
+configure = admin/config/content/applenews
 
-files[] = include/handlers/views_handler_filter_apple_news_status.inc
-files[] = include/handlers/views_handler_field_apple_news_status.inc
-files[] = include/handlers/views_handler_field_apple_news_previewable.inc
+files[] = include/handlers/views_handler_filter_applenews_status.inc
+files[] = include/handlers/views_handler_field_applenews_status.inc
+files[] = include/handlers/views_handler_field_applenews_previewable.inc
 files[] = include/db.inc
 files[] = include/destination.inc
 files[] = include/destination_component.inc
@@ -16,7 +16,7 @@ files[] = include/destination_layout.inc
 files[] = include/export.inc
 files[] = include/source.inc
 files[] = include/preview.inc
-files[] = tests/apple_news.test
+files[] = tests/applenews.test
 
 dependencies[] = entity
 dependencies[] = libraries

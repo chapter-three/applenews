@@ -5,9 +5,9 @@
  * Contains tests for the Apple News module.
  */
 
-module_load_include('inc', 'apple_news', 'apple_news.publisher_api');
-module_load_include('inc', 'apple_news');
-module_load_include('inc', 'apple_news', 'apple_news.batch');
+module_load_include('inc', 'applenews', 'applenews.publisher_api');
+module_load_include('inc', 'applenews');
+module_load_include('inc', 'applenews', 'applenews.batch');
 
 /**
  * Base class for Apple News web tests.
@@ -22,7 +22,7 @@ abstract class ApplenewsWebTestCase extends DrupalWebTestCase {
    * {@inheritdoc}
    */
   public function setUp(array $modules = []) {
-    parent::setUp(array_merge(['apple_news', 'dblog'], $modules));
+    parent::setUp(array_merge(['applenews', 'dblog'], $modules));
     $this->adminUser = $this->drupalCreateUser([
       'access content',
       'access administration pages',
@@ -73,7 +73,7 @@ class ApplenewsExportTestCase extends ApplenewsWebTestCase {
    * {@inheritdoc}
    */
   public function setUp(array $modules = []) {
-    parent::setUp(array_merge(['apple_news'], $modules));
+    parent::setUp(array_merge(['applenews'], $modules));
   }
 
   /**
@@ -128,15 +128,15 @@ class ApplenewsExportTestCase extends ApplenewsWebTestCase {
 
     // Configure export.
     $this->drupalPost(
-      'admin/config/content/apple-news/exports/add',
+      'admin/config/content/applenews/exports/add',
       [
-        'type' => 'apple_news::node',
+        'type' => 'applenews::node',
         'title' => 'admin title',
       ],
       t('Submit')
     );
     $this->drupalPost(
-      'admin/config/content/apple-news/export/1/edit',
+      'admin/config/content/applenews/export/1/edit',
       [
         'enabled' => TRUE,
         'bundles[article]' => TRUE,
@@ -145,7 +145,7 @@ class ApplenewsExportTestCase extends ApplenewsWebTestCase {
       t('Save changes')
     );
     /** @var ApplenewsExportNode $export */
-    $export = apple_news_export_load(1);
+    $export = applenews_export_load(1);
     $this->assert($export instanceof ApplenewsExportNode,
       'Export object loaded.');
     $this->assertEqual('admin title', $export->title,
@@ -170,7 +170,7 @@ class ApplenewsExportTestCase extends ApplenewsWebTestCase {
       $content = $contents[$map[$nid]];
 
       $document = $export->setSource(node_load($nid))->export();
-      $this->assert($document instanceof \ChapterThree\AppleNews\Document,
+      $this->assert($document instanceof \ChapterThree\AppleNewsAPI\Document,
         "Export document for node \"${content['_desc']}\" loaded.");
       $json = $document->json();
       $this->pass(var_export($json, TRUE));
@@ -197,7 +197,7 @@ class ApplenewsExportTestCase extends ApplenewsWebTestCase {
         'Export body component role.');
       $this->assertEqual('markdown', $item->format,
         'Export body component format.');
-      $markdown = new \ChapterThree\AppleNews\Document\Markdown();
+      $markdown = new \ChapterThree\AppleNewsAPI\Document\Markdown();
       $expected = $markdown->convert($content['body']);
       $this->assertEqual(trim($expected), trim($item->text),
         "Export body component text -> component ${cid} text.");
@@ -277,15 +277,15 @@ EOD
 
     // Configure export.
     $this->drupalPost(
-      'admin/config/content/apple-news/exports/add',
+      'admin/config/content/applenews/exports/add',
       [
-        'type' => 'apple_news::node',
+        'type' => 'applenews::node',
         'title' => 'admin title',
       ],
       t('Submit')
     );
     $this->drupalPost(
-      'admin/config/content/apple-news/export/1/edit',
+      'admin/config/content/applenews/export/1/edit',
       [
         'enabled' => TRUE,
         'bundles[article]' => TRUE,
@@ -293,7 +293,7 @@ EOD
       t('Save changes')
     );
     /** @var ApplenewsExportNode $export */
-    $export = apple_news_export_load(1);
+    $export = applenews_export_load(1);
     $this->assert($export instanceof ApplenewsExportNode,
       'Export object loaded.');
     $this->assertEqual('admin title', $export->title,
@@ -305,22 +305,22 @@ EOD
     // Replace default components with body+image type.
     for ($cid = 1; $cid <= count($export->getComponents()); $cid++) {
       $this->drupalPost(
-        "admin/config/content/apple-news/export/1/component/${cid}/delete",
+        "admin/config/content/applenews/export/1/component/${cid}/delete",
         [],
         t('Yes, delete')
       );
     }
-    $export = apple_news_export_load(1);
+    $export = applenews_export_load(1);
     $this->assertEqual(0, count($export->getComponents()),
       'Default components deleted.');
     $this->drupalPost(
-      "admin/config/content/apple-news/export/1",
+      "admin/config/content/applenews/export/1",
       [
-        'components[_new][destination]' => 'apple_news::bodyphoto',
+        'components[_new][destination]' => 'applenews::bodyphoto',
       ],
       t('Save changes')
     );
-    $export = apple_news_export_load(1);
+    $export = applenews_export_load(1);
     $this->assertEqual(1, count($export->getComponents()),
       'New component added.');
     $cid = 1;
@@ -329,21 +329,21 @@ EOD
     $this->assert($component instanceof ApplenewsDestinationBodyPhoto,
       'Destination object loaded.');
     $this->drupalPost(
-      "admin/config/content/apple-news/export/1/component/${cid}",
+      "admin/config/content/applenews/export/1/component/${cid}",
       [
         'title' => 'body',
-        'settings[text][source]' => '::::apple_news::field::node::body::value_sanitized',
+        'settings[text][source]' => '::::applenews::field::node::body::value_sanitized',
       ],
       t('Save changes')
     );
-    $export = apple_news_export_load(1);
+    $export = applenews_export_load(1);
     /** @var ApplenewsDestinationBodyPhoto $component */
     $component = $export->getComponent($cid);
     $this->assert($component instanceof ApplenewsDestinationBodyPhoto,
       'Destination object loaded.');
     $this->assertEqual('body', $component->title,
       'Destination title.');
-    $this->assertEqual('::::apple_news::field::node::body::value_sanitized',
+    $this->assertEqual('::::applenews::field::node::body::value_sanitized',
       $component->getSetting('text')['source'],
       'Destination "text" source.');
 
@@ -361,7 +361,7 @@ EOD
       $content = $contents[$map[$nid]];
 
       $document = $export->setSource(node_load($nid))->export();
-      $this->assert($document instanceof \ChapterThree\AppleNews\Document,
+      $this->assert($document instanceof \ChapterThree\AppleNewsAPI\Document,
         "Export document for node \"${content['_desc']}\" loaded.");
       $json = $document->json();
       $this->pass(var_export($json, TRUE));
