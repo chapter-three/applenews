@@ -186,8 +186,9 @@ abstract class ApplenewsExport {
    */
   public function settings() {
     return [
-      'channels' => [],
-      'sections' => [],
+      'channels'   => [],
+      'sections'   => [],
+      'is_preview' => TRUE,
     ];
   }
 
@@ -238,19 +239,6 @@ abstract class ApplenewsExport {
    */
   public function getConfigForm(array $form = NULL, array &$form_state = NULL) {
 
-    $form['title'] = [
-      '#type' => 'textfield',
-      '#title' => t('Administrative Title'),
-      '#default_value' => $this->title,
-      '#required' => TRUE,
-    ];
-
-    $form['description'] = [
-      '#type' => 'textfield',
-      '#title' => t('Administrative Description'),
-      '#default_value' => $this->description,
-    ];
-
     $form['additional_settings'] = [
       '#type' => 'vertical_tabs',
       '#weight' => 99,
@@ -268,16 +256,40 @@ abstract class ApplenewsExport {
       '#weight' => -10,
     ];
 
+    $form['additional_settings']['general']['title'] = [
+      '#type' => 'textfield',
+      '#title' => t('Administrative Title'),
+      '#default_value' => $this->title,
+      '#description' => t('Export name.'),
+      '#required' => TRUE,
+    ];
+
+    $form['additional_settings']['general']['description'] = [
+      '#type' => 'textfield',
+      '#title' => t('Administrative Description'),
+      '#default_value' => $this->description,
+      '#description' => t('Export description.'),
+    ];
+
     $form['additional_settings']['general']['enabled'] = [
       '#title' => t('Enable this export'),
       '#type' => 'checkbox',
       '#default_value' => $this->enabled,
       '#description' => t('This export will not publish to Apple News until enabled.'),
-      '#prefix' => '<br/><hr/><br/><strong>' . t('Status') . '</strong>',
+      '#prefix' => '<hr/><br/><strong>' . t('Status') . '</strong>',
       '#weight' => 10,
     ];
 
-    $tab = &$form['additional_settings']['general'];
+    $form['additional_settings']['metadata'] = [
+      '#type' => 'fieldset',
+      '#title' => t('Metadata'),
+      '#collapsible' => TRUE,
+      '#collapsed' => FALSE,
+      '#group' => 'main',
+      '#weight' => -9,
+    ];
+
+    $tab = &$form['additional_settings']['metadata'];
 
     $tab['channels'] = [
       '#type' => 'container',
@@ -327,6 +339,15 @@ abstract class ApplenewsExport {
         )
       ];
     }
+
+    $form['additional_settings']['metadata']['is_preview'] = [
+      '#title' => t('Exported articles will be visible to members of my channel only.'),
+      '#type' => 'checkbox',
+      '#default_value' => $this->getSetting('is_preview'),
+      '#description' => t('Indicates whether this article should be public (live) or should be a preview that is only visible to members of your channel. Uncheck this to publish the article right away and make it visible to all News users. <br/><strong>Note:</strong>  If your channel has not yet been approved to publish articles in Apple News Format, unchecking this option will result in an <em>ONLY_PREVIEW_ALLOWED</em> error.'),
+      '#prefix' => '<br/><strong>' . t('Preview') . '</strong>',
+      '#weight' => 10,
+    ];
 
     return $form;
   }
@@ -380,6 +401,10 @@ abstract class ApplenewsExport {
         $this->setSetting($key, $form_state['values'][$key]);
       }
     }
+
+
+    // Save isPreview metadata.
+    $this->setSetting('is_preview', (bool) $form_state['values']['is_preview']);
 
   }
 

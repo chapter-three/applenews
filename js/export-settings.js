@@ -18,6 +18,21 @@
         }
       });
 
+      // Metadata
+      $('fieldset#edit-metadata', context).drupalSetSummary(function (context) {
+        if ($('#edit-channels input:checked', context).length !== 0) {
+          return Drupal.t('@count default sections. @is_preview', {
+            '@count' : $('#edit-channels input:checked', context).length,
+            '@is_preview' : $('.form-item-is-preview input:checked', context).length
+              ? Drupal.t('Preview only')
+              : Drupal.t('Visible to everyone')
+          });
+        }
+        else {
+          return Drupal.t('Default sections and content visibility');
+        }
+      });
+
       // Layout
       $('fieldset#edit-layouts-tab', context).drupalSetSummary(function (context) {
         if ($('.form-item', context).length !== 0) {
