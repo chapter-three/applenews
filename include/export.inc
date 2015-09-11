@@ -344,7 +344,7 @@ abstract class ApplenewsExport {
       '#title' => t('Exported articles will be visible to members of my channel only.'),
       '#type' => 'checkbox',
       '#default_value' => $this->getSetting('is_preview'),
-      '#description' => t('Indicates whether this article should be public (live) or should be a preview that is only visible to members of your channel. Uncheck this to publish the article right away and make it visible to all News users. <br/><strong>Note:</strong>  If your channel has not yet been approved to publish articles in Apple News Format, unchecking this option will result in an <em>ONLY_PREVIEW_ALLOWED</em> error.'),
+      '#description' => t('Indicates whether this article should be public (live) or should be a preview that is only visible to members of your channel. Uncheck this to publish the article right away and make it visible to all News users. <br/><strong>Note:</strong>  If your channel has not yet been approved to publish articles in Apple News Format, unchecking this option will result in an error.'),
       '#prefix' => '<strong>' . t('Content visibility') . '</strong>',
       '#weight' => 10,
     ];
