@@ -105,6 +105,9 @@ function applenews_batch_post($export_id, $entity_type, $entity, $total_count, &
     }
   }
 
+  // Visbile to members of the channel only.
+  $settings['metadata']['data']['is_preview'] = !empty($export_settings['is_preview']);
+
   if (!empty($export_settings['channels'])) {
     foreach ($export_settings['channels'] as $channel_id => $checked) {
       if (!$checked) {

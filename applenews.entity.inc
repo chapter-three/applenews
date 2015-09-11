@@ -41,6 +41,10 @@ function _applenews_entity_push($op, $entity, $type) {
           $settings['metadata']['data']['links']['sections'][] = applenews_section_url($section_id);
         }
       }
+
+      // Visbile to members of the channel only.
+      $settings['metadata']['data']['isPreview'] = !empty($entity->applenews['is_preview']);
+
       if (!applenews_op($op, $channel_id, $entity, $type, $export)) {
         drupal_set_message(
           t('Unable to push %title to %channel',
