@@ -162,9 +162,17 @@ class ApplenewsDestinationComponentLayout extends ApplenewsDestination {
     ];
 
     $form['margin'] = [
-      '#title'         => t('Margin'),
-      '#type'          => 'textfield',
-      '#default_value' => $this->getSetting('margin'),
+      '#title' => t('Margin'),
+      '#type' => 'fieldset',
+      'type' => [
+        '#type' => 'select',
+        '#options' => [
+          'value' => t('Integer value for all sides'),
+          'margin' => t('Separate values for top and bottom margins.'),
+        ]
+      ],
+      'value' => [],
+      'margin' => [],
     ];
 
     $form['contentInset'] = [
