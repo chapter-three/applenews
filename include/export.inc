@@ -479,7 +479,11 @@ abstract class ApplenewsExport {
       if ($path) {
         $url = 'bundle://' . count($this->assets);
         if ($ext = pathinfo($path, PATHINFO_EXTENSION)) {
-          $url .= ".${ext}";
+          // Only need to prevent any spaces in filename -- but let's be a
+          // little aggressive here with allowed extension characters.
+          if (preg_match("/^[a-zA-Z0-9]+$/", $ext)) {
+            $url .= ".${ext}";
+          }
         }
         $this->assets[$uri] = [
           'path' => $path,
