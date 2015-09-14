@@ -344,6 +344,11 @@ abstract class ApplenewsDestination {
           ]);
           // Nested entity source.
           if (is_array($attr_info)) {
+            // Don't dive deeper than 1 level, we don't have a mechanism to
+            // detect cycles in entity references.
+            if (!empty($ancestors)) {
+              continue;
+            }
             $label = implode(' -- ', [
               $source_info['name'],
               $field_name,
