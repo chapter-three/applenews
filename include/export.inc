@@ -776,7 +776,9 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
     // Apple News document metadata (not publisher api metadata).
     $child_values = isset($values['metadata_destination']) ? $values['metadata_destination'] : [];
     $tab['metadata_destination'] = [
-        '#type' => 'tree',
+        '#type' => 'fieldset',
+        '#title' => t('Document Metadata'),
+        '#tree' => TRUE,
         '#weight' => 10,
       ] +
       $this->getMetadata()->getConfigForm($child_values);
