@@ -199,6 +199,10 @@ class ApplenewsSourceNode extends ApplenewsSourceEntity {
         'label' => 'Author',
         'type' => 'user',
       ],
+      'created' => 'Date Created',
+      'changed' => 'Date Changed',
+      'published' => 'Published',
+      'url' => 'URL',
     ] + parent::attributes();
   }
 
@@ -214,9 +218,19 @@ class ApplenewsSourceNode extends ApplenewsSourceEntity {
    * {@inheritdoc}
    */
   public function export() {
-    return [
-      'author' => $this->wrapper->author->value(),
-    ] + parent::export();
+    $values = parent::export();
+    foreach ([
+        'author',
+        'created',
+        'changed',
+        'published',
+        'url',
+      ] as $key
+    ) {
+      $values[$key]
+        = $this->wrapper->__isset($key) ? $this->wrapper->$key->value() : NULL;
+    }
+    return $values;
   }
 
 }

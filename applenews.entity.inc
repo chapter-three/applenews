@@ -42,7 +42,7 @@ function _applenews_entity_push($op, $entity, $type) {
         }
       }
 
-      // Visbile to members of the channel only.
+      // Visible to members of the channel only.
       $settings['metadata']['data']['isPreview'] = !empty($entity->applenews['is_preview']);
 
       if (!applenews_op($op, $channel_id, $entity, $type, $export)) {

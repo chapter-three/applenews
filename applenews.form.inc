@@ -194,9 +194,10 @@ function _applenews_form_alter_node_form(&$form, &$form_state) {
       ];
     }
 
+    $export_config_form = $default_export->getConfigForm();
+
     // Get configuration form for the AppleNewsAPI exportable entity.
-    $channels_element = $default_export
-      ->getConfigForm()['additional_settings']['metadata']['channels'];
+    $channels_element = $export_config_form['additional_settings']['metadata_tab']['channels'];
     // Set Apple News default values for current entity.
     if (!empty($article) && !empty($article_id) && count($api_channels)) {
       foreach (element_children($channels_element) as $key) {
@@ -216,9 +217,8 @@ function _applenews_form_alter_node_form(&$form, &$form_state) {
     $form['applenews']['channels'] = &$channels_element;
     unset($form['applenews']['channels']['#weight']);
 
-    // Is Preview
-    $is_preview = $default_export
-      ->getConfigForm()['additional_settings']['metadata']['is_preview'];
+    // Is Preview.
+    $is_preview = $export_config_form['additional_settings']['metadata_tab']['is_preview'];
     unset($is_preview['#description']);
     $is_preview['#title'] = t('Make this content visbile to members of my channels only.');
     $is_preview['#description'] = t('Indicates whether this article should be public (live) or should be a preview that is only visible to members of your channel.');

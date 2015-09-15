@@ -257,11 +257,7 @@ function applenews_batch_preview_generate($export_id, $entity_type, $entity, $to
     ]
   );
 
-  $document = $export->setSource($entity)->export();
-  $data = [
-    'json'  => $document->json(),
-    'files' => $export->getAssets(),
-  ];
+  $data = applenews_entity_export($export, $entity_type, $entity_wrapper->getIdentifier());
 
   $context['results']['export_id'] = $export->id;
   $context['results']['entity_ids'][] = $entity_wrapper->getIdentifier();

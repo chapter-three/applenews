@@ -26,8 +26,8 @@ class ApplenewsexampleExportNode extends ApplenewsExportNode {
   /**
    * {@inheritdoc}
    */
-  public function getConfigForm(array $form = NULL, array &$form_state = NULL) {
-    $form = parent::getConfigForm($form, $form_state);
+  public function getConfigForm(array $values = []) {
+    $form = parent::getConfigForm($values);
 
     // Hide parent layout elements.
     $tab = &$form['additional_settings']['layouts_tab'];
@@ -106,8 +106,8 @@ class ApplenewsexampleExportNode extends ApplenewsExportNode {
   /**
    * {@inheritdoc}
    */
-  public function export() {
-    parent::export();
+  public function exportDocument() {
+    parent::exportDocument();
 
     $layout = $this->document->getLayout();
     switch ($this->getSetting('layout_alignment')) {

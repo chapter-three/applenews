@@ -357,6 +357,33 @@ function applenews_export_load($id) {
 }
 
 /**
+ * Implements hook_element_info().
+ */
+function applenews_element_info() {
+  // Element for data source -- currently a slightly modified fieldset.
+  $types['applenews_source'] = system_element_info()['fieldset'];
+  $types['applenews_source']['#pre_render'][] = 'applenews_form_pre_render_source';
+
+  return $types;
+}
+
+/**
+ * Process callback for applenews_source elements.
+ *
+ * @see applenews_element_info()
+ */
+function applenews_form_pre_render_source($element) {
+  if (isset($element['value'])) {
+    $source_name = ':input[name="' . $element['source']['#name'] . '"]';
+    $value_element = &$element['value'];
+    foreach ($value_element['#applenews_visible'] as $value) {
+      $value_element['#states']['visible'][][$source_name]['value'] = $value;
+    }
+  }
+  return $element;
+}
+
+/**
  * Implements hook_theme().
  */
 function applenews_theme($existing, $type, $theme, $path) {
@@ -405,6 +432,10 @@ function applenews_applenews_api() {
       ],
     ],
     'destinations' => [
+      'metadata' => [
+        'class' => 'ApplenewsDestinationMetadata',
+        'name' => 'metadata',
+      ],
       'body' => [
         'class' => 'ApplenewsDestinationBody',
         'name' => 'Body',
@@ -445,10 +476,32 @@ function applenews_applenews_api() {
  * Callback to define default node export.
  */
 function applenews_applenews_api_export_default_node(ApplenewsExportNode $export) {
+
+  // Apply to articles if exists.
   $entities_info = entity_get_info('node');
   if (isset($entities_info['bundles']['article'])) {
     $export->bundles = ['article'];
   }
+
+  // Metadata.
+  /** @var ApplenewsDestinationMetadata $metadata */
+  $metadata = applenews_new_destination('applenews', 'metadata');
+  $metadata
+    ->setSetting('date_published', [
+      'source' => '::::applenews::node::created',
+      'value' => '',
+    ])
+    ->setSetting('date_created', [
+      'source' => '::::applenews::node::created',
+      'value' => '',
+    ])
+    ->setSetting('date_modified', [
+      'source' => '::::applenews::node::changed',
+      'value' => '',
+    ]);
+  $export->setMetadata($metadata);
+
+  // Components.
   /** @var ApplenewsDestinationText $component */
   $component = applenews_new_destination('applenews', 'text');
   $component->weight = '0';
@@ -489,4 +542,5 @@ function applenews_applenews_api_export_default_node(ApplenewsExportNode $export
     ])
     ->setSetting('format', 'markdown');
   $export->addComponent($component);
+
 }

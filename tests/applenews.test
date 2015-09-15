@@ -138,9 +138,9 @@ class ApplenewsExportTestCase extends ApplenewsWebTestCase {
     $this->drupalPost(
       'admin/config/content/applenews/export/1/edit',
       [
-        'enabled' => TRUE,
-        'bundles[article]' => TRUE,
-        'bundles[page]' => TRUE,
+        'config[additional_settings][general_tab][enabled]' => TRUE,
+        'config[additional_settings][general_tab][bundles][article]' => TRUE,
+        'config[additional_settings][general_tab][bundles][page]' => TRUE,
       ],
       t('Save changes')
     );
@@ -169,7 +169,7 @@ class ApplenewsExportTestCase extends ApplenewsWebTestCase {
     foreach (array_keys($result['node']) as $nid) {
       $content = $contents[$map[$nid]];
 
-      $document = $export->setSource(node_load($nid))->export();
+      $document = $export->setSource(node_load($nid))->exportDocument();
       $this->assert($document instanceof \ChapterThree\AppleNewsAPI\Document,
         "Export document for node \"${content['_desc']}\" loaded.");
       $json = $document->json();
@@ -287,8 +287,8 @@ EOD
     $this->drupalPost(
       'admin/config/content/applenews/export/1/edit',
       [
-        'enabled' => TRUE,
-        'bundles[article]' => TRUE,
+        'config[additional_settings][general_tab][enabled]' => TRUE,
+        'config[additional_settings][general_tab][bundles][article]' => TRUE,
       ],
       t('Save changes')
     );
@@ -316,7 +316,7 @@ EOD
     $this->drupalPost(
       "admin/config/content/applenews/export/1",
       [
-        'components[_new][destination]' => 'applenews::bodyphoto',
+        'config[additional_settings][components_tab][components][_new][destination]' => 'applenews::bodyphoto',
       ],
       t('Save changes')
     );
@@ -331,8 +331,8 @@ EOD
     $this->drupalPost(
       "admin/config/content/applenews/export/1/component/${cid}",
       [
-        'title' => 'body',
-        'settings[text][source]' => '::::applenews::field::node::body::value_sanitized',
+        'config[title]' => 'body',
+        'config[settings][text][source]' => '::::applenews::field::node::body::value_sanitized',
       ],
       t('Save changes')
     );
@@ -344,7 +344,7 @@ EOD
     $this->assertEqual('body', $component->title,
       'Destination title.');
     $this->assertEqual('::::applenews::field::node::body::value_sanitized',
-      $component->getSetting('text')['source'],
+      @$component->getSetting('text')['source'],
       'Destination "text" source.');
 
     // Run query to get source ids.
@@ -360,7 +360,7 @@ EOD
     foreach (array_keys($result['node']) as $nid) {
       $content = $contents[$map[$nid]];
 
-      $document = $export->setSource(node_load($nid))->export();
+      $document = $export->setSource(node_load($nid))->exportDocument();
       $this->assert($document instanceof \ChapterThree\AppleNewsAPI\Document,
         "Export document for node \"${content['_desc']}\" loaded.");
       $json = $document->json();
