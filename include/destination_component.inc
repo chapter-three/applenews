@@ -73,7 +73,7 @@ abstract class ApplenewsDestinationComponent extends ApplenewsDestination {
   /**
    * {@inheritdoc}
    */
-  public function getConfigForm($form, &$form_state) {
+  public function getConfigForm(array $values = []) {
 
     $options = [
       '' => t('- none -'),
@@ -89,7 +89,7 @@ abstract class ApplenewsDestinationComponent extends ApplenewsDestination {
       '#default_value' => $this->layout,
     ];
 
-    $form = parent::getConfigForm($form, $form_state);
+    $form = parent::getConfigForm($values);
 
     return $form;
   }
@@ -97,9 +97,9 @@ abstract class ApplenewsDestinationComponent extends ApplenewsDestination {
   /**
    * {@inheritdoc}
    */
-  public function submitConfigForm($form, &$form_state) {
-    if ($form_state['values']['layout']) {
-      $this->layout = $form_state['values']['settings']['layout'];
+  public function submitConfigForm($values) {
+    if ($values['settings']['layout']) {
+      $this->layout = $values['settings']['layout'];
     }
     parent::submitConfigForm($form, $form_state);
   }
@@ -182,13 +182,14 @@ class ApplenewsDestinationBody extends ApplenewsDestinationComponent {
   /**
    * {@inheritdoc}
    */
-  public function getConfigForm($form, &$form_state) {
+  public function getConfigForm(array $values = []) {
 
-    $form = parent::getConfigForm($form, $form_state);
+    $form = parent::getConfigForm($values);
 
-    parent::getConfigFormSourceElement($form, $form_state, 'text');
-    $form['settings']['text']['#title'] = t('Text');
-    $form['settings']['text']['#required'] = TRUE;
+    $element = parent::getConfigFormSourceElement('text');
+    $element['#title'] = t('Text');
+    $element['#required'] = TRUE;
+    $form['settings']['text'] = $element;
 
     $form['settings']['format'] = [
       '#title'         => t('Format'),
@@ -247,8 +248,8 @@ class ApplenewsDestinationBodyPhoto extends ApplenewsDestinationBody {
   /**
    * {@inheritdoc}
    */
-  public function getConfigForm($form, &$form_state) {
-    $form = parent::getConfigForm($form, $form_state);
+  public function getConfigForm(array $values = []) {
+    $form = parent::getConfigForm($values);
 
     // @todo add layout for images.
     $form['layout']['#title'] = t('Layout (body)');
@@ -378,9 +379,9 @@ class ApplenewsDestinationImages extends ApplenewsDestinationComponent {
   /**
    * {@inheritdoc}
    */
-  public function getConfigForm($form, &$form_state) {
+  public function getConfigForm(array $values = []) {
 
-    $form = parent::getConfigForm($form, $form_state);
+    $form = parent::getConfigForm($values);
 
     $form['settings']['type'] = [
       '#title'         => t('Type'),
@@ -393,12 +394,15 @@ class ApplenewsDestinationImages extends ApplenewsDestinationComponent {
       '#default_value' => $this->getSetting('type'),
     ];
 
-    parent::getConfigFormSourceElement($form, $form_state, 'items');
-    $form['settings']['items']['#title'] = t('Items');
-    $form['settings']['items']['#required'] = TRUE;
+    $element = parent::getConfigFormSourceElement('items');
+    $element['#title'] = t('Items');
+    $element['#required'] = TRUE;
+    $form['settings']['items'] = $element;
 
-    parent::getConfigFormSourceElement($form, $form_state, 'caption');
-    $form['settings']['caption']['#title'] = t('Caption');
+    $element = parent::getConfigFormSourceElement('caption');
+    $element['#title'] = t('Caption');
+    $form['settings']['caption'] = $element;
+
     return $form;
   }
 
@@ -462,9 +466,9 @@ class ApplenewsDestinationAd extends ApplenewsDestinationComponent {
   /**
    * {@inheritdoc}
    */
-  public function getConfigForm($form, &$form_state) {
+  public function getConfigForm(array $values = []) {
 
-    $form = parent::getConfigForm($form, $form_state);
+    $form = parent::getConfigForm($values);
 
     $form['settings']['type'] = [
       '#title'         => t('Type'),
@@ -551,9 +555,9 @@ class ApplenewsDestinationImage extends ApplenewsDestinationComponent {
   /**
    * {@inheritdoc}
    */
-  public function getConfigForm($form, &$form_state) {
+  public function getConfigForm(array $values = []) {
 
-    $form = parent::getConfigForm($form, $form_state);
+    $form = parent::getConfigForm($values);
 
     $form['settings']['type'] = [
       '#title'         => t('Type'),
@@ -564,12 +568,14 @@ class ApplenewsDestinationImage extends ApplenewsDestinationComponent {
       '#default_value' => $this->getSetting('type'),
     ];
 
-    parent::getConfigFormSourceElement($form, $form_state, 'source');
-    $form['settings']['source']['#title'] = t('Value');
-    $form['settings']['source']['#required'] = TRUE;
+    $element = parent::getConfigFormSourceElement('source');
+    $element['#title'] = t('Value');
+    $element['#required'] = TRUE;
+    $form['settings']['source'] = $element;
 
-    parent::getConfigFormSourceElement($form, $form_state, 'caption');
-    $form['settings']['caption']['#title'] = t('Caption');
+    $element = parent::getConfigFormSourceElement('caption');
+    $element['#title'] = t('Caption');
+    $form['settings']['caption'] = $element;
 
     return $form;
   }
@@ -637,9 +643,9 @@ class ApplenewsDestinationScalableImage extends ApplenewsDestinationComponent {
   /**
    * {@inheritdoc}
    */
-  public function getConfigForm($form, &$form_state) {
+  public function getConfigForm(array $values = []) {
 
-    $form = parent::getConfigForm($form, $form_state);
+    $form = parent::getConfigForm($values);
 
     $form['settings']['type'] = [
       '#title'         => t('Type'),
@@ -653,18 +659,21 @@ class ApplenewsDestinationScalableImage extends ApplenewsDestinationComponent {
       '#description'   => t('The type of scalable image.'),
     ];
 
-    parent::getConfigFormSourceElement($form, $form_state, 'file');
-    $form['settings']['file']['#title'] = t('Value');
+    $element = parent::getConfigFormSourceElement('file');
+    $element['#title'] = t('Value');
+    $form['settings']['file'] = $element;
 
-    parent::getConfigFormSourceElement($form, $form_state, 'caption');
-    $form['settings']['caption']['#title'] = t('Caption');
+    $element = parent::getConfigFormSourceElement('caption');
+    $element['#title'] = t('Caption');
+    $form['settings']['caption'] = $element;
 
-    parent::getConfigFormSourceElement($form, $form_state,
-      'accessibilityCaption');
-    $form['settings']['accessibilityCaption']['#title'] = t('Accessibility Caption');
+    $element = parent::getConfigFormSourceElement('accessibilityCaption');
+    $element['#title'] = t('Accessibility Caption');
+    $form['settings']['accessibilityCaption'] = $element;
 
-    parent::getConfigFormSourceElement($form, $form_state, 'explicitContent');
-    $form['settings']['explicitContent']['#title'] = t('Explicit Content');
+    $element = parent::getConfigFormSourceElement('explicitContent');
+    $element['#title'] = t('Explicit Content');
+    $form['settings']['explicitContent'] = $element;
 
     return $form;
   }
@@ -756,13 +765,14 @@ class ApplenewsDestinationText extends ApplenewsDestinationComponent {
   /**
    * {@inheritdoc}
    */
-  public function getConfigForm($form, &$form_state) {
+  public function getConfigForm(array $values = []) {
 
-    $form = parent::getConfigForm($form, $form_state);
+    $form = parent::getConfigForm($values);
 
-    parent::getConfigFormSourceElement($form, $form_state, 'text');
-    $form['settings']['text']['#title'] = t('Text');
-    $form['settings']['text']['#required'] = TRUE;
+    $element = parent::getConfigFormSourceElement('text');
+    $element['#title'] = t('Text');
+    $element['#required'] = TRUE;
+    $form['settings']['text'] = $element;
 
     $form['settings']['component'] = [
       '#title'         => t('Component'),
@@ -918,9 +928,9 @@ class ApplenewsDestinationDivider extends ApplenewsDestinationComponent {
   /**
    * {@inheritdoc}
    */
-  public function getConfigForm($form, &$form_state) {
+  public function getConfigForm(array $values = []) {
 
-    $form = parent::getConfigForm($form, $form_state);
+    $form = parent::getConfigForm($values);
 
     $form['settings']['color'] = [
       '#title' => t('Color'),

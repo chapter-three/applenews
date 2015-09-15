@@ -32,14 +32,15 @@ class ApplenewsExtraDestinationInstagram extends ApplenewsDestinationComponent {
   /**
    * {@inheritdoc}
    */
-  public function getConfigForm($form, &$form_state) {
+  public function getConfigForm(array $values = []) {
 
-    $form = parent::getConfigForm($form, $form_state);
+    $form = parent::getConfigForm($values);
 
-    parent::getConfigFormSourceElement($form, $form_state, 'source');
-    $form['settings']['source']['#title'] = t('Link');
-    $form['settings']['source']['#required'] = TRUE;
-    $form['settings']['source']['#description'] = t('URL format <em>https://instagram.com/p/6Lg1xVkNjJ</em>');
+    $element = parent::getConfigFormSourceElement('source');
+    $element['#title'] = t('Link');
+    $element['#required'] = TRUE;
+    $element['#description'] = t('URL format <em>https://instagram.com/p/6Lg1xVkNjJ</em>');
+    $form['settings']['source'] = $element;
 
     return $form;
   }
@@ -90,14 +91,15 @@ class ApplenewsExtraDestinationTweet extends ApplenewsDestinationComponent {
   /**
    * {@inheritdoc}
    */
-  public function getConfigForm($form, &$form_state) {
+  public function getConfigForm(array $values = []) {
 
-    $form = parent::getConfigForm($form, $form_state);
+    $form = parent::getConfigForm($values);
 
-    parent::getConfigFormSourceElement($form, $form_state, 'source');
-    $form['settings']['source']['#title'] = t('Link');
-    $form['settings']['source']['#required'] = TRUE;
-    $form['settings']['source']['#description'] = t('URL format <em>https://twitter.com/chapter_three/status/623547179563495424</em>');
+    $element = parent::getConfigFormSourceElement('source');
+    $element['#title'] = t('Link');
+    $element['#required'] = TRUE;
+    $element['#description'] = t('URL format <em>https://twitter.com/chapter_three/status/623547179563495424</em>');
+    $form['settings']['source'] = $element;
 
     return $form;
   }
@@ -149,17 +151,19 @@ class ApplenewsExtraDestinationEmbedWebVideo extends ApplenewsDestinationCompone
   /**
    * {@inheritdoc}
    */
-  public function getConfigForm($form, &$form_state) {
+  public function getConfigForm(array $values = []) {
 
-    $form = parent::getConfigForm($form, $form_state);
+    $form = parent::getConfigForm($values);
 
-    parent::getConfigFormSourceElement($form, $form_state, 'video_url');
-    $form['settings']['video_url']['#title'] = t('Video URL');
-    $form['settings']['video_url']['#required'] = TRUE;
-    $form['settings']['video_url']['#description'] = t('URL format <em>https://www.youtube.com/embed/r4DQKtYL62Q</em> (Youtube) or <em>https://player.vimeo.com/video/121450839</em> (Vimeo)');
+    $element = parent::getConfigFormSourceElement('video_url');
+    $element['#title'] = t('Video URL');
+    $element['#required'] = TRUE;
+    $element['#description'] = t('URL format <em>https://www.youtube.com/embed/r4DQKtYL62Q</em> (Youtube) or <em>https://player.vimeo.com/video/121450839</em> (Vimeo)');
+    $form['settings']['video_url'] = $element;
 
-    parent::getConfigFormSourceElement($form, $form_state, 'caption');
-    $form['settings']['caption']['#title'] = t('Caption');
+    $element = parent::getConfigFormSourceElement('caption');
+    $element['#title'] = t('Caption');
+    $form['settings']['caption'] = $element;
 
     return $form;
   }
@@ -218,9 +222,9 @@ class ApplenewsExtraDestinationAudio extends ApplenewsDestinationComponent {
   /**
    * {@inheritdoc}
    */
-  public function getConfigForm($form, &$form_state) {
+  public function getConfigForm(array $values = []) {
 
-    $form = parent::getConfigForm($form, $form_state);
+    $form = parent::getConfigForm($values);
 
     $form['settings']['type'] = [
       '#title'         => t('Type'),
@@ -233,18 +237,22 @@ class ApplenewsExtraDestinationAudio extends ApplenewsDestinationComponent {
       '#description'   => t('The type of audio file.'),
     ];
 
-    parent::getConfigFormSourceElement($form, $form_state, 'url');
-    $form['settings']['url']['#title'] = t('Audio URL');
-    $form['settings']['url']['#required'] = TRUE;
+    $element = parent::getConfigFormSourceElement('url');
+    $element['#title'] = t('Audio URL');
+    $element['#required'] = TRUE;
+    $form['settings']['url'] = $element;
 
-    parent::getConfigFormSourceElement($form, $form_state, 'imageURL');
-    $form['settings']['imageURL']['#title'] = t('Image URL');
+    $element = parent::getConfigFormSourceElement('imageURL');
+    $element['#title'] = t('Image URL');
+    $form['settings']['imageURL'] = $element;
 
-    parent::getConfigFormSourceElement($form, $form_state, 'caption');
-    $form['settings']['caption']['#title'] = t('Caption');
+    $element = parent::getConfigFormSourceElement('caption');
+    $element['#title'] = t('Caption');
+    $form['settings']['caption'] = $element;
 
-    parent::getConfigFormSourceElement($form, $form_state, 'explicitContent');
-    $form['settings']['explicitContent']['#title'] = t('Explicit Content');
+    $element = parent::getConfigFormSourceElement('explicitContent');
+    $element['#title'] = t('Explicit Content');
+    $form['settings']['explicitContent'] = $element;
 
     return $form;
   }

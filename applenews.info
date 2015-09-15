@@ -13,6 +13,7 @@ files[] = include/db.inc
 files[] = include/destination.inc
 files[] = include/destination_component.inc
 files[] = include/destination_layout.inc
+files[] = include/destination_metadata.inc
 files[] = include/export.inc
 files[] = include/source.inc
 files[] = include/preview.inc

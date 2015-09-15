@@ -13,15 +13,7 @@ use \ChapterThree\AppleNewsAPI\Document\Layouts\ComponentLayout;
  *
  * All Layout destinations must extend this class.
  */
-class ApplenewsDestinationLayout extends ApplenewsDestination {
-
-  /**
-   * Destination object(s), to be returned by export().
-   *
-   * @var \ChapterThree\AppleNewsAPI\Document\Layouts\Layout
-   *   Layout object.
-   */
-  public $destination;
+class ApplenewsDestinationLayout extends ApplenewsDestinationSingleton {
 
   /**
    * {@inheritdoc}
@@ -38,9 +30,8 @@ class ApplenewsDestinationLayout extends ApplenewsDestination {
   /**
    * {@inheritdoc}
    */
-  public function getConfigForm($form, &$form_state) {
-
-    $form = parent::getConfigForm($form, $form_state);
+  public function getConfigForm(array $values = []) {
+    $form = parent::getConfigForm($values);
 
     $form['settings']['columns'] = [
       '#title'         => t('Columns'),
@@ -74,20 +65,8 @@ class ApplenewsDestinationLayout extends ApplenewsDestination {
   /**
    * {@inheritdoc}
    */
-  public function validateConfigForm($form, &$form_state) {
-    // @todo use this pattern, after implementing exceptions in
-    // \chapter-three\AppleNews\Document
-    $layout = $this->export();
-    if (!$layout instanceof Layout) {
-      form_set_error(NULL, t('Could not create layout object.'));
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function export($value = NULL) {
-    $this->destination = new Layout($this->getSetting('columns'), $this->getSetting('width'));
+  public function export() {
+    $layout = new Layout($this->getSetting('columns'), $this->getSetting('width'));
     foreach ([
         'margin' => 'setMargin',
         'gutter' => 'setGutter',
@@ -95,10 +74,10 @@ class ApplenewsDestinationLayout extends ApplenewsDestination {
     ) {
       $value = $this->getSetting($key);
       if ($value !== NULL && $value !== '') {
-        $this->destination->{$method}($value);
+        $layout->{$method}($value);
       }
     }
-    return $this->destination;
+    return [$layout];
   }
 
 }
@@ -138,9 +117,8 @@ class ApplenewsDestinationComponentLayout extends ApplenewsDestination {
   /**
    * {@inheritdoc}
    */
-  public function getConfigForm($form, &$form_state) {
-
-    $form = parent::getConfigForm($form, $form_state);
+  public function getConfigForm(array $values = []) {
+    $form = parent::getConfigForm($values);
 
     $form['id'] = [
       '#title'         => t('ID'),
@@ -149,19 +127,19 @@ class ApplenewsDestinationComponentLayout extends ApplenewsDestination {
       '#required'      => TRUE,
     ];
 
-    $form['columnStart'] = [
+    $form['settings']['columnStart'] = [
       '#title'         => t('Column Start'),
       '#type'          => 'textfield',
       '#default_value' => $this->getSetting('columnStart'),
     ];
 
-    $form['columnSpan'] = [
+    $form['settings']['columnSpan'] = [
       '#title'         => t('Column Span'),
       '#type'          => 'textfield',
       '#default_value' => $this->getSetting('columnSpan'),
     ];
 
-    $form['margin'] = [
+    $form['settings']['margin'] = [
       '#title' => t('Margin'),
       '#type' => 'fieldset',
       'type' => [
@@ -175,37 +153,37 @@ class ApplenewsDestinationComponentLayout extends ApplenewsDestination {
       'margin' => [],
     ];
 
-    $form['contentInset'] = [
+    $form['settings']['contentInset'] = [
       '#title'         => t('Content Inset'),
       '#type'          => 'textfield',
       '#default_value' => $this->getSetting('contentInset'),
     ];
 
-    $form['ignoreDocumentMargin'] = [
+    $form['settings']['ignoreDocumentMargin'] = [
       '#title'         => t('Ignore Document Margin'),
       '#type'          => 'textfield',
       '#default_value' => $this->getSetting('ignoreDocumentMargin'),
     ];
 
-    $form['ignoreDocumentGutter'] = [
+    $form['settings']['ignoreDocumentGutter'] = [
       '#title'         => t('Ignore Document Gutter'),
       '#type'          => 'textfield',
       '#default_value' => $this->getSetting('ignoreDocumentGutter'),
     ];
 
-    $form['minimumHeight'] = [
+    $form['settings']['minimumHeight'] = [
       '#title'         => t('Minimum Height'),
       '#type'          => 'textfield',
       '#default_value' => $this->getSetting('minimumHeight'),
     ];
 
-    $form['maximumContentWidth'] = [
+    $form['settings']['maximumContentWidth'] = [
       '#title'         => t('Maximum Content Width'),
       '#type'          => 'textfield',
       '#default_value' => $this->getSetting('maximumContentWidth'),
     ];
 
-    $form['horizontalContentAlignment'] = [
+    $form['settings']['horizontalContentAlignment'] = [
       '#title'         => t('Horizontal Content Alignment'),
       '#type'          => 'textfield',
       '#default_value' => $this->getSetting('horizontalContentAlignment'),
@@ -217,38 +195,32 @@ class ApplenewsDestinationComponentLayout extends ApplenewsDestination {
   /**
    * {@inheritdoc}
    */
-  public function validateConfigForm($form, &$form_state) {
-    parent::validateConfigForm($form, $form_state);
-    if ($form_state['values']['id'] != $this->id &&
-        $this->export->getComponentLayout($form_state['values']['id'])
+  public function validateConfigForm($values) {
+    parent::validateConfigForm($values);
+    if ($values['id'] != $this->id &&
+        $this->export->getComponentLayout($values['id'])
     ) {
       form_set_error('id', t('ID already in use.'));
     }
-    // @todo use this pattern, after implementing exceptions in
-    // \chapter-three\AppleNews\Document
-    $layout = $this->export();
-    if (!$layout instanceof Layout) {
-      form_set_error(NULL, t('Could not create layout object.'));
-    }
   }
 
   /**
    * {@inheritdoc}
    */
-  public function submitConfigForm($form, &$form_state) {
-    if ($form_state['values']['id'] != $this->id) {
+  public function submitConfigForm($values) {
+    parent::submitConfigForm($values);
+    if ($values['id'] != $this->id) {
       $this->export->deleteComponentLayout($this->id);
-      $this->id = $form_state['values']['id'];
+      $this->id = $values['id'];
       $this->export->addComponentLayout($this, $this->id);
     }
-    parent::submitConfigForm($form, $form_state);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function export($value = NULL) {
-    $this->destination = new ComponentLayout();
+  public function export() {
+    $layout = new ComponentLayout();
     foreach ([
         'columnStart'                => 'setColumnStart',
         'columnSpan'                 => 'setColumnSpan',
@@ -263,10 +235,10 @@ class ApplenewsDestinationComponentLayout extends ApplenewsDestination {
     ) {
       $value = $this->getSetting($key);
       if ($value !== NULL && $value !== '') {
-        $this->destination->{$method}($value);
+        $layout->{$method}($value);
       }
     }
-    return $this->destination;
+    return [$layout];
   }
 
 }

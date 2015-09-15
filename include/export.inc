@@ -186,8 +186,9 @@ abstract class ApplenewsExport {
    */
   public function settings() {
     return [
-      'channels' => [],
-      'sections' => [],
+      'channels'   => [],
+      'sections'   => [],
+      'is_preview' => TRUE,
     ];
   }
 
@@ -235,21 +236,12 @@ abstract class ApplenewsExport {
 
   /**
    * Provides a configuration form for this export.
+   *
+   * @param array $values
+   *   The Drupal FAPI $form_state['values'] entry for the elements returned by
+   *   this function.
    */
-  public function getConfigForm(array $form = NULL, array &$form_state = NULL) {
-
-    $form['title'] = [
-      '#type' => 'textfield',
-      '#title' => t('Administrative Title'),
-      '#default_value' => $this->title,
-      '#required' => TRUE,
-    ];
-
-    $form['description'] = [
-      '#type' => 'textfield',
-      '#title' => t('Administrative Description'),
-      '#default_value' => $this->description,
-    ];
+  public function getConfigForm(array $values = []) {
 
     $form['additional_settings'] = [
       '#type' => 'vertical_tabs',
@@ -259,7 +251,7 @@ abstract class ApplenewsExport {
       ]
     ];
 
-    $form['additional_settings']['general'] = [
+    $form['additional_settings']['general_tab'] = [
       '#type' => 'fieldset',
       '#title' => t('General Settings'),
       '#collapsible' => TRUE,
@@ -267,22 +259,46 @@ abstract class ApplenewsExport {
       '#group' => 'main',
       '#weight' => -10,
     ];
+    $tab = &$form['additional_settings']['general_tab'];
 
-    $form['additional_settings']['general']['enabled'] = [
+    $tab['title'] = [
+      '#type' => 'textfield',
+      '#title' => t('Administrative Title'),
+      '#default_value' => $this->title,
+      '#description' => t('Export name.'),
+      '#required' => TRUE,
+    ];
+
+    $tab['description'] = [
+      '#type' => 'textfield',
+      '#title' => t('Administrative Description'),
+      '#default_value' => $this->description,
+      '#description' => t('Export description.'),
+    ];
+
+    $tab['enabled'] = [
       '#title' => t('Enable this export'),
       '#type' => 'checkbox',
       '#default_value' => $this->enabled,
       '#description' => t('This export will not publish to Apple News until enabled.'),
-      '#prefix' => '<br/><hr/><br/><strong>' . t('Status') . '</strong>',
+      '#prefix' => '<hr/><br/><strong>' . t('Status') . '</strong>',
       '#weight' => 10,
     ];
 
-    $tab = &$form['additional_settings']['general'];
+    $form['additional_settings']['metadata_tab'] = [
+      '#type' => 'fieldset',
+      '#title' => t('Metadata'),
+      '#collapsible' => TRUE,
+      '#collapsed' => FALSE,
+      '#group' => 'main',
+      '#weight' => -9,
+    ];
+    $tab = &$form['additional_settings']['metadata_tab'];
 
     $tab['channels'] = [
       '#type' => 'container',
       '#prefix' => '<strong>' . t('Default channels and sections') . '</strong>',
-      '#weight' => 9,
+      '#weight' => 0,
     ];
 
     $saved_channels = $this->getSetting('channels');
@@ -328,43 +344,51 @@ abstract class ApplenewsExport {
       ];
     }
 
+    $tab['is_preview'] = [
+      '#title' => t('Exported articles will be visible to members of my channel only.'),
+      '#type' => 'checkbox',
+      '#default_value' => $this->getSetting('is_preview'),
+      '#description' => t('Indicates whether this article should be public (live) or should be a preview that is only visible to members of your channel. Uncheck this to publish the article right away and make it visible to all News users. <br/><strong>Note:</strong>  If your channel has not yet been approved to publish articles in Apple News Format, unchecking this option will result in an error.'),
+      '#prefix' => '<strong>' . t('Content visibility') . '</strong>',
+      '#weight' => 1,
+    ];
+
     return $form;
   }
 
   /**
    * Validation handler for the configuration form for this export.
    *
-   * @param array $form
-   *   FAPI $form.
-   * @param array $form_state
-   *   FAPI $form_state.
+   * @param array $values
+   *   The Drupal FAPI $form_state['values'] entry for the elements returned by
+   *   this function.
    */
-  public function validateConfigForm(array $form, array &$form_state) {
+  public function validateConfigForm(array $values) {
   }
 
   /**
    * Submit handler for the configuration form for this export.
    *
-   * @param array $form
-   *   FAPI $form.
-   * @param array $form_state
-   *   FAPI $form_state.
+   * @param array $values
+   *   The Drupal FAPI $form_state['values'] entry for the elements returned by
+   *   this function.
    */
-  public function submitConfigForm(array $form, array &$form_state) {
-    $this->title = $form_state['values']['title'];
-    $this->description = $form_state['values']['description'];
+  public function submitConfigForm(array $values) {
+    $this->title = $values['additional_settings']['general_tab']['title'];
+    $this->description = $values['additional_settings']['general_tab']['description'];
+    $this->enabled = $values['additional_settings']['general_tab']['enabled'];
 
-    $this->enabled = $form_state['values']['enabled'];
     $channels = [];
     $sections = [];
     // Save default channel and section options.
     $api_channels = applenews_channels(TRUE);
+    $channels_element = &$values['additional_settings']['metadata_tab']['channels'];
     foreach ($api_channels as $channel_id => $channel) {
-      if (!empty($form_state['values']['channel-' . $channel_id])) {
+      if (!empty($channels_element['channel-' . $channel_id])) {
         $channels[$channel_id] = TRUE;
       }
       foreach ($channel['sections'] as $section_id => $section) {
-        if (!empty($form_state['values']['section-' . $channel_id . '-' . $section_id])) {
+        if (!empty($channels_element['section-' . $channel_id . '-' . $section_id])) {
           $sections[$section_id] = TRUE;
         }
       }
@@ -373,13 +397,8 @@ abstract class ApplenewsExport {
     $this->setSetting('channels', $channels)
       ->setSetting('sections', $sections);
 
-    foreach (array_keys($this->settings()) as $key) {
-      if ($key != 'channels' && $key != 'sections' &&
-          isset($form_state['values'][$key])
-      ) {
-        $this->setSetting($key, $form_state['values'][$key]);
-      }
-    }
+    // Save isPreview metadata.
+    $this->setSetting('is_preview', (bool) $values['additional_settings']['metadata_tab']['is_preview']);
 
   }
 
@@ -400,14 +419,14 @@ abstract class ApplenewsExport {
   }
 
   /**
-   * Exports the entity to an Apple Native Document.
+   * Exports the entity to an Apple News Document object.
    *
    * @return NULL|\ChapterThree\AppleNewsAPI\Document
    *   A document object, or NULL to skip the export.
    *
    * @todo verify NULL return aborts push.
    */
-  abstract public function export();
+  abstract public function exportDocument();
 
   /**
    * Generates a unique identifier each time called..
@@ -454,7 +473,11 @@ abstract class ApplenewsExport {
       if ($path) {
         $url = 'bundle://' . count($this->assets);
         if ($ext = pathinfo($path, PATHINFO_EXTENSION)) {
-          $url .= ".${ext}";
+          // Only need to prevent any spaces in filename -- but let's be a
+          // little aggressive here with allowed extension characters.
+          if (preg_match("/^[a-zA-Z0-9]+$/", $ext)) {
+            $url .= ".${ext}";
+          }
         }
         $this->assets[$uri] = [
           'path' => $path,
@@ -496,17 +519,19 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
    *
    * @var array
    */
-  public $destinations = [
-    'components' => [],
-    'layouts' => [],
-    'componentLayouts' => [],
-  ];
+  public $destinations = [];
 
   /**
    * {@inheritdoc}
    */
   public function __construct($module, $machine_name, array $arguments) {
     parent::__construct($module, $machine_name, $arguments);
+    $this->destinations = [
+      'metadata' => NULL,
+      'components' => [],
+      'layout' => NULL,
+      'componentLayouts' => [],
+    ];
     $this->init();
   }
 
@@ -521,15 +546,32 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
    * Implements __wakeup().
    */
   public function __wakeup() {
-    // Prevent unserialization of no-longer defined classes.
-    foreach ($this->destinations as $key => $destinations) {
-      foreach ($destinations as $index => $obj) {
-        if ($obj instanceof __PHP_Incomplete_Class ||
-            !$obj instanceof ApplenewsDestination
-        ) {
-          unset($this->destinations[$key][$index]);
-        }
+    // Prevent un-serialization of no-longer defined classes.
+    foreach ($this->destinations['components'] as $index => $obj) {
+      if ($obj instanceof __PHP_Incomplete_Class ||
+        !$obj instanceof ApplenewsDestinationComponent
+      ) {
+        unset($this->destinations['components'][$index]);
       }
+    }
+    foreach ($this->destinations['componentLayouts'] as $index => $obj) {
+      if ($obj instanceof __PHP_Incomplete_Class ||
+        !$obj instanceof ApplenewsDestinationComponentLayout
+      ) {
+        unset($this->destinations['componentLayouts'][$index]);
+      }
+    }
+    $obj = $this->destinations['metadata'];
+    if ($obj instanceof __PHP_Incomplete_Class ||
+      !$obj instanceof ApplenewsDestinationMetadata
+    ) {
+      unset($this->destinations['metadata']);
+    }
+    $obj = $this->destinations['layout'];
+    if ($obj instanceof __PHP_Incomplete_Class ||
+      !$obj instanceof ApplenewsDestinationLayout
+    ) {
+      unset($this->destinations['layout']);
     }
     $this->init();
   }
@@ -538,21 +580,27 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
    * Initialize some attributes.
    */
   protected function init() {
+    // Set some defaults.
+    if (empty($this->destinations['layout'])) {
+      /** @var ApplenewsDestinationLayout $layout */
+      $layout = applenews_new_destination('applenews', 'layout');
+      $this->setLayout($layout);
+    }
+    if (!$this->getMetadata()) {
+      /** @var ApplenewsDestinationMetadata $metadata */
+      $metadata = applenews_new_destination('applenews', 'metadata');
+      $this->setMetadata($metadata);
+    }
     // Copy some attribute data to child objects.
-    foreach ($this->destinations as $key => $destinations) {
+    foreach (['components', 'componentLayouts'] as $key) {
       /** @var ApplenewsDestination $obj */
-      foreach ($destinations as $index => $obj) {
+      foreach ($this->destinations[$key] as $index => $obj) {
         $obj->export = $this;
         $obj->depth = $this->destinationDepth($key, $index);
       }
     }
-    // Set some defaults.
-    if (empty($this->destinations['layouts'][0])) {
-      $info = applenews_get_module_apis('destination', 'layout');
-      $info = reset($info);
-      $this->destinations['layouts'][0] = applenews_new_destination(
-        $info['module'], $info['machine_name']);
-    }
+    $this->getLayout()->export = $this;
+    $this->getMetadata()->export = $this;
   }
 
   /**
@@ -575,13 +623,37 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
   }
 
   /**
+   * Sets the metadata destination.
+   */
+  public function setMetadata(ApplenewsDestinationMetadata $metadata) {
+    $this->destinations['metadata'] = $metadata;
+  }
+
+  /**
+   * Gets the metadata destination.
+   *
+   * @return ApplenewsDestinationMetadata
+   *   Metadata destination object.
+   */
+  public function getMetadata() {
+    return $this->destinations['metadata'];
+  }
+
+  /**
+   * Sets the layout destination.
+   */
+  public function setLayout(ApplenewsDestinationMetadata $layout) {
+    $this->destinations['layout'] = $layout;
+  }
+
+  /**
    * Get layout.
    *
    * @return ApplenewsDestinationLayout|NULL
    *   Layout object.
    */
   public function getLayout() {
-    return @$this->destinations['layouts'][0];
+    return @$this->destinations['layout'];
   }
 
   /**
@@ -779,8 +851,18 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
   /**
    * {@inheritdoc}
    */
-  public function getConfigForm(array $form = NULL, array &$form_state = NULL) {
-    $form = parent::getConfigForm($form, $form_state);
+  public function getConfigForm(array $values = []) {
+    $form = parent::getConfigForm($values);
+
+    $tab = &$form['additional_settings']['metadata_tab'];
+
+    // Apple News document metadata (not publisher api metadata).
+    $child_values = isset($values['metadata_destination']) ? $values['metadata_destination'] : [];
+    $tab['metadata_destination'] = [
+        '#type' => 'tree',
+        '#weight' => 10,
+      ] +
+      $this->getMetadata()->getConfigForm($child_values);
 
     $form['additional_settings']['layouts_tab'] = [
       '#type' => 'fieldset',
@@ -792,36 +874,12 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
     $tab = &$form['additional_settings']['layouts_tab'];
 
     // Layouts.
-    $options = applenews_get_module_apis('destination', 'layout');
-    $default_value = array_keys($options);
-    $default_value = reset($default_value);
-    if ($destination = $this->getLayout()) {
-      $edit = 'admin/config/content/applenews/export/' . $this->id . '/layout/' . $destination->id;
-      if (!$destination->validateSettings()) {
-        drupal_set_message(t('The %label layout needs to be !link.',
-          [
-            '%label' => check_plain($destination->label()),
-            '!link' => l(t('configured'), $edit)
-          ]),
-          'error');
-      }
-      foreach ($options as $key => $info) {
-        if (get_class($destination) == $info['class']) {
-          $default_value = $key;
-        }
-      }
-    }
-    $options = array_map(function($destination) {
-      return "${destination['name']} (${destination['module']})";
-    }, $options);
-    $edit = l(t('edit'), 'admin/config/content/applenews/export/' . $this->id . '/layout/0');
-    $tab['layout'] = [
-      '#type'          => 'select',
-      '#title'         => t('Layout !edit', ['!edit' => $edit]),
-      '#options'       => $options,
-      '#default_value' => $default_value,
-      '#weight'        => 1,
-    ];
+    $child_values = isset($values['layout_destination']) ? $values['layout_destination'] : [];
+    $tab['layout_destination'] = [
+        '#type' => 'tree',
+        '#weight' => 10,
+      ] +
+      $this->getLayout()->getConfigForm($child_values);
 
     // Component Layouts.
     $tab['component_layouts'] = [
@@ -999,8 +1057,11 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
   /**
    * {@inheritdoc}
    */
-  public function submitConfigForm(array $form, array &$form_state) {
-    $components = &$form_state['values']['components'];
+  public function submitConfigForm(array $values) {
+    $this->getMetadata()->submitConfigForm(
+      $values['additional_settings']['metadata_tab']['metadata_destination']);
+
+    $components = &$values['additional_settings']['components_tab']['components'];
     /** @var ApplenewsDestinationComponent $component */
     foreach ($this->destinations['components'] as $id => $component) {
       $component->weight = (int) $components[$component->id]['weight'];
@@ -1021,7 +1082,7 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
         $this->id . '/component/' . $destination->id;
     }
 
-    $component_layouts = &$form_state['values']['component_layouts'];
+    $component_layouts = &$values['additional_settings']['layouts_tab']['component_layouts'];
     if ($component_layouts['_new']['destination']) {
       $destinations = applenews_get_module_apis('destination');
       $info = $destinations[$component_layouts['_new']['destination']];
@@ -1032,7 +1093,7 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
         $this->id . '/componentLayout/' . $destination->id;
     }
 
-    parent::submitConfigForm($form, $form_state);
+    parent::submitConfigForm($values);
   }
 
 }
@@ -1073,10 +1134,10 @@ class ApplenewsExportNode extends ApplenewsExportConfigurable {
   /**
    * {@inheritdoc}
    */
-  public function getConfigForm(array $form = NULL, array &$form_state = NULL) {
-    $form = parent::getConfigForm($form, $form_state);
+  public function getConfigForm(array $values = []) {
+    $form = parent::getConfigForm($values);
 
-    $tab = &$form['additional_settings']['general'];
+    $tab = &$form['additional_settings']['general_tab'];
 
     $options = entity_get_info('node')['bundles'];
     $options = array_map(function($info) {
@@ -1097,15 +1158,16 @@ class ApplenewsExportNode extends ApplenewsExportConfigurable {
   /**
    * {@inheritdoc}
    */
-  public function submitConfigForm(array $form, array &$form_state) {
-    $this->bundles = array_filter($form_state['values']['bundles']);
-    parent::submitConfigForm($form, $form_state);
+  public function submitConfigForm(array $values) {
+    $this->bundles = array_filter(
+      $values['additional_settings']['general_tab']['bundles']);
+    parent::submitConfigForm($values);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function export() {
+  public function exportDocument() {
 
     /** @var EntityDrupalWrapper $wrapper */
     $wrapper = entity_metadata_wrapper('node', $this->source);
@@ -1129,6 +1191,11 @@ class ApplenewsExportNode extends ApplenewsExportConfigurable {
     $this->document = new Document($id, $title,
       applenews_language_code($language),
       $this->getLayout()->export());
+
+    $metadata = $this->getMetadata();
+    $metadata = $metadata->export()[0];
+    /** @var \ChapterThree\AppleNewsAPI\Document\Metadata $metadata */
+    $this->document->setMetadata($metadata);
 
     // Components.
     /** @var ApplenewsDestinationComponentLayout $destination */

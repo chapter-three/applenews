@@ -53,11 +53,29 @@ function applenews_example_applenews_api() {
  */
 function applenews_example_applenews_api_export_default_node(ApplenewsexampleExportNode $export) {
 
-  // If we have an article content type, set it.
+  // Apply to articles if exists.
   $entities_info = entity_get_info('node');
   if (isset($entities_info['bundles']['article'])) {
     $export->bundles = ['article'];
   }
+
+  // Metadata.
+  /** @var ApplenewsDestinationMetadata $metadata */
+  $metadata = applenews_new_destination('applenews', 'metadata');
+  $metadata
+    ->setSetting('date_published', [
+      'source' => '::::applenews::node::created',
+      'value' => '',
+    ])
+    ->setSetting('date_created', [
+      'source' => '::::applenews::node::created',
+      'value' => '',
+    ])
+    ->setSetting('date_modified', [
+      'source' => '::::applenews::node::changed',
+      'value' => '',
+    ]);
+  $export->setMetadata($metadata);
 
   // Header.
   /** @var ApplenewsDestinationText $component */

@@ -10,8 +10,10 @@ use \ChapterThree\AppleNewsAPI\Document\Styles;
 
 /**
  * Base class for a configurable Apple News destination.
+ *
+ * These destinations may be instantiated once per export.
  */
-abstract class ApplenewsDestination {
+abstract class ApplenewsDestinationSingleton {
 
   // @see __construct().
   protected $module;
@@ -27,32 +29,6 @@ abstract class ApplenewsDestination {
   public $settings = [];
 
   /**
-   * Administrative title.
-   */
-  public $title;
-
-  /**
-   * Weight among a set of destinations.
-   *
-   * @var int
-   */
-  public $weight = 0;
-
-  /**
-   * ID of parent destination among a set of destinations.
-   *
-   * @var int
-   */
-  public $pid;
-
-  /**
-   * Unique id among a set of destinations.
-   *
-   * @var int|string
-   */
-  public $id;
-
-  /**
    * Implements __sleep().
    */
   public function __sleep() {
@@ -61,10 +37,6 @@ abstract class ApplenewsDestination {
       'machineName',
       'arguments',
       'settings',
-      'title',
-      'weight',
-      'id',
-      'pid',
     ];
   }
 
@@ -74,13 +46,6 @@ abstract class ApplenewsDestination {
    * @var AppleNewsExportConfigurable
    */
   public $export;
-
-  /**
-   * Depth among a set of destinations.
-   *
-   * @var int
-   */
-  public $depth;
 
   /**
    * Implements __construct().
@@ -102,7 +67,7 @@ abstract class ApplenewsDestination {
    * Administrative label.
    */
   public function label() {
-    return empty($this->title) ? '(' . $this->id . ')' : $this->title;
+    return $this->name();
   }
 
   /**
@@ -124,26 +89,6 @@ abstract class ApplenewsDestination {
    *   A list of \ChapterThree\AppleNewsAPI\Document\Base objects.
    */
   abstract public function export();
-
-  /**
-   * Root-only -- can not be a child.
-   *
-   * @return bool
-   *   Is a root.
-   */
-  public function isRoot() {
-    return FALSE;
-  }
-
-  /**
-   * Leaf-only -- can not have children.
-   *
-   * @return bool
-   *   Is a leaf.
-   */
-  public function isLeaf() {
-    return TRUE;
-  }
 
   /**
    * Validate a source key.
@@ -172,12 +117,27 @@ abstract class ApplenewsDestination {
   }
 
   /**
+   * Validates source type settings.
+   */
+  protected function validateSettingsSources($keys) {
+    foreach ($keys as $key) {
+      $value = @$this->getSetting($key);
+      if (empty($value['source']) ||
+        !$this->sourceOptionValid($this->getSetting($key)['source'])
+      ) {
+        return FALSE;
+      }
+    }
+    return TRUE;
+  }
+
+  /**
    * Generates a configurable source setting element.
    */
-  protected function getConfigFormSourceElement(&$form, &$form_state, $key) {
+  protected function getConfigFormSourceElement($key) {
     list($options, $metadata) = $this->getSourceOptions();
-    $form['settings'][$key] = [
-      '#type'  => 'fieldset',
+    $element = [
+      '#type'  => 'applenews_source',
       '#tree'  => TRUE,
       'source' => [
         '#title'         => t('Source'),
@@ -188,20 +148,14 @@ abstract class ApplenewsDestination {
     ];
     // Textarea for literal value sources.
     if (!empty($metadata['types']['value'])) {
-      $visible_states = [];
-      foreach ($metadata['types']['value'] as $source_key) {
-        $visible_states[][':input[name="settings[' . $key . '][source]"]']
-          = ['value' => $source_key];
-      }
-      $form['settings'][$key]['value'] = [
-        '#title'         => t('Value'),
-        '#type'          => 'textarea',
-        '#default_value' => @$this->getSetting($key)['value'],
-        '#states'        => [
-          'visible' => $visible_states,
-        ]
+      $element['value'] = [
+        '#title'             => t('Value'),
+        '#type'              => 'textarea',
+        '#default_value'     => @$this->getSetting($key)['value'],
+        '#applenews_visible' => $metadata['types']['value'],
       ];
     }
+    return $element;
   }
 
   /**
@@ -344,6 +298,11 @@ abstract class ApplenewsDestination {
           ]);
           // Nested entity source.
           if (is_array($attr_info)) {
+            // Don't dive deeper than 1 level, we don't have a mechanism to
+            // detect cycles in entity references.
+            if (!empty($ancestors)) {
+              continue;
+            }
             $label = implode(' -- ', [
               $source_info['name'],
               $field_name,
@@ -512,7 +471,117 @@ abstract class ApplenewsDestination {
   /**
    * Provides a configuration form for this destination.
    */
-  public function getConfigForm($form, &$form_state) {
+  public function getConfigForm(array $values = []) {
+    // Elements under 'settings' gets saved to $this->settings.
+    $form['settings'] = ['#tree' => TRUE];
+    return $form;
+  }
+
+  /**
+   * Validation handler for the configuration form for this export.
+   */
+  public function validateConfigForm($values) {
+  }
+
+  /**
+   * Submit handler for the configuration form for this export.
+   */
+  public function submitConfigForm($values) {
+    foreach (array_keys($this->settings()) as $key) {
+      $this->setSetting($key, $values['settings'][$key]);
+    }
+  }
+
+}
+
+/**
+ * Base class for a configurable Apple News destination.
+ *
+ * These destinations can be instantiated more than once per export.
+ */
+abstract class ApplenewsDestination extends ApplenewsDestinationSingleton {
+
+  /**
+   * Administrative title.
+   */
+  public $title;
+
+  /**
+   * Weight among a set of destinations.
+   *
+   * @var int
+   */
+  public $weight = 0;
+
+  /**
+   * ID of parent destination among a set of destinations.
+   *
+   * @var int
+   */
+  public $pid;
+
+  /**
+   * Unique id among a set of destinations.
+   *
+   * @var int|string
+   */
+  public $id;
+
+  /**
+   * Implements __sleep().
+   */
+  public function __sleep() {
+    return array_merge([
+      'title',
+      'weight',
+      'id',
+      'pid',
+    ], parent::__sleep());
+  }
+
+  /**
+   * Depth among a set of destinations.
+   *
+   * @var int
+   */
+  public $depth;
+
+  /**
+   * {@inheritdoc}
+   */
+  public function label() {
+    if (empty($this->title)) {
+      return t('!name (!id)', ['!name' => $this->name(), '!id' => $this->id]);
+    }
+    return $this->title;
+  }
+
+  /**
+   * Root-only -- can not be a child.
+   *
+   * @return bool
+   *   Is a root.
+   */
+  public function isRoot() {
+    return FALSE;
+  }
+
+  /**
+   * Leaf-only -- can not have children.
+   *
+   * @return bool
+   *   Is a leaf.
+   */
+  public function isLeaf() {
+    return TRUE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getConfigForm(array $values = []) {
+
+    $form = parent::getConfigForm($values);
 
     $form['title'] = [
       '#type' => 'textfield',
@@ -529,29 +598,16 @@ abstract class ApplenewsDestination {
       '#weight' => 0,
     ];
 
-    $form['settings'] = [
-      '#tree' => TRUE,
-    ];
-
     return $form;
   }
 
   /**
-   * Validation handler for the configuration form for this export.
+   * {@inheritdoc}
    */
-  public function validateConfigForm($form, &$form_state) {
-  }
-
-  /**
-   * Submit handler for the configuration form for this export.
-   */
-  public function submitConfigForm($form, &$form_state) {
-    $this->title = $form_state['values']['title'];
-    foreach (array_keys($this->settings()) as $key) {
-      if (isset($form_state['values']['settings'][$key])) {
-        $this->setSetting($key, $form_state['values']['settings'][$key]);
-      }
-    }
+  public function submitConfigForm($values) {
+    $this->title = $values['title'];
+    $this->weight = $values['weight'];
+    parent::submitConfigForm($values);
   }
 
 }

@@ -105,6 +105,9 @@ function applenews_batch_post($export_id, $entity_type, $entity, $total_count, &
     }
   }
 
+  // Visbile to members of the channel only.
+  $settings['metadata']['data']['is_preview'] = !empty($export_settings['is_preview']);
+
   if (!empty($export_settings['channels'])) {
     foreach ($export_settings['channels'] as $channel_id => $checked) {
       if (!$checked) {
@@ -254,11 +257,7 @@ function applenews_batch_preview_generate($export_id, $entity_type, $entity, $to
     ]
   );
 
-  $document = $export->setSource($entity)->export();
-  $data = [
-    'json'  => $document->json(),
-    'files' => $export->getAssets(),
-  ];
+  $data = applenews_entity_export($export, $entity_type, $entity_wrapper->getIdentifier());
 
   $context['results']['export_id'] = $export->id;
   $context['results']['entity_ids'][] = $entity_wrapper->getIdentifier();

@@ -656,7 +656,11 @@ function applenews_export_edit_form($form, &$form_state, ApplenewsExport $export
     $export->validateComponents();
   }
 
-  $form = $export->getConfigForm($form, $form_state);
+  if (empty($form_state['values']['config'])) {
+    $form_state['values']['config'] = [];
+  }
+  $form['config'] = ['#tree' => TRUE] +
+    $export->getConfigForm($form_state['values']['config']);
 
   $form['#applenews_export'] = $export;
 
@@ -686,7 +690,7 @@ function theme_applenews_export_edit_form($variables) {
   $elements = [
     [
       'item_label' => t('Component Layout'),
-      'element' => &$form['additional_settings']['layouts_tab']['component_layouts'],
+      'element' => &$form['config']['additional_settings']['layouts_tab']['component_layouts'],
     ],
   ];
   foreach ($elements as $info) {
@@ -717,7 +721,7 @@ function theme_applenews_export_edit_form($variables) {
   $elements = [
     'components' => [
       'item_label' => t('Component'),
-      'element' => &$form['additional_settings']['components_tab']['components'],
+      'element' => &$form['config']['additional_settings']['components_tab']['components'],
     ],
   ];
   foreach ($elements as $key => $info) {
@@ -791,7 +795,7 @@ function theme_applenews_export_edit_form($variables) {
 function applenews_export_edit_form_validate($form, &$form_state) {
   /** @var ApplenewsExport $export */
   $export = $form['#applenews_export'];
-  $export->validateConfigForm($form, $form_state);
+  $export->validateConfigForm($form_state['values']['config']);
 }
 
 /**
@@ -801,7 +805,7 @@ function applenews_export_edit_form_submit($form, &$form_state) {
   module_load_include('inc', 'applenews');
   /** @var ApplenewsExport $export */
   $export = $form['#applenews_export'];
-  $export->submitConfigForm($form, $form_state);
+  $export->submitConfigForm($form_state['values']['config']);
   applenews_export_save($export);
   if (empty($form_state['redirect'])) {
     drupal_set_message(t('Changes have been successfully saved.'));
@@ -850,7 +854,11 @@ function applenews_export_destination_edit_form($form, &$form_state, ApplenewsEx
 
   }
 
-  $form = $destination->getConfigForm($form, $form_state);
+  if (empty($form_state['values']['config'])) {
+    $form_state['values']['config'] = [];
+  }
+  $form['config'] = ['#tree' => TRUE] +
+    $destination->getConfigForm($form_state['values']['config']);
 
   $form['#applenews_destination'] = $destination;
 
@@ -878,7 +886,7 @@ function applenews_export_destination_edit_form($form, &$form_state, ApplenewsEx
 function applenews_export_destination_edit_form_validate($form, &$form_state) {
   /** @var ApplenewsDestination $destination */
   $destination = $form['#applenews_destination'];
-  $destination->validateConfigForm($form, $form_state);
+  $destination->validateConfigForm($form_state['values']['config']);
 }
 
 /**
@@ -888,7 +896,7 @@ function applenews_export_destination_edit_form_submit($form, &$form_state) {
   module_load_include('inc', 'applenews');
   /** @var ApplenewsDestination $destination */
   $destination = $form['#applenews_destination'];
-  $destination->submitConfigForm($form, $form_state);
+  $destination->submitConfigForm($form_state['values']['config']);
   applenews_export_save($destination->export);
   drupal_set_message(t('Changes have been successfully saved.'));
   $form_state['redirect'] = [

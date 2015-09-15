@@ -341,6 +341,7 @@ function applenews_exports_enabled($reset = NULL) {
  * @param string $type
  *   If $class is "destination", one of:
  *   - "component".
+ *   - "metadata".
  *   - "layout".
  *   - "componentLayout".
  * @param bool $reset
@@ -468,11 +469,16 @@ function applenews_get_module_apis($class = NULL, $type = NULL, $reset = FALSE) 
         // Set "type" to classify destination.
         // @see ApplenewsExportConfigurable::getConfigForm()
         $reflection = applenews_validate_class($destination['class'],
-          'ApplenewsDestination');
+          'ApplenewsDestinationSingleton');
         if ($destination['class'] == 'ApplenewsDestinationComponent' ||
-          $reflection->isSubclassOf('ApplenewsDestinationComponent')
+            $reflection->isSubclassOf('ApplenewsDestinationComponent')
         ) {
           $class_type = 'component';
+        }
+        elseif ($destination['class'] == 'ApplenewsDestinationMetadata' ||
+          $reflection->isSubclassOf('ApplenewsDestinationMetadata')
+        ) {
+          $class_type = 'metadata';
         }
         elseif ($destination['class'] == 'ApplenewsDestinationLayout' ||
           $reflection->isSubclassOf('ApplenewsDestinationLayout')
@@ -485,7 +491,7 @@ function applenews_get_module_apis($class = NULL, $type = NULL, $reset = FALSE) 
           $class_type = 'componentLayout';
         }
         else {
-          $msg = 'Class %class is not a subclass of ApplenewsDestinationComponent.';
+          $msg = 'Class %class is not a subclass of ApplenewsDestination.';
           $args = ['%class' => $destination['class']];
           watchdog('applenews', $msg, $args, WATCHDOG_WARNING);
           return FALSE;
@@ -520,7 +526,7 @@ function applenews_get_module_apis($class = NULL, $type = NULL, $reset = FALSE) 
     return $implementations[$class];
   }
 
-  if (!in_array($type, ['component', 'layout', 'componentLayout'])) {
+  if (!in_array($type, ['component', 'metadata', 'layout', 'componentLayout'])) {
     watchdog('applenews', 'Invalid $type "%type".', ['%type' => $type], WATCHDOG_ERROR);
     return NULL;
   }
@@ -571,7 +577,7 @@ function applenews_entity_export_valid(ApplenewsExport $export, $entity_type, $e
  * Export an individual drupal entity.
  *
  * @param ApplenewsExport $export
- *   Export to test.
+ *   Export to run.
  * @param string $entity_type
  *   Entity type.
  * @param string $entity_id
@@ -584,8 +590,9 @@ function applenews_entity_export_valid(ApplenewsExport $export, $entity_type, $e
  */
 function applenews_entity_export(ApplenewsExport $export, $entity_type, $entity_id) {
   $entity = entity_load_single($entity_type, $entity_id);
+  $export->setSource($entity);
   return [
-    'json'  => $export->setSource($entity)->export()->json(),
+    'json'  => $export->exportDocument()->json(),
     'files' => $export->getAssets(),
   ];
 }
@@ -866,15 +873,14 @@ function applenews_op($operation, $channel_id, $entity, $entity_type, ApplenewsE
   $result = FALSE;
   /** @var EntityDrupalWrapper $entity_wrapper */
   $entity_wrapper = entity_metadata_wrapper($entity_type, $entity);
-  $data = [];
+
+  $data = NULL;
   if ($operation != 'delete') {
-    // Generate Apple News Document formatted JSON string.
-    $document = $export->setSource($entity)->export();
-    $data = [
-      'json'              => $document->json(),
-      'files'             => $export->getAssets(),
-      'metadata'          => !empty($settings['metadata']) ? json_encode($settings['metadata']) : '',
-    ];
+    $data = applenews_entity_export($export, $entity_type,
+      $entity_wrapper->getIdentifier());
+    if (!empty($settings['metadata'])) {
+      $data['metadata'] = json_encode($settings['metadata']);
+    }
   }
 
   switch ($operation) {
