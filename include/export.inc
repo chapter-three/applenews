@@ -587,9 +587,7 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
       $this->setLayout($layout);
     }
     if (!$this->getMetadata()) {
-      /** @var ApplenewsDestinationMetadata $metadata */
-      $metadata = applenews_new_destination('applenews', 'metadata');
-      $this->setMetadata($metadata);
+      $this->setMetadata($this->newMetadata());
     }
     // Copy some attribute data to child objects.
     foreach (['components', 'componentLayouts'] as $key) {
@@ -620,6 +618,17 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
       return $this->destinationDepth($key, $pid) + 1;
     }
     return 0;
+  }
+
+  /**
+   * Generates a new metadata attribute.
+   *
+   * @return ApplenewsDestinationMetadata
+   *   A new componentLayout object.
+   */
+  public function newMetadata() {
+    module_load_include('inc', 'applenews');
+    return applenews_new_destination('applenews', 'metadata');
   }
 
   /**
@@ -859,7 +868,9 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
     // Apple News document metadata (not publisher api metadata).
     $child_values = isset($values['metadata_destination']) ? $values['metadata_destination'] : [];
     $tab['metadata_destination'] = [
-        '#type' => 'tree',
+        '#type' => 'fieldset',
+        '#title' => t('Document Metadata'),
+        '#tree' => TRUE,
         '#weight' => 10,
       ] +
       $this->getMetadata()->getConfigForm($child_values);
@@ -1192,10 +1203,8 @@ class ApplenewsExportNode extends ApplenewsExportConfigurable {
       applenews_language_code($language),
       $this->getLayout()->export());
 
-    $metadata = $this->getMetadata();
-    $metadata = $metadata->export()[0];
     /** @var \ChapterThree\AppleNewsAPI\Document\Metadata $metadata */
-    $this->document->setMetadata($metadata);
+    $this->document->setMetadata($this->getMetadata()->export());
 
     // Components.
     /** @var ApplenewsDestinationComponentLayout $destination */

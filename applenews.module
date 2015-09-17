@@ -368,7 +368,7 @@ function applenews_element_info() {
 }
 
 /**
- * Process callback for applenews_source elements.
+ * FAPI #pre_render callback.
  *
  * @see applenews_element_info()
  */

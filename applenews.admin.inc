@@ -825,6 +825,9 @@ function applenews_export_destination_edit_form($form, &$form_state, ApplenewsEx
     case 'component':
       /** @var ApplenewsDestinationComponent $destination */
       $destination = $export->getComponent($id);
+      if (empty($destination)) {
+        return [];
+      }
       drupal_set_title(t('Edit Component: !label', [
         '!label' => check_plain($destination->label()),
       ]), PASS_THROUGH);

@@ -343,7 +343,7 @@ class ApplenewsDestinationBodyPhoto extends ApplenewsDestinationBody {
     $components = [];
 
     foreach ($values as $value) {
-      $components[] = array_merge($$components,
+      $components = array_merge($components,
         $this->exportConvertHTML($value[$key]));
     }
 
