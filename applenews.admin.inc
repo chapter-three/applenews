@@ -835,6 +835,9 @@ function applenews_export_destination_edit_form($form, &$form_state, ApplenewsEx
 
     case 'layout':
       $destination = $export->getLayout();
+      if (empty($destination)) {
+        return [];
+      }
       $form['destination_label'] = [
         '#markup' => '<div class="form-item"><label for="edit-weight">' . t('Layout') . ' </label>
         ' . $destination->label() . '
@@ -845,6 +848,9 @@ function applenews_export_destination_edit_form($form, &$form_state, ApplenewsEx
     case 'componentLayout':
       /** @var ApplenewsDestinationComponentLayout $destination */
       $destination = $export->getComponentLayout($id);
+      if (empty($destination)) {
+        return [];
+      }
       $form['destination_label'] = [
         '#markup' => '<div class="form-item"><label for="edit-weight">' . t('Component Layout') . ' </label>
         ' . $destination->label() . '

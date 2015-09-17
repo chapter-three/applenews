@@ -64,6 +64,9 @@ class ApplenewsDestinationLayout extends ApplenewsDestinationSingleton {
 
   /**
    * {@inheritdoc}
+   *
+   * @return \ChapterThree\AppleNewsAPI\Document\Layouts\Layout
+   *   Apple News Document layout object.
    */
   public function export() {
     $layout = new Layout($this->getSetting('columns'), $this->getSetting('width'));
@@ -77,7 +80,7 @@ class ApplenewsDestinationLayout extends ApplenewsDestinationSingleton {
         $layout->{$method}($value);
       }
     }
-    return [$layout];
+    return $layout;
   }
 
 }
@@ -121,10 +124,12 @@ class ApplenewsDestinationComponentLayout extends ApplenewsDestination {
     $form = parent::getConfigForm($values);
 
     $form['id'] = [
-      '#title'         => t('ID'),
+      '#title'         => t('Identifier'),
+      '#description'   => t('Use a short, descriptive string. This will be used to select this layout on the component configuration page.'),
       '#type'          => 'textfield',
       '#default_value' => $this->id,
       '#required'      => TRUE,
+      '#weight'        => 1,
     ];
 
     $form['settings']['columnStart'] = [
@@ -142,50 +147,115 @@ class ApplenewsDestinationComponentLayout extends ApplenewsDestination {
     $form['settings']['margin'] = [
       '#title' => t('Margin'),
       '#type' => 'fieldset',
+      '#pre_render' => ['applenews_form_pre_render_margin'],
       'type' => [
         '#type' => 'select',
         '#options' => [
           'value' => t('Integer value for all sides'),
-          'margin' => t('Separate values for top and bottom margins.'),
-        ]
+          'margin' => t('Separate values for top and bottom margins'),
+        ],
+        '#default_value' => @$this->getSetting('margin')['type'],
       ],
-      'value' => [],
-      'margin' => [],
+      'value' => [
+        '#title'         => t('Value'),
+        '#type'          => 'textfield',
+        '#default_value' => @$this->getSetting('margin')['value'],
+      ],
+      'top' => [
+        '#title'         => t('Top'),
+        '#type'          => 'textfield',
+        '#default_value' => @$this->getSetting('margin')['top'],
+      ],
+      'bottom' => [
+        '#title'         => t('Bottom'),
+        '#type'          => 'textfield',
+        '#default_value' => @$this->getSetting('margin')['bottom'],
+      ],
     ];
 
     $form['settings']['contentInset'] = [
       '#title'         => t('Content Inset'),
-      '#type'          => 'textfield',
-      '#default_value' => $this->getSetting('contentInset'),
+      '#type' => 'fieldset',
+      '#pre_render' => ['applenews_form_pre_render_content_inset'],
+      'type' => [
+        '#type' => 'select',
+        '#options' => [
+          'default' => t('Default Inset'),
+          'contentInset' => t('Define each side'),
+        ]
+      ],
+      'default' => [
+        '#title'         => t('Enable'),
+        '#type'          => 'checkbox',
+        '#default_value' => @$this->getSetting('contentInset')['default'],
+      ],
+      'top' => [
+        '#title'         => t('Top'),
+        '#type'          => 'checkbox',
+        '#default_value' => @$this->getSetting('margin')['top'],
+      ],
+      'right' => [
+        '#title'         => t('Right'),
+        '#type'          => 'checkbox',
+        '#default_value' => @$this->getSetting('margin')['right'],
+      ],
+      'bottom' => [
+        '#title'         => t('Bottom'),
+        '#type'          => 'checkbox',
+        '#default_value' => @$this->getSetting('margin')['bottom'],
+      ],
+      'left' => [
+        '#title'         => t('Left'),
+        '#type'          => 'checkbox',
+        '#default_value' => @$this->getSetting('margin')['left'],
+      ],
     ];
 
     $form['settings']['ignoreDocumentMargin'] = [
       '#title'         => t('Ignore Document Margin'),
-      '#type'          => 'textfield',
+      '#type'          => 'select',
+      '#options'       => [
+        ''      => t('No'),
+        'left'  => t('Left'),
+        'right' => t('Right'),
+        'both'  => t('Both'),
+      ],
       '#default_value' => $this->getSetting('ignoreDocumentMargin'),
     ];
 
     $form['settings']['ignoreDocumentGutter'] = [
       '#title'         => t('Ignore Document Gutter'),
-      '#type'          => 'textfield',
+      '#type'          => 'select',
+      '#options'       => [
+        ''      => t('No'),
+        'left'  => t('Left'),
+        'right' => t('Right'),
+        'both'  => t('Both'),
+      ],
       '#default_value' => $this->getSetting('ignoreDocumentGutter'),
     ];
 
     $form['settings']['minimumHeight'] = [
       '#title'         => t('Minimum Height'),
-      '#type'          => 'textfield',
+      '#type'          => 'applenews_supported_units',
       '#default_value' => $this->getSetting('minimumHeight'),
     ];
 
     $form['settings']['maximumContentWidth'] = [
       '#title'         => t('Maximum Content Width'),
-      '#type'          => 'textfield',
+      '#type'          => 'applenews_supported_units',
       '#default_value' => $this->getSetting('maximumContentWidth'),
     ];
 
     $form['settings']['horizontalContentAlignment'] = [
       '#title'         => t('Horizontal Content Alignment'),
-      '#type'          => 'textfield',
+      '#type'          => 'select',
+      '#options'       => [
+        ''        => t('None'),
+        'center'  => t('Center'),
+        'left'    => t('Left'),
+        'right'   => t('Right'),
+      ],
       '#default_value' => $this->getSetting('horizontalContentAlignment'),
     ];
 
@@ -209,7 +279,18 @@ class ApplenewsDestinationComponentLayout extends ApplenewsDestination {
    */
   public function submitConfigForm($values) {
     parent::submitConfigForm($values);
-    if ($values['id'] != $this->id) {
+    if (@$values['id'] != $this->id) {
+      // Change any component references to this layout.
+      /** @var ApplenewsDestinationComponent $component */
+      foreach ($this->export->getComponents() as $component) {
+        $layout = $component->getLayout();
+        if ($layout && $layout->id == $this->id) {
+          $component->setLayout($values['id']);
+        }
+      }
+      // Save identifier as id attribute -- export class allows this to be an
+      // arbitrary array key.
+      // @see ApplenewsExportNode::exportDocument()
       $this->export->deleteComponentLayout($this->id);
       $this->id = $values['id'];
       $this->export->addComponentLayout($this, $this->id);
@@ -218,18 +299,19 @@ class ApplenewsDestinationComponentLayout extends ApplenewsDestination {
 
   /**
    * {@inheritdoc}
+   *
+   * @return \ChapterThree\AppleNewsAPI\Document\Layouts\ComponentLayout
+   *   Apple News Document componentLayout object.
    */
   public function export() {
     $layout = new ComponentLayout();
+
+    // Simple values.
     foreach ([
         'columnStart'                => 'setColumnStart',
         'columnSpan'                 => 'setColumnSpan',
-        'margin'                     => 'setMargin',
-        'contentInset'               => 'setContentInset',
         'ignoreDocumentMargin'       => 'setIgnoreDocumentMargin',
         'ignoreDocumentGutter'       => 'setIgnoreDocumentGutter',
-        'minimumHeight'              => 'setMinimumHeight',
-        'maximumContentWidth'        => 'setMaximumContentWidth',
         'horizontalContentAlignment' => 'setHorizontalContentAlignment',
       ] as $key => $method
     ) {
@@ -238,7 +320,56 @@ class ApplenewsDestinationComponentLayout extends ApplenewsDestination {
         $layout->{$method}($value);
       }
     }
-    return [$layout];
+
+    $value = $this->getSetting('margin');
+    switch ($value['type']) {
+
+      case 'margin':
+        $layout->setMargin(new \ChapterThree\AppleNewsAPI\Document\Margin(
+          @$value['top'], @$value['bottom']));
+        break;
+
+      case 'value':
+      default:
+        if (!empty($value['value'])) {
+          $layout->setMargin($value['value']);
+        }
+        break;
+
+    }
+
+    $value = $this->getSetting('contentInset');
+    switch ($value['type']) {
+
+      case 'contentInset':
+        $inset = new \ChapterThree\AppleNewsAPI\Document\ContentInset();
+        $inset->setTop(!empty($value['top']));
+        $inset->setRight(!empty($value['right']));
+        $inset->setBottom(!empty($value['bottom']));
+        $inset->setLeft(!empty($value['left']));
+        $layout->setContentInset($inset);
+        break;
+
+      case 'default':
+      default:
+        if (!empty($value['default'])) {
+          $layout->setContentInset(TRUE);
+        }
+        break;
+
+    }
+
+    $value = $this->getSetting('minimumHeight');
+    if (!empty($value['value'])) {
+      $layout->setMinimumHeight($value['value'] . $value['units']);
+    }
+
+    $value = $this->getSetting('maximumContentWidth');
+    if (!empty($value['value'])) {
+      $layout->setMaximumContentWidth($value['value'] . $value['units']);
+    }
+
+    return $layout;
   }
 
 }

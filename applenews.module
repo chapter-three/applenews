@@ -364,6 +364,14 @@ function applenews_element_info() {
   $types['applenews_source'] = system_element_info()['fieldset'];
   $types['applenews_source']['#pre_render'][] = 'applenews_form_pre_render_source';
 
+  // Element for Apple News supported units for component margins and height.
+  $types['applenews_supported_units'] = [
+    '#input' => TRUE,
+    '#autocomplete_path' => FALSE,
+    '#process' => ['applenews_form_process_supported_units'],
+    '#theme_wrappers' => ['applenews_inline_form_element'],
+  ];
+
   return $types;
 }
 
@@ -384,6 +392,142 @@ function applenews_form_pre_render_source($element) {
 }
 
 /**
+ * FAPI #process callback.
+ *
+ * @see applenews_element_info()
+ */
+function applenews_form_process_supported_units($element, &$form_state, $complete_form) {
+  $element['#tree'] = TRUE;
+  $element['value'] = [
+    '#type' => 'textfield',
+    '#default_value' => isset($element['#default_value']['value']) ? $element['#default_value']['value'] : FALSE,
+  ];
+  $element['units'] = [
+    '#type' => 'select',
+    '#options' => [
+      'pt' => t('Points'),
+      'vh' => t('Viewport height'),
+      'vw' => t('Viewport width'),
+      'vmin' => t('Viewport shortest side'),
+      'vmax' => t('Viewport longest side'),
+      'gut' => t('Column gutters'),
+      'cw' => t('Component width'),
+    ],
+    '#default_value' => isset($element['#default_value']['units']) ? $element['#default_value']['units'] : FALSE,
+  ];
+  return $element;
+}
+
+/**
+ * FAPI #pre_render callback.
+ *
+ * @see ApplenewsDestinationComponentLayout::getConfigForm()
+ */
+function applenews_form_pre_render_margin($element) {
+  $source_name = ':input[name="' . $element['type']['#name'] . '"]';
+  $element['value']['#states']['visible'][][$source_name]['value'] = 'value';
+  $element['top']['#states']['visible'][][$source_name]['value'] = 'margin';
+  $element['bottom']['#states']['visible'][][$source_name]['value'] = 'margin';
+  return $element;
+}
+
+/**
+ * FAPI #pre_render callback.
+ *
+ * @see ApplenewsDestinationComponentLayout::getConfigForm()
+ */
+function applenews_form_pre_render_content_inset($element) {
+  $source_name = ':input[name="' . $element['type']['#name'] . '"]';
+  $element['default']['#states']['visible'][][$source_name]['value'] = 'default';
+  $element['top']['#states']['visible'][][$source_name]['value'] = 'contentInset';
+  $element['right']['#states']['visible'][][$source_name]['value'] = 'contentInset';
+  $element['bottom']['#states']['visible'][][$source_name]['value'] = 'contentInset';
+  $element['left']['#states']['visible'][][$source_name]['value'] = 'contentInset';
+  return $element;
+}
+
+/**
+ * FAPI #pre_render callback.
+ *
+ * @see ApplenewsDestinationComponent::getConfigForm()
+ */
+function applenews_form_pre_render_component_layout($element) {
+  $source_name = ':input[name="' . $element['id']['#name'] . '"]';
+  $element['custom']['#states']['visible'][][$source_name]['value'] = '';
+  return $element;
+}
+
+/**
+ * Formats child form elements as inline elements.
+ *
+ * Copied from examples module.
+ *
+ * @see theme_form_example_inline_form_element()
+ */
+function theme_applenews_inline_form_element($variables) {
+  $element = $variables['element'];
+
+  // Add element #id for #type 'item'.
+  if (isset($element['#markup']) && !empty($element['#id'])) {
+    $attributes['id'] = $element['#id'];
+  }
+  // Add element's #type and #name as class to aid with JS/CSS selectors.
+  $attributes['class'] = array('form-item');
+  if (!empty($element['#type'])) {
+    $attributes['class'][] = 'form-type-' . strtr($element['#type'], '_', '-');
+  }
+  if (!empty($element['#name'])) {
+    $attributes['class'][] = 'form-item-' . strtr($element['#name'],
+        array(
+          ' ' => '-',
+          '_' => '-',
+          '[' => '-',
+          ']' => '',
+        )
+      );
+  }
+  // Add a class for disabled elements to facilitate cross-browser styling.
+  if (!empty($element['#attributes']['disabled'])) {
+    $attributes['class'][] = 'form-disabled';
+  }
+  $output = '<div' . drupal_attributes($attributes) . '>' . "\n";
+
+  // If #title is not set, we don't display any label or required marker.
+  if (!isset($element['#title'])) {
+    $element['#title_display'] = 'none';
+  }
+  $prefix = isset($element['#field_prefix']) ? '<span class="field-prefix">' . $element['#field_prefix'] . '</span> ' : '';
+  $suffix = isset($element['#field_suffix']) ? ' <span class="field-suffix">' . $element['#field_suffix'] . '</span>' : '';
+
+  switch ($element['#title_display']) {
+    case 'before':
+      $output .= ' ' . theme('form_element_label', $variables);
+      $output .= ' ' . '<div class="container-inline">' . $prefix . $element['#children'] . $suffix . "</div>\n";
+      break;
+
+    case 'invisible':
+    case 'after':
+      $output .= ' ' . $prefix . $element['#children'] . $suffix;
+      $output .= ' ' . theme('form_element_label', $variables) . "\n";
+      break;
+
+    case 'none':
+    case 'attribute':
+      // Output no label and no required marker, only the children.
+      $output .= ' ' . $prefix . $element['#children'] . $suffix . "\n";
+      break;
+  }
+
+  if (!empty($element['#description'])) {
+    $output .= ' <div class="description">' . $element['#description'] . "</div>\n";
+  }
+
+  $output .= "</div>\n";
+
+  return $output;
+}
+
+/**
  * Implements hook_theme().
  */
 function applenews_theme($existing, $type, $theme, $path) {
@@ -391,6 +535,9 @@ function applenews_theme($existing, $type, $theme, $path) {
     'applenews_export_edit_form' => [
       'render element' => 'form',
       'file'           => 'applenews.admin.inc',
+    ],
+    'applenews_inline_form_element' => [
+      'render element' => 'element',
     ],
   ];
 }
