@@ -368,7 +368,9 @@ abstract class ApplenewsDestinationSingleton {
       $key = array_pop($args);
       // @todo this needs to be configurable in the class.
       $reflection = new ReflectionClass($implementations[$id]['class']);
-      if ($reflection->isSubclassOf('ApplenewsSourceValue')) {
+      if ($implementations[$id]['class'] == 'ApplenewsSourceValue' ||
+          $reflection->isSubclassOf('ApplenewsSourceValue')
+      ) {
         // Add literal.
         $args[] = $key_settings[$key];
       }
