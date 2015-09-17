@@ -71,20 +71,28 @@ class ApplenewsDestinationMetadata extends ApplenewsDestinationSingleton {
 
   /**
    * {@inheritdoc}
+   *
+   * @return \ChapterThree\AppleNewsAPI\Document\Metadata
+   *   Apple News Document layout object.
    */
   public function export() {
     $metadata = new Metadata();
 
     $date_string = function($string) {
-      if (($date = date_create($string)) ||
-          ($date = date_timestamp_set(date_create(), $string))
-      ) {
+      if (intval($string) == $string) {
+        $date = date_timestamp_set(new DateTime(), $string);
+      }
+      else {
+        $date = date_create($string);
+      }
+      if ($date) {
         $date->setTimeZone(new DateTimeZone('UTC'));
         return $date->format(DateTime::ISO8601);
       }
       watchdog('applenews', 'Could not decode value as datetime.');
       return FALSE;
     };
+
     list($key, $values) = $this->getSourceValues($this->export->source,
       $this->getSetting('date_published'));
     if (!empty($values[0][$key]) && $date = $date_string($values[0][$key])) {
@@ -146,7 +154,7 @@ class ApplenewsDestinationMetadata extends ApplenewsDestinationSingleton {
       $metadata->setTransparentToolbar(TRUE);
     }
 
-    return [$metadata];
+    return $metadata;
   }
 
 }

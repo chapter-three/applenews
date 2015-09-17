@@ -54,7 +54,7 @@ abstract class ApplenewsWebTestCase extends DrupalWebTestCase {
 }
 
 /**
- * Test export to Apple News Format.
+ * Export nodes using configurable export.
  */
 class ApplenewsExportTestCase extends ApplenewsWebTestCase {
 
@@ -64,7 +64,7 @@ class ApplenewsExportTestCase extends ApplenewsWebTestCase {
   public static function getInfo() {
     return [
       'name' => t('Export nodes using configurable export.'),
-      'description' => t('Export to Apple News Format, articles and pages as defined by default profile, using configurable export.'),
+      'description' => '',
       'group' => t('Apple News'),
     ];
   }
@@ -77,7 +77,7 @@ class ApplenewsExportTestCase extends ApplenewsWebTestCase {
   }
 
   /**
-   * Test default article export using simple layout.
+   * Primary test.
    */
   public function testExport() {
 
@@ -222,10 +222,35 @@ class ApplenewsExportTestCase extends ApplenewsWebTestCase {
     }
   }
 
+}
+
+/**
+ * Test default article export with inline images.
+ */
+class ApplenewsExportInlineImagesTestCase extends ApplenewsWebTestCase {
+
   /**
-   * Test default article export with inline images.
+   * {@inheritdoc}
    */
-  public function testExportInlineImages() {
+  public static function getInfo() {
+    return [
+      'name' => t('Export inline images.'),
+      'description' => '',
+      'group' => t('Apple News'),
+    ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setUp(array $modules = []) {
+    parent::setUp(array_merge(['applenews'], $modules));
+  }
+
+  /**
+   * Primary test.
+   */
+  public function testExport() {
 
     // @see ImageFieldDefaultImagesTestCase::ImageFieldDefaultImagesTestCase()
     $file = current($this->drupalGetTestFiles('image'));
@@ -414,6 +439,168 @@ EOD
       $this->assertEqual(drupal_realpath($file->uri),
         @$export->getAssets()[$item->URL],
         "Export body fragment -> component ${cid} image URL.");
+
+    }
+  }
+
+}
+
+/**
+ * Test metadata configuration.
+ */
+class ApplenewsExportMetadataTestCase extends ApplenewsWebTestCase {
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function getInfo() {
+    return [
+      'name' => t('Export metadata.'),
+      'description' => '',
+      'group' => t('Apple News'),
+    ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setUp(array $modules = []) {
+    parent::setUp(array_merge(['applenews'], $modules));
+  }
+
+  /**
+   * Primary test.
+   */
+  public function testExport() {
+
+    // @see ImageFieldDefaultImagesTestCase::ImageFieldDefaultImagesTestCase()
+    $file = current($this->drupalGetTestFiles('image'));
+    $file = file_save($file);
+
+    // Some node content.
+    $contents = [
+      [
+        '_desc' => 'article',
+        'type' => 'article',
+        'title' => $this->randomName(32),
+        'body' => $this->randomName(64),
+        'image' => $file,
+        'image_alt' => $this->randomName(32),
+      ],
+    ];
+
+    // Create nodes.
+    $map = [];
+    foreach ($contents as $i => $content) {
+      $settings = [
+        'type' => $content['type'],
+        'title' => $content['title'],
+        'body' => [LANGUAGE_NONE => [['value' => $content['body']]]],
+      ];
+      if (isset($content['image'])) {
+        $settings['field_image'] = [
+          LANGUAGE_NONE => [
+            [
+              'fid' => $content['image']->fid,
+              'alt' => $content['image_alt'],
+            ],
+          ],
+        ];
+      }
+      $node = $this->drupalCreateNode($settings);
+      $this->assert($node->nid > 0, "Node \"${content['_desc']}\" created.");
+      $map[$node->nid] = $i;
+    }
+
+    // Configure export.
+    $this->drupalPost(
+      'admin/config/content/applenews/exports/add',
+      [
+        'type' => 'applenews::node',
+        'title' => 'admin title',
+      ],
+      t('Submit')
+    );
+    $this->drupalPost(
+      'admin/config/content/applenews/export/1/edit',
+      [
+        'config[additional_settings][general_tab][enabled]' => TRUE,
+        'config[additional_settings][general_tab][bundles][article]' => TRUE,
+      ],
+      t('Save changes')
+    );
+    // Set document layout.
+    $this->drupalPost(
+      'admin/config/content/applenews/export/1/edit',
+      [
+        'config[additional_settings][metadata_tab][is_preview]' => TRUE,
+        'config[additional_settings][metadata_tab][metadata_destination][settings][date_published][source]' => '::::applenews::node::changed',
+        'config[additional_settings][metadata_tab][metadata_destination][settings][date_created][source]' => '',
+        'config[additional_settings][metadata_tab][metadata_destination][settings][authors][source]' => '::::applenews::value::value',
+        'config[additional_settings][metadata_tab][metadata_destination][settings][authors][value]' => 'Chapter Three',
+      ],
+      t('Save changes')
+    );
+    /** @var ApplenewsExportNode $export */
+    $export = applenews_export_load(1);
+    $metadata = $export->getMetadata();
+    $this->assertEqual(TRUE, $export->getSetting('is_preview'),
+      'Metadata is preview');
+    $this->assertEqual('::::applenews::node::changed',
+      @$metadata->getSetting('date_published')['source'],
+      'Metadata date_published source');
+    $this->assertEqual('',
+      @$metadata->getSetting('date_created')['source'],
+      'Metadata date_created source');
+    $this->assertEqual('::::applenews::value::value',
+      @$metadata->getSetting('authors')['source'],
+      'Metadata authors source');
+    $this->assertEqual('Chapter Three',
+      @$metadata->getSetting('authors')['value'],
+      'Metadata authors value');
+
+    // Run query to get source ids.
+    /** @var EntityFieldQuery $query */
+    $query = $export->query();
+    $this->assert($query instanceof EntityFieldQuery, 'Query object loaded.');
+    $result = $query->execute();
+    $a = array_keys($map);
+    $b = array_keys($result['node']);
+    $this->assert(!array_diff($a, $b) && !array_diff($b, $a), 'Query result.');
+
+    // Export each.
+    foreach (array_keys($result['node']) as $nid) {
+      $content = $contents[$map[$nid]];
+
+      $node = node_load($nid);
+      /** @var EntityDrupalWrapper $wrapper */
+      $wrapper = entity_metadata_wrapper('node', $node);
+
+      $document = $export->setSource($node)->exportDocument();
+      $this->assert($document instanceof \ChapterThree\AppleNewsAPI\Document,
+        "Export document for node \"${content['_desc']}\" loaded.");
+      $json = $document->json();
+      $this->pass(var_export($json, TRUE));
+      $data = json_decode($json);
+      $this->assert(is_object($data) && !empty($data),
+        "Document exported.");
+
+      /** @var EntityValueWrapper $changed */
+      $changed = $wrapper->get('changed');
+      /** @var string $changed_timestamp */
+      $changed_timestamp = $changed->value();
+      /** @var DateTime $changed */
+      $changed_obj = date_timestamp_set(new DateTime(), $changed_timestamp);
+      $date_published = new DateTime($data->metadata->datePublished);
+      $diff = $changed_obj->diff($date_published);
+      $this->assertEqual(0, $diff->s,
+        'Metadata datePublished.');
+
+      $this->assert(empty($data->dateCreated),
+        'Metadata dateCreated');
+
+      $this->assertEqual('Chapter Three', @$data->metadata->authors[0],
+        'Metadata authors');
 
     }
   }

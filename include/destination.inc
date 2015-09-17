@@ -85,8 +85,8 @@ abstract class ApplenewsDestinationSingleton {
   /**
    * Exports to an Apple News Document object.
    *
-   * @return array
-   *   A list of \ChapterThree\AppleNewsAPI\Document\Base objects.
+   * @return \ChapterThree\AppleNewsAPI\Document\Base
+   *   The object.
    */
   abstract public function export();
 
@@ -474,7 +474,8 @@ abstract class ApplenewsDestinationSingleton {
    * Provides a configuration form for this destination.
    */
   public function getConfigForm(array $values = []) {
-    $form['settings'] = ['#tree' => TRUE];
+    // Elements under 'settings' gets saved to $this->settings.
+    $form['settings'] = ['#tree' => TRUE, '#weight' => 10];
     return $form;
   }
 
@@ -606,9 +607,19 @@ abstract class ApplenewsDestination extends ApplenewsDestinationSingleton {
    * {@inheritdoc}
    */
   public function submitConfigForm($values) {
-    $this->title = $values['title'];
-    $this->weight = $values['weight'];
+    $this->title = @$values['title'] ? $values['title'] : '';
+    $this->weight = @$values['weight'] ? $values['weight'] : 0;
     parent::submitConfigForm($values);
+  }
+
+  /**
+   * Exports to an array of Apple News Document objects.
+   *
+   * @return array
+   *   A list of \ChapterThree\AppleNewsAPI\Document\Base objects.
+   */
+  public function export() {
+    return [];
   }
 
 }
