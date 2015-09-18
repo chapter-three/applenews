@@ -828,6 +828,7 @@ function applenews_export_destination_edit_form($form, &$form_state, ApplenewsEx
         return [];
       }
       drupal_set_title(t('Edit Metadata'), PASS_THROUGH);
+      $fragment = 'edit-config-additional-settings-metadata-tab';
       break;
 
     case 'component':
@@ -839,6 +840,7 @@ function applenews_export_destination_edit_form($form, &$form_state, ApplenewsEx
       drupal_set_title(t('Edit Component: !label', [
         '!label' => check_plain($destination->label()),
       ]), PASS_THROUGH);
+      $fragment = 'edit-config-additional-settings-components-tab';
       break;
 
     case 'layout':
@@ -847,6 +849,7 @@ function applenews_export_destination_edit_form($form, &$form_state, ApplenewsEx
         return [];
       }
       drupal_set_title(t('Edit Document Layout'), PASS_THROUGH);
+      $fragment = 'edit-config-additional-settings-layouts-tab';
       break;
 
     case 'componentLayout':
@@ -858,6 +861,7 @@ function applenews_export_destination_edit_form($form, &$form_state, ApplenewsEx
       drupal_set_title(t('Edit Component Layout: !label', [
         '!label' => check_plain($destination->label()),
       ]), PASS_THROUGH);
+      $fragment = 'edit-config-additional-settings-layouts-tab';
       break;
 
     default:
@@ -883,7 +887,7 @@ function applenews_export_destination_edit_form($form, &$form_state, ApplenewsEx
     'cancel' => [
       '#markup' => l(t('Back'), 'admin/config/content/applenews/export/' . $export->id, [
           // Set components tab as Active.
-          'fragment' => 'edit-config-additional-settings-components-tab',
+          'fragment' => $fragment,
         ]
       ),
     ],
