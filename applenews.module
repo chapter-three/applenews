@@ -553,7 +553,30 @@ function applenews_applenews_api() {
         'class' => 'ApplenewsExportNode',
         'name' => t('Nodes'),
         'description' => t('Configurable node export.'),
-        'default' => 'applenews_applenews_api_export_default_node',
+      ],
+      'node_left' => [
+        'class' => 'ApplenewsExportNodePreConfigured',
+        'name' => t('Nodes (left-aligned)'),
+        'description' => t('Configurable node export, pre-configured left-aligned.'),
+        'arguments' => [
+          'alignment' => 'left',
+        ],
+      ],
+      'node_centered' => [
+        'class' => 'ApplenewsExportNodePreConfigured',
+        'name' => t('Nodes (center-aligned)'),
+        'description' => t('Configurable node export, pre-configured center-aligned.'),
+        'arguments' => [
+          'alignment' => 'center',
+        ],
+      ],
+      'node_right' => [
+        'class' => 'ApplenewsExportNodePreConfigured',
+        'name' => t('Nodes (right-aligned)'),
+        'description' => t('Configurable node export, pre-configured right-aligned.'),
+        'arguments' => [
+          'alignment' => 'right',
+        ],
       ],
     ],
     'sources' => [
@@ -629,77 +652,4 @@ function applenews_applenews_api() {
       ],
     ],
   ];
-}
-
-/**
- * Callback to define default node export.
- */
-function applenews_applenews_api_export_default_node(ApplenewsExportNode $export) {
-
-  // Apply to articles if exists.
-  $entities_info = entity_get_info('node');
-  if (isset($entities_info['bundles']['article'])) {
-    $export->bundles = ['article'];
-  }
-
-  // Metadata.
-  /** @var ApplenewsDestinationMetadata $metadata */
-  $metadata = applenews_new_destination('applenews', 'metadata');
-  $metadata
-    ->setSetting('date_published', [
-      'source' => '::::applenews::node::created',
-      'value' => '',
-    ])
-    ->setSetting('date_created', [
-      'source' => '::::applenews::node::created',
-      'value' => '',
-    ])
-    ->setSetting('date_modified', [
-      'source' => '::::applenews::node::changed',
-      'value' => '',
-    ]);
-  $export->setMetadata($metadata);
-
-  // Components.
-  /** @var ApplenewsDestinationText $component */
-  $component = applenews_new_destination('applenews', 'text');
-  $component->weight = '0';
-  $component->title = 'Title';
-  $component
-    ->setSetting('text', [
-      'source' => '::::applenews::node::label',
-      'value' => '',
-    ])
-    ->setSetting('component', 'title')
-    ->setSetting('heading', '')
-    ->setSetting('format', '');
-  $export->addComponent($component);
-  /** @var ApplenewsDestinationBodyPhoto $component */
-  $component = applenews_new_destination('applenews', 'body');
-  $component->weight = '1';
-  $component->title = 'Body';
-  $component
-    ->setSetting('text', [
-      'source' => '::::applenews::field::node::body::value_sanitized',
-      'value' => '',
-    ])
-    ->setSetting('format', 'markdown');
-  $export->addComponent($component);
-  /** @var ApplenewsDestinationScalableImage $component */
-  $component = applenews_new_destination('applenews', 'scalable_image');
-  $component->weight = '2';
-  $component->title = 'Image';
-  $component
-    ->setSetting('type', 'photo')
-    ->setSetting('file', [
-      'source' => '::::applenews::file::node::field_image::uri',
-      'value' => '',
-    ])
-    ->setSetting('caption', [
-      'source' => '::::applenews::file::node::field_image::alt',
-      'value' => '',
-    ])
-    ->setSetting('format', 'markdown');
-  $export->addComponent($component);
-
 }

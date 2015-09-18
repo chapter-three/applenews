@@ -1239,3 +1239,174 @@ class ApplenewsExportNode extends ApplenewsExportConfigurable {
   }
 
 }
+
+/**
+ * A pre-configured, configurable node export.
+ */
+class ApplenewsExportNodePreConfigured extends ApplenewsExportNode {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct($module, $machine_name, array $arguments) {
+    parent::__construct($module, $machine_name, $arguments);
+
+    // Apply to articles if exists.
+    $entities_info = entity_get_info('node');
+    if (isset($entities_info['bundles']['article'])) {
+      $this->bundles = ['article'];
+    }
+
+    // Metadata.
+    /** @var ApplenewsDestinationMetadata $metadata */
+    $metadata = applenews_new_destination('applenews', 'metadata');
+    $metadata
+      ->setSetting('date_published', [
+        'source' => '::::applenews::node::created',
+        'value' => '',
+      ])
+      ->setSetting('date_created', [
+        'source' => '::::applenews::node::created',
+        'value' => '',
+      ])
+      ->setSetting('date_modified', [
+        'source' => '::::applenews::node::changed',
+        'value' => '',
+      ]);
+    $this->setMetadata($metadata);
+
+    // Layout.
+    /** @var ApplenewsDestinationLayout $layout */
+    $layout = applenews_new_destination('applenews', 'layout');
+    $layout->setSetting('margin', '75')
+      ->setSetting('gutter', '20');
+    switch ($arguments['alignment']) {
+      case 'center':
+        $layout->setSetting('width', '768')
+          ->setSetting('columns', '9');
+        break;
+
+      case 'left':
+      case 'right':
+        $layout->setSetting('width', '1024')
+          ->setSetting('columns', '7');
+        break;
+    }
+    $this->setLayout($layout);
+
+    // Component Layouts.
+    /** @var ApplenewsDestinationComponentLayout $layout */
+    $layout = applenews_new_destination('applenews', 'componentLayout');
+    $layout->title = "Body";
+    $layout->setSetting('margin', [
+      'margin' => 'value',
+      'top' => '25',
+      'bottom' => '25',
+    ]);
+    switch ($arguments['alignment']) {
+      case 'left':
+        $layout->setSetting('columnStart', '0')
+          ->setSetting('columnSpan', '5');
+        break;
+
+      case 'center':
+        $layout->setSetting('columnStart', '1')
+          ->setSetting('columnSpan', '7');
+        break;
+
+      case 'right':
+        $layout->setSetting('columnStart', '2')
+          ->setSetting('columnSpan', '5');
+        break;
+    }
+    $this->addComponentLayout($layout, 'body');
+    /** @var ApplenewsDestinationComponentLayout $layout */
+    $layout = applenews_new_destination('applenews', 'componentLayout');
+    $layout->title = "Inline Image";
+    switch ($arguments['alignment']) {
+      case 'left':
+        $layout->setSetting('columnStart', '3')
+          ->setSetting('columnSpan', '4');
+        break;
+
+      case 'center':
+        $layout->setSetting('columnStart', '1')
+          ->setSetting('columnSpan', '7');
+        break;
+
+      case 'right':
+        $layout->setSetting('columnStart', '0')
+          ->setSetting('columnSpan', '4');
+        break;
+    }
+    $this->addComponentLayout($layout, 'inline_image');
+    /** @var ApplenewsDestinationComponentLayout $layout */
+    $layout = applenews_new_destination('applenews', 'componentLayout');
+    $layout->title = "Image Set";
+    $layout->setSetting('ignoreDocumentMargin', 'left')
+      ->setSetting('margin', [
+        'margin' => 'value',
+        'top' => '25',
+        'bottom' => '25',
+      ]);
+    switch ($arguments['alignment']) {
+      case 'center':
+        $layout->setSetting('columnStart', '0')
+          ->setSetting('columnSpan', '9');
+        break;
+
+      case 'left':
+      case 'right':
+        $layout->setSetting('columnStart', '0')
+          ->setSetting('columnSpan', '7');
+        break;
+    }
+    $this->addComponentLayout($layout, 'image_set');
+
+    // Components.
+    /** @var ApplenewsDestinationText $component */
+    $component = applenews_new_destination('applenews', 'text');
+    $component->weight = '0';
+    $component->title = 'Title';
+    $component
+      ->setSetting('text', [
+        'source' => '::::applenews::node::label',
+        'value' => '',
+      ])
+      ->setSetting('component', 'title')
+      ->setSetting('heading', '')
+      ->setSetting('format', '');
+    $this->addComponent($component);
+    /** @var ApplenewsDestinationBodyPhoto $component */
+    $component = applenews_new_destination('applenews', 'bodyphoto');
+    $component->weight = '1';
+    $component->title = 'Body';
+    $component->setLayout('body')
+      ->setLayout('inline_image', 'image')
+      ->setSetting('text', [
+        'source' => '::::applenews::field::node::body::value_sanitized',
+        'value' => '',
+      ])
+      ->setSetting('format', 'markdown');
+    $this->addComponent($component);
+    /** @var ApplenewsDestinationImages $component */
+    $component = applenews_new_destination('applenews', 'images');
+    $component->weight = '2';
+    $component->title = 'Images';
+    $component
+      ->setLayout('image_set')
+      ->setSetting('type', 'photo')
+      ->setSetting('items', [
+        'source' => '::::applenews::file::node::field_image::uri',
+        'value' => '',
+      ])
+      ->setSetting('caption', [
+        'source' => '::::applenews::file::node::field_image::alt',
+        'value' => '',
+      ])
+      ->setSetting('format', 'markdown');
+    $this->addComponent($component);
+
+  }
+
+}
