@@ -17,14 +17,6 @@ use \ChapterThree\AppleNewsAPI\Document\Styles;
 abstract class ApplenewsDestinationComponent extends ApplenewsDestination {
 
   /**
-   * Destination object(s), to be returned by export().
-   *
-   * @var array
-   *   Array of
-   *   \ChapterThree\AppleNewsAPI\Document\Components\Component objects.
-   */
-  public $destinations;
-
   /**
    * Settings for this destination.
    *
