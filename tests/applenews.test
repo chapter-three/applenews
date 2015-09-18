@@ -156,6 +156,116 @@ class ApplenewsExportTestCase extends ApplenewsWebTestCase {
       in_array('article', $export->bundles()) && in_array('page', $export->bundles()),
       'Export bundles.');
 
+    // Add component destinations.
+    $cid_count_weight = 1;
+    $this->drupalPost(
+      "admin/config/content/applenews/export/1",
+      [
+        'config[additional_settings][components_tab][components][_new][destination]' => 'applenews::text',
+      ],
+      t('Save changes')
+    );
+    $export = applenews_export_load(1);
+    $this->assertEqual($cid_count_weight, count($export->getComponents()),
+      'New component added.');
+    /** @var ApplenewsDestinationBodyPhoto $component */
+    $component = $export->getComponent($cid_count_weight);
+    $this->assert($component instanceof ApplenewsDestinationText,
+      'Destination object loaded.');
+    $this->drupalPost(
+      "admin/config/content/applenews/export/1/component/${cid_count_weight}",
+      [
+        'config[title]' => 'Title',
+        'config[weight]' => $cid_count_weight,
+        'config[settings][component]' => 'title',
+        'config[settings][text][source]' => '::::applenews::node::label',
+      ],
+      t('Save changes')
+    );
+    $export = applenews_export_load(1);
+    /** @var ApplenewsDestinationBodyPhoto $component */
+    $component = $export->getComponent($cid_count_weight);
+    $this->assert($component instanceof ApplenewsDestinationText,
+      'Destination object loaded.');
+    $this->assertEqual('Title', $component->title,
+      'Destination title.');
+    $this->assertEqual($cid_count_weight, $component->weight,
+      'Destination weight.');
+    $this->assertEqual('title',
+      @$component->getSetting('component'),
+      'Destination "component" value.');
+    $this->assertEqual('::::applenews::node::label',
+      @$component->getSetting('text')['source'],
+      'Destination "text" source.');
+
+    $cid_count_weight++;
+    $this->drupalPost(
+      "admin/config/content/applenews/export/1",
+      [
+        'config[additional_settings][components_tab][components][_new][destination]' => 'applenews::body',
+      ],
+      t('Save changes')
+    );
+    $this->drupalPost(
+      "admin/config/content/applenews/export/1/component/${cid_count_weight}",
+      [
+        'config[title]' => 'Body',
+        'config[weight]' => $cid_count_weight,
+        'config[settings][text][source]' => '::::applenews::field::node::body::value_sanitized',
+      ],
+      t('Save changes')
+    );
+    $export = applenews_export_load(1);
+    /** @var ApplenewsDestinationBodyPhoto $component */
+    $component = $export->getComponent($cid_count_weight);
+    $this->assert($component instanceof ApplenewsDestinationBody,
+      'Destination object loaded.');
+    $this->assertEqual('Body', $component->title,
+      'Destination title.');
+    $this->assertEqual($cid_count_weight, $component->weight,
+      'Destination weight.');
+    $this->assertEqual('::::applenews::field::node::body::value_sanitized',
+      @$component->getSetting('text')['source'],
+      'Destination "text" source.');
+
+    $cid_count_weight++;
+    $this->drupalPost(
+      "admin/config/content/applenews/export/1",
+      [
+        'config[additional_settings][components_tab][components][_new][destination]' => 'applenews::scalable_image',
+      ],
+      t('Save changes')
+    );
+    $this->drupalPost(
+      "admin/config/content/applenews/export/1/component/${cid_count_weight}",
+      [
+        'config[title]' => 'Image',
+        'config[weight]' => $cid_count_weight,
+        'config[settings][type]' => 'photo',
+        'config[settings][file][source]' => '::::applenews::file::node::field_image::uri',
+        'config[settings][caption][source]' => '::::applenews::file::node::field_image::alt',
+      ],
+      t('Save changes')
+    );
+    $export = applenews_export_load(1);
+    /** @var ApplenewsDestinationBodyPhoto $component */
+    $component = $export->getComponent($cid_count_weight);
+    $this->assert($component instanceof ApplenewsDestinationScalableImage,
+      'Destination object loaded.');
+    $this->assertEqual('Image', $component->title,
+      'Destination title.');
+    $this->assertEqual($cid_count_weight, $component->weight,
+      'Destination weight.');
+    $this->assertEqual('photo',
+      @$component->getSetting('type'),
+      'Destination "type" value.');
+    $this->assertEqual('::::applenews::file::node::field_image::uri',
+      @$component->getSetting('file')['source'],
+      'Destination "file" source.');
+    $this->assertEqual('::::applenews::file::node::field_image::alt',
+      @$component->getSetting('caption')['source'],
+      'Destination "caption" source.');
+
     // Run query to get source ids.
     /** @var EntityFieldQuery $query */
     $query = $export->query();
@@ -183,16 +293,16 @@ class ApplenewsExportTestCase extends ApplenewsWebTestCase {
       $this->assertEqual($content['title'], $data->title,
         'Export node title -> title.');
 
-      $cid = 1;
-      $item = $data->components[$cid - 1];
+      $cid_count_weight = 1;
+      $item = $data->components[$cid_count_weight - 1];
       $this->assertEqual('title', $item->role,
         'Export title component role.');
       $expected = $content['title'];
       $this->assertEqual(trim($expected), trim($item->text),
-        "Export title component text -> component ${cid} text.");
+        "Export title component text -> component ${cid_count_weight} text.");
 
-      $cid = 2;
-      $item = $data->components[$cid - 1];
+      $cid_count_weight = 2;
+      $item = $data->components[$cid_count_weight - 1];
       $this->assertEqual('body', $item->role,
         'Export body component role.');
       $this->assertEqual('markdown', $item->format,
@@ -200,11 +310,11 @@ class ApplenewsExportTestCase extends ApplenewsWebTestCase {
       $markdown = new \ChapterThree\AppleNewsAPI\Document\Markdown();
       $expected = $markdown->convert($content['body']);
       $this->assertEqual(trim($expected), trim($item->text),
-        "Export body component text -> component ${cid} text.");
+        "Export body component text -> component ${cid_count_weight} text.");
 
       if (isset($content['image'])) {
-        $cid = 3;
-        $item = $data->components[$cid - 1];
+        $cid_count_weight = 3;
+        $item = $data->components[$cid_count_weight - 1];
         $this->assertEqual('photo', $item->role,
           'Export scalable_image component role.');
         $this->assertEqual(drupal_realpath($file->uri),
@@ -215,7 +325,7 @@ class ApplenewsExportTestCase extends ApplenewsWebTestCase {
           'Export image -> component 2 image caption.');
       }
       else {
-        $this->assertEqual($cid, count($data->components),
+        $this->assertEqual($cid_count_weight, count($data->components),
           'Export image missing -> no component');
       }
 
@@ -327,17 +437,7 @@ EOD
       'Export enabled.');
     $this->assert(in_array('article', $export->bundles()),
       'Export bundles.');
-    // Replace default components with body+image type.
-    for ($cid = 1; $cid <= count($export->getComponents()); $cid++) {
-      $this->drupalPost(
-        "admin/config/content/applenews/export/1/component/${cid}/delete",
-        [],
-        t('Yes, delete')
-      );
-    }
-    $export = applenews_export_load(1);
-    $this->assertEqual(0, count($export->getComponents()),
-      'Default components deleted.');
+    // Add body+image destination.
     $this->drupalPost(
       "admin/config/content/applenews/export/1",
       [
@@ -529,7 +629,25 @@ class ApplenewsExportMetadataTestCase extends ApplenewsWebTestCase {
       ],
       t('Save changes')
     );
-    // Set document layout.
+    $this->drupalPost(
+      "admin/config/content/applenews/export/1",
+      [
+        'config[additional_settings][components_tab][components][_new][destination]' => 'applenews::text',
+      ],
+      t('Save changes')
+    );
+    $this->drupalPost(
+      "admin/config/content/applenews/export/1/component/1",
+      [
+        'config[title]' => 'title',
+        'config[weight]' => 1,
+        'config[settings][component]' => 'title',
+        'config[settings][text][source]' => '::::applenews::node::label',
+      ],
+      t('Save changes')
+    );
+
+    // Set document metadata.
     $this->drupalPost(
       'admin/config/content/applenews/export/1/edit',
       [
@@ -638,6 +756,7 @@ class ApplenewsExportLayoutTestCase extends ApplenewsWebTestCase {
     // @see ImageFieldDefaultImagesTestCase::ImageFieldDefaultImagesTestCase()
     $file = current($this->drupalGetTestFiles('image'));
     $file = file_save($file);
+    $file_url = file_create_url($file->uri);
 
     // Some node content.
     $contents = [
@@ -645,7 +764,7 @@ class ApplenewsExportLayoutTestCase extends ApplenewsWebTestCase {
         '_desc' => 'article',
         'type' => 'article',
         'title' => $this->randomName(32),
-        'body' => $this->randomName(64),
+        'body' => "paragraph 1.\n\n<img src=\"${file_url}\"/>\n\nparagraph2.",
         'image' => $file,
         'image_alt' => $this->randomName(32),
       ],
@@ -657,7 +776,14 @@ class ApplenewsExportLayoutTestCase extends ApplenewsWebTestCase {
       $settings = [
         'type' => $content['type'],
         'title' => $content['title'],
-        'body' => [LANGUAGE_NONE => [['value' => $content['body']]]],
+        'body' => [
+          LANGUAGE_NONE => [
+            [
+              'value' => $content['body'],
+              'format' => 'full_html',
+            ],
+          ],
+        ],
       ];
       if (isset($content['image'])) {
         $settings['field_image'] = [
@@ -691,6 +817,42 @@ class ApplenewsExportLayoutTestCase extends ApplenewsWebTestCase {
       ],
       t('Save changes')
     );
+
+    // Add component destinations.
+    $this->drupalPost(
+      "admin/config/content/applenews/export/1",
+      [
+        'config[additional_settings][components_tab][components][_new][destination]' => 'applenews::text',
+      ],
+      t('Save changes')
+    );
+    $this->drupalPost(
+      "admin/config/content/applenews/export/1/component/1",
+      [
+        'config[title]' => 'title',
+        'config[weight]' => 1,
+        'config[settings][component]' => 'title',
+        'config[settings][text][source]' => '::::applenews::node::label',
+      ],
+      t('Save changes')
+    );
+    $this->drupalPost(
+      "admin/config/content/applenews/export/1",
+      [
+        'config[additional_settings][components_tab][components][_new][destination]' => 'applenews::bodyphoto',
+      ],
+      t('Save changes')
+    );
+    $this->drupalPost(
+      "admin/config/content/applenews/export/1/component/2",
+      [
+        'config[title]' => 'body',
+        'config[weight]' => 2,
+        'config[settings][text][source]' => '::::applenews::field::node::body::value_sanitized',
+      ],
+      t('Save changes')
+    );
+
     // Set document layout.
     $this->drupalPost(
       'admin/config/content/applenews/export/1/edit',
@@ -707,23 +869,24 @@ class ApplenewsExportLayoutTestCase extends ApplenewsWebTestCase {
       'Layout columns');
     $this->assertEqual('960', $layout->getSetting('width'),
       'Layout width');
+
     // Set title layout.
     $this->drupalPost(
       'admin/config/content/applenews/export/1/component/1',
       [
-        'config[layout][id]' => '',
-        'config[layout][custom][settings][columnStart]' => '0',
-        'config[layout][custom][settings][columnSpan]' => '12',
-        'config[layout][custom][settings][margin][type]' => 'value',
-        'config[layout][custom][settings][margin][value]' => '5',
-        'config[layout][custom][settings][contentInset][type]' => 'contentInset',
-        'config[layout][custom][settings][contentInset][top]' => TRUE,
-        'config[layout][custom][settings][contentInset][right]' => TRUE,
-        'config[layout][custom][settings][contentInset][bottom]' => FALSE,
-        'config[layout][custom][settings][contentInset][left]' => TRUE,
-        'config[layout][custom][settings][ignoreDocumentMargin]' => 'both',
-        'config[layout][custom][settings][ignoreDocumentGutter]' => '',
-        'config[layout][custom][settings][horizontalContentAlignment]' => FALSE,
+        'config[layouts][0][id]' => '',
+        'config[layouts][0][custom][settings][columnStart]' => '0',
+        'config[layouts][0][custom][settings][columnSpan]' => '12',
+        'config[layouts][0][custom][settings][margin][type]' => 'value',
+        'config[layouts][0][custom][settings][margin][value]' => '5',
+        'config[layouts][0][custom][settings][contentInset][type]' => 'contentInset',
+        'config[layouts][0][custom][settings][contentInset][top]' => TRUE,
+        'config[layouts][0][custom][settings][contentInset][right]' => TRUE,
+        'config[layouts][0][custom][settings][contentInset][bottom]' => FALSE,
+        'config[layouts][0][custom][settings][contentInset][left]' => TRUE,
+        'config[layouts][0][custom][settings][ignoreDocumentMargin]' => 'both',
+        'config[layouts][0][custom][settings][ignoreDocumentGutter]' => '',
+        'config[layouts][0][custom][settings][horizontalContentAlignment]' => FALSE,
       ],
       t('Save changes')
     );
@@ -754,6 +917,7 @@ class ApplenewsExportLayoutTestCase extends ApplenewsWebTestCase {
       'Layout ignoreDocumentGutter');
     $this->assertEqual(FALSE, $layout->getSetting('horizontalContentAlignment'),
       'Layout horizontalContentAlignment');
+
     // Create componentLayout for body.
     $this->drupalPost(
       'admin/config/content/applenews/export/1/edit',
@@ -822,17 +986,50 @@ class ApplenewsExportLayoutTestCase extends ApplenewsWebTestCase {
       'Layout maximumContentWidth units');
     $this->assertEqual(TRUE, $layout->getSetting('horizontalContentAlignment'),
       'Layout horizontalContentAlignment');
-    // Set body layout.
+
+    // Create componentLayout for inline images.
+    $this->drupalPost(
+      'admin/config/content/applenews/export/1/edit',
+      [
+        'config[additional_settings][layouts_tab][component_layouts][_new][destination]' => TRUE,
+      ],
+      t('Save changes')
+    );
+    $this->drupalPost(
+      'admin/config/content/applenews/export/1/componentLayout/2',
+      [
+        'config[title]' => 'Inline Images',
+        'config[id]' => 'inline_images',
+        'config[settings][columnStart]' => '0',
+        'config[settings][columnSpan]' => '12',
+      ],
+      t('Save changes')
+    );
+    /** @var ApplenewsExportNode $export */
+    $export = applenews_export_load(1);
+    $layout = $export->getComponentLayout('inline_images');
+    $this->assertEqual('Inline Images', $layout->title,
+      'Layout title');
+    $this->assertEqual('0', $layout->getSetting('columnStart'),
+      'Layout columnStart');
+    $this->assertEqual('12', $layout->getSetting('columnSpan'),
+      'Layout columnSpan');
+
+    // Set body and inline images layout.
     $this->drupalPost(
       'admin/config/content/applenews/export/1/component/2',
       [
-        'config[layout][id]' => 'body',
+        'config[layouts][0][id]' => 'body',
+        'config[layouts][1][id]' => 'inline_images',
       ],
       t('Save changes')
     );
     /** @var ApplenewsExportNode $export */
     $export = applenews_export_load(1);
     $layout = $export->getComponent(2)->getLayout();
+    $this->assert($layout instanceof ApplenewsDestinationComponentLayout,
+      'Component layout reference loaded');
+    $layout = $export->getComponent(2)->getLayout('image');
     $this->assert($layout instanceof ApplenewsDestinationComponentLayout,
       'Component layout reference loaded');
 
@@ -858,46 +1055,67 @@ class ApplenewsExportLayoutTestCase extends ApplenewsWebTestCase {
       $this->assert(is_object($data) && !empty($data),
         "Document exported.");
 
-      $this->assertEqual($nid, $data->identifier,
-        'Export node nid -> identifier.');
-      $this->assertEqual($content['title'], $data->title,
-        'Export node title -> title.');
+      $layout = @$data->components[0]->layout;
+      $this->assert(is_object(@$layout),
+        'Title layout exported');
+      $this->assertEqual('0', @$layout->columnStart,
+        'Layout columnStart');
+      $this->assertEqual('12', @$layout->columnSpan,
+        'Layout columnSpan');
+      $this->assertEqual('5', @$layout->margin,
+        'Layout margin value');
+      $this->assertEqual(TRUE, @$layout->contentInset->top,
+        'Layout contentInset top');
+      $this->assertEqual(TRUE, @$layout->contentInset->right,
+        'Layout contentInset right');
+      $this->assertEqual(FALSE, @$layout->contentInset->bottom,
+        'Layout contentInset bottom');
+      $this->assertEqual(TRUE, @$layout->contentInset->left,
+        'Layout contentInset left');
+      $this->assertEqual('both', @$layout->ignoreDocumentMargin,
+        'Layout ignoreDocumentMargin');
+      $this->assertEqual('', @$layout->ignoreDocumentGutter,
+        'Layout ignoreDocumentGutter');
+      $this->assertEqual(FALSE, @$layout->horizontalContentAlignment,
+        'Layout horizontalContentAlignment');
 
-      $cid = 1;
-      $item = $data->components[$cid - 1];
-      $this->assertEqual('title', $item->role,
-        'Export title component role.');
-      $expected = $content['title'];
-      $this->assertEqual(trim($expected), trim($item->text),
-        "Export title component text -> component ${cid} text.");
+      $layout = @$data->components[1]->layout;
+      $this->assertEqual('body', $layout,
+        'Body layout set');
+      $layout = @$data->componentLayouts->$layout;
+      $this->assert(is_object($layout),
+        'Body layout exported');
+      $this->assertEqual('1', @$layout->columnStart,
+        'Layout columnStart');
+      $this->assertEqual('10', @$layout->columnSpan,
+        'Layout columnSpan');
+      $this->assertEqual('5', @$layout->margin->top,
+        'Layout margin top');
+      $this->assertEqual('10', @$layout->margin->bottom,
+        'Layout margin bottom');
+      $this->assertEqual(TRUE, @$layout->contentInset,
+        'Layout contentInset default');
+      $this->assertEqual(NULL, @$layout->ignoreDocumentMargin,
+        'Layout ignoreDocumentMargin');
+      $this->assertEqual('left', @$layout->ignoreDocumentGutter,
+        'Layout ignoreDocumentGutter');
+      $this->assertEqual('10pt', @$layout->minimumHeight,
+        'Layout minimumHeight value');
+      $this->assertEqual('500vmax', @$layout->maximumContentWidth,
+        'Layout maximumContentWidth value');
+      $this->assertEqual(TRUE, @$layout->horizontalContentAlignment,
+        'Layout horizontalContentAlignment');
 
-      $cid = 2;
-      $item = $data->components[$cid - 1];
-      $this->assertEqual('body', $item->role,
-        'Export body component role.');
-      $this->assertEqual('markdown', $item->format,
-        'Export body component format.');
-      $markdown = new \ChapterThree\AppleNewsAPI\Document\Markdown();
-      $expected = $markdown->convert($content['body']);
-      $this->assertEqual(trim($expected), trim($item->text),
-        "Export body component text -> component ${cid} text.");
-
-      if (isset($content['image'])) {
-        $cid = 3;
-        $item = $data->components[$cid - 1];
-        $this->assertEqual('photo', $item->role,
-          'Export scalable_image component role.');
-        $this->assertEqual(drupal_realpath($file->uri),
-          @$export->getAssets()[$item->URL],
-          'Export image -> component 2 image URL.');
-        $this->assertEqual($content['image_alt'],
-          $item->caption,
-          'Export image -> component 2 image caption.');
-      }
-      else {
-        $this->assertEqual($cid, count($data->components),
-          'Export image missing -> no component');
-      }
+      $layout = @$data->components[2]->layout;
+      $this->assertEqual('inline_images', $layout,
+        'Body layout set');
+      $layout = @$data->componentLayouts->$layout;
+      $this->assert(is_object($layout),
+        'Inline Images layout exported');
+      $this->assertEqual('0', @$layout->columnStart,
+        'Layout columnStart');
+      $this->assertEqual('12', @$layout->columnSpan,
+        'Layout columnSpan');
 
     }
   }
