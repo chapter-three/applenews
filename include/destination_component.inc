@@ -215,11 +215,12 @@ class ApplenewsDestinationContainer extends ApplenewsDestinationComponent {
   public function export() {
     $container = new Components\Container();
 
-    // @todo
-    // /** @var ApplenewsDestinationComponent $component */
-    // foreach ($this->export->getChildComponents($this) as $component) {
-    //   $container->addComponent($component->export($value));
-    // }
+    /** @var ApplenewsDestinationComponent $destination */
+    foreach ($this->export->getChildComponents($this->id) as $destination) {
+      foreach ($destination->export() as $component) {
+        $container->addComponent($component);
+      }
+    }
 
     $this->setComponentLayout($container);
     return [$container];

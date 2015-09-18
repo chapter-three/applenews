@@ -774,6 +774,16 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
   }
 
   /**
+   * Gets ordered children of a component.
+   *
+   * @param int $index
+   *   ID of component.
+   */
+  public function getChildComponents($index) {
+    return $this->getDestinationChildren('components', $index);
+  }
+
+  /**
    * Calls drupal_set_message() for any components missing required config.
    */
   public function validateComponents() {
@@ -878,6 +888,42 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
   }
 
   /**
+   * Get children of a destination.
+   *
+   * @param string $key
+   *   A key in $this->destinations.
+   * @param int $index
+   *   ID of component.
+   *
+   * @return array
+   *   A sorted list of destinations.
+   */
+  protected function getDestinationChildren($key, $index) {
+    $children = [];
+
+    if (isset($this->destinations[$key][$index])) {
+      /** @var ApplenewsDestination $parent */
+      $parent = $this->destinations[$key][$index];
+      if ($parent->isLeaf()) {
+        return [];
+      }
+      $can_break = FALSE;
+      /** @var ApplenewsDestination $destination */
+      foreach ($this->getDestinations($key) as $destination) {
+        if ($destination->pid == $index) {
+          $children[] = $destination;
+          $can_break = TRUE;
+        }
+        elseif ($can_break) {
+          break;
+        }
+      }
+    }
+
+    return $children;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function getConfigForm(array $values = []) {
@@ -922,6 +968,10 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
     ];
     /** @var ApplenewsDestinationComponentLayout $destination */
     foreach ($this->getdestinations('componentLayouts') as $destination) {
+      $label = check_plain($destination->label());
+      if (!$destination->isLeaf()) {
+        $label = "<strong>${label}</strong>";
+      }
       $edit = 'admin/config/content/applenews/export/' . $this->id . '/componentLayout/' . $destination->id;
       if (!$destination->validateSettings()) {
         drupal_set_message(t('The %label component layout needs to be !link.',
@@ -934,7 +984,7 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
       $tab['component_layouts'][$destination->id] = [
         '#applenews_destination' => $destination,
         'destination' => [
-          '#markup' => check_plain($destination->label()),
+          '#markup' => $label,
         ],
         'edit' => [
           '#markup' => l(t('edit'), $edit),
@@ -991,11 +1041,15 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
     ];
     /** @var ApplenewsDestinationComponent $destination */
     foreach ($this->getdestinations('components') as $destination) {
+      $label = check_plain($destination->label());
+      if (!$destination->isLeaf()) {
+        $label = "<strong>${label}</strong>";
+      }
       $edit = 'admin/config/content/applenews/export/' . $this->id . '/component/' . $destination->id;
       $tab['components'][$destination->id] = [
         '#applenews_destination' => $destination,
         'destination' => [
-          '#markup' => $destination->label(),
+          '#markup' => $label,
         ],
         'edit' => [
           '#markup' => l(t('edit'), $edit),
@@ -1395,7 +1449,7 @@ class ApplenewsExportNodePreConfigured extends ApplenewsExportNode {
     $component->title = 'Images';
     $component
       ->setLayout('image_set')
-      ->setSetting('type', 'photo')
+      ->setSetting('type', 'gallery')
       ->setSetting('items', [
         'source' => '::::applenews::file::node::field_image::uri',
         'value' => '',
