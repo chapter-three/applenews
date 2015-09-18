@@ -487,7 +487,7 @@ class ApplenewsDestinationImages extends ApplenewsDestinationComponent {
     list($key_caption, $values_caption) = $this->getSourceValues(
       $this->export->source, $this->getSetting('caption'));
 
-    $components = [];
+    $items = [];
     foreach ($values as $i => $value) {
       if (empty($value[$key])) {
         continue;
@@ -497,20 +497,20 @@ class ApplenewsDestinationImages extends ApplenewsDestinationComponent {
       if (!empty($values_caption[$i][$key_caption])) {
         $item->setCaption($values_caption[$i][$key_caption]);
       }
-      $components[] = $item;
+      $items[] = $item;
     }
 
-    if (count($components)) {
+    $components = [];
+    if (count($items)) {
       switch ($this->getSetting('type')) {
 
         case 'gallery':
-          $components = [new Components\Gallery($components)];
+          $components = [new Components\Gallery($items)];
           break;
 
         case 'mosaic':
-          $components = [new Components\Mosaic($components)];
+          $components = [new Components\Mosaic($items)];
           break;
-
       }
     }
 
