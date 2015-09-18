@@ -322,41 +322,39 @@ class ApplenewsDestinationComponentLayout extends ApplenewsDestination {
     }
 
     $value = $this->getSetting('margin');
-    switch ($value['type']) {
+    if ($value !== NULL) {
+      switch ($value['type']) {
+        case 'margin':
+          $layout->setMargin(new \ChapterThree\AppleNewsAPI\Document\Margin(
+            @$value['top'], @$value['bottom']));
+          break;
 
-      case 'margin':
-        $layout->setMargin(new \ChapterThree\AppleNewsAPI\Document\Margin(
-          @$value['top'], @$value['bottom']));
-        break;
-
-      case 'value':
-      default:
-        if (!empty($value['value'])) {
-          $layout->setMargin($value['value']);
-        }
-        break;
-
+        case 'value':
+          if (!empty($value['value'])) {
+            $layout->setMargin($value['value']);
+          }
+          break;
+      }
     }
 
     $value = $this->getSetting('contentInset');
-    switch ($value['type']) {
+    if ($value !== NULL) {
+      switch ($value['type']) {
+        case 'contentInset':
+          $inset = new \ChapterThree\AppleNewsAPI\Document\ContentInset();
+          $inset->setTop(!empty($value['top']));
+          $inset->setRight(!empty($value['right']));
+          $inset->setBottom(!empty($value['bottom']));
+          $inset->setLeft(!empty($value['left']));
+          $layout->setContentInset($inset);
+          break;
 
-      case 'contentInset':
-        $inset = new \ChapterThree\AppleNewsAPI\Document\ContentInset();
-        $inset->setTop(!empty($value['top']));
-        $inset->setRight(!empty($value['right']));
-        $inset->setBottom(!empty($value['bottom']));
-        $inset->setLeft(!empty($value['left']));
-        $layout->setContentInset($inset);
-        break;
-
-      case 'default':
-      default:
-        if (!empty($value['default'])) {
-          $layout->setContentInset(TRUE);
-        }
-        break;
-
+        case 'default':
+          if (!empty($value['default'])) {
+            $layout->setContentInset(TRUE);
+          }
+          break;
+      }
     }
 
     $value = $this->getSetting('minimumHeight');
