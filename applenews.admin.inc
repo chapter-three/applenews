@@ -817,6 +817,15 @@ function applenews_export_destination_edit_form($form, &$form_state, ApplenewsEx
 
   switch ($type) {
 
+    case 'metadata':
+      $destination = $export->getMetadata();
+      if (empty($destination)) {
+        return [];
+      }
+      drupal_set_title(t('Edit Metadata'), PASS_THROUGH);
+      $fragment = 'edit-config-additional-settings-metadata-tab';
+      break;
+
     case 'component':
       /** @var ApplenewsDestinationComponent $destination */
       $destination = $export->getComponent($id);
@@ -826,6 +835,7 @@ function applenews_export_destination_edit_form($form, &$form_state, ApplenewsEx
       drupal_set_title(t('Edit Component: !label', [
         '!label' => check_plain($destination->label()),
       ]), PASS_THROUGH);
+      $fragment = 'edit-config-additional-settings-components-tab';
       break;
 
     default:
@@ -840,6 +850,7 @@ function applenews_export_destination_edit_form($form, &$form_state, ApplenewsEx
     $destination->getConfigForm($form_state['values']['config']);
 
   $form['#applenews_destination'] = $destination;
+  $form['#applenews_destination_type'] = $type;
 
   $form['actions'] = [
     '#type' => 'actions',
@@ -850,7 +861,7 @@ function applenews_export_destination_edit_form($form, &$form_state, ApplenewsEx
     'cancel' => [
       '#markup' => l(t('Back'), 'admin/config/content/applenews/export/' . $export->id, [
           // Set components tab as Active.
-          'fragment' => 'edit-components-tab',
+          'fragment' => $fragment,
         ]
       ),
     ],
@@ -879,11 +890,21 @@ function applenews_export_destination_edit_form_submit($form, &$form_state) {
   applenews_export_save($destination->export);
   drupal_set_message(t('Changes have been successfully saved.'));
   $form_state['redirect'] = [
-    'admin/config/content/applenews/export/' . $destination->export->id, [
-      // Set components tab as Active.
-      'fragment' => 'edit-components-tab',
-    ]
+    'admin/config/content/applenews/export/' . $destination->export->id,
   ];
+  switch ($form['#applenews_destination_type']) {
+    case 'metadata':
+      $form_state['redirect'][] = [
+        'fragment' => 'edit-config-additional-settings-metadata-tab',
+      ];
+      break;
+
+    case 'component':
+      $form_state['redirect'][] = [
+        'fragment' => 'edit-config-additional-settings-components-tab',
+      ];
+      break;
+  }
 }
 
 /**
@@ -907,7 +928,7 @@ function applenews_export_destination_delete_form($form, &$form_state, Applenews
       drupal_goto($path, [
           // Set components tab as Active.
           'attributes' => [
-            'fragment' => 'edit-components-tab',
+            'fragment' => 'edit-config-additional-settings-components-tab',
           ]
         ]
       );
@@ -929,7 +950,7 @@ function applenews_export_destination_delete_form($form, &$form_state, Applenews
     [
       'path' => $path,
       // Set components tab as Active.
-      'fragment' => 'edit-components-tab',
+      'fragment' => 'edit-config-additional-settings-components-tab',
     ],
     t("This action cannot be undone."),
     t("Yes, delete")
@@ -965,7 +986,7 @@ function applenews_export_destination_delete_form_submit($form, &$form_state) {
     $path,
     [
       // Set components tab as Active.
-      'fragment' => 'edit-components-tab',
+      'fragment' => 'edit-config-additional-settings-components-tab',
     ]
   ];
 

@@ -9,8 +9,8 @@
     attach: function(context) {
 
       // General settings.
-      $('fieldset#edit-general', context).drupalSetSummary(function (context) {
-        if ($('input#edit-enabled:checked', context).length) {
+      $('#edit-config-additional-settings-general-tab', context).drupalSetSummary(function (context) {
+        if ($('#edit-config-additional-settings-general-tab-enabled:checked', context).length) {
           return Drupal.t('Export enabled');
         }
         else {
@@ -19,11 +19,11 @@
       });
 
       // Metadata
-      $('fieldset#edit-metadata', context).drupalSetSummary(function (context) {
-        if ($('#edit-channels input:checked', context).length !== 0) {
+      $('fieldset#edit-config-additional-settings-metadata-tab', context).drupalSetSummary(function (context) {
+        if ($('#edit-config-additional-settings-metadata-tab-channels input:checked', context).length !== 0) {
           return Drupal.t('@count default sections. @is_preview', {
-            '@count' : $('#edit-channels input:checked', context).length,
-            '@is_preview' : $('.form-item-is-preview input:checked', context).length
+            '@count' : $('#edit-config-additional-settings-metadata-tab-channels input:checked', context).length,
+            '@is_preview' : $('#edit-config-additional-settings-metadata-tab-is-preview:checked', context).length
               ? Drupal.t('Preview only')
               : Drupal.t('Visible to everyone')
           });
@@ -34,7 +34,7 @@
       });
 
       // Layout
-      $('fieldset#edit-layouts-tab', context).drupalSetSummary(function (context) {
+      $('fieldset#edit-config-additional-settings-layouts-tab', context).drupalSetSummary(function (context) {
         if ($('.form-item', context).length !== 0) {
           return Drupal.t('Configure layout settings');
         }
@@ -44,10 +44,10 @@
       });
 
       // Components
-      $('fieldset#edit-components-tab', context).drupalSetSummary(function (context) {
+      $('fieldset#edit-config-additional-settings-components-tab', context).drupalSetSummary(function (context) {
         var count = $('table tbody tr', context).length - 1;
         if (count) {
-          var commentCount = Drupal.formatPlural(count, '1 component enabled', '@count components enabled');
+          var commentCount = Drupal.formatPlural(count, '1 component enabled', '@count components');
           return commentCount;
         }
         else {
