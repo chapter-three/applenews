@@ -823,6 +823,7 @@ function applenews_export_destination_edit_form($form, &$form_state, ApplenewsEx
   switch ($type) {
 
     case 'metadata':
+      /** @var ApplenewsDestinationMetadata $destination */
       $destination = $export->getMetadata();
       if (empty($destination)) {
         return [];
@@ -844,6 +845,7 @@ function applenews_export_destination_edit_form($form, &$form_state, ApplenewsEx
       break;
 
     case 'layout':
+      /** @var ApplenewsDestinationLayout $destination */
       $destination = $export->getLayout();
       if (empty($destination)) {
         return [];
