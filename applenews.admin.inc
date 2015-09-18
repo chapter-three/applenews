@@ -922,17 +922,11 @@ function applenews_export_destination_delete_form($form, &$form_state, Applenews
 
     case 'component':
       $destination = $export->getComponent($id);
+      $fragment = 'edit-config-additional-settings-components-tab';
       break;
 
     default:
-      drupal_goto($path, [
-          // Set components tab as Active.
-          'attributes' => [
-            'fragment' => 'edit-config-additional-settings-components-tab',
-          ]
-        ]
-      );
-      return NULL;
+      return [];
 
   }
 
@@ -950,7 +944,7 @@ function applenews_export_destination_delete_form($form, &$form_state, Applenews
     [
       'path' => $path,
       // Set components tab as Active.
-      'fragment' => 'edit-config-additional-settings-components-tab',
+      'fragment' => $fragment,
     ],
     t("This action cannot be undone."),
     t("Yes, delete")
@@ -971,10 +965,12 @@ function applenews_export_destination_delete_form_submit($form, &$form_state) {
   $destination = $form_state['storage']['destination'];
   $path = 'admin/config/content/applenews/export/' . $export->id;
 
+  $fragment = '';
   switch ($type) {
 
     case 'component':
       $export->deleteComponent($id);
+      $fragment = 'edit-config-additional-settings-components-tab';
       break;
 
   }
@@ -986,7 +982,7 @@ function applenews_export_destination_delete_form_submit($form, &$form_state) {
     $path,
     [
       // Set components tab as Active.
-      'fragment' => 'edit-config-additional-settings-components-tab',
+      'fragment' => $fragment,
     ]
   ];
 
