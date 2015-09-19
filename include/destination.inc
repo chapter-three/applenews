@@ -366,20 +366,28 @@ abstract class ApplenewsDestinationSingleton {
         return NULL;
       }
       $key = array_pop($args);
-      // @todo this needs to be configurable in the class.
-      $reflection = new ReflectionClass($implementations[$id]['class']);
-      if ($implementations[$id]['class'] == 'ApplenewsSourceValue' ||
-          $reflection->isSubclassOf('ApplenewsSourceValue')
-      ) {
-        // Add literal.
-        $args[] = $key_settings[$key];
+      // Referenced entity.
+      if ($hierarchy) {
+        $args[] = $value;
+        $source = call_user_func_array('applenews_new_source', $args);
+        $value = @$source->export()[$key];
       }
       else {
+        // Literal value.
+        $reflection = new ReflectionClass($implementations[$id]['class']);
+        if ($implementations[$id]['class'] == 'ApplenewsSourceValue' ||
+          $reflection->isSubclassOf('ApplenewsSourceValue')
+        ) {
+          // Add literal.
+          $args[] = $key_settings[$key];
+        }
         // Add entity.
-        $args[] = $value;
+        else {
+          $args[] = $value;
+        }
+        // Instantiate.
+        $source = call_user_func_array('applenews_new_source', $args);
       }
-      // Instantiate.
-      $source = call_user_func_array('applenews_new_source', $args);
     }
 
     return $source;
