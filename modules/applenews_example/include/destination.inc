@@ -141,7 +141,7 @@ class ApplenewsexampleDestinationHeaderImage extends ApplenewsDestinationCompone
 
     $form = parent::getConfigForm($values);
 
-    $element = parent::getConfigFormSourceElement('file');
+    $element = parent::getConfigFormSourceElement('file', TRUE, TRUE);
     $element['#title'] = t('File');
     $element['#required'] = TRUE;
     $form['settings']['file'] = $element;
@@ -159,7 +159,8 @@ class ApplenewsexampleDestinationHeaderImage extends ApplenewsDestinationCompone
       return [];
     }
 
-    $url = $this->export->addAsset($values[0][$key]);
+    $url = @$this->getSetting('file')['bundle']
+      ? $this->export->addAsset($values[0][$key]) : $values[0][$key];
     $fill = new Styles\Fills\ImageFill($url);
     $fill->setFillMode('cover')->setVerticalAlignment('bottom');
     $style = new Styles\ComponentStyle();
@@ -240,7 +241,7 @@ class ApplenewsexampleDestinationHeaderGradContainer extends ApplenewsDestinatio
     $element['#title'] = t('Photographer');
     $form['settings']['photographer'] = $element;
 
-    $element = parent::getConfigFormSourceElement('image');
+    $element = parent::getConfigFormSourceElement('image', TRUE, TRUE);
     $element['#title'] = t('Background Image');
     $form['settings']['image'] = $element;
 
@@ -384,7 +385,8 @@ class ApplenewsexampleDestinationHeaderGradContainer extends ApplenewsDestinatio
     list($key, $values) = $this->getSourceValues($this->export->source,
       $this->getSetting('image'));
     if (!empty($values[0][$key])) {
-      $url = $this->export->addAsset($values[0][$key]);
+      $url = @$this->getSetting('items')['bundle']
+        ? $this->export->addAsset($values[0][$key]) : $values[0][$key];
       $fill = new Styles\Fills\ImageFill($url);
       $fill->setFillMode('cover')->setVerticalAlignment('bottom');
     }
@@ -445,7 +447,7 @@ class ApplenewsexampleDestinationPullQuote extends ApplenewsDestinationComponent
 
     $form = parent::getConfigForm($values);
 
-    $element = parent::getConfigFormSourceElement('image');
+    $element = parent::getConfigFormSourceElement('image', TRUE, TRUE);
     $element['#title'] = t('Image');
     $form['settings']['image'] = $element;
 
@@ -558,14 +560,16 @@ class ApplenewsexampleDestinationPullQuote extends ApplenewsDestinationComponent
     $section->setLayout($layout);
 
     // Header.
-    $file = $file[0][$key];
-    $url = $this->export->addAsset($file);
-    $fill = new Styles\Fills\ImageFill($url);
-    $fill->setFillMode('cover')->setVerticalAlignment('top');
-    $style = new Styles\ComponentStyle();
-    $style->setFill($fill);
     $header = new Components\Header();
-    $header->setStyle($style);
+    $url = @$this->getSetting('image')['bundle']
+      ? $this->export->addAsset($file[0][$key]) : $file[0][$key];
+    if ($url) {
+      $fill = new Styles\Fills\ImageFill($url);
+      $fill->setFillMode('cover')->setVerticalAlignment('top');
+      $style = new Styles\ComponentStyle();
+      $style->setFill($fill);
+      $header->setStyle($style);
+    }
     $layout = new Layouts\ComponentLayout();
     $layout->setIgnoreDocumentMargin()
       ->setMinimumHeight('75vw')

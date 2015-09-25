@@ -239,7 +239,7 @@ class ApplenewsDestinationImages extends ApplenewsDestinationComponent {
       '#default_value' => $this->getSetting('type'),
     ];
 
-    $element = parent::getConfigFormSourceElement('items');
+    $element = $this->getConfigFormSourceElement('items', TRUE, TRUE);
     $element['#title'] = t('Items');
     $element['#required'] = TRUE;
     $form['settings']['items'] = $element;
@@ -265,7 +265,8 @@ class ApplenewsDestinationImages extends ApplenewsDestinationComponent {
       if (empty($value[$key])) {
         continue;
       }
-      $url = $this->export->addAsset($value[$key]);
+      $url = @$this->getSetting('items')['bundle']
+        ? $this->export->addAsset($value[$key]) : $value[$key];
       $item = new GalleryItem($url);
       if (!empty($values_caption[$i][$key_caption])) {
         $item->setCaption($values_caption[$i][$key_caption]);
@@ -408,7 +409,7 @@ class ApplenewsDestinationImage extends ApplenewsDestinationComponent {
       '#default_value' => $this->getSetting('type'),
     ];
 
-    $element = parent::getConfigFormSourceElement('source');
+    $element = parent::getConfigFormSourceElement('source', TRUE, TRUE);
     $element['#title'] = t('Value');
     $element['#required'] = TRUE;
     $form['settings']['source'] = $element;
@@ -435,7 +436,8 @@ class ApplenewsDestinationImage extends ApplenewsDestinationComponent {
       if (empty($value[$key])) {
         continue;
       }
-      $url = $this->export->addAsset($value[$key]);
+      $url = @$this->getSetting('source')['bundle']
+        ? $this->export->addAsset($value[$key]) : $value[$key];
       switch ($this->getSetting('type')) {
         case 'logo':
           $component = new Components\Logo($url);
@@ -497,7 +499,7 @@ class ApplenewsDestinationScalableImage extends ApplenewsDestinationComponent {
       '#description'   => t('The type of scalable image.'),
     ];
 
-    $element = parent::getConfigFormSourceElement('file');
+    $element = $this->getConfigFormSourceElement('file', TRUE, TRUE);
     $element['#title'] = t('Value');
     $form['settings']['file'] = $element;
 
@@ -537,7 +539,8 @@ class ApplenewsDestinationScalableImage extends ApplenewsDestinationComponent {
       if (empty($value[$key])) {
         continue;
       }
-      $url = $this->export->addAsset($value[$key]);
+      $url = @$this->getSetting('file')['bundle']
+        ? $this->export->addAsset($value[$key]) : $value[$key];
       switch ($this->getSetting('type')) {
 
         case 'photo':

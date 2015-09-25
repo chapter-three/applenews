@@ -50,7 +50,7 @@ class ApplenewsDestinationMetadata extends ApplenewsDestinationSingleton {
     $element['#title'] = t('Author');
     $form['settings']['authors'] = $element;
 
-    $element = parent::getConfigFormSourceElement('thumbnailURL');
+    $element = parent::getConfigFormSourceElement('thumbnailURL', TRUE, TRUE);
     $element['#title'] = t('Thumbnail');
     $form['settings']['thumbnailURL'] = $element;
 
@@ -127,7 +127,9 @@ class ApplenewsDestinationMetadata extends ApplenewsDestinationSingleton {
     list($key, $values) = $this->getSourceValues($this->export->source,
       $this->getSetting('thumbnailURL'));
     if (!empty($values[0][$key])) {
-      if ($url = $this->export->addAsset($values[0][$key])) {
+      $url = @$this->getSetting('thumbnailURL')['bundle']
+        ? $this->export->addAsset($values[0][$key]) : $values[0][$key];
+      if ($url) {
         $metadata->setThumbnailURL($url);
       }
     }

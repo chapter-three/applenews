@@ -133,9 +133,17 @@ abstract class ApplenewsDestinationSingleton {
 
   /**
    * Generates a configurable source setting element.
+   *
+   * @param string $key
+   *   Settings key.
+   * @param bool $url
+   *   Source should be a url/uri.
+   * @param bool $bundle
+   *   Add resource bundle checkbox.
    */
-  protected function getConfigFormSourceElement($key) {
+  protected function getConfigFormSourceElement($key, $url = FALSE, $bundle = FALSE) {
     list($options, $metadata) = $this->getSourceOptions();
+    $settings = $this->getSetting($key);
     $element = [
       '#type'  => 'applenews_source',
       '#tree'  => TRUE,
@@ -143,7 +151,7 @@ abstract class ApplenewsDestinationSingleton {
         '#title'         => t('Source'),
         '#type'          => 'select',
         '#options'       => $options,
-        '#default_value' => @$this->getSetting($key)['source'],
+        '#default_value' => @$settings['source'],
       ],
     ];
     // Textarea for literal value sources.
@@ -151,8 +159,19 @@ abstract class ApplenewsDestinationSingleton {
       $element['value'] = [
         '#title'             => t('Value'),
         '#type'              => 'textarea',
-        '#default_value'     => @$this->getSetting($key)['value'],
+        '#default_value'     => @$settings['value'],
         '#applenews_visible' => $metadata['types']['value'],
+      ];
+    }
+    if ($url) {
+      $element['source']['#description'] = t('A Drupal URI or an accessible URL.');
+    }
+    if ($bundle) {
+      $element['bundle'] = [
+        '#title'         => t('Bundle'),
+        '#description'   => t('If checked, the resource will be bundled into the export, otherwise the value will be passed to Apple News. If the source is a Drupal URI the needs to be checked. If the value is a URL, if checked the export will attempt to download the resource, and if unchecked Apple News will attempt to download the resource.'),
+        '#type'          => 'checkbox',
+        '#default_value'     => isset($settings['bundle']) ? $settings['bundle'] : TRUE,
       ];
     }
     return $element;

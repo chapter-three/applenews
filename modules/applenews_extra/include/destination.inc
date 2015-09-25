@@ -234,13 +234,13 @@ class ApplenewsExtraDestinationAudio extends ApplenewsDestinationComponent {
       '#description'   => t('The type of audio file.'),
     ];
 
-    $element = parent::getConfigFormSourceElement('url');
-    $element['#title'] = t('Audio URL');
+    $element = $this->getConfigFormSourceElement('url', TRUE, TRUE);
+    $element['#title'] = t('Audio');
     $element['#required'] = TRUE;
     $form['settings']['url'] = $element;
 
-    $element = parent::getConfigFormSourceElement('imageURL');
-    $element['#title'] = t('Image URL');
+    $element = $this->getConfigFormSourceElement('imageURL', TRUE, TRUE);
+    $element['#title'] = t('Image');
     $form['settings']['imageURL'] = $element;
 
     $element = parent::getConfigFormSourceElement('caption');
@@ -275,13 +275,16 @@ class ApplenewsExtraDestinationAudio extends ApplenewsDestinationComponent {
         switch ($this->getSetting('type')) {
 
           case 'music':
-            $url = $this->export->addAsset($value[$key]);
+            $url = @$this->getSetting('url')['bundle']
+              ? $this->export->addAsset($value[$key]) : $value[$key];
             $component = new Components\Music($url);
             if (!empty($caption_value[$delta][$caption_key])) {
               $component->setCaption($caption_value[$delta][$caption_key]);
             }
             if (!empty($imageurl_values[$delta][$imageurl_key])) {
-              $url = $this->export->addAsset($imageurl_values[$delta][$imageurl_key]);
+              $url = @$this->getSetting('imageURL')['bundle']
+                ? $this->export->addAsset($imageurl_values[$delta][$imageurl_key])
+                : $imageurl_values[$delta][$imageurl_key];
               $component->setImageURL($url);
             }
             if (!empty($explicitcontent_value[$delta][$explicitcontent_key])) {

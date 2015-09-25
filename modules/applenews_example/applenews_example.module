@@ -66,14 +66,17 @@ function applenews_example_applenews_api_export_default_node(ApplenewsexampleExp
     ->setSetting('date_published', [
       'source' => '::::applenews::node::created',
       'value' => '',
+      'bundle' => TRUE,
     ])
     ->setSetting('date_created', [
       'source' => '::::applenews::node::created',
       'value' => '',
+      'bundle' => TRUE,
     ])
     ->setSetting('date_modified', [
       'source' => '::::applenews::node::changed',
       'value' => '',
+      'bundle' => TRUE,
     ]);
   $export->setMetadata($metadata);
 
@@ -86,6 +89,7 @@ function applenews_example_applenews_api_export_default_node(ApplenewsexampleExp
     ->setSetting('file', [
       'source' => '::::applenews::file::node::field_image::uri',
       'value' => '',
+      'bundle' => TRUE,
     ]);
   $export->addComponent($component);
 
@@ -98,10 +102,12 @@ function applenews_example_applenews_api_export_default_node(ApplenewsexampleExp
     ->setSetting('title', [
       'source' => '::::applenews::node::label',
       'value' => '',
+      'bundle' => TRUE,
     ])
     ->setSetting('author', [
       'source' => '::::applenews::node::author::::applenews::user::label',
       'value' => '',
+      'bundle' => TRUE,
     ]);
   $export->addComponent($component);
 
@@ -121,6 +127,7 @@ function applenews_example_applenews_api_export_default_node(ApplenewsexampleExp
     ->setSetting('text', [
       'source' => '::::applenews::field::node::body::value_sanitized',
       'value' => '',
+      'bundle' => TRUE,
     ])
     ->setSetting('format', 'markdown');
   $export->addComponent($component);

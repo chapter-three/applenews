@@ -510,6 +510,7 @@ function applenews_applenews_api_export_default_node(ApplenewsExportNode $export
     ->setSetting('text', [
       'source' => '::::applenews::node::label',
       'value' => '',
+      'bundle' => TRUE,
     ])
     ->setSetting('component', 'title')
     ->setSetting('heading', '')
@@ -523,6 +524,7 @@ function applenews_applenews_api_export_default_node(ApplenewsExportNode $export
     ->setSetting('text', [
       'source' => '::::applenews::field::node::body::value_sanitized',
       'value' => '',
+      'bundle' => TRUE,
     ])
     ->setSetting('format', 'markdown');
   $export->addComponent($component);
@@ -535,10 +537,12 @@ function applenews_applenews_api_export_default_node(ApplenewsExportNode $export
     ->setSetting('file', [
       'source' => '::::applenews::file::node::field_image::uri',
       'value' => '',
+      'bundle' => TRUE,
     ])
     ->setSetting('caption', [
       'source' => '::::applenews::file::node::field_image::alt',
       'value' => '',
+      'bundle' => TRUE,
     ])
     ->setSetting('format', 'markdown');
   $export->addComponent($component);
