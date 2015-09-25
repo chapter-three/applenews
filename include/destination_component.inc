@@ -244,7 +244,7 @@ class ApplenewsDestinationImages extends ApplenewsDestinationComponent {
     $element['#required'] = TRUE;
     $form['settings']['items'] = $element;
 
-    $element = parent::getConfigFormSourceElement('caption');
+    $element = $this->getConfigFormSourceElement('caption');
     $element['#title'] = t('Caption');
     $form['settings']['caption'] = $element;
 
@@ -503,15 +503,15 @@ class ApplenewsDestinationScalableImage extends ApplenewsDestinationComponent {
     $element['#title'] = t('Value');
     $form['settings']['file'] = $element;
 
-    $element = parent::getConfigFormSourceElement('caption');
+    $element = $this->getConfigFormSourceElement('caption');
     $element['#title'] = t('Caption');
     $form['settings']['caption'] = $element;
 
-    $element = parent::getConfigFormSourceElement('accessibilityCaption');
+    $element = $this->getConfigFormSourceElement('accessibilityCaption');
     $element['#title'] = t('Accessibility Caption');
     $form['settings']['accessibilityCaption'] = $element;
 
-    $element = parent::getConfigFormSourceElement('explicitContent');
+    $element = $this->getConfigFormSourceElement('explicitContent');
     $element['#title'] = t('Explicit Content');
     $form['settings']['explicitContent'] = $element;
 
@@ -609,7 +609,7 @@ class ApplenewsDestinationText extends ApplenewsDestinationComponent {
 
     $form = parent::getConfigForm($values);
 
-    $element = parent::getConfigFormSourceElement('text');
+    $element = $this->getConfigFormSourceElement('text');
     $element['#title'] = t('Text');
     $element['#required'] = TRUE;
     $form['settings']['text'] = $element;

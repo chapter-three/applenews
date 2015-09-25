@@ -56,7 +56,7 @@ function hook_applenews_api() {
 function hook_applenews_api_alter(array &$info) {
   // Override the class for another module's migration - say, to add some
   // additional preprocessing in prepareRow().
-  $key = applenews_export_id('MODULE_NAME', 'MACHINE_NAME');
+  $key = _applenews_export_id('MODULE_NAME', 'MACHINE_NAME');
   if (isset($info['exports'][$key]['key'])) {
     $info['exports'][$key]['key'] = 'new value';
   }

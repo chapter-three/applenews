@@ -47,8 +47,7 @@
       $('fieldset#edit-config-additional-settings-components-tab', context).drupalSetSummary(function (context) {
         var count = $('table tbody tr', context).length - 1;
         if (count) {
-          var commentCount = Drupal.formatPlural(count, '1 component enabled', '@count components');
-          return commentCount;
+          return Drupal.formatPlural(count, '1 component enabled', '@count components');
         }
         else {
           return Drupal.t('Please add components');

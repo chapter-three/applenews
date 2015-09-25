@@ -138,8 +138,8 @@ class ApplenewsDestinationMetadata extends ApplenewsDestinationSingleton {
       $this->getSetting('keywords'));
     foreach ($values as $value) {
       if (!empty($value[$key])) {
-        foreach (preg_split('/\s+/', $value[$key]) as $value) {
-          $metadata->addKeyword($value);
+        foreach (preg_split('/\s+/', $value[$key]) as $keyword) {
+          $metadata->addKeyword($keyword);
         }
       }
     }

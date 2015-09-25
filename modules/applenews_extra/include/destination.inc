@@ -36,7 +36,7 @@ class ApplenewsExtraDestinationInstagram extends ApplenewsDestinationComponent {
 
     $form = parent::getConfigForm($values);
 
-    $element = parent::getConfigFormSourceElement('source');
+    $element = $this->getConfigFormSourceElement('source');
     $element['#title'] = t('Link');
     $element['#required'] = TRUE;
     $element['#description'] = t('URL format <em>https://instagram.com/p/6Lg1xVkNjJ</em>');
@@ -94,7 +94,7 @@ class ApplenewsExtraDestinationTweet extends ApplenewsDestinationComponent {
 
     $form = parent::getConfigForm($values);
 
-    $element = parent::getConfigFormSourceElement('source');
+    $element = $this->getConfigFormSourceElement('source');
     $element['#title'] = t('Link');
     $element['#required'] = TRUE;
     $element['#description'] = t('URL format <em>https://twitter.com/chapter_three/status/623547179563495424</em>');
@@ -153,13 +153,13 @@ class ApplenewsExtraDestinationEmbedWebVideo extends ApplenewsDestinationCompone
 
     $form = parent::getConfigForm($values);
 
-    $element = parent::getConfigFormSourceElement('video_url');
+    $element = $this->getConfigFormSourceElement('video_url');
     $element['#title'] = t('Video URL');
     $element['#required'] = TRUE;
     $element['#description'] = t('URL format <em>https://www.youtube.com/embed/r4DQKtYL62Q</em> (Youtube) or <em>https://player.vimeo.com/video/121450839</em> (Vimeo)');
     $form['settings']['video_url'] = $element;
 
-    $element = parent::getConfigFormSourceElement('caption');
+    $element = $this->getConfigFormSourceElement('caption');
     $element['#title'] = t('Caption');
     $form['settings']['caption'] = $element;
 
@@ -243,11 +243,11 @@ class ApplenewsExtraDestinationAudio extends ApplenewsDestinationComponent {
     $element['#title'] = t('Image');
     $form['settings']['imageURL'] = $element;
 
-    $element = parent::getConfigFormSourceElement('caption');
+    $element = $this->getConfigFormSourceElement('caption');
     $element['#title'] = t('Caption');
     $form['settings']['caption'] = $element;
 
-    $element = parent::getConfigFormSourceElement('explicitContent');
+    $element = $this->getConfigFormSourceElement('explicitContent');
     $element['#title'] = t('Explicit Content');
     $form['settings']['explicitContent'] = $element;
 

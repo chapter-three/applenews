@@ -37,6 +37,7 @@ class views_handler_field_applenews_previewable extends views_handler_field {
         ]
       );
     }
+    return NULL;
   }
 
 }

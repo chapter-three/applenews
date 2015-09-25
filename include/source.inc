@@ -455,7 +455,7 @@ class ApplenewsSourceFieldFile extends ApplenewsSourceField {
    */
   public function export($value = NULL) {
     $return = [
-      'url' => '',
+      'uri' => '',
       'url' => '',
       'fid' => '',
       'filename' => '',
