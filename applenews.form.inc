@@ -15,6 +15,7 @@ function applenews_form_alter(&$form, &$form_state, $form_id) {
     case 'node_page_edit':
     case 'node_add':
       _applenews_form_alter_node_form($form, $form_state);
+      $form['#submit'][] = '_applenews_form_alter_node_form_submit';
       break;
 
   }

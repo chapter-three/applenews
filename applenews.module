@@ -384,6 +384,14 @@ function applenews_form_pre_render_source($element) {
 }
 
 /**
+ * Implements hook_entity_insert().
+ */
+function _applenews_form_alter_node_form_submit(&$form, &$form_state) {
+  $form['#node']->applenews['applenews_publish_flag']
+    = !empty($form_state['values']['applenews']['applenews_publish_flag']);
+}
+
+/**
  * Implements hook_theme().
  */
 function applenews_theme($existing, $type, $theme, $path) {
