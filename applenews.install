@@ -346,6 +346,7 @@ function applenews_uninstall() {
   variable_del('applenews_variable_api_secret');
   variable_del('applenews_variable_api_channels');
   variable_del('applenews_variable_api_curlopt');
+  variable_del('applenews_variable_api_debug');
   variable_del('applenews_variable_node');
   variable_del('applenews_export_directory');
   variable_del('applenews_help_format');
