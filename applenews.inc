@@ -1147,12 +1147,23 @@ function applenews_export_to_file($entity_id, $entity_ids = [], $filename = NULL
   $preview = new ApplenewsPreview($entity_id, $filename, $entity_archive, $data);
   if (!empty($entity_id)) {
     $preview->toFile();
-    $preview->archive($entity_ids);
+    try {
+      $preview->archive($entity_ids);
+    }
+    catch (\Exception $e) {
+      watchdog('applenews', 'Could not create archive: @err', ['@err' => $e->getMessage()]);
+    }
     return NULL;
   }
   else {
     $file_url = $preview->getArchiveFilePath();
-    $preview->archive($entity_ids);
+    try {
+      $preview->archive($entity_ids);
+    }
+    catch (\Exception $e) {
+      watchdog('applenews', 'Could not create archive: @err', ['@err' => $e->getMessage()]);
+      return NULL;
+    }
     return $file_url;
   }
 }

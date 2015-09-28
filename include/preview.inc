@@ -147,11 +147,53 @@ class ApplenewsPreview {
   }
 
   /**
+   * Convert \ZipArchive::open() error code to message.
+   *
+   * @see http://php.net/manual/en/ziparchive.open.php
+   */
+  public static function zipErrorMsg($error_code) {
+    switch ($error_code) {
+
+      case \ZipArchive::ER_EXISTS:
+        return 'File already exists.';
+
+      case \ZipArchive::ER_INCONS:
+        return 'Zip archive inconsistent.';
+
+      case \ZipArchive::ER_INVAL:
+        return 'Invalid argument.';
+
+      case \ZipArchive::ER_MEMORY:
+        return 'Malloc failure.';
+
+      case \ZipArchive::ER_NOENT:
+        return 'No such file.';
+
+      case \ZipArchive::ER_NOZIP:
+        return 'Not a zip archive.';
+
+      case \ZipArchive::ER_OPEN:
+        return 'Can\'t open file.';
+
+      case \ZipArchive::ER_READ:
+        return 'Read error.';
+
+      case \ZipArchive::ER_SEEK:
+        return 'Seek error.';
+
+    }
+    return 'Unknown error.';
+  }
+
+  /**
    * Create [article-id].zip file archive.
    */
   private function createArchive($entity_ids = []) {
 
     // Start creating a new archive file.
+    if (!class_exists('\ZipArchive')) {
+      throw new Exception('Feature requires PHP Zip extension.');
+    }
     $zip = new \ZipArchive();
 
     if ($this->entity_archive) {
@@ -164,9 +206,11 @@ class ApplenewsPreview {
         file_unmanaged_delete($entity_archive);
       }
 
-      // Open archive
-      if ($zip->open($entity_archive, \ZipArchive::OVERWRITE) !== TRUE) {
-        die ("Could not open archive");
+      // Open archive.
+      $result = $zip->open($entity_archive, \ZipArchive::OVERWRITE);
+      if ($result !== TRUE) {
+        throw new Exception('Could not open archive file: ' .
+          $this::zipErrorMsg($result));
       }
       // Create an archive of an article assets and content.
       foreach ($this->scanDirectory($entity_archive_realpath) as $item) {
@@ -176,9 +220,11 @@ class ApplenewsPreview {
     }
     else {
 
-      // Open archive
-      if ($zip->open($this->archive_file, \ZipArchive::OVERWRITE) !== TRUE) {
-        die ("Could not open archive");
+      // Open archive.
+      $result = $zip->open($this->archive_file, \ZipArchive::OVERWRITE);
+      if ($result !== TRUE) {
+        throw new Exception('Could not open archive file: ' .
+          $this::zipErrorMsg($result));
       }
 
       // Scan through all entity directories and add each file to an archive.
@@ -195,7 +241,7 @@ class ApplenewsPreview {
 
     }
 
-    // Close and save archive
+    // Close and save archive.
     $zip->close();
 
   }
