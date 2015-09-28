@@ -84,6 +84,14 @@ function applenews_settings_api_credentials_form($form, &$form_state) {
     '#description' => t('Proxy server port number.'),
   ];
 
+  $form['advanced']['api_debug'] = [
+    '#type' => 'select',
+    '#title' => t('Debug API'),
+    '#description' => t('Log all interaction with the Apple News API.'),
+    '#options' => ['' => t('Disabled'), 1 => t('Enabled')],
+    '#default_value' => variable_get('applenews_variable_api_debug', FALSE),
+  ];
+
   $form['save_config'] = [
     '#type' => 'submit',
     '#value' => t('Save configuration'),
@@ -144,6 +152,7 @@ function applenews_settings_api_credentials_form_submit($form, &$form_state) {
       'proxy_port' => !empty($form_state['values']['proxy_port']) ? filter_xss($form_state['values']['proxy_port']) : '',
     ]
   );
+  variable_set('applenews_variable_api_debug', $form_state['values']['api_debug']);
   $api_channels = variable_get('applenews_variable_api_channels', []);
   $channel_msg = '';
   if (empty($api_channels)) {
