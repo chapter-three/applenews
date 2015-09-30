@@ -212,6 +212,13 @@ function _applenews_form_alter_node_form(&$form, &$form_state) {
     }
     $form['applenews']['channels'] = &$channels_element;
     unset($form['applenews']['channels']['#weight']);
+    // If entity edit.
+    if (!empty($entity_id) && !empty($revision_id)) {
+      $form['applenews']['channels']['#attributes']['class'][] = 'applenews-channels-edit-form';
+    }
+    else {
+      $form['applenews']['channels']['#attributes']['class'][] = 'applenews-channels-add-form';
+    }
     $form['applenews']['channels'][0]['#markup'] = '<div class="description">' . t('Apple News channels and sections where this content will be published.') . '</div>';
 
     // Is Preview.

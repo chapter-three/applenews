@@ -14,11 +14,7 @@
         if (!$(this).attr('checked')) {
           $('input[data-section-of="' + _channel_id + '"]').parent().hide();
         }
-        $(this).click(function() {
-          $('input[data-section-of="' + _channel_id + '"]').parent().toggle();
-        });
       });
-      $('.applenews-sections').parent().css({'margin-left' : '20px'});
 
       // Vertical tab summary.
       $('fieldset.applenews-options', context).drupalSetSummary(function (context) {
@@ -27,7 +23,7 @@
 
           // Check first channel from the list if non selected.
           // Otherwise the module doesn't know where to publish current content.
-          $('#edit-applenews-channels input[type="checkbox"]:first').once().click();
+          setDefaultChannel(true);
 
           var $postdate = $('.applenews-post-date', context);
           if ($postdate[0]) {
@@ -38,11 +34,34 @@
           }
         }
         else {
+          setDefaultChannel(false);
           return Drupal.t('Not published');
         }
 
       });
+      $('input[data-channel-id]').bind('click', function(e) {
+        var _channel_id = $(this).data('channel-id');
+        $('input[data-section-of="' + _channel_id + '"]').parent().toggle();
+      });
+      $('.applenews-sections').parent().css({'margin-left' : '20px'});
+
     }
   };
+
+  /**
+   * Show/Hide default channels based on the valude of the Publish checkbox.
+   */
+  function setDefaultChannel(show) {
+    if ($('#edit-applenews-channels').hasClass("applenews-channels-add-form")) {
+      $('input[data-channel-id]:first').attr('checked', show);
+      var _channel_id = $('input[data-channel-id]:first').data('channel-id');
+      if (show) {
+        $('input[data-section-of="' + _channel_id + '"]').parent().show();
+      }
+      else {
+        $('input[data-section-of="' + _channel_id + '"]').parent().hide();
+      }
+    }
+  }
 
 }(jQuery));
