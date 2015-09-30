@@ -212,6 +212,7 @@ function _applenews_form_alter_node_form(&$form, &$form_state) {
     }
     $form['applenews']['channels'] = &$channels_element;
     unset($form['applenews']['channels']['#weight']);
+    $form['applenews']['channels'][0]['#markup'] = '<div class="description">' . t('Apple News channels and sections where this content will be published.') . '</div>';
 
     // Is Preview.
     $is_preview = $export_config_form['additional_settings']['metadata_tab']['is_preview'];

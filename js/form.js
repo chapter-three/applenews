@@ -23,7 +23,12 @@
       // Vertical tab summary.
       $('fieldset.applenews-options', context).drupalSetSummary(function (context) {
 
-        if ($('.form-item-applenews-publish-flag input:checked', context).length) {
+        if ($('.form-item-applenews-applenews-publish-flag input:checked', context).length) {
+
+          // Check first channel from the list if non selected.
+          // Otherwise the module doesn't know where to publish current content.
+          $('#edit-applenews-channels input[type="checkbox"]:first').once().click();
+
           var $postdate = $('.applenews-post-date', context);
           if ($postdate[0]) {
             return Drupal.t('Published on ' + $postdate.html());
