@@ -1,0 +1,9 @@
+name = Apple News Example
+package = Apple News
+description = Example module with a styled node export.
+core = 7.x
+
+files[] = include/export.inc
+files[] = include/destination.inc
+
+dependencies[] = applenews
