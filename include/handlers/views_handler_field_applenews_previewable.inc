@@ -12,6 +12,9 @@
  */
 class views_handler_field_applenews_previewable extends views_handler_field {
 
+  /**
+   * {@inheritdoc}
+   */
   function option_definition() {
     $options = parent::option_definition();
     return $options;
@@ -24,6 +27,9 @@ class views_handler_field_applenews_previewable extends views_handler_field {
     parent::options_form($form, $form_state);
   }
 
+  /**
+   * {@inheritdoc}
+   */
   function render($values) {
     $articleId = $this->get_value($values);
     $post = new ApplenewsDatabase();

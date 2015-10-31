@@ -12,13 +12,16 @@
  */
 class views_handler_filter_applenews_status extends views_handler_filter_boolean_operator {
 
+  /**
+   * {@inheritdoc}
+   */
   function construct() {
     parent::construct();
     $this->value_value = t('Apple News Publish Status');
   }
 
   /**
-   * Return the possible options for this filter.
+   * {@inheritdoc}
    */
   function get_value_options() {
     parent::get_value_options();
@@ -28,6 +31,9 @@ class views_handler_filter_applenews_status extends views_handler_filter_boolean
     ];
   }
 
+  /**
+   * {@inheritdoc}
+   */
   function query() {
     $this->ensure_my_table();
     $field = "$this->table_alias.$this->real_field";

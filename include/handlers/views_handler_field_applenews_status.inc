@@ -12,6 +12,9 @@
  */
 class views_handler_field_applenews_status extends views_handler_field_boolean {
 
+  /**
+   * {@inheritdoc}
+   */
   function render($values) {
     $value = $this->get_value($values);
     if (!empty($this->options['not'])) {
@@ -28,4 +31,5 @@ class views_handler_field_applenews_status extends views_handler_field_boolean {
       return $value ? $this->formats['yes-no'][0] : $this->formats['yes-no'][1];
     }
   }
+
 }
