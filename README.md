@@ -156,7 +156,7 @@ Follow these configuration instructions to start publishing your content.
 
 ### <a name="initial"></a>Initial Settings configuration
 
-1. Visit [apple.com](http://apple.com) to get your credentials and create a news channel that your Drupal site will use.
+1. Visit [https://www.icloud.com/newspublisher/](https://www.icloud.com/newspublisher/) to get your credentials and create a news channel that your Drupal site will use.
 
 2. In your Drupal site, navigate to the "Apple news credentials page" (`admin/config/content/applenews/settings`) and add your Apple News credentials.
 
@@ -169,11 +169,14 @@ An *export* is code that defines how to transform data in a Drupal site so it ca
 To get started, we suggest enabling the `applenews_example` module and using that as a starting point.
 
 1. In your Drupal site, navigate to the "Apple news export manager page" (`admin/config/content/applenews`).
-2. Click on the **'edit'** link of the export you would like to connect to an Apple News channel.
+2. Add new export.
+  - *Nodes - Configurable node export* - you custom layout with three default components enabled.
+  - *Nodes - Example styled node exprot* - This is example layout and contains some pre-styled components.
+2. The next step is to configure your export. 
 3. On the Edit page, the minimum requirements to properly configure a channel to an Apple News channel are:
-    1. Under "Add new component", select a component.
-    2. Under "Channels", select the channel (Apple News Channel) that this export will be tied to. This export channel will get nodes, process them, and send them to the selected channel for display in the Apple News app.
-    3. Under "Content types", select the content types that should be processed with this channel.
+    1. Under **"General Settings"** set **"Content types"**, select the content types that should be processed with this channel.
+    2. Under **"Components"** in the **"Add new component"** field, select a component. 
+    3. Under **"Metadata"** set **"Default channels and sections"**, select the channel (Apple News Channel) that this export will be tied to. This export channel will get nodes, process them, and send them to the selected channel for display in the Apple News app. 
     4. Click **Save Changes**.
     5. After saving, you will see "edit" and "delete" options to the right of the new components we just added. Click on **"edit"**.
     6. Configure the component. Most components will require that you specify source fields and the component will use the data in those fields as content in the component.
@@ -193,10 +196,10 @@ Once a content type is enabled in an export/channel, the option to add the indiv
 
 ### <a name="preview"></a>Preview a Post Before Publishing
 
-If you want to preview a post before sending it to Apple, you will need to first download and install the Apple "News Preview" Application (LINK TBD).
+If you want to preview a post before sending it to Apple, you will need to first download and install the [Apple News Preview](https://developer.apple.com/news-preview/) Application.
 
 1. After saving the node, return to the node's edit page
-2. Find the "Apple News" tab, and click the "Download" link under "Preview." This will download a folder containing the specialy formatted file needed by the News Preview App.
+2. Find the "Apple News" tab, and click the "Download" link under "Preview." This will download a folder containing the specially formatted file needed by the News Preview App.
 2. Drag the whole folder into the App icon to open, and it will display the page just as the Apple News App will be displaying it.
 
 ### <a name="delete"></a>Delete a post from publishing
