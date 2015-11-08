@@ -28,8 +28,8 @@
 
 [Install required Libraries](https://www.drupal.org/node/1440066):
 
--   [php-curl-class 4.6.9](https://github.com/php-curl-class/php-curl-class)
--   [AppleNewsAPI 0.3.7](https://github.com/chapter-three/AppleNewsAPI)
+-   [php-curl-class 4.x](https://github.com/php-curl-class/php-curl-class)
+-   [AppleNewsAPI 0.3.7+](https://github.com/chapter-three/AppleNewsAPI)
 
 Enable:
 
@@ -134,8 +134,8 @@ To manually install:
     -   [Apple News](https://www.drupal.org/project/applenews)
     -   [Libraries](https://www.drupal.org/project/libraries)
     -   [Entity](https://www.drupal.org/project/entity)
-2.  [Download the Apple News library (version 0.3.7)](https://github.com/chapter-three/AppleNewsAPI/archive/0.3.7.zip) into your sites/all/libraries folder. If the libraries folder does not exist, create it before downloading.
-3.  [Download and install the PHP Curl Class library (version 4.6.9)](https://github.com/php-curl-class/php-curl-class/archive/4.6.9.tar.gz) into your libraries folder.
+2.  [Download the Apple News library (version 0.3.7+)](https://github.com/chapter-three/AppleNewsAPI/archive/0.3.7.zip) into your sites/all/libraries folder. If the libraries folder does not exist, create it before downloading.
+3.  [Download and install the PHP Curl Class library (version 4.x)](https://github.com/php-curl-class/php-curl-class/archive/4.6.9.tar.gz) into your libraries folder.
 4.  After the libraries are downloaded, your should have directories matching the following paths. (You may need to rename the folders you just downloaded to match):
 
     ```shell
@@ -172,11 +172,11 @@ To get started, we suggest enabling the `applenews_example` module and using tha
 2. Add new export.
   - *Nodes - Configurable node export* - you custom layout with three default components enabled.
   - *Nodes - Example styled node exprot* - This is example layout and contains some pre-styled components.
-2. The next step is to configure your export. 
+2. The next step is to configure your export.
 3. On the Edit page, the minimum requirements to properly configure a channel to an Apple News channel are:
     1. Under **"General Settings"** set **"Content types"**, select the content types that should be processed with this channel.
-    2. Under **"Components"** in the **"Add new component"** field, select a component. 
-    3. Under **"Metadata"** set **"Default channels and sections"**, select the channel (Apple News Channel) that this export will be tied to. This export channel will get nodes, process them, and send them to the selected channel for display in the Apple News app. 
+    2. Under **"Components"** in the **"Add new component"** field, select a component.
+    3. Under **"Metadata"** set **"Default channels and sections"**, select the channel (Apple News Channel) that this export will be tied to. This export channel will get nodes, process them, and send them to the selected channel for display in the Apple News app.
     4. Click **Save Changes**.
     5. After saving, you will see "edit" and "delete" options to the right of the new components we just added. Click on **"edit"**.
     6. Configure the component. Most components will require that you specify source fields and the component will use the data in those fields as content in the component.
@@ -239,20 +239,20 @@ SSL certificate problem: unable to get local issuer certificate
 **Problem:** I'm getting the error message:
 
 ```shell
-Please download PHP-Curl-Class (version 4.6.9) library to sites/all/libraries/php-curl-class
+Please download PHP-Curl-Class (version 4.x) library to sites/all/libraries/php-curl-class
 ```
 
-**Solution:** This means that the library has not been downloaded, the wrong version is in place, or the folder for the library is labeled wrong. Double check that the library was downloaded into `sites/all/libraries/php-curl-class/[files start here]`. Check that the version is 4.6.9 by opening up the composer.json file and search for "version": "4.6.9". Lastly, if still not resolved, make sure the folder is named `php-curl-class` and **NOT** something like `php-curl-class-master` or `php-curl-class-4.6.9`.
+**Solution:** This means that the library has not been downloaded, the wrong version is in place, or the folder for the library is labeled wrong. Double check that the library was downloaded into `sites/all/libraries/php-curl-class/[files start here]`. Check that the version is 4.x by opening up the composer.json file and search for `"version":`. Lastly, if still not resolved, make sure the folder is named `php-curl-class` and **NOT** something like `php-curl-class-master` or `php-curl-class-4.6.9`.
 
 ---
 
 **Problem:** I'm getting the error message:
 
 ```shell
-Please download AppleNewsAPI (version 0.3.7) library to sites/all/libraries/AppleNewsAPI
+Please download AppleNewsAPI (version 0.3.7+) library to sites/all/libraries/AppleNewsAPI
 ```
 
-**Solution:** This means that the library has not been downloaded, the wrong version is in place, or the folder for the library is labeled wrong. Double check that the library was downloaded into `sites/all/libraries/AppleNewsAPI/[files start here]`. Check that the version is 0.3.7 by opening up the composer.json file and search for "version": "0.3.7". Lastly, if still not resolved, make sure the folder is named `AppleNewsAPI` and **NOT** something like `AppleNewsAPI-master` or `AppleNewsAPI-0.3.7`.
+**Solution:** This means that the library has not been downloaded, the wrong version is in place, or the folder for the library is labeled wrong. Double check that the library was downloaded into `sites/all/libraries/AppleNewsAPI/[files start here]`. Check that the version is 0.3.7+ by opening up the composer.json file and search for `"version":`. Lastly, if still not resolved, make sure the folder is named `AppleNewsAPI` and **NOT** something like `AppleNewsAPI-master` or `AppleNewsAPI-0.3.7`.
 
 ---
 

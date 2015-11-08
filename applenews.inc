@@ -1198,17 +1198,15 @@ function applenews_export_dir_cleanup($entity_ids = []) {
 function applenews_libraries_installed() {
 
   $libraries = [
-    'php-curl-class' => APPLENEWS_CURL_SUPPORTED_VERSION,
-    'AppleNewsAPI'      => APPLENEWS_APPLENEWSAPI_SUPPORTED_VERSION
+    'php-curl-class',
+    'AppleNewsAPI',
   ];
 
   $count_installed = 0;
 
-  foreach ($libraries as $name => $version) {
-    if (($library = libraries_detect($name)) &&
-        !empty($library['installed']) &&
-        $library['version'] == $version
-    ) {
+  foreach ($libraries as $name) {
+    $library = libraries_detect($name);
+    if ($library && !empty($library['installed'])) {
       $count_installed++;
     }
   }
@@ -1216,12 +1214,13 @@ function applenews_libraries_installed() {
   if ($count_installed != count($libraries)) {
     return [
       'info' => [
-        '#markup' => t('Please install all required PHP libraries. See !link file for instructions.',
+        '#markup' => t('Please install all required PHP libraries. See the !status for details and the !readme file for instructions.',
           [
-            '!link' => l(t('README'), drupal_get_path('module', 'applenews') . '/README.md', ['attributes' => ['target' => '_blank']]),
+            '!status' => l(t('status report'), 'admin/reports/status'),
+            '!readme' => l(t('README'), drupal_get_path('module', 'applenews') . '/README.md', ['attributes' => ['target' => '_blank']]),
           ]
         ),
-      ]
+      ],
     ];
   }
 
@@ -1236,11 +1235,11 @@ function applenews_autoinstall_libraries() {
 
   $libraries = [
     'AppleNewsAPI' => [
-      'version' => APPLENEWS_APPLENEWSAPI_SUPPORTED_VERSION,
+      'version' => APPLENEWS_APPLENEWSAPI_RECOMMENDED_VERSION,
       'path'    => 'sites/all/libraries/AppleNewsAPI',
     ],
     'php-curl-class' => [
-      'version' => APPLENEWS_CURL_SUPPORTED_VERSION,
+      'version' => APPLENEWS_CURL_RECOMMENDED_VERSION,
       'path'    => 'sites/all/libraries/php-curl-class',
     ],
   ];

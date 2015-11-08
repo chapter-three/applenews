@@ -1107,16 +1107,15 @@ function applenews_download_article_json($entity_type, $entity_id, $revision_id)
  */
 function applenews_autoinstall_form($form, &$form_state) {
   $libraries = [
-    'php-curl-class' => APPLENEWS_CURL_SUPPORTED_VERSION,
-    'AppleNewsAPI'      => APPLENEWS_APPLENEWSAPI_SUPPORTED_VERSION,
+    'php-curl-class' => APPLENEWS_CURL_RECOMMENDED_VERSION,
+    'AppleNewsAPI'      => APPLENEWS_APPLENEWSAPI_RECOMMENDED_VERSION,
   ];
   $count = 0;
   foreach ($libraries as $name => $version) {
-    if ($library = libraries_detect($name)) {
-      $lib_version = !empty($library['version']) ? $library['version'] : '';
-      if ($lib_version == $version) {
-        $count++;
-      }
+    if ($library = libraries_detect($name) &&
+        !empty($library['installed'])
+    ) {
+      $count++;
     }
   }
   // All libraries successfully installed.

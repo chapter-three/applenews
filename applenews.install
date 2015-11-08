@@ -12,31 +12,32 @@ function applenews_requirements($phase) {
   $requirements = [];
   if ($phase == 'runtime') {
     $libraries = [
-      'php-curl-class' => APPLENEWS_CURL_SUPPORTED_VERSION,
-      'AppleNewsAPI'      => APPLENEWS_APPLENEWSAPI_SUPPORTED_VERSION,
+      'php-curl-class' => APPLENEWS_CURL_RECOMMENDED_VERSION,
+      'AppleNewsAPI'   => APPLENEWS_APPLENEWSAPI_RECOMMENDED_VERSION,
     ];
     foreach ($libraries as $name => $version) {
-      if ($library = libraries_detect($name)) {
+      $library = libraries_detect($name);
+      if ($library && !empty($library['installed'])) {
         $msg = '';
-        $lib_version = !empty($library['version']) ? $library['version'] : '';
         $severity = REQUIREMENT_OK;
-        if ($lib_version != $version) {
-          $msg = t("You're using unsupported version of the <em>@name</em> library. Please !link to <em>@path</em>",
-              [
-                '@name' => $library['name'],
-                '!link' => l(t('download version (@v)', ['@v' => $version]), $library['download url']),
-                '@path' => !empty($library['library path']) ? $library['library path'] : t('See README.md'),
-              ]
-            );
-          $severity = REQUIREMENT_ERROR;
-        }
-        $requirements[$name] = [
-          'title'       => !empty($library['name']) ? $library['name'] : 'N/A',
-          'value'       => !empty($library['version']) ? $library['version'] : 'N/A',
-          'severity'    => $severity,
-          'description' => $msg,
-        ];
       }
+      else {
+        $library = libraries_info($name);
+        $msg = t("You're using unsupported version of the <em>@name</em> library. Please !link to <em>@path</em>",
+          [
+            '@name' => $library['name'],
+            '!link' => l(t('download version (@v)', ['@v' => $version]), $library['download url']),
+            '@path' => !empty($library['library path']) ? $library['library path'] : t('See README.md'),
+          ]
+        );
+        $severity = REQUIREMENT_ERROR;
+      }
+      $requirements[$name] = [
+        'title'       => !empty($library['name']) ? $library['name'] : 'N/A',
+        'value'       => !empty($library['version']) ? $library['version'] : 'N/A',
+        'severity'    => $severity,
+        'description' => $msg,
+      ];
     }
   }
   return $requirements;

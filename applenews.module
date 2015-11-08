@@ -7,8 +7,8 @@
 
 // This module's API version.
 define('APPLENEWS_API_VERSION', 1);
-define('APPLENEWS_CURL_SUPPORTED_VERSION', '4.6.9');
-define('APPLENEWS_APPLENEWSAPI_SUPPORTED_VERSION', '0.3.7');
+define('APPLENEWS_CURL_RECOMMENDED_VERSION', '4.6.9');
+define('APPLENEWS_APPLENEWSAPI_RECOMMENDED_VERSION', '0.3.7');
 
 // Load Batch API helper functions.
 module_load_include('inc', 'applenews', 'applenews.batch');
@@ -17,32 +17,25 @@ module_load_include('inc', 'applenews', 'applenews.batch');
  * Implements hook_init().
  */
 function applenews_init() {
+  if (libraries_load('AppleNewsAPI')) {
+    return;
+  }
   $libraries = [
-    'php-curl-class' => [
-      'version' => APPLENEWS_CURL_SUPPORTED_VERSION,
-      'path'    => 'sites/all/libraries/php-curl-class'
-    ],
-    'AppleNewsAPI'      => [
-      'version' => APPLENEWS_APPLENEWSAPI_SUPPORTED_VERSION,
-      'path'    => 'sites/all/libraries/AppleNewsAPI'
-    ]
+    'php-curl-class' => APPLENEWS_CURL_RECOMMENDED_VERSION,
+    'AppleNewsAPI'   => APPLENEWS_APPLENEWSAPI_RECOMMENDED_VERSION,
   ];
-  foreach ($libraries as $name => $info) {
+  foreach ($libraries as $name => $version) {
     // Detect and load PHP library.
-    if (($library = libraries_detect($name)) &&
-        !empty($library['installed']) &&
-        $library['version'] == $info['version']
+    if (!($library = libraries_detect($name)) ||
+        empty($library['installed'])
     ) {
-      libraries_load($name);
-    }
-    else {
       $error_message = !empty($library['error message']) ? $library['error message'] : '';
-      $msg = t('Please <strong>!link</strong> (version <strong>@v</strong>)</a> library to <strong><em>@path</em></strong> directory or !install.',
+      $msg = t('Please <strong>!link</strong> (version <strong>@v</strong>)</a> library to a !do or !install.',
         [
           '!link'    => l(t('download @name', ['@name' => $library['name']]), $library['download url']),
           '@name'    => $library['name'],
-          '@path'    => $info['path'],
-          '@v'       => $info['version'],
+          '@v'       => $version,
+          '!do'      => l(t('suitable directory'), 'https://www.drupal.org/node/1440066'),
           '!install' => l(t('try auto-install'), 'admin/applenews/install'),
         ]
       );
@@ -65,7 +58,7 @@ function applenews_libraries_info() {
   $libraries['AppleNewsAPI'] = [
     'name' => 'Apple News',
     'vendor url' => 'https://github.com/chapter-three/AppleNewsAPI',
-    'download url' => 'https://github.com/chapter-three/AppleNewsAPI/archive/' . APPLENEWS_APPLENEWSAPI_SUPPORTED_VERSION . '.zip',
+    'download url' => 'https://github.com/chapter-three/AppleNewsAPI/archive/' . APPLENEWS_APPLENEWSAPI_RECOMMENDED_VERSION . '.zip',
     'files' => [
       'php' => [
         'autoload.php',
@@ -78,14 +71,17 @@ function applenews_libraries_info() {
       'cols' => 200,
     ],
     'versions' => [
-      (string) APPLENEWS_APPLENEWSAPI_SUPPORTED_VERSION => [],
+      '0.3.7' => [],
+    ],
+    'dependencies' => [
+      'php-curl-class (>=4.0)',
     ],
   ];
 
   $libraries['php-curl-class'] = [
     'name' => 'PHP Curl Class',
     'vendor url' => 'https://github.com/php-curl-class/php-curl-class',
-    'download url' => 'https://github.com/php-curl-class/php-curl-class/archive/' . APPLENEWS_CURL_SUPPORTED_VERSION . '.zip',
+    'download url' => 'https://github.com/php-curl-class/php-curl-class/archive/' . APPLENEWS_CURL_RECOMMENDED_VERSION . '.zip',
     'files' => [
       'php' => [
         'src/Curl/Curl.php',
@@ -99,7 +95,7 @@ function applenews_libraries_info() {
       'cols' => 10,
     ],
     'versions' => [
-      (string) APPLENEWS_CURL_SUPPORTED_VERSION => [],
+      '4.0' => [],
     ],
   ];
 
