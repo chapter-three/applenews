@@ -6,6 +6,7 @@
  */
 
 use ChapterThree\AppleNewsAPI\Document;
+use ChapterThree\AppleNewsAPI\Document\Layouts\Layout;
 
 /**
  * Base class for exporting Drupal entities.
@@ -247,8 +248,8 @@ abstract class ApplenewsExport {
       '#type' => 'vertical_tabs',
       '#weight' => 99,
       '#attached' => [
-        'js' => [drupal_get_path('module', 'applenews') . '/js/export-settings.js']
-      ]
+        'js' => [drupal_get_path('module', 'applenews') . '/js/export-settings.js'],
+      ],
     ];
 
     $form['additional_settings']['general_tab'] = [
@@ -313,7 +314,7 @@ abstract class ApplenewsExport {
           '#type' => 'checkbox',
           '#title' => $channel['name'],
           '#attributes' => [
-            'data-channel-id' => $channel_id
+            'data-channel-id' => $channel_id,
           ],
           '#default_value' => !empty($saved_channels[$channel_id]) ? TRUE : FALSE,
         ];
@@ -340,7 +341,7 @@ abstract class ApplenewsExport {
             '!credentials' => l(t('credentials'), 'admin/config/content/applenews/settings'),
             '!channel'     => l(t('channel'), 'admin/config/content/applenews/settings/channels'),
           ]
-        )
+        ),
       ];
     }
 
@@ -451,7 +452,7 @@ abstract class ApplenewsExport {
       if (file_valid_uri($uri)) {
         /** @var DrupalStreamWrapperInterface $wrapper */
         if ($wrapper = file_stream_wrapper_get_instance_by_uri($uri)) {
-          $path = $wrapper->realPath();
+          $path = $wrapper->realpath();
         }
       }
       else {
@@ -676,7 +677,7 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
    */
   public function validateComponents() {
     /** @var ApplenewsDestinationComponent $destination */
-    foreach ($this->getdestinations('components') as $destination) {
+    foreach ($this->getDestinations('components') as $destination) {
       if (!$destination->validateSettings()) {
         $label = $this->title ? $this->title :
           t('Export (!id)', ['!id' => $this->id]);
@@ -685,7 +686,7 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
         $msg = t('%export component %label needs to be !link.', [
           '%export' => $label,
           '%label' => $destination->label(),
-          '!link' => l(t('configured'), $edit)
+          '!link' => l(t('configured'), $edit),
         ]);
         drupal_set_message($msg, 'error', FALSE);
       }
@@ -786,12 +787,11 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
     // Apple News document metadata (not publisher api metadata).
     $child_values = isset($values['metadata_destination']) ? $values['metadata_destination'] : [];
     $tab['metadata_destination'] = [
-        '#type' => 'fieldset',
-        '#title' => t('Document Metadata'),
-        '#tree' => TRUE,
-        '#weight' => 10,
-      ] +
-      $this->getMetadata()->getConfigForm($child_values);
+      '#type' => 'fieldset',
+      '#title' => t('Document Metadata'),
+      '#tree' => TRUE,
+      '#weight' => 10,
+    ] + $this->getMetadata()->getConfigForm($child_values);
 
     $form['additional_settings']['layouts_tab'] = [
       '#type' => 'fieldset',
@@ -816,7 +816,7 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
       '#tree'   => TRUE,
     ];
     /** @var ApplenewsDestinationComponent $destination */
-    foreach ($this->getdestinations('components') as $destination) {
+    foreach ($this->getDestinations('components') as $destination) {
       $edit = 'admin/config/content/applenews/export/' . $this->id . '/component/' . $destination->id;
       $tab['components'][$destination->id] = [
         '#applenews_destination' => $destination,
@@ -832,17 +832,21 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
         'id' => [
           '#type' => 'hidden',
           '#default_value' => $destination->id,
-          // '#type' => 'textfield',
-          // '#size' => 3,
-          // '#default_value' => $destination->id,
-          // '#disabled' => TRUE,
+          /*
+          '#type' => 'textfield',
+          '#size' => 3,
+          '#default_value' => $destination->id,
+          '#disabled' => TRUE,
+          */
         ],
         'pid' => [
           '#type' => 'hidden',
           '#default_value' => $destination->pid,
-          // '#type' => 'textfield',
-          // '#size' => 3,
-          // '#default_value' => $destination->pid,
+          /*
+          '#type' => 'textfield',
+          '#size' => 3,
+          '#default_value' => $destination->pid,
+          */
         ],
         'weight' => [
           '#type' => 'weight',
@@ -879,17 +883,21 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
       'id' => [
         '#type' => 'hidden',
         '#default_value' => NULL,
-        // '#type' => 'textfield',
-        // '#size' => 3,
-        // '#default_value' => NULL,
-        // '#disabled' => TRUE,
+        /*
+        '#type' => 'textfield',
+        '#size' => 3,
+        '#default_value' => NULL,
+        '#disabled' => TRUE,
+        */
       ],
       'pid' => [
         '#type' => 'hidden',
         '#default_value' => NULL,
-        // '#type' => 'textfield',
-        // '#size' => 3,
-        // '#default_value' => NULL,
+        /*
+        '#type' => 'textfield',
+        '#size' => 3,
+        '#default_value' => NULL,
+        */
       ],
       'weight' => [
         '#type' => 'weight',
@@ -1012,7 +1020,7 @@ class ApplenewsExportNode extends ApplenewsExportConfigurable {
     /** @var EntityDrupalWrapper $wrapper */
     $wrapper = entity_metadata_wrapper('node', $this->source);
 
-    // Identifier;
+    // Identifier.
     $id = $wrapper->getIdentifier();
 
     // Title.
@@ -1031,7 +1039,7 @@ class ApplenewsExportNode extends ApplenewsExportConfigurable {
     $this->document = new Document($id, $title,
       applenews_language_code($language),
       // @todo Make these arbitrary values configurable.
-      new Document\Layouts\Layout(7, 1024));
+      new Layout(7, 1024));
 
     /** @var \ChapterThree\AppleNewsAPI\Document\Metadata $metadata */
     $this->document->setMetadata($this->getMetadata()->export());

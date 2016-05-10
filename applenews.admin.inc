@@ -1109,6 +1109,7 @@ function applenews_autoinstall_form($form, &$form_state) {
   $libraries = [
     'php-curl-class' => APPLENEWS_CURL_RECOMMENDED_VERSION,
     'AppleNewsAPI'      => APPLENEWS_APPLENEWSAPI_RECOMMENDED_VERSION,
+    'AppleNewsAPI'   => APPLENEWS_APPLENEWSAPI_RECOMMENDED_VERSION,
   ];
   $count = 0;
   foreach ($libraries as $name => $version) {
