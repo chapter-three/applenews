@@ -132,7 +132,7 @@ class ApplenewsPreview {
   private function saveArticleAssets() {
     foreach ($this->files as $url => $path) {
       $contents = file_get_contents($path);
-      file_unmanaged_save_data($contents, $this->entity_dir . '/' . basename($url));
+      file_unmanaged_save_data($contents, $this->entity_dir . '/' . basename($url), FILE_EXISTS_REPLACE);
     }
   }
 
@@ -207,7 +207,7 @@ class ApplenewsPreview {
       }
 
       // Open archive.
-      $result = $zip->open($entity_archive, \ZipArchive::OVERWRITE);
+      $result = $zip->open($entity_archive, \ZipArchive::CREATE);
       if ($result !== TRUE) {
         throw new Exception('Could not open archive file: ' .
           $this::zipErrorMsg($result));

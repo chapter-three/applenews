@@ -1152,8 +1152,9 @@ function applenews_export_to_file($entity_id, $entity_ids = [], $filename = NULL
     }
     catch (\Exception $e) {
       watchdog('applenews', 'Could not create archive: @err', ['@err' => $e->getMessage()]);
+      return NULL;
     }
-    return NULL;
+    return $preview->getEntityArchivePath($entity_id);
   }
   else {
     $file_url = $preview->getArchiveFilePath();

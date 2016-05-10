@@ -1073,11 +1073,18 @@ function applenews_download_article_json($entity_type, $entity_id, $revision_id)
 
     if ($export = applenews_entity_get_export($entity_type, $entity_id)) {
       $data = applenews_entity_export($export, $entity_type, $entity_id);
-      applenews_export_to_file($entity_id, [$entity_id], NULL, TRUE, $data);
-      $archive_path = applenews_export_file_path($entity_id);
+      $archive_path = applenews_export_to_file($entity_id, [$entity_id], NULL, TRUE, $data);
+      if (!$archive_path) {
+        // Yuck.
+        return t('Could not generate archive, look in watchdog for errors.');
+      }
 
       $archive = $archive_path . '.zip';
       $output = file_get_contents($archive, FILE_USE_INCLUDE_PATH);
+      if ($output === FALSE) {
+        // Yuck.
+        return t('Could not generate archive, look in watchdog for errors.');
+      }
 
       // Remove individual entity archive.
       applenews_export_file_delete($entity_id);
