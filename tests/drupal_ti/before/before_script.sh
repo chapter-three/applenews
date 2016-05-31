@@ -20,7 +20,7 @@ cd "$DRUPAL_TI_DRUPAL_DIR"
 #cd "$DRUPAL_TI_DRUPAL_DIR/$DRUPAL_TI_MODULES_PATH"
 
 # Create the libraries directory.
-mkdir sites/all/libraries
+mkdir -p sites/all/libraries
 cd sites/all/libraries
 
 # Manually clone the dependencies
