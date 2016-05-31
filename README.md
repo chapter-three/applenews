@@ -1,5 +1,7 @@
 # Apple News
 
+[![Travis CI build status](https://travis-ci.org/chapter-three/applenews.svg)](https://travis-ci.org/chapter-three/applenews)
+
 #### Table of Contents
 
 1. [TL;DR](#tldr)
