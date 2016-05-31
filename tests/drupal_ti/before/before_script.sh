@@ -19,6 +19,7 @@ cd "$DRUPAL_TI_DRUPAL_DIR"
 #mkdir -p "$DRUPAL_TI_DRUPAL_DIR/$DRUPAL_TI_MODULES_PATH"
 #cd "$DRUPAL_TI_DRUPAL_DIR/$DRUPAL_TI_MODULES_PATH"
 
+# Create the libraries directory.
 mkdir sites/all/libraries
 cd sites/all/libraries
 
