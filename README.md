@@ -278,8 +278,14 @@ The main module and sub-modules contain many usage examples.
 
 ## <a name="contribute"></a>Contribute
 
-1. Drupal project page: [https://www.drupal.org/project/applenews](https://www.drupal.org/project/applenews)
-2. Github AppleNewsAPI library: [https://github.com/chapter-three/AppleNewsAPI](https://github.com/chapter-three/AppleNewsAPI) (pull requests welcome)
+Patches on drupal.org or github pull requests are welcome:
+
+-   Drupal project page: [https://www.drupal.org/project/applenews](https://www.drupal.org/project/applenews)
+-   Github: [https://github.com/chapter-three/applenews](https://github.com/chapter-three/applenews)
+
+The module is heavily dependent on the applenews api library:
+
+-   Github AppleNewsAPI library: [https://github.com/chapter-three/AppleNewsAPI](https://github.com/chapter-three/AppleNewsAPI) (pull requests welcome)
 
 ### Run Tests
 
@@ -295,8 +301,9 @@ To run test from command line, enter the following commands one at a time:
 
 ```shell
 drush -y en simpletest
-php scripts/run-tests.sh --verbose --color 'Apple News'
+php ./scripts/run-tests.sh --url http://www.applenews.dev --verbose --color 'Apple News'
 ```
+
 ## Credits
 
 Initial development and ongoing maintenance by [Chapter Three](https://www.chapterthree.com/).
