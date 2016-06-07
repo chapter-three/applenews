@@ -530,6 +530,8 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
     $this->destinations = [
       'metadata' => NULL,
       'components' => [],
+      'layout' => NULL,
+      'componentLayouts' => [],
     ];
     $this->init();
   }
@@ -553,11 +555,24 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
         unset($this->destinations['components'][$index]);
       }
     }
+    foreach ($this->destinations['componentLayouts'] as $index => $obj) {
+      if ($obj instanceof __PHP_Incomplete_Class ||
+        !$obj instanceof ApplenewsDestinationComponentLayout
+      ) {
+        unset($this->destinations['componentLayouts'][$index]);
+      }
+    }
     $obj = $this->destinations['metadata'];
     if ($obj instanceof __PHP_Incomplete_Class ||
       !$obj instanceof ApplenewsDestinationMetadata
     ) {
-      unset($this->destinations['metadata'][0]);
+      unset($this->destinations['metadata']);
+    }
+    $obj = $this->destinations['layout'];
+    if ($obj instanceof __PHP_Incomplete_Class ||
+      !$obj instanceof ApplenewsDestinationLayout
+    ) {
+      unset($this->destinations['layout']);
     }
     $this->init();
   }
@@ -567,17 +582,21 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
    */
   protected function init() {
     // Set some defaults.
+    if (empty($this->destinations['layout'])) {
+      $this->setLayout($this->newLayout());
+    }
     if (!$this->getMetadata()) {
       $this->setMetadata($this->newMetadata());
     }
     // Copy some attribute data to child objects.
-    foreach (['components'] as $key) {
+    foreach (['components', 'componentLayouts'] as $key) {
       /** @var ApplenewsDestination $obj */
       foreach ($this->destinations[$key] as $index => $obj) {
         $obj->export = $this;
         $obj->depth = $this->destinationDepth($key, $index);
       }
     }
+    $this->getLayout()->export = $this;
     $this->getMetadata()->export = $this;
   }
 
@@ -629,6 +648,89 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
   }
 
   /**
+   * Generates a new layout attribute.
+   *
+   * @return ApplenewsDestinationLayout
+   *   A new componentLayout object.
+   */
+  public function newLayout() {
+    module_load_include('inc', 'applenews');
+    return applenews_new_destination('applenews', 'layout');
+  }
+
+  /**
+   * Sets the layout destination.
+   */
+  public function setLayout(ApplenewsDestinationLayout $layout) {
+    $this->destinations['layout'] = $layout;
+  }
+
+  /**
+   * Get layout.
+   *
+   * @return ApplenewsDestinationLayout
+   *   Layout object.
+   */
+  public function getLayout() {
+    return $this->destinations['layout'];
+  }
+
+  /**
+   * Generates a new componentLayout object.
+   *
+   * @return ApplenewsDestinationComponentLayout
+   *   A new componentLayout object.
+   */
+  public function newComponentLayout() {
+    module_load_include('inc', 'applenews');
+    return applenews_new_destination('applenews', 'componentLayout');
+  }
+
+  /**
+   * Gets the componentLayout with id $index.
+   *
+   * @param int|string $index
+   *   ID of componentLayout.
+   *
+   * @return ApplenewsDestinationComponentLayout|NULL
+   *   The componentLayout destination object.
+   */
+  public function getComponentLayout($index) {
+    return @$this->destinations['componentLayouts'][$index];
+  }
+
+  /**
+   * Sets the componentLayout to id $index.
+   *
+   * @param ApplenewsDestinationComponentLayout $component_layout
+   *   ComponentLayout object.
+   * @param int $index
+   *   ID of componentLayout.
+   *
+   * @return $this
+   */
+  public function addComponentLayout(ApplenewsDestinationComponentLayout $component_layout, $index = NULL) {
+    return $this->addDestination('componentLayouts', $component_layout, $index);
+  }
+
+  /**
+   * Deletes the componentLayout with id $index.
+   *
+   * @param int $index
+   *   ID of componentLayout.
+   */
+  public function deleteComponentLayout($index) {
+    unset($this->destinations['componentLayouts'][$index]);
+  }
+
+  /**
+   * The set of componentLayouts, sorted.
+   */
+  public function getComponentLayouts() {
+    return $this->getDestinations('componentLayouts');
+  }
+
+  /**
    * Gets the component with id $index.
    *
    * @param int $index
@@ -670,6 +772,16 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
    */
   public function getComponents() {
     return $this->getDestinations('components');
+  }
+
+  /**
+   * Gets ordered children of a component.
+   *
+   * @param int $index
+   *   ID of component.
+   */
+  public function getChildComponents($index) {
+    return $this->getDestinationChildren('components', $index);
   }
 
   /**
@@ -777,6 +889,42 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
   }
 
   /**
+   * Get children of a destination.
+   *
+   * @param string $key
+   *   A key in $this->destinations.
+   * @param int $index
+   *   ID of component.
+   *
+   * @return array
+   *   A sorted list of destinations.
+   */
+  protected function getDestinationChildren($key, $index) {
+    $children = [];
+
+    if (isset($this->destinations[$key][$index])) {
+      /** @var ApplenewsDestination $parent */
+      $parent = $this->destinations[$key][$index];
+      if ($parent->isLeaf()) {
+        return [];
+      }
+      $can_break = FALSE;
+      /** @var ApplenewsDestination $destination */
+      foreach ($this->getDestinations($key) as $destination) {
+        if ($destination->pid == $index) {
+          $children[] = $destination;
+          $can_break = TRUE;
+        }
+        elseif ($can_break) {
+          break;
+        }
+      }
+    }
+
+    return $children;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function getConfigForm(array $values = []) {
@@ -800,6 +948,82 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
       '#collapsed' => FALSE,
       '#group' => 'main',
     ];
+    $tab = &$form['additional_settings']['layouts_tab'];
+
+    // Layouts.
+    $child_values = isset($values['layout_destination']) ? $values['layout_destination'] : [];
+    $tab['layout_destination'] = [
+        '#type' => 'fieldset',
+        '#title' => t('Document Layout'),
+        '#tree' => TRUE,
+        '#weight' => 1,
+      ] +
+      $this->getLayout()->getConfigForm($child_values);
+
+    // Component Layouts.
+    $tab['component_layouts'] = [
+      '#title'  => t('Component Layouts'),
+      '#tree'   => TRUE,
+      '#weight' => 2,
+    ];
+    /** @var ApplenewsDestinationComponentLayout $destination */
+    foreach ($this->getdestinations('componentLayouts') as $destination) {
+      $label = check_plain($destination->label());
+      if (!$destination->isLeaf()) {
+        $label = "<strong>${label}</strong>";
+      }
+      $edit = 'admin/config/content/applenews/export/' . $this->id . '/componentLayout/' . $destination->id;
+      if (!$destination->validateSettings()) {
+        drupal_set_message(t('The %label component layout needs to be !link.',
+          [
+            '%label' => check_plain($destination->label()),
+            '!link' => l(t('configured'), $edit)
+          ]),
+          'error');
+      }
+      $tab['component_layouts'][$destination->id] = [
+        '#applenews_destination' => $destination,
+        'destination' => [
+          '#markup' => $label,
+        ],
+        'edit' => [
+          '#markup' => l(t('edit'), $edit),
+        ],
+        'delete' => [
+          '#markup' => l(t('delete'), 'admin/config/content/applenews/export/' . $this->id . '/componentLayout/' . $destination->id . '/delete'),
+        ],
+        'id' => [
+          '#type' => 'hidden',
+          '#default_value' => $destination->id,
+          // '#type' => 'textfield',
+          // '#size' => 3,
+          // '#default_value' => $destination->id,
+          // '#disabled' => TRUE,
+        ],
+      ];
+    }
+    $tab['component_layouts']['_new'] = [
+      '#applenews_destination' => FALSE,
+      'destination' => [
+        '#title' => t('Add new component layout'),
+        '#type' => 'checkbox',
+        '#description' => t('To add a new component layout check the box and hit <em>Save changes</em> button.'),
+      ],
+      'edit' => [
+        '#markup' => '',
+      ],
+      'delete' => [
+        '#markup' => '',
+      ],
+      'id' => [
+        '#type' => 'hidden',
+        '#default_value' => NULL,
+        // '#type' => 'textfield',
+        // '#size' => 3,
+        // '#default_value' => NULL,
+        // '#disabled' => TRUE,
+      ],
+    ];
 
     $form['additional_settings']['components_tab'] = [
       '#type' => 'fieldset',
@@ -817,11 +1041,15 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
     ];
     /** @var ApplenewsDestinationComponent $destination */
     foreach ($this->getDestinations('components') as $destination) {
+      $label = check_plain($destination->label());
+      if (!$destination->isLeaf()) {
+        $label = "<strong>${label}</strong>";
+      }
       $edit = 'admin/config/content/applenews/export/' . $this->id . '/component/' . $destination->id;
       $tab['components'][$destination->id] = [
         '#applenews_destination' => $destination,
         'destination' => [
-          '#markup' => $destination->label(),
+          '#markup' => $label,
         ],
         'edit' => [
           '#markup' => l(t('edit'), $edit),
@@ -922,23 +1150,36 @@ abstract class ApplenewsExportConfigurable extends ApplenewsExport {
     $this->getMetadata()->submitConfigForm(
       $values['additional_settings']['metadata_tab']['metadata_destination']);
 
+    $this->getLayout()->submitConfigForm(
+      $values['additional_settings']['layouts_tab']['layout_destination']);
+
     $components = &$values['additional_settings']['components_tab']['components'];
     /** @var ApplenewsDestinationComponent $component */
     foreach ($this->destinations['components'] as $id => $component) {
       $component->weight = (int) $components[$component->id]['weight'];
-      $component->pid = $components[$component->id]['pid'] == '' ? NULL : (int) $components[$component->id]['pid'];
+      $component->pid = $components[$component->id]['pid'] == '' ? NULL
+        : (int) $components[$component->id]['pid'];
     }
     if ($components['_new']['destination']) {
       $destinations = applenews_get_module_apis('destination');
       $info = $destinations[$components['_new']['destination']];
       $destination = applenews_new_destination($info['module'], $info['machine_name']);
       $destination->weight = (int) $components['_new']['weight'];
-      $destination->pid = $components['_new']['pid'] == '' ? NULL : (int) $components['_new']['pid'];
-      $destination->id = empty($this->destinations['components']) ? 1 :
-        max(array_keys($this->destinations['components'])) + 1;
+      $destination->pid = $components['_new']['pid'] == '' ? NULL
+        : (int) $components['_new']['pid'];
+      $destination->id = empty($this->destinations['components']) ? 1
+        : max(array_keys($this->destinations['components'])) + 1;
       $this->destinations['components'][$destination->id] = $destination;
       $form_state['redirect'][] = 'admin/config/content/applenews/export/' .
         $this->id . '/component/' . $destination->id;
+    }
+
+    $component_layouts = &$values['additional_settings']['layouts_tab']['component_layouts'];
+    if ($component_layouts['_new']['destination']) {
+      $layout = $this->newComponentLayout();
+      $this->addComponentLayout($layout);
+      $form_state['redirect'][] = 'admin/config/content/applenews/export/' .
+        $this->id . '/componentLayout/' . $layout->id;
     }
 
     parent::submitConfigForm($values);
@@ -1020,7 +1261,7 @@ class ApplenewsExportNode extends ApplenewsExportConfigurable {
     /** @var EntityDrupalWrapper $wrapper */
     $wrapper = entity_metadata_wrapper('node', $this->source);
 
-    // Identifier.
+    // Identifier;
     $id = $wrapper->getIdentifier();
 
     // Title.
@@ -1038,13 +1279,17 @@ class ApplenewsExportNode extends ApplenewsExportConfigurable {
 
     $this->document = new Document($id, $title,
       applenews_language_code($language),
-      // @todo Make these arbitrary values configurable.
-      new Layout(7, 1024));
+      $this->getLayout()->export());
 
     /** @var \ChapterThree\AppleNewsAPI\Document\Metadata $metadata */
     $this->document->setMetadata($this->getMetadata()->export());
 
     // Components.
+    /** @var ApplenewsDestinationComponentLayout $destination */
+    foreach ($this->getComponentLayouts() as $key => $destination) {
+      $this->document
+        ->addComponentLayout($destination->id, $destination->export());
+    }
     /** @var ApplenewsDestinationComponent $destination */
     foreach ($this->getComponents() as $destination) {
       foreach ($destination->export() as $component) {
@@ -1053,6 +1298,177 @@ class ApplenewsExportNode extends ApplenewsExportConfigurable {
     }
 
     return $this->document;
+  }
+
+}
+
+/**
+ * A pre-configured, configurable node export.
+ */
+class ApplenewsExportNodePreConfigured extends ApplenewsExportNode {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct($module, $machine_name, array $arguments) {
+    parent::__construct($module, $machine_name, $arguments);
+
+    // Apply to articles if exists.
+    $entities_info = entity_get_info('node');
+    if (isset($entities_info['bundles']['article'])) {
+      $this->bundles = ['article'];
+    }
+
+    // Metadata.
+    /** @var ApplenewsDestinationMetadata $metadata */
+    $metadata = applenews_new_destination('applenews', 'metadata');
+    $metadata
+      ->setSetting('date_published', [
+        'source' => '::::applenews::node::created',
+        'value' => '',
+      ])
+      ->setSetting('date_created', [
+        'source' => '::::applenews::node::created',
+        'value' => '',
+      ])
+      ->setSetting('date_modified', [
+        'source' => '::::applenews::node::changed',
+        'value' => '',
+      ]);
+    $this->setMetadata($metadata);
+
+    // Layout.
+    /** @var ApplenewsDestinationLayout $layout */
+    $layout = applenews_new_destination('applenews', 'layout');
+    $layout->setSetting('margin', '75')
+      ->setSetting('gutter', '20');
+    switch ($arguments['alignment']) {
+      case 'center':
+        $layout->setSetting('width', '768')
+          ->setSetting('columns', '9');
+        break;
+
+      case 'left':
+      case 'right':
+        $layout->setSetting('width', '1024')
+          ->setSetting('columns', '7');
+        break;
+    }
+    $this->setLayout($layout);
+
+    // Component Layouts.
+    /** @var ApplenewsDestinationComponentLayout $layout */
+    $layout = applenews_new_destination('applenews', 'componentLayout');
+    $layout->title = "Body";
+    $layout->setSetting('margin', [
+      'margin' => 'value',
+      'top' => '25',
+      'bottom' => '25',
+    ]);
+    switch ($arguments['alignment']) {
+      case 'left':
+        $layout->setSetting('columnStart', '0')
+          ->setSetting('columnSpan', '5');
+        break;
+
+      case 'center':
+        $layout->setSetting('columnStart', '1')
+          ->setSetting('columnSpan', '7');
+        break;
+
+      case 'right':
+        $layout->setSetting('columnStart', '2')
+          ->setSetting('columnSpan', '5');
+        break;
+    }
+    $this->addComponentLayout($layout, 'body');
+    /** @var ApplenewsDestinationComponentLayout $layout */
+    $layout = applenews_new_destination('applenews', 'componentLayout');
+    $layout->title = "Inline Image";
+    switch ($arguments['alignment']) {
+      case 'left':
+        $layout->setSetting('columnStart', '3')
+          ->setSetting('columnSpan', '4');
+        break;
+
+      case 'center':
+        $layout->setSetting('columnStart', '1')
+          ->setSetting('columnSpan', '7');
+        break;
+
+      case 'right':
+        $layout->setSetting('columnStart', '0')
+          ->setSetting('columnSpan', '4');
+        break;
+    }
+    $this->addComponentLayout($layout, 'inline_image');
+    /** @var ApplenewsDestinationComponentLayout $layout */
+    $layout = applenews_new_destination('applenews', 'componentLayout');
+    $layout->title = "Image Set";
+    $layout->setSetting('ignoreDocumentMargin', 'left')
+      ->setSetting('margin', [
+        'margin' => 'value',
+        'top' => '25',
+        'bottom' => '25',
+      ]);
+    switch ($arguments['alignment']) {
+      case 'center':
+        $layout->setSetting('columnStart', '0')
+          ->setSetting('columnSpan', '9');
+        break;
+
+      case 'left':
+      case 'right':
+        $layout->setSetting('columnStart', '0')
+          ->setSetting('columnSpan', '7');
+        break;
+    }
+    $this->addComponentLayout($layout, 'image_set');
+
+    // Components.
+    /** @var ApplenewsDestinationText $component */
+    $component = applenews_new_destination('applenews', 'text');
+    $component->weight = '0';
+    $component->title = 'Title';
+    $component
+      ->setSetting('text', [
+        'source' => '::::applenews::node::label',
+        'value' => '',
+      ])
+      ->setSetting('component', 'title')
+      ->setSetting('heading', '')
+      ->setSetting('format', '');
+    $this->addComponent($component);
+    /** @var ApplenewsDestinationBodyPhoto $component */
+    $component = applenews_new_destination('applenews', 'bodyphoto');
+    $component->weight = '1';
+    $component->title = 'Body';
+    $component->setLayout('body')
+      ->setLayout('inline_image', 'image')
+      ->setSetting('text', [
+        'source' => '::::applenews::field::node::body::value_sanitized',
+        'value' => '',
+      ])
+      ->setSetting('format', 'markdown');
+    $this->addComponent($component);
+    /** @var ApplenewsDestinationImages $component */
+    $component = applenews_new_destination('applenews', 'images');
+    $component->weight = '2';
+    $component->title = 'Images';
+    $component
+      ->setLayout('image_set')
+      ->setSetting('type', 'gallery')
+      ->setSetting('items', [
+        'source' => '::::applenews::file::node::field_image::uri',
+        'value' => '',
+      ])
+      ->setSetting('caption', [
+        'source' => '::::applenews::file::node::field_image::alt',
+        'value' => '',
+      ])
+      ->setSetting('format', 'markdown');
+    $this->addComponent($component);
+
   }
 
 }

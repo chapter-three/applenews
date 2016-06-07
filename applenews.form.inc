@@ -213,6 +213,7 @@ function _applenews_form_alter_node_form(&$form, &$form_state) {
     }
     $form['applenews']['channels'] = &$channels_element;
     unset($form['applenews']['channels']['#weight']);
+    
     // If entity edit.
     if (!empty($entity_id) && !empty($revision_id)) {
       $form['applenews']['channels']['#attributes']['class'][] = 'applenews-channels-edit-form';

@@ -12,6 +12,7 @@ files[] = include/handlers/views_handler_field_applenews_previewable.inc
 files[] = include/db.inc
 files[] = include/destination.inc
 files[] = include/destination_component.inc
+files[] = include/destination_layout.inc
 files[] = include/destination_metadata.inc
 files[] = include/export.inc
 files[] = include/source.inc

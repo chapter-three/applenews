@@ -9,6 +9,8 @@ use \ChapterThree\AppleNewsAPI\Document\Metadata;
 
 /**
  * Base class for metadata destinations.
+ *
+ * All Metadata destinations must extend this class.
  */
 class ApplenewsDestinationMetadata extends ApplenewsDestinationSingleton {
 

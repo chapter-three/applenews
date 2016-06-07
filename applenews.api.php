@@ -18,7 +18,6 @@
  *     -  arguments: Array of arguments to pass to class constructor.
  *     -  name
  *     -  description
- *     -  default: callback allowing modifications to newly instantiated object.
  *   - sources:
  *     -  class (required): Class name to instantiate for the source.
  *     -  name

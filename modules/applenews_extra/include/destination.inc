@@ -60,6 +60,7 @@ class ApplenewsExtraDestinationInstagram extends ApplenewsDestinationComponent {
       }
     }
 
+    array_map([$this, 'setComponentLayout'], $components);
     return $components;
   }
 
@@ -118,6 +119,7 @@ class ApplenewsExtraDestinationTweet extends ApplenewsDestinationComponent {
       }
     }
 
+    array_map([$this, 'setComponentLayout'], $components);
     return $components;
   }
 
@@ -185,6 +187,7 @@ class ApplenewsExtraDestinationEmbedWebVideo extends ApplenewsDestinationCompone
       }
     }
 
+    array_map([$this, 'setComponentLayout'], $components);
     return $components;
   }
 
@@ -297,6 +300,7 @@ class ApplenewsExtraDestinationAudio extends ApplenewsDestinationComponent {
       }
     }
 
+    array_map([$this, 'setComponentLayout'], $components);
     return $components;
   }
 

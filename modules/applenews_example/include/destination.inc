@@ -44,7 +44,7 @@ class ApplenewsexampleDestinationBody extends ApplenewsDestinationBodyPhoto {
   /**
    * {@inheritdoc}
    */
-  public function export() {
+  public function export($value = NULL) {
 
     $body_text_style = new Styles\ComponentTextStyle();
     $body_text_style->setTextAlignment('left')

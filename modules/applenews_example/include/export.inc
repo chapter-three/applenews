@@ -21,6 +21,101 @@ class ApplenewsexampleExportNode extends ApplenewsExportNode {
   /**
    * {@inheritdoc}
    */
+  public function __construct($module, $machine_name, array $arguments) {
+    parent::__construct($module, $machine_name, $arguments);
+
+    // Apply to articles if exists.
+    $entities_info = entity_get_info('node');
+    if (isset($entities_info['bundles']['article'])) {
+      $this->bundles = ['article'];
+    }
+
+    // Metadata.
+    /** @var ApplenewsDestinationMetadata $metadata */
+    $metadata = applenews_new_destination('applenews', 'metadata');
+    $metadata
+      ->setSetting('date_published', [
+        'source' => '::::applenews::node::created',
+        'value' => '',
+      ])
+      ->setSetting('date_created', [
+        'source' => '::::applenews::node::created',
+        'value' => '',
+      ])
+      ->setSetting('date_modified', [
+        'source' => '::::applenews::node::changed',
+        'value' => '',
+      ]);
+    $this->setMetadata($metadata);
+
+    // Header.
+    /** @var ApplenewsDestinationText $component */
+    $component = applenews_new_destination('applenews_example', 'header_image');
+    $component->weight = '0';
+    $component->title = 'Header Image';
+    $component
+      ->setSetting('file', [
+        'source' => '::::applenews::file::node::field_image::uri',
+        'value' => '',
+      ]);
+    $this->addComponent($component);
+
+    // Title/Credits.
+    /** @var ApplenewsexampleDestinationHeaderGradContainer $component */
+    $component = applenews_new_destination('applenews_example', 'header_container');
+    $component->weight = '1';
+    $component->title = 'Title/Credits';
+    $component
+      ->setSetting('title', [
+        'source' => '::::applenews::node::label',
+        'value' => '',
+      ])
+      ->setSetting('author', [
+        'source' => '::::applenews::node::author::::applenews::user::label',
+        'value' => '',
+      ]);
+    $this->addComponent($component);
+
+    // Ad.
+    /** @var ApplenewsexampleDestinationAd $component */
+    $component = applenews_new_destination('applenews_example', 'ad');
+    $component->weight = '2';
+    $component->title = 'Ad';
+    $this->addComponent($component);
+
+    // Body.
+    /** @var ApplenewsexampleDestinationBody $component */
+    $component = applenews_new_destination('applenews_example', 'body');
+    $component->weight = '3';
+    $component->title = 'Body';
+    $component
+      ->setSetting('text', [
+        'source' => '::::applenews::field::node::body::value_sanitized',
+        'value' => '',
+      ])
+      ->setSetting('format', 'markdown');
+    $this->addComponent($component);
+
+    // Pull Quote.
+    /** @var ApplenewsexampleDestinationPullQuote $component */
+    $component = applenews_new_destination('applenews_example', 'pullquote');
+    $component->weight = '4';
+    $component->title = 'Pull Quote';
+    $this->addComponent($component);
+
+    // Gallery.
+    /** @var ApplenewsexampleDestinationImages $component */
+    $component = applenews_new_destination('applenews_example', 'images');
+    $component->weight = '5';
+    $component->title = 'Gallery';
+    $this->addComponent($component);
+    $component
+      ->setSetting('type', 'gallery');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function settings() {
     return [
       'layout_alignment' => 'left',

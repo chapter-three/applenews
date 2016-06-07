@@ -342,6 +342,8 @@ function applenews_exports_enabled($reset = NULL) {
  *   If $class is "destination", one of:
  *   - "component".
  *   - "metadata".
+ *   - "layout".
+ *   - "componentLayout".
  * @param bool $reset
  *   Force fetch from db.
  *
@@ -478,6 +480,16 @@ function applenews_get_module_apis($class = NULL, $type = NULL, $reset = FALSE) 
         ) {
           $class_type = 'metadata';
         }
+        elseif ($destination['class'] == 'ApplenewsDestinationLayout' ||
+          $reflection->isSubclassOf('ApplenewsDestinationLayout')
+        ) {
+          $class_type = 'layout';
+        }
+        elseif ($destination['class'] == 'ApplenewsDestinationComponentLayout' ||
+          $reflection->isSubclassOf('ApplenewsDestinationComponentLayout')
+        ) {
+          $class_type = 'componentLayout';
+        }
         else {
           $msg = 'Class %class is not a subclass of ApplenewsDestination.';
           $args = ['%class' => $destination['class']];
@@ -514,7 +526,7 @@ function applenews_get_module_apis($class = NULL, $type = NULL, $reset = FALSE) 
     return $implementations[$class];
   }
 
-  if (!in_array($type, ['component', 'metadata'])) {
+  if (!in_array($type, ['component', 'metadata', 'layout', 'componentLayout'])) {
     watchdog('applenews', 'Invalid $type "%type".', ['%type' => $type], WATCHDOG_ERROR);
     return NULL;
   }

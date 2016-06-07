@@ -393,6 +393,7 @@ abstract class ApplenewsDestinationSingleton {
       }
       else {
         // Literal value.
+        // @todo this needs to be configurable in the class.
         $reflection = new ReflectionClass($implementations[$id]['class']);
         if ($implementations[$id]['class'] == 'ApplenewsSourceValue' ||
           $reflection->isSubclassOf('ApplenewsSourceValue')

@@ -696,7 +696,12 @@ function theme_applenews_export_edit_form($variables) {
   $form = $variables['form'];
 
   // Non-order-able table of destinations.
-  $elements = [];
+  $elements = [
+    [
+      'item_label' => t('Component Layout'),
+      'element' => &$form['config']['additional_settings']['layouts_tab']['component_layouts'],
+    ],
+  ];
   foreach ($elements as $info) {
     $rows = [];
     foreach (element_children($info['element']) as $id) {
@@ -827,6 +832,7 @@ function applenews_export_destination_edit_form($form, &$form_state, ApplenewsEx
   switch ($type) {
 
     case 'metadata':
+      /** @var ApplenewsDestinationMetadata $destination */
       $destination = $export->getMetadata();
       if (empty($destination)) {
         return [];
@@ -845,6 +851,28 @@ function applenews_export_destination_edit_form($form, &$form_state, ApplenewsEx
         '!label' => check_plain($destination->label()),
       ]), PASS_THROUGH);
       $fragment = 'edit-config-additional-settings-components-tab';
+      break;
+
+    case 'layout':
+      /** @var ApplenewsDestinationLayout $destination */
+      $destination = $export->getLayout();
+      if (empty($destination)) {
+        return [];
+      }
+      drupal_set_title(t('Edit Document Layout'), PASS_THROUGH);
+      $fragment = 'edit-config-additional-settings-layouts-tab';
+      break;
+
+    case 'componentLayout':
+      /** @var ApplenewsDestinationComponentLayout $destination */
+      $destination = $export->getComponentLayout($id);
+      if (empty($destination)) {
+        return [];
+      }
+      drupal_set_title(t('Edit Component Layout: !label', [
+        '!label' => check_plain($destination->label()),
+      ]), PASS_THROUGH);
+      $fragment = 'edit-config-additional-settings-layouts-tab';
       break;
 
     default:
@@ -913,6 +941,13 @@ function applenews_export_destination_edit_form_submit($form, &$form_state) {
         'fragment' => 'edit-config-additional-settings-components-tab',
       ];
       break;
+
+    case 'layout':
+    case 'componentLayout':
+      $form_state['redirect'][] = [
+        'fragment' => 'edit-config-additional-settings-layouts-tab',
+      ];
+      break;
   }
 }
 
@@ -932,6 +967,11 @@ function applenews_export_destination_delete_form($form, &$form_state, Applenews
     case 'component':
       $destination = $export->getComponent($id);
       $fragment = 'edit-config-additional-settings-components-tab';
+      break;
+
+    case 'componentLayout':
+      $destination = $export->getComponentLayout($id);
+      $fragment = 'edit-config-additional-settings-layouts-tab';
       break;
 
     default:
@@ -980,6 +1020,11 @@ function applenews_export_destination_delete_form_submit($form, &$form_state) {
     case 'component':
       $export->deleteComponent($id);
       $fragment = 'edit-config-additional-settings-components-tab';
+      break;
+
+    case 'componentLayout':
+      $export->deleteComponentLayout($id);
+      $fragment = 'edit-config-additional-settings-layouts-tab';
       break;
 
   }
