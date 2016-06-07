@@ -87,7 +87,7 @@ class ApplenewsDestinationMetadata extends ApplenewsDestinationSingleton {
       }
       if ($date) {
         $date->setTimeZone(new DateTimeZone('UTC'));
-        return $date->format(DateTime::ISO8601);
+        return $date->format(DateTime::ATOM);
       }
       watchdog('applenews', 'Could not decode value as datetime.');
       return FALSE;
