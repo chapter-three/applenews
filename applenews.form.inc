@@ -94,6 +94,7 @@ function _applenews_form_alter_node_form(&$form, &$form_state) {
     '#group' => 'additional_settings',
     '#weight' => -10,
     '#tree' => TRUE,
+    '#access' => user_access('publish apple news') || user_access('administer apple news'),
     '#attributes' => [
       'class' => ['applenews-options'],
     ]
